@@ -124,7 +124,7 @@ const RoleCard = ({
         relative glass-card rounded-2xl p-8 cursor-pointer transition-all duration-300
         active:scale-95 
         ${selected 
-          ? 'border-2 border-primary shadow-lg shadow-primary/30 bg-primary/5' 
+          ? 'border-2 border-primary shadow-lg shadow-primary/30' 
           : 'border-border/50 hover:border-primary/50 hover:shadow-md'
         }
       `}
