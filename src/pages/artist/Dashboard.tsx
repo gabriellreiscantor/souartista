@@ -94,31 +94,31 @@ const ArtistDashboard = () => {
                   Aqui está um resumo rápido do seu progresso.
                 </p>
               
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-[280px] justify-start text-left font-normal bg-white text-gray-900 border-gray-300",
-                      !date && "text-gray-500"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4 text-gray-600" />
-                    {date ? format(date, "MMMM 'de' yyyy", { locale: ptBR }) : "novembro de 2025"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-white border-gray-300" align="center">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    initialFocus
-                    variant="light"
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-[280px] justify-start text-left font-normal bg-white text-gray-900 border-gray-300",
+                        !date && "text-gray-500"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4 text-gray-600" />
+                      {date ? format(date, "MMMM 'de' yyyy", { locale: ptBR }) : "novembro de 2025"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-white border-gray-300" align="center">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      initialFocus
+                      variant="light"
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
@@ -321,6 +321,7 @@ const ArtistDashboard = () => {
                   </ResponsiveContainer>
                 </Card>
               </div>
+            </div>
             </div>
           </main>
         </div>
