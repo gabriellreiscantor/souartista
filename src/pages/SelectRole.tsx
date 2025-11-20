@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Music, Users } from 'lucide-react';
+import { Music, Users, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const SelectRole = () => {
@@ -121,14 +121,25 @@ const RoleCard = ({
   return (
     <Card
       className={`
-        glass-card rounded-2xl p-8 cursor-pointer transition-all hover:scale-105
-        ${selected ? 'border-2 border-primary shadow-primary' : 'border-border/50'}
+        relative glass-card rounded-2xl p-8 cursor-pointer transition-all duration-300
+        active:scale-95 
+        ${selected 
+          ? 'border-2 border-primary shadow-lg shadow-primary/30 bg-primary/5' 
+          : 'border-border/50 hover:border-primary/50 hover:shadow-md'
+        }
       `}
       onClick={onClick}
     >
+      {/* Check icon when selected */}
+      {selected && (
+        <div className="absolute top-4 right-4 animate-scale-in">
+          <CheckCircle2 className="w-6 h-6 text-primary" />
+        </div>
+      )}
+      
       <div className={`
-        w-16 h-16 rounded-xl flex items-center justify-center mb-6
-        ${selected ? 'bg-gradient-primary text-primary-foreground' : 'bg-primary/10 text-primary'}
+        w-16 h-16 rounded-xl flex items-center justify-center mb-6 transition-all duration-300
+        ${selected ? 'bg-gradient-primary text-primary-foreground scale-110' : 'bg-primary/10 text-primary'}
       `}>
         {icon}
       </div>
