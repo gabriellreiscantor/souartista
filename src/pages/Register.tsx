@@ -1,13 +1,42 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import { Music, Loader2, ArrowLeft } from 'lucide-react';
+import { Music, Loader2, ArrowLeft, CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+// Formatação de CPF: 000.000.000-00
+const formatCPF = (value: string) => {
+  const numbers = value.replace(/\D/g, '');
+  if (numbers.length <= 11) {
+    return numbers
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  }
+  return value.slice(0, 14);
+};
+
+// Formatação de WhatsApp: +55 65 9 9614-6969
+const formatPhone = (value: string) => {
+  const numbers = value.replace(/\D/g, '');
+  
+  if (numbers.length === 0) return '+55 ';
+  if (numbers.length <= 2) return `+${numbers}`;
+  if (numbers.length <= 4) return `+${numbers.slice(0, 2)} ${numbers.slice(2)}`;
+  if (numbers.length <= 5) return `+${numbers.slice(0, 2)} ${numbers.slice(2, 4)} ${numbers.slice(4)}`;
+  if (numbers.length <= 9) return `+${numbers.slice(0, 2)} ${numbers.slice(2, 4)} ${numbers.slice(4, 5)} ${numbers.slice(5)}`;
+  
+  return `+${numbers.slice(0, 2)} ${numbers.slice(2, 4)} ${numbers.slice(4, 5)} ${numbers.slice(5, 9)}-${numbers.slice(9, 13)}`;
+};
 
 const Register = () => {
   const [step, setStep] = useState(1);
@@ -21,10 +50,13 @@ const Register = () => {
     email: '',
     cpf: '',
     birthDate: '',
-    phone: '',
+    phone: '+55 ',
     password: '',
     confirmPassword: '',
   });
+
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>();
 
   const progress = (step / 3) * 100;
 
@@ -172,20 +204,49 @@ const Register = () => {
                     type="text"
                     placeholder="000.000.000-00"
                     value={formData.cpf}
-                    onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
+                    onChange={(e) => {
+                      const formatted = formatCPF(e.target.value);
+                      setFormData({ ...formData, cpf: formatted });
+                    }}
+                    maxLength={14}
                     className="h-11"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="birthDate">Data de nascimento</Label>
-                  <Input
-                    id="birthDate"
-                    type="date"
-                    value={formData.birthDate}
-                    onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                    className="h-11"
-                  />
+                  <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "h-11 w-full justify-start text-left font-normal",
+                          !selectedDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "Selecione sua data de nascimento"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={(date) => {
+                          setSelectedDate(date);
+                          if (date) {
+                            setFormData({ ...formData, birthDate: format(date, "yyyy-MM-dd") });
+                            setDatePickerOpen(false);
+                          }
+                        }}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <div className="space-y-2">
@@ -193,9 +254,13 @@ const Register = () => {
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="(00) 00000-0000"
+                    placeholder="+55 65 9 9614-6969"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={(e) => {
+                      const formatted = formatPhone(e.target.value);
+                      setFormData({ ...formData, phone: formatted });
+                    }}
+                    maxLength={19}
                     className="h-11"
                   />
                 </div>
