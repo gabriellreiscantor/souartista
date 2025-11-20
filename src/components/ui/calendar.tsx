@@ -34,7 +34,9 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
       <div className="flex justify-center gap-2 mb-2">
         <Select value={currentMonth.toString()} onValueChange={handleMonthChange}>
           <SelectTrigger className="h-8 w-[110px] bg-secondary/50 border-primary/20">
-            <SelectValue />
+            <SelectValue>
+              {months[currentMonth]}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent className="bg-popover border-primary/20 z-50">
             {months.map((month, index) => (
@@ -47,7 +49,9 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
 
         <Select value={currentYear.toString()} onValueChange={handleYearChange}>
           <SelectTrigger className="h-8 w-[90px] bg-secondary/50 border-primary/20">
-            <SelectValue />
+            <SelectValue>
+              {currentYear}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent className="bg-popover border-primary/20 z-50 max-h-[200px]">
             {years.map((year) => (
