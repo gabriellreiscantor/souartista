@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Calendar as CalendarIcon, Music, DollarSign, Users, Loader2, Bell, User as UserIcon, ChevronLeft, ChevronRight, Car } from 'lucide-react';
+import { Calendar as CalendarIcon, Music, Loader2, Bell, ChevronLeft, ChevronRight, Car } from 'lucide-react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ArtistSidebar } from '@/components/ArtistSidebar';
+import { MobileBottomNav } from '@/components/MobileBottomNav';
+import { UserMenu } from '@/components/UserMenu';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -76,14 +78,12 @@ const ArtistDashboard = () => {
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Bell className="w-5 h-5 text-gray-600" />
               </Button>
-              <Button variant="ghost" size="icon" className="rounded-full bg-purple-100">
-                <UserIcon className="w-5 h-5 text-purple-600" />
-              </Button>
+              <UserMenu userName={userData?.name} userRole={userRole} />
             </div>
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="flex-1 p-6 overflow-auto pb-20 md:pb-6">
             {/* Greeting Section */}
             <div className="mb-6 text-center">
               <h2 className="text-3xl font-bold mb-2 text-gray-900">
@@ -323,6 +323,8 @@ const ArtistDashboard = () => {
             </div>
           </main>
         </div>
+        
+        <MobileBottomNav role="artist" />
       </div>
     </SidebarProvider>
   );
