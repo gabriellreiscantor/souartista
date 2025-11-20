@@ -149,21 +149,21 @@ const ArtistDashboard = () => {
             <div className="grid lg:grid-cols-3 gap-6 mb-6">
               {/* Monthly Cash Flow Chart */}
               <Card className="lg:col-span-2 p-6 bg-white border border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Fluxo de Caixa Mensal</h3>
-                    <p className="text-sm text-gray-600">Receitas, despesas e lucro por mês</p>
-                  </div>
-                  <Select value={selectedYear} onValueChange={setSelectedYear}>
-                    <SelectTrigger className="w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="2025">2025</SelectItem>
-                      <SelectItem value="2024">2024</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Fluxo de Caixa Mensal</h3>
+                  <p className="text-sm text-gray-600">Receitas, despesas e lucro por mês</p>
                 </div>
+                <Select value={selectedYear} onValueChange={setSelectedYear}>
+                  <SelectTrigger className="w-[120px] bg-white border-gray-300 text-gray-900">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-gray-300 text-gray-900">
+                    <SelectItem value="2025">2025</SelectItem>
+                    <SelectItem value="2024">2024</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={monthlyData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -220,19 +220,19 @@ const ArtistDashboard = () => {
                   <p className="text-sm text-gray-600">De 16/11 a 22/11</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="icon" className="h-8 w-8">
+                  <Button variant="outline" size="icon" className="h-8 w-8 bg-white border-gray-300">
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
                   <Select value={selectedWeek} onValueChange={setSelectedWeek}>
-                    <SelectTrigger className="w-[150px]">
+                    <SelectTrigger className="w-[150px] bg-white border-gray-300 text-gray-900">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white border-gray-300 text-gray-900">
                       <SelectItem value="Semana Atual">Semana Atual</SelectItem>
                       <SelectItem value="Próxima Semana">Próxima Semana</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button variant="outline" size="icon" className="h-8 w-8">
+                  <Button variant="outline" size="icon" className="h-8 w-8 bg-white border-gray-300">
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
