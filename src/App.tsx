@@ -7,7 +7,9 @@ import { AuthProvider } from "./hooks/useAuth";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import CompleteProfile from "./pages/CompleteProfile";
 import SelectRole from "./pages/SelectRole";
+import Subscribe from "./pages/Subscribe";
 import AppHub from "./pages/AppHub";
 import ArtistDashboard from "./pages/artist/Dashboard";
 import MusicianDashboard from "./pages/musician/Dashboard";
@@ -26,7 +28,9 @@ const App = () => (
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/complete-profile" element={<CompleteProfile />} />
             <Route path="/select-role" element={<SelectRole />} />
+            <Route path="/subscribe" element={<Subscribe />} />
             <Route path="/app" element={<AppHub />} />
             <Route path="/artist/dashboard" element={<ArtistDashboard />} />
             <Route path="/musician/dashboard" element={<MusicianDashboard />} />
