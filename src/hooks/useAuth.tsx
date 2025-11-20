@@ -10,20 +10,25 @@ interface UserData {
   phone?: string;
   birth_date?: string;
   photo_url?: string;
-  role?: 'artist' | 'musician';
   status_plano?: string;
   is_verified?: boolean;
+}
+
+interface UserRole {
+  role: 'artist' | 'musician';
 }
 
 interface AuthContextType {
   user: User | null;
   userData: UserData | null;
+  userRole: 'artist' | 'musician' | null;
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, userData: Partial<UserData>) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   updateUserData: (data: Partial<UserData>) => Promise<void>;
+  setUserRole: (role: 'artist' | 'musician') => Promise<{ error: any }>;
   refetchUserData: () => Promise<void>;
 }
 
@@ -32,10 +37,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [userRole, setUserRoleState] = useState<'artist' | 'musician' | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchUserData = async (userId: string) => {
+    // Fetch profile data
     const { data: profile } = await supabase
       .from('profiles')
       .select('*')
@@ -44,6 +51,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     if (profile) {
       setUserData(profile);
+    }
+
+    // Fetch user role from user_roles table
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .single();
+    
+    if (roleData) {
+      setUserRoleState(roleData.role);
     }
   };
 
@@ -95,36 +113,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (email: string, password: string, userData: Partial<UserData>) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { data, error } = await supabase.auth.signUp({
+    // Send all user data in user_metadata - the database trigger will handle profile creation
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
+        data: {
+          name: userData.name || '',
+          cpf: userData.cpf,
+          phone: userData.phone,
+          birth_date: userData.birth_date,
+          photo_url: userData.photo_url,
+          status_plano: userData.status_plano || 'inactive',
+          is_verified: userData.is_verified || false,
+        },
       },
     });
-
-    if (!error && data.user) {
-      const profileData = {
-        id: data.user.id,
-        email,
-        name: userData.name || '',
-        cpf: userData.cpf,
-        phone: userData.phone,
-        birth_date: userData.birth_date,
-        photo_url: userData.photo_url,
-        role: userData.role,
-        status_plano: userData.status_plano,
-        is_verified: userData.is_verified,
-      };
-
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert(profileData);
-
-      if (profileError) {
-        return { error: profileError };
-      }
-    }
 
     return { error };
   };
@@ -146,17 +151,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const setUserRole = async (role: 'artist' | 'musician') => {
+    if (!user) return { error: new Error('User not authenticated') };
+
+    const { error } = await supabase
+      .from('user_roles')
+      .insert({ user_id: user.id, role })
+      .select()
+      .single();
+
+    if (!error) {
+      setUserRoleState(role);
+    }
+
+    return { error };
+  };
+
   return (
     <AuthContext.Provider
       value={{
         user,
         userData,
+        userRole,
         session,
         loading,
         signIn,
         signUp,
         signOut,
         updateUserData,
+        setUserRole,
         refetchUserData,
       }}
     >

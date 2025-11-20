@@ -1,16 +1,35 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Calendar, Music, DollarSign, Users } from 'lucide-react';
+import { Calendar, Music, DollarSign, Users, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const MusicianDashboard = () => {
-  const { userData } = useAuth();
+  const { userData, userRole, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (loading) return;
+    
+    if (!userRole || userRole !== 'musician') {
+      navigate('/app');
+    }
+  }, [userRole, loading, navigate]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     window.location.href = '/login';
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
