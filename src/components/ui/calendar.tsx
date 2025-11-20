@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
 function Calendar({ className, classNames, showOutsideDays = true, ...props }: CalendarProps) {
+  const [month, setMonth] = React.useState<Date>(props.month || new Date());
+
   const CustomCaption = (captionProps: CaptionProps) => {
     const { displayMonth } = captionProps;
     const currentYear = displayMonth.getFullYear();
@@ -21,13 +23,13 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
     ];
 
     const handleYearChange = (year: string) => {
-      const newDate = new Date(parseInt(year), currentMonth);
-      props.onMonthChange?.(newDate);
+      const newDate = new Date(parseInt(year), currentMonth, 1);
+      setMonth(newDate);
     };
 
-    const handleMonthChange = (month: string) => {
-      const newDate = new Date(currentYear, parseInt(month));
-      props.onMonthChange?.(newDate);
+    const handleMonthChange = (monthValue: string) => {
+      const newDate = new Date(currentYear, parseInt(monthValue), 1);
+      setMonth(newDate);
     };
 
     return (
@@ -39,9 +41,9 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
             </SelectValue>
           </SelectTrigger>
           <SelectContent className="bg-popover border-primary/20 z-50">
-            {months.map((month, index) => (
+            {months.map((monthName, index) => (
               <SelectItem key={index} value={index.toString()}>
-                {month}
+                {monthName}
               </SelectItem>
             ))}
           </SelectContent>
@@ -67,6 +69,8 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
 
   return (
     <DayPicker
+      month={month}
+      onMonthChange={setMonth}
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
       classNames={{
