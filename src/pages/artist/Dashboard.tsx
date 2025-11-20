@@ -53,10 +53,10 @@ const ArtistDashboard = () => {
           {/* Main Content */}
           <main className="flex-1 p-6 overflow-auto bg-white">
             <div className="mb-8">
-              <h2 className="text-3xl font-heading font-bold mb-2">
+              <h2 className="text-3xl font-heading font-bold mb-2 text-gray-900">
                 Olá, {userData?.name}! 👋
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-gray-600">
                 Bem-vindo ao seu painel de gestão profissional
               </p>
             </div>
@@ -88,12 +88,12 @@ const ArtistDashboard = () => {
               />
             </div>
 
-            <Card className="rounded-2xl p-8 border-border bg-card">
+            <Card className="rounded-2xl p-8 border border-border bg-gradient-to-br from-primary/5 to-primary/10 hover:shadow-lg transition-all duration-300">
               <div className="text-center max-w-2xl mx-auto space-y-4">
-                <h3 className="text-2xl font-heading font-bold">
+                <h3 className="text-2xl font-heading font-bold text-gray-900">
                   Comece a gerenciar seus shows
                 </h3>
-                <p className="text-muted-foreground">
+                <p className="text-gray-600">
                   Adicione seus primeiros shows, cadastre sua equipe e comece a ter controle 
                   total da sua carreira artística.
                 </p>
@@ -117,16 +117,16 @@ const StatCard = ({ icon, title, value, description }: {
   description: string;
 }) => {
   return (
-    <Card className="rounded-xl p-6 border-border bg-card">
+    <Card className="rounded-xl p-6 border border-border bg-gradient-to-br from-white to-primary/5 hover:shadow-lg transition-all duration-300">
       <div className="flex items-start justify-between mb-4">
-        <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+        <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center text-white">
           {icon}
         </div>
       </div>
       <div className="space-y-1">
-        <p className="text-sm text-muted-foreground">{title}</p>
-        <p className="text-2xl font-heading font-bold">{value}</p>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-sm text-gray-600">{title}</p>
+        <p className="text-2xl font-heading font-bold text-gray-900">{value}</p>
+        <p className="text-xs text-gray-500">{description}</p>
       </div>
     </Card>
   );
