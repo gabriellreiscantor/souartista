@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Calendar, Music, DollarSign, Users, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Calendar, Music, DollarSign, Users, Loader2, Bell, User as UserIcon } from 'lucide-react';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { ArtistSidebar } from '@/components/ArtistSidebar';
 
 const ArtistDashboard = () => {
   const { userData, userRole, loading } = useAuth();
@@ -18,11 +19,6 @@ const ArtistDashboard = () => {
     }
   }, [userRole, loading, navigate]);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/login';
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -32,78 +28,85 @@ const ArtistDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center">
-              <Music className="w-6 h-6 text-primary-foreground" />
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-white">
+        <ArtistSidebar />
+        
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <header className="h-16 border-b border-border bg-white flex items-center px-6 justify-between">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+              <h1 className="text-xl font-heading font-bold">Dashboard</h1>
             </div>
-            <div>
-              <h1 className="text-xl font-heading font-bold">Sou Artista</h1>
-              <p className="text-sm text-muted-foreground">Modo Artista</p>
+            
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon">
+                <Bell className="w-5 h-5" />
+              </Button>
+              <Button variant="ghost" size="icon">
+                <UserIcon className="w-5 h-5" />
+              </Button>
             </div>
-          </div>
-          <Button variant="outline" onClick={handleSignOut}>
-            Sair
-          </Button>
-        </div>
-      </header>
+          </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-heading font-bold mb-2">
-            Olá, {userData?.name}! 👋
-          </h2>
-          <p className="text-muted-foreground">
-            Bem-vindo ao seu painel de gestão profissional
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            icon={<Calendar className="w-6 h-6" />}
-            title="Próximos Shows"
-            value="0"
-            description="Este mês"
-          />
-          <StatCard
-            icon={<DollarSign className="w-6 h-6" />}
-            title="Receita Total"
-            value="R$ 0"
-            description="Este mês"
-          />
-          <StatCard
-            icon={<Users className="w-6 h-6" />}
-            title="Equipe"
-            value="0"
-            description="Músicos cadastrados"
-          />
-          <StatCard
-            icon={<Music className="w-6 h-6" />}
-            title="Locais"
-            value="0"
-            description="Bares salvos"
-          />
-        </div>
-
-        <Card className="glass-card rounded-2xl p-8">
-          <div className="text-center max-w-2xl mx-auto space-y-4">
-            <h3 className="text-2xl font-heading font-bold">
-              Comece a gerenciar seus shows
-            </h3>
-            <p className="text-muted-foreground">
-              Adicione seus primeiros shows, cadastre sua equipe e comece a ter controle 
-              total da sua carreira artística.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4 pt-4">
-              <Button>Adicionar Show</Button>
-              <Button variant="outline">Cadastrar Equipe</Button>
+          {/* Main Content */}
+          <main className="flex-1 p-6 overflow-auto bg-white">
+            <div className="mb-8">
+              <h2 className="text-3xl font-heading font-bold mb-2">
+                Olá, {userData?.name}! 👋
+              </h2>
+              <p className="text-muted-foreground">
+                Bem-vindo ao seu painel de gestão profissional
+              </p>
             </div>
-          </div>
-        </Card>
-      </main>
-    </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <StatCard
+                icon={<Calendar className="w-6 h-6" />}
+                title="Próximos Shows"
+                value="0"
+                description="Este mês"
+              />
+              <StatCard
+                icon={<DollarSign className="w-6 h-6" />}
+                title="Receita Total"
+                value="R$ 0"
+                description="Este mês"
+              />
+              <StatCard
+                icon={<Users className="w-6 h-6" />}
+                title="Equipe"
+                value="0"
+                description="Músicos cadastrados"
+              />
+              <StatCard
+                icon={<Music className="w-6 h-6" />}
+                title="Locais"
+                value="0"
+                description="Bares salvos"
+              />
+            </div>
+
+            <Card className="rounded-2xl p-8 border-border bg-card">
+              <div className="text-center max-w-2xl mx-auto space-y-4">
+                <h3 className="text-2xl font-heading font-bold">
+                  Comece a gerenciar seus shows
+                </h3>
+                <p className="text-muted-foreground">
+                  Adicione seus primeiros shows, cadastre sua equipe e comece a ter controle 
+                  total da sua carreira artística.
+                </p>
+                <div className="flex flex-wrap justify-center gap-4 pt-4">
+                  <Button>Adicionar Show</Button>
+                  <Button variant="outline">Cadastrar Equipe</Button>
+                </div>
+              </div>
+            </Card>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 };
 
@@ -114,7 +117,7 @@ const StatCard = ({ icon, title, value, description }: {
   description: string;
 }) => {
   return (
-    <Card className="glass-card rounded-xl p-6">
+    <Card className="rounded-xl p-6 border-border bg-card">
       <div className="flex items-start justify-between mb-4">
         <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
           {icon}
