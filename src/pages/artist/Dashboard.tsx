@@ -98,22 +98,22 @@ const ArtistDashboard = () => {
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-[280px] justify-start text-left font-normal",
-                      !date && "text-muted-foreground"
+                      "w-[280px] justify-start text-left font-normal bg-white text-gray-900 border-gray-300",
+                      !date && "text-gray-500"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <CalendarIcon className="mr-2 h-4 w-4 text-gray-600" />
                     {date ? format(date, "MMMM 'de' yyyy", { locale: ptBR }) : "novembro de 2025"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="center">
+                <PopoverContent className="w-auto p-0 bg-white border-gray-300" align="center">
                   <Calendar
                     mode="single"
                     selected={date}
                     onSelect={setDate}
                     initialFocus
                     variant="light"
-                    className="pointer-events-auto border border-gray-200 rounded-lg shadow-lg"
+                    className="pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
