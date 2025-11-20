@@ -44,8 +44,8 @@ const CompleteProfile = () => {
       description: 'Suas informações foram salvas',
     });
 
-    navigate('/app');
     setLoading(false);
+    navigate('/select-role');
   };
 
   return (
