@@ -45,12 +45,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log('[useAuth] Fetching user data for:', userId);
       
-      // Fetch profile data
-      const { data: profile, error: profileError } = await supabase
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout fetching user data')), 8000)
+      );
+      
+      // Fetch profile data with timeout
+      const profilePromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .maybeSingle();
+      
+      const { data: profile, error: profileError } = await Promise.race([
+        profilePromise,
+        timeoutPromise
+      ]) as any;
       
       if (profileError) {
         console.error('[useAuth] Error fetching profile:', profileError);
@@ -59,14 +69,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUserData(profile);
       } else {
         console.warn('[useAuth] No profile found for user:', userId);
+        setUserData(null);
       }
 
-      // Fetch user role from user_roles table
-      const { data: roleData, error: roleError } = await supabase
+      // Fetch user role with timeout
+      const rolePromise = supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
         .maybeSingle();
+      
+      const { data: roleData, error: roleError } = await Promise.race([
+        rolePromise,
+        timeoutPromise
+      ]) as any;
       
       if (roleError) {
         console.error('[useAuth] Error fetching role:', roleError);
@@ -78,8 +94,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUserRoleState(null);
       }
     } catch (error) {
-      console.error('[useAuth] Unexpected error in fetchUserData:', error);
+      console.error('[useAuth] Error in fetchUserData:', error);
+      // Even on error, set loading to false so user isn't stuck
+      setUserData(null);
+      setUserRoleState(null);
     } finally {
+      console.log('[useAuth] Finished fetching user data, setting loading to false');
       setLoading(false);
     }
   };
@@ -92,27 +112,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     console.log('[useAuth] Initializing auth...');
+    let isInitialLoad = true;
     
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('[useAuth] Auth state changed:', event, session?.user?.id);
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          setTimeout(() => {
-            fetchUserData(session.user.id);
-          }, 0);
-        } else {
-          setUserData(null);
-          setUserRoleState(null);
-          setLoading(false);
-        }
-      }
-    );
-
-    // Check for existing session
+    // Check for existing session first
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('[useAuth] Initial session check:', session?.user?.id);
       setSession(session);
@@ -123,7 +125,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         setLoading(false);
       }
+      isInitialLoad = false;
     });
+    
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('[useAuth] Auth state changed:', event, session?.user?.id);
+        
+        // Skip initial SIGNED_IN event to avoid duplicate fetch
+        if (isInitialLoad && event === 'SIGNED_IN') {
+          console.log('[useAuth] Skipping initial SIGNED_IN event');
+          return;
+        }
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          fetchUserData(session.user.id);
+        } else {
+          setUserData(null);
+          setUserRoleState(null);
+          setLoading(false);
+        }
+      }
+    );
 
     return () => subscription.unsubscribe();
   }, []);
