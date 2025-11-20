@@ -12,7 +12,15 @@ import SelectRole from "./pages/SelectRole";
 import Subscribe from "./pages/Subscribe";
 import AppHub from "./pages/AppHub";
 import ArtistDashboard from "./pages/artist/Dashboard";
+import ArtistShows from "./pages/artist/Shows";
+import ArtistCalendar from "./pages/artist/Calendar";
+import ArtistReports from "./pages/artist/Reports";
+import ArtistTransportation from "./pages/artist/Transportation";
 import MusicianDashboard from "./pages/musician/Dashboard";
+import MusicianShows from "./pages/musician/Shows";
+import MusicianCalendar from "./pages/musician/Calendar";
+import MusicianReports from "./pages/musician/Reports";
+import MusicianTransportation from "./pages/musician/Transportation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,7 +41,15 @@ const App = () => (
             <Route path="/subscribe" element={<Subscribe />} />
             <Route path="/app" element={<AppHub />} />
             <Route path="/artist/dashboard" element={<ArtistDashboard />} />
+            <Route path="/artist/shows" element={<ArtistShows />} />
+            <Route path="/artist/calendar" element={<ArtistCalendar />} />
+            <Route path="/artist/reports" element={<ArtistReports />} />
+            <Route path="/artist/transportation" element={<ArtistTransportation />} />
             <Route path="/musician/dashboard" element={<MusicianDashboard />} />
+            <Route path="/musician/shows" element={<MusicianShows />} />
+            <Route path="/musician/calendar" element={<MusicianCalendar />} />
+            <Route path="/musician/reports" element={<MusicianReports />} />
+            <Route path="/musician/transportation" element={<MusicianTransportation />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
