@@ -44,7 +44,11 @@ const Login = () => {
         title: 'Login realizado!',
         description: 'Bem-vindo de volta',
       });
-      navigate('/app');
+      
+      // Aguarda um pouco para o onAuthStateChange processar e carregar o userData
+      setTimeout(() => {
+        navigate('/app');
+      }, 100);
     }
   };
 
