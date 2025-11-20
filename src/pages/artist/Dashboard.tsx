@@ -83,15 +83,16 @@ const ArtistDashboard = () => {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-6 overflow-auto pb-20 md:pb-6">
-            {/* Greeting Section */}
-            <div className="mb-6 text-center">
-              <h2 className="text-3xl font-bold mb-2 text-gray-900">
-                Olá, Artista!
-              </h2>
-              <p className="text-gray-600 mb-4">
-                Aqui está um resumo rápido do seu progresso.
-              </p>
+          <main className="flex-1 overflow-auto pb-20 md:pb-6">
+            <div className="p-4 md:p-6">
+              {/* Greeting Section */}
+              <div className="mb-6 md:mb-8 text-center">
+                <h2 className="text-2xl md:text-3xl font-bold mb-2 text-gray-900">
+                  Olá, Artista!
+                </h2>
+                <p className="text-sm md:text-base text-gray-600 mb-4">
+                  Aqui está um resumo rápido do seu progresso.
+                </p>
               
               <Popover>
                 <PopoverTrigger asChild>
@@ -120,7 +121,7 @@ const ArtistDashboard = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
               <StatCard
                 icon={<Music className="w-6 h-6" />}
                 title="Total de Shows"
@@ -146,9 +147,9 @@ const ArtistDashboard = () => {
             </div>
 
             {/* Charts Row */}
-            <div className="grid lg:grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-4 md:mb-6">
               {/* Monthly Cash Flow Chart */}
-              <Card className="lg:col-span-2 p-6 bg-white border border-gray-200">
+              <Card className="lg:col-span-2 p-4 md:p-6 bg-white border border-gray-200">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Fluxo de Caixa Mensal</h3>
@@ -189,7 +190,7 @@ const ArtistDashboard = () => {
               </Card>
 
               {/* Upcoming Shows */}
-              <Card className="p-6 bg-white border border-gray-200">
+              <Card className="p-4 md:p-6 bg-white border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Próximos Shows</h3>
                 <p className="text-sm text-gray-600 mb-4">Seus 3 próximos eventos agendados.</p>
                 
@@ -213,7 +214,7 @@ const ArtistDashboard = () => {
             </div>
 
             {/* Weekly Schedule */}
-            <Card className="p-6 bg-white border border-gray-200 mb-6">
+            <Card className="p-4 md:p-6 bg-white border border-gray-200 mb-4 md:mb-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Agenda da Semana</h3>
