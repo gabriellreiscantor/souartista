@@ -17,6 +17,9 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 const ArtistDashboard = () => {
   const { userData, userRole, loading } = useAuth();
   const navigate = useNavigate();
+  const [date, setDate] = useState<Date>();
+  const [selectedYear, setSelectedYear] = useState("2025");
+  const [selectedWeek, setSelectedWeek] = useState("Semana Atual");
 
   useEffect(() => {
     if (loading) return;
@@ -33,10 +36,6 @@ const ArtistDashboard = () => {
       </div>
     );
   }
-
-  const [date, setDate] = useState<Date>();
-  const [selectedYear, setSelectedYear] = useState("2025");
-  const [selectedWeek, setSelectedWeek] = useState("Semana Atual");
 
   // Mock data para os gráficos
   const monthlyData = [
