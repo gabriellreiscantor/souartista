@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 
 const AppHub = () => {
-  const { user, userData, loading } = useAuth();
+  const { user, userData, userRole, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,7 +20,7 @@ const AppHub = () => {
       return;
     }
 
-    if (!userData?.role) {
+    if (!userRole) {
       navigate('/select-role');
       return;
     }
@@ -31,8 +31,8 @@ const AppHub = () => {
     }
 
     // All checks passed, redirect to dashboard
-    navigate(`/${userData.role}/dashboard`);
-  }, [user, userData, loading, navigate]);
+    navigate(`/${userRole}/dashboard`);
+  }, [user, userData, userRole, loading, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">

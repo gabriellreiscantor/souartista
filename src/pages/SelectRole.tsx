@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 const SelectRole = () => {
   const [selected, setSelected] = useState<'artist' | 'musician' | null>(null);
   const [loading, setLoading] = useState(false);
-  const { updateUserData } = useAuth();
+  const { setUserRole } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -24,7 +24,18 @@ const SelectRole = () => {
     }
 
     setLoading(true);
-    await updateUserData({ role: selected });
+    const { error } = await setUserRole(selected);
+    
+    if (error) {
+      toast({
+        title: 'Erro ao definir perfil',
+        description: error.message,
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
+
     toast({
       title: 'Perfil definido!',
       description: `Você é um ${selected === 'artist' ? 'artista' : 'músico'}`,
