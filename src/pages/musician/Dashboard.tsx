@@ -2,9 +2,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Calendar, Music, DollarSign, Users } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const MusicianDashboard = () => {
-  const { userData, signOut } = useAuth();
+  const { userData } = useAuth();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/login';
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -19,7 +25,7 @@ const MusicianDashboard = () => {
               <p className="text-sm text-muted-foreground">Modo Músico</p>
             </div>
           </div>
-          <Button variant="outline" onClick={signOut}>
+          <Button variant="outline" onClick={handleSignOut}>
             Sair
           </Button>
         </div>
