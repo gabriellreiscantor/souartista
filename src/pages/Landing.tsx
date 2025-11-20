@@ -17,7 +17,7 @@ const Landing = () => {
           
           <h1 className="text-5xl md:text-7xl font-heading font-bold tracking-tight">
             Gerencie sua carreira
-            <span className="block gradient-primary bg-clip-text text-transparent mt-2">
+            <span className="block gradient-primary mt-2">
               como um profissional
             </span>
           </h1>
