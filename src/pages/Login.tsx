@@ -28,23 +28,50 @@ const Login = () => {
       return;
     }
 
+    console.log('[Login] Starting login process...');
     setLoading(true);
 
-    const { error } = await signIn(email, password);
-
-    if (error) {
+    // Timeout de segurança de 10 segundos
+    const timeoutId = setTimeout(() => {
+      console.error('[Login] Login timeout after 10 seconds');
       toast({
-        title: 'Erro ao fazer login',
-        description: error.message,
+        title: 'Tempo esgotado',
+        description: 'O login está demorando muito. Tente novamente.',
         variant: 'destructive',
       });
       setLoading(false);
-    } else {
+    }, 10000);
+
+    try {
+      const { error } = await signIn(email, password);
+
+      clearTimeout(timeoutId);
+
+      if (error) {
+        console.error('[Login] Login error:', error);
+        toast({
+          title: 'Erro ao fazer login',
+          description: error.message || 'Verifique suas credenciais e tente novamente',
+          variant: 'destructive',
+        });
+        setLoading(false);
+      } else {
+        console.log('[Login] Login successful, redirecting to /app');
+        toast({
+          title: 'Login realizado!',
+          description: 'Bem-vindo de volta',
+        });
+        navigate('/app');
+      }
+    } catch (error) {
+      clearTimeout(timeoutId);
+      console.error('[Login] Unexpected error:', error);
       toast({
-        title: 'Login realizado!',
-        description: 'Bem-vindo de volta',
+        title: 'Erro inesperado',
+        description: 'Algo deu errado. Tente novamente.',
+        variant: 'destructive',
       });
-      navigate('/app');
+      setLoading(false);
     }
   };
 
