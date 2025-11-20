@@ -42,26 +42,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchUserData = async (userId: string) => {
-    // Fetch profile data
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    
-    if (profile) {
-      setUserData(profile);
-    }
+    try {
+      console.log('[useAuth] Fetching user data for:', userId);
+      
+      // Fetch profile data
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      if (profileError) {
+        console.error('[useAuth] Error fetching profile:', profileError);
+      } else if (profile) {
+        console.log('[useAuth] Profile loaded:', profile);
+        setUserData(profile);
+      } else {
+        console.warn('[useAuth] No profile found for user:', userId);
+      }
 
-    // Fetch user role from user_roles table
-    const { data: roleData } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .single();
-    
-    if (roleData) {
-      setUserRoleState(roleData.role);
+      // Fetch user role from user_roles table
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (roleError) {
+        console.error('[useAuth] Error fetching role:', roleError);
+      } else if (roleData) {
+        console.log('[useAuth] Role loaded:', roleData.role);
+        setUserRoleState(roleData.role);
+      } else {
+        console.log('[useAuth] No role found for user:', userId);
+        setUserRoleState(null);
+      }
+    } catch (error) {
+      console.error('[useAuth] Unexpected error in fetchUserData:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -72,31 +91,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    console.log('[useAuth] Initializing auth...');
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        console.log('[useAuth] Auth state changed:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          await fetchUserData(session.user.id);
+          setTimeout(() => {
+            fetchUserData(session.user.id);
+          }, 0);
         } else {
           setUserData(null);
+          setUserRoleState(null);
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('[useAuth] Initial session check:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        await fetchUserData(session.user.id);
+        fetchUserData(session.user.id);
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -152,19 +178,60 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const setUserRole = async (role: 'artist' | 'musician') => {
-    if (!user) return { error: new Error('User not authenticated') };
-
-    const { error } = await supabase
-      .from('user_roles')
-      .insert({ user_id: user.id, role })
-      .select()
-      .single();
-
-    if (!error) {
+    try {
+      if (!user?.id) {
+        console.error('[useAuth] No user ID when setting role');
+        return { error: new Error('Usuário não autenticado') };
+      }
+      
+      console.log('[useAuth] Setting role:', role, 'for user:', user.id);
+      
+      // First check if role already exists
+      const { data: existingRole } = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      let error = null;
+      
+      if (existingRole) {
+        // Update existing role
+        console.log('[useAuth] Updating existing role');
+        const result = await supabase
+          .from('user_roles')
+          .update({ role })
+          .eq('user_id', user.id);
+        error = result.error;
+      } else {
+        // Insert new role
+        console.log('[useAuth] Inserting new role');
+        const result = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: user.id,
+            role: role,
+          });
+        error = result.error;
+      }
+      
+      if (error) {
+        console.error('[useAuth] Error setting role:', error);
+        return { error };
+      }
+      
+      console.log('[useAuth] Role saved successfully, refetching data...');
       setUserRoleState(role);
+      
+      // Force refetch after a small delay to ensure DB is updated
+      await new Promise(resolve => setTimeout(resolve, 500));
+      await refetchUserData();
+      
+      return { error: null };
+    } catch (error) {
+      console.error('[useAuth] Unexpected error setting role:', error);
+      return { error };
     }
-
-    return { error };
   };
 
   return (

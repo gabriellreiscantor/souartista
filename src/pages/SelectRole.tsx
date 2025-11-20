@@ -23,24 +23,42 @@ const SelectRole = () => {
       return;
     }
 
+    console.log('[SelectRole] Saving role:', selected);
     setLoading(true);
-    const { error } = await setUserRole(selected);
     
-    if (error) {
+    try {
+      const { error } = await setUserRole(selected);
+      
+      if (error) {
+        console.error('[SelectRole] Error saving role:', error);
+        toast({
+          title: 'Erro ao definir perfil',
+          description: error.message || 'Não foi possível salvar seu perfil. Tente novamente.',
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return;
+      }
+
+      console.log('[SelectRole] Role saved successfully, redirecting to /app');
       toast({
-        title: 'Erro ao definir perfil',
-        description: error.message,
+        title: 'Perfil definido!',
+        description: `Você é um ${selected === 'artist' ? 'artista' : 'músico'}`,
+      });
+      
+      // Small delay to ensure state is updated
+      setTimeout(() => {
+        navigate('/app');
+      }, 500);
+    } catch (error) {
+      console.error('[SelectRole] Unexpected error:', error);
+      toast({
+        title: 'Erro inesperado',
+        description: 'Algo deu errado. Tente novamente.',
         variant: 'destructive',
       });
       setLoading(false);
-      return;
     }
-
-    toast({
-      title: 'Perfil definido!',
-      description: `Você é um ${selected === 'artist' ? 'artista' : 'músico'}`,
-    });
-    navigate('/app');
   };
 
   return (
