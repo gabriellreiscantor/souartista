@@ -125,7 +125,7 @@ const RoleCard = ({
         active:scale-95 backdrop-blur-xl
         ${selected 
           ? 'bg-card border-2 border-primary shadow-lg shadow-primary/30' 
-          : 'bg-card/50 border border-border/50 hover:border-primary/50 hover:shadow-md'
+          : 'bg-card/30 border border-border/30 hover:bg-card/40'
         }
       `}
       onClick={onClick}
