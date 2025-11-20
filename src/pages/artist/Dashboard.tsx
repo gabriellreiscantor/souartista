@@ -112,7 +112,8 @@ const ArtistDashboard = () => {
                     selected={date}
                     onSelect={setDate}
                     initialFocus
-                    className="pointer-events-auto"
+                    variant="light"
+                    className="pointer-events-auto border border-gray-200 rounded-lg shadow-lg"
                   />
                 </PopoverContent>
               </Popover>
