@@ -121,11 +121,11 @@ const RoleCard = ({
   return (
     <Card
       className={`
-        relative glass-card rounded-2xl p-8 cursor-pointer transition-all duration-300
-        active:scale-95 
+        relative rounded-2xl p-8 cursor-pointer transition-all duration-300
+        active:scale-95 backdrop-blur-xl
         ${selected 
-          ? 'border-2 border-primary shadow-lg shadow-primary/30' 
-          : 'border-border/50 hover:border-primary/50 hover:shadow-md'
+          ? 'bg-card border-2 border-primary shadow-lg shadow-primary/30' 
+          : 'bg-card/50 border border-border/50 hover:border-primary/50 hover:shadow-md'
         }
       `}
       onClick={onClick}
