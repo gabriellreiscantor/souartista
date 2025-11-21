@@ -293,6 +293,7 @@ const MusicianCalendar = () => {
             </Sheet>
           </main>
         </div>
+        <MobileBottomNav role="musician" />
       </div>
     </SidebarProvider>
   );
