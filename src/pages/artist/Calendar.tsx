@@ -285,7 +285,7 @@ const ArtistCalendar = () => {
                               }}
                             >
                               <div className="font-semibold text-sm">{show.venue_name}</div>
-                              <div className="text-xs mt-1">{show.time_local}</div>
+                              <div className="text-xs mt-1">2 horas de show</div>
                             </div>
                           ))}
                       </div>
