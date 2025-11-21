@@ -64,6 +64,7 @@ export const instruments = [
   'Baterista',
   'Equipe de luz',
   'Equipe de vídeo',
+  'Freelancer',
   'Guitarrista',
   'Profissional',
   'Produtor de palco',
