@@ -485,16 +485,16 @@ const ArtistShows = () => {
           <main className="flex-1 p-6 overflow-auto pb-20 md:pb-6">
             <div className="max-w-5xl mx-auto">
               <Tabs defaultValue="shows" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-white">
-                  <TabsTrigger value="shows" className="flex items-center gap-2 bg-[#EAD6F5] data-[state=active]:bg-primary data-[state=active]:text-white">
+                <TabsList className="grid w-full grid-cols-3 bg-white p-0 h-auto">
+                  <TabsTrigger value="shows" className="flex items-center gap-2 bg-[#EAD6F5] text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 rounded-none border-b-2 border-transparent data-[state=active]:border-primary py-3">
                     <Music2 className="w-4 h-4" />
                     Agenda de Shows
                   </TabsTrigger>
-                  <TabsTrigger value="venues" className="flex items-center gap-2 bg-[#EAD6F5] data-[state=active]:bg-primary data-[state=active]:text-white">
+                  <TabsTrigger value="venues" className="flex items-center gap-2 bg-[#EAD6F5] text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 rounded-none border-b-2 border-transparent data-[state=active]:border-primary py-3">
                     <MapPin className="w-4 h-4" />
                     Locais e Bares
                   </TabsTrigger>
-                  <TabsTrigger value="musicians" className="flex items-center gap-2 bg-[#EAD6F5] data-[state=active]:bg-primary data-[state=active]:text-white">
+                  <TabsTrigger value="musicians" className="flex items-center gap-2 bg-[#EAD6F5] text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 rounded-none border-b-2 border-transparent data-[state=active]:border-primary py-3">
                     <Users className="w-4 h-4" />
                     Músicos e Equipe
                   </TabsTrigger>
