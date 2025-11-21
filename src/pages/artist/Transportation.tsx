@@ -215,65 +215,65 @@ const ArtistTransportation = () => {
                   <p className="text-sm text-gray-600 mb-6">Registre e associe despesas de deslocamento de forma detalhada e organizada.</p>
 
                   {/* Transport Tabs */}
-                  <div className="grid grid-cols-5 gap-2 mb-6">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
                     <button
                       onClick={() => setActiveTab('uber')}
-                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all ${
+                      className={`flex flex-col items-center justify-center gap-2 py-4 px-3 rounded-lg transition-all ${
                         activeTab === 'uber'
-                          ? 'bg-white text-purple-700 border-2 border-purple-200 font-medium'
-                          : 'bg-purple-100 text-purple-700 border border-transparent hover:bg-purple-200'
+                          ? 'bg-purple-600 text-white font-medium shadow-md'
+                          : 'bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100'
                       }`}
                     >
-                      <Car className="w-4 h-4" />
-                      <span className="text-sm">Uber</span>
+                      <Car className="w-6 h-6" />
+                      <span className="text-sm font-medium">Uber</span>
                     </button>
 
                     <button
                       onClick={() => setActiveTab('km')}
-                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all ${
+                      className={`flex flex-col items-center justify-center gap-2 py-4 px-3 rounded-lg transition-all ${
                         activeTab === 'km'
-                          ? 'bg-white text-purple-700 border-2 border-purple-200 font-medium'
-                          : 'bg-purple-100 text-purple-700 border border-transparent hover:bg-purple-200'
+                          ? 'bg-purple-600 text-white font-medium shadow-md'
+                          : 'bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100'
                       }`}
                     >
-                      <Car className="w-4 h-4" />
-                      <span className="text-sm">Carro/Km Rodado</span>
+                      <Fuel className="w-6 h-6" />
+                      <span className="text-sm font-medium text-center">Carro/Km Rodado</span>
                     </button>
 
                     <button
                       onClick={() => setActiveTab('van')}
-                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all ${
+                      className={`flex flex-col items-center justify-center gap-2 py-4 px-3 rounded-lg transition-all ${
                         activeTab === 'van'
-                          ? 'bg-white text-purple-700 border-2 border-purple-200 font-medium'
-                          : 'bg-purple-100 text-purple-700 border border-transparent hover:bg-purple-200'
+                          ? 'bg-purple-600 text-white font-medium shadow-md'
+                          : 'bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100'
                       }`}
                     >
-                      <Truck className="w-4 h-4" />
-                      <span className="text-sm">Van</span>
+                      <Truck className="w-6 h-6" />
+                      <span className="text-sm font-medium">Van</span>
                     </button>
 
                     <button
                       onClick={() => setActiveTab('onibus')}
-                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all ${
+                      className={`flex flex-col items-center justify-center gap-2 py-4 px-3 rounded-lg transition-all ${
                         activeTab === 'onibus'
-                          ? 'bg-white text-purple-700 border-2 border-purple-200 font-medium'
-                          : 'bg-purple-100 text-purple-700 border border-transparent hover:bg-purple-200'
+                          ? 'bg-purple-600 text-white font-medium shadow-md'
+                          : 'bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100'
                       }`}
                     >
-                      <Bus className="w-4 h-4" />
-                      <span className="text-sm">Ônibus</span>
+                      <Bus className="w-6 h-6" />
+                      <span className="text-sm font-medium">Ônibus</span>
                     </button>
 
                     <button
                       onClick={() => setActiveTab('aviao')}
-                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all ${
+                      className={`flex flex-col items-center justify-center gap-2 py-4 px-3 rounded-lg transition-all ${
                         activeTab === 'aviao'
-                          ? 'bg-white text-purple-700 border-2 border-purple-200 font-medium'
-                          : 'bg-purple-100 text-purple-700 border border-transparent hover:bg-purple-200'
+                          ? 'bg-purple-600 text-white font-medium shadow-md'
+                          : 'bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100'
                       }`}
                     >
-                      <Plane className="w-4 h-4" />
-                      <span className="text-sm">Avião</span>
+                      <Plane className="w-6 h-6" />
+                      <span className="text-sm font-medium">Avião</span>
                     </button>
                   </div>
 
