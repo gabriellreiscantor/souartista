@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { instruments } from '@/data/brazilLocations';
 
 interface Artist {
   id: string;
@@ -61,6 +62,7 @@ const MusicianShows = () => {
     time_local: '',
     fee: '',
     instrument: '',
+    customInstrument: '',
   });
   const [personalExpenses, setPersonalExpenses] = useState<AdditionalExpense[]>([]);
 
@@ -138,10 +140,14 @@ const MusicianShows = () => {
         return;
       }
 
+      const finalInstrument = showFormData.instrument === 'Outro...' 
+        ? showFormData.customInstrument 
+        : showFormData.instrument;
+
       const musicianEntry = {
         musicianId: user.id,
         name: userData.name,
-        instrument: showFormData.instrument,
+        instrument: finalInstrument,
         cost: parseFloat(showFormData.fee),
       };
 
@@ -214,6 +220,8 @@ const MusicianShows = () => {
     setEditingShow(show);
     
     const myEntry = show.expenses_team.find(e => e.musicianId === user?.id);
+    const savedInstrument = myEntry?.instrument || '';
+    const isCustomInstrument = savedInstrument && !instruments.includes(savedInstrument);
     
     setShowFormData({
       artist_id: '',
@@ -221,7 +229,8 @@ const MusicianShows = () => {
       date_local: show.date_local,
       time_local: show.time_local,
       fee: myEntry?.cost.toString() || show.fee.toString(),
-      instrument: myEntry?.instrument || '',
+      instrument: isCustomInstrument ? 'Outro...' : savedInstrument,
+      customInstrument: isCustomInstrument ? savedInstrument : '',
     });
     setPersonalExpenses(show.expenses_other || []);
     setShowDialogOpen(true);
@@ -235,6 +244,7 @@ const MusicianShows = () => {
       time_local: '',
       fee: '',
       instrument: '',
+      customInstrument: '',
     });
     setPersonalExpenses([]);
     setEditingShow(null);
@@ -373,9 +383,9 @@ const MusicianShows = () => {
                           Adicionar
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
+                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white text-gray-900">
                         <DialogHeader>
-                          <DialogTitle>
+                          <DialogTitle className="text-gray-900 font-semibold">
                             {editingShow ? 'Editar Show' : 'Adicionar Show'}
                           </DialogTitle>
                         </DialogHeader>
@@ -384,14 +394,14 @@ const MusicianShows = () => {
                             <h3 className="font-semibold text-gray-900">Informações do Show</h3>
                             
                             <div>
-                              <Label htmlFor="artist_id">Artista *</Label>
+                              <Label htmlFor="artist_id" className="text-gray-900 font-medium">Artista *</Label>
                               <Select value={showFormData.artist_id} onValueChange={(value) => setShowFormData({ ...showFormData, artist_id: value })} required>
-                                <SelectTrigger>
+                                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                                   <SelectValue placeholder="Selecione o artista" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-white">
+                                <SelectContent className="bg-white z-50">
                                   {artists.map((artist) => (
-                                    <SelectItem key={artist.id} value={artist.id}>
+                                    <SelectItem key={artist.id} value={artist.id} className="text-gray-900">
                                       {artist.name}
                                     </SelectItem>
                                   ))}
@@ -400,29 +410,31 @@ const MusicianShows = () => {
                             </div>
 
                             <div>
-                              <Label htmlFor="venue_name">Local do Show *</Label>
+                              <Label htmlFor="venue_name" className="text-gray-900 font-medium">Local do Show *</Label>
                               <Input
                                 id="venue_name"
                                 value={showFormData.venue_name}
                                 onChange={(e) => setShowFormData({ ...showFormData, venue_name: e.target.value })}
                                 placeholder="Ex: Bar do João"
+                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                                 required
                               />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                               <div>
-                                <Label htmlFor="date_local">Data *</Label>
+                                <Label htmlFor="date_local" className="text-gray-900 font-medium">Data *</Label>
                                 <Input
                                   id="date_local"
                                   type="date"
                                   value={showFormData.date_local}
                                   onChange={(e) => setShowFormData({ ...showFormData, date_local: e.target.value })}
+                                  className="bg-white border-gray-300 text-gray-900"
                                   required
                                 />
                               </div>
                               <div>
-                                <Label htmlFor="time_local">Horário *</Label>
+                                <Label htmlFor="time_local" className="text-gray-900 font-medium">Horário *</Label>
                                 <TimePicker
                                   value={showFormData.time_local}
                                   onChange={(time) => setShowFormData({ ...showFormData, time_local: time })}
@@ -435,33 +447,57 @@ const MusicianShows = () => {
                             <h3 className="font-semibold text-gray-900">Seu Cachê</h3>
                             
                             <div>
-                              <Label htmlFor="fee">Seu Cachê Individual (R$) *</Label>
+                              <Label htmlFor="fee" className="text-gray-900 font-medium">Seu Cachê Individual (R$) *</Label>
                               <Input
                                 id="fee"
                                 type="number"
                                 step="0.01"
                                 value={showFormData.fee}
                                 onChange={(e) => setShowFormData({ ...showFormData, fee: e.target.value })}
+                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                                 required
                               />
                             </div>
 
                             <div>
-                              <Label htmlFor="instrument">Seu Instrumento *</Label>
-                              <Input
-                                id="instrument"
-                                value={showFormData.instrument}
-                                onChange={(e) => setShowFormData({ ...showFormData, instrument: e.target.value })}
-                                placeholder="Ex: Guitarra, Bateria, Baixo"
+                              <Label htmlFor="instrument" className="text-gray-900 font-medium">Função/Instrumento *</Label>
+                              <Select 
+                                value={showFormData.instrument} 
+                                onValueChange={(value) => setShowFormData({ ...showFormData, instrument: value, customInstrument: value !== 'Outro...' ? '' : showFormData.customInstrument })} 
                                 required
-                              />
+                              >
+                                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                                  <SelectValue placeholder="Selecione uma função" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white z-50">
+                                  {instruments.map((instrument) => (
+                                    <SelectItem key={instrument} value={instrument} className="text-gray-900">
+                                      {instrument}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </div>
+
+                            {showFormData.instrument === 'Outro...' && (
+                              <div>
+                                <Label htmlFor="customInstrument" className="text-gray-900 font-medium">Qual função? *</Label>
+                                <Input
+                                  id="customInstrument"
+                                  value={showFormData.customInstrument}
+                                  onChange={(e) => setShowFormData({ ...showFormData, customInstrument: e.target.value })}
+                                  placeholder="Digite a função/instrumento"
+                                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                                  required
+                                />
+                              </div>
+                            )}
                           </div>
 
                           <div className="space-y-4">
                             <div className="flex items-center justify-between">
                               <h3 className="font-semibold text-gray-900">Despesas Pessoais</h3>
-                              <Button type="button" variant="outline" size="sm" onClick={addExpense}>
+                              <Button type="button" variant="outline" size="sm" onClick={addExpense} className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
                                 <Plus className="w-4 h-4 mr-2" />
                                 Adicionar Despesa
                               </Button>
@@ -471,7 +507,7 @@ const MusicianShows = () => {
                               <Card key={index} className="p-4 bg-white border border-gray-200">
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
-                                    <Label>Despesa {index + 1}</Label>
+                                    <Label className="text-gray-900 font-medium">Despesa {index + 1}</Label>
                                     <Button
                                       type="button"
                                       variant="ghost"
@@ -486,6 +522,7 @@ const MusicianShows = () => {
                                     placeholder="Descrição (ex: Uber, Cordas)"
                                     value={expense.description}
                                     onChange={(e) => updateExpense(index, 'description', e.target.value)}
+                                    className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                                     required
                                   />
                                   <Input
@@ -494,6 +531,7 @@ const MusicianShows = () => {
                                     placeholder="Valor (R$)"
                                     value={expense.cost}
                                     onChange={(e) => updateExpense(index, 'cost', parseFloat(e.target.value) || 0)}
+                                    className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                                     required
                                   />
                                 </div>
@@ -501,9 +539,14 @@ const MusicianShows = () => {
                             ))}
                           </div>
 
-                          <Button type="submit" className="w-full">
-                            {editingShow ? 'Atualizar Show' : 'Cadastrar Show'}
-                          </Button>
+                          <div className="flex gap-3">
+                            <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
+                              Cancelar
+                            </Button>
+                            <Button type="submit" className="flex-1">
+                              {editingShow ? 'Atualizar Show' : 'Cadastrar Show'}
+                            </Button>
+                          </div>
                         </form>
                       </DialogContent>
                     </Dialog>
@@ -589,26 +632,32 @@ const MusicianShows = () => {
                           Adicionar Artista
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-white">
+                      <DialogContent className="bg-white text-gray-900">
                         <DialogHeader>
-                          <DialogTitle>
+                          <DialogTitle className="text-gray-900 font-semibold">
                             {editingArtist ? 'Editar Artista' : 'Adicionar Artista'}
                           </DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleArtistSubmit} className="space-y-4">
                           <div>
-                            <Label htmlFor="artist_name">Nome do Artista *</Label>
+                            <Label htmlFor="artist_name" className="text-gray-900 font-medium">Nome do Artista *</Label>
                             <Input
                               id="artist_name"
                               value={artistFormData.name}
                               onChange={(e) => setArtistFormData({ ...artistFormData, name: e.target.value })}
                               placeholder="Ex: João Silva"
+                              className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                               required
                             />
                           </div>
-                          <Button type="submit" className="w-full">
-                            {editingArtist ? 'Atualizar' : 'Cadastrar'}
-                          </Button>
+                          <div className="flex gap-3">
+                            <Button type="button" variant="outline" onClick={() => setArtistDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
+                              Cancelar
+                            </Button>
+                            <Button type="submit" className="flex-1">
+                              {editingArtist ? 'Atualizar' : 'Cadastrar'}
+                            </Button>
+                          </div>
                         </form>
                       </DialogContent>
                     </Dialog>
