@@ -28,6 +28,16 @@ import ArtistSupport from "./pages/artist/Support";
 import MusicianSupport from "./pages/musician/Support";
 import ArtistProfile from "./pages/artist/Profile";
 import MusicianProfile from "./pages/musician/Profile";
+import ArtistSettings from "./pages/artist/Settings";
+import MusicianSettings from "./pages/musician/Settings";
+import ArtistTerms from "./pages/artist/Terms";
+import MusicianTerms from "./pages/musician/Terms";
+import ArtistPrivacy from "./pages/artist/Privacy";
+import MusicianPrivacy from "./pages/musician/Privacy";
+import ArtistUpdates from "./pages/artist/Updates";
+import MusicianUpdates from "./pages/musician/Updates";
+import ArtistTutorial from "./pages/artist/Tutorial";
+import MusicianTutorial from "./pages/musician/Tutorial";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
@@ -57,6 +67,11 @@ const App = () => (
             <Route path="/artist/transportation" element={<ArtistTransportation />} />
             <Route path="/artist/support" element={<ArtistSupport />} />
             <Route path="/artist/profile" element={<ArtistProfile />} />
+            <Route path="/artist/settings" element={<ArtistSettings />} />
+            <Route path="/artist/terms" element={<ArtistTerms />} />
+            <Route path="/artist/privacy" element={<ArtistPrivacy />} />
+            <Route path="/artist/updates" element={<ArtistUpdates />} />
+            <Route path="/artist/tutorial" element={<ArtistTutorial />} />
             <Route path="/musician/dashboard" element={<MusicianDashboard />} />
             <Route path="/musician/shows" element={<MusicianShows />} />
             <Route path="/musician/artists" element={<MusicianArtists />} />
@@ -65,6 +80,11 @@ const App = () => (
             <Route path="/musician/transportation" element={<MusicianTransportation />} />
             <Route path="/musician/support" element={<MusicianSupport />} />
             <Route path="/musician/profile" element={<MusicianProfile />} />
+            <Route path="/musician/settings" element={<MusicianSettings />} />
+            <Route path="/musician/terms" element={<MusicianTerms />} />
+            <Route path="/musician/privacy" element={<MusicianPrivacy />} />
+            <Route path="/musician/updates" element={<MusicianUpdates />} />
+            <Route path="/musician/tutorial" element={<MusicianTutorial />} />
             <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
