@@ -272,16 +272,16 @@ const ArtistReports = () => {
                         <SelectTrigger className="w-full bg-white border-2 border-primary text-gray-900 font-medium">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-white z-50">
+                        <SelectContent className="bg-white z-50 text-gray-900">
                           <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">Períodos Rápidos</div>
-                          <SelectItem value="this-month">Este Mês</SelectItem>
-                          <SelectItem value="last-month">Mês Passado</SelectItem>
-                          <SelectItem value="this-week">Esta Semana</SelectItem>
-                          <SelectItem value="last-7-days">Últimos 7 dias</SelectItem>
-                          <SelectItem value="this-year">Este Ano</SelectItem>
-                          <SelectItem value="all-time">Todo o Período</SelectItem>
+                          <SelectItem value="this-month" className="text-gray-900">Este Mês</SelectItem>
+                          <SelectItem value="last-month" className="text-gray-900">Mês Passado</SelectItem>
+                          <SelectItem value="this-week" className="text-gray-900">Esta Semana</SelectItem>
+                          <SelectItem value="last-7-days" className="text-gray-900">Últimos 7 dias</SelectItem>
+                          <SelectItem value="this-year" className="text-gray-900">Este Ano</SelectItem>
+                          <SelectItem value="all-time" className="text-gray-900">Todo o Período</SelectItem>
                           <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 mt-2">Selecionar por Ano</div>
-                          <SelectItem value="year-2025">Ano de 2025</SelectItem>
+                          <SelectItem value="year-2025" className="text-gray-900">Ano de 2025</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -402,8 +402,8 @@ const ArtistReports = () => {
                   
                   <div className="space-y-4">
                     {showsWithExpenses.slice(0, visibleShows).map((show) => (
-                      <Card key={show.id} className="border-2 border-gray-200">
-                        <CardContent className="p-4">
+                      <Card key={show.id} className="border-2 border-gray-200 bg-white">
+                        <CardContent className="p-4 bg-white">
                           <h4 className="font-bold text-lg text-gray-900 mb-1">{show.venue_name}</h4>
                           <p className="text-sm text-gray-600 mb-3">
                             {format(new Date(show.date_local), "dd 'de' MMMM, yyyy", { locale: ptBR })}
