@@ -4,66 +4,239 @@ import { ArtistSidebar } from '@/components/ArtistSidebar';
 import { UserMenu } from '@/components/UserMenu';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bell, DollarSign, TrendingUp, Calendar as CalendarIcon, Music } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Bell, Music2, DollarSign, TrendingDown, TrendingUp, TrendingUpIcon, FileText, Users, Car, Building2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subDays, startOfYear, endOfYear, subMonths, differenceInMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+
+interface Show {
+  id: string;
+  venue_name: string;
+  date_local: string;
+  time_local: string;
+  fee: number;
+  expenses_team: any;
+  expenses_other: any;
+}
 
 const ArtistReports = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState({
-    totalShows: 0,
-    totalRevenue: 0,
-    monthlyShows: 0,
-    monthlyRevenue: 0,
-  });
+  const [period, setPeriod] = useState('this-month');
+  const [shows, setShows] = useState<Show[]>([]);
+  const [locomotionExpenses, setLocomotionExpenses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [visibleShows, setVisibleShows] = useState(5);
 
   useEffect(() => {
     if (user) {
-      fetchStats();
+      fetchData();
     }
-  }, [user]);
+  }, [user, period]);
 
-  const fetchStats = async () => {
+  const getDateRange = () => {
+    const now = new Date();
+    
+    switch (period) {
+      case 'this-month':
+        return { start: startOfMonth(now), end: endOfMonth(now) };
+      case 'last-month':
+        return { start: startOfMonth(subMonths(now, 1)), end: endOfMonth(subMonths(now, 1)) };
+      case 'this-week':
+        return { start: startOfWeek(now, { weekStartsOn: 0 }), end: endOfWeek(now, { weekStartsOn: 0 }) };
+      case 'last-7-days':
+        return { start: subDays(now, 7), end: now };
+      case 'this-year':
+        return { start: startOfYear(now), end: endOfYear(now) };
+      case 'year-2025':
+        return { start: new Date(2025, 0, 1), end: new Date(2025, 11, 31) };
+      case 'all-time':
+        return { start: new Date(2000, 0, 1), end: now };
+      default:
+        return { start: startOfMonth(now), end: endOfMonth(now) };
+    }
+  };
+
+  const fetchData = async () => {
     try {
-      const now = new Date();
-      const monthStart = startOfMonth(now);
-      const monthEnd = endOfMonth(now);
+      setLoading(true);
+      const { start, end } = getDateRange();
 
-      // All shows
-      const { data: allShows, error: allError } = await supabase
+      // Fetch shows
+      const { data: showsData, error: showsError } = await supabase
         .from('shows')
-        .select('fee')
+        .select('*')
+        .eq('uid', user?.id)
+        .gte('date_local', format(start, 'yyyy-MM-dd'))
+        .lte('date_local', format(end, 'yyyy-MM-dd'))
+        .order('date_local', { ascending: false });
+
+      if (showsError) throw showsError;
+
+      // Fetch locomotion expenses
+      const { data: expensesData, error: expensesError } = await supabase
+        .from('locomotion_expenses')
+        .select('*')
         .eq('uid', user?.id);
 
-      if (allError) throw allError;
+      if (expensesError) throw expensesError;
 
-      // Monthly shows
-      const { data: monthlyShows, error: monthlyError } = await supabase
-        .from('shows')
-        .select('fee')
-        .eq('uid', user?.id)
-        .gte('date_local', format(monthStart, 'yyyy-MM-dd'))
-        .lte('date_local', format(monthEnd, 'yyyy-MM-dd'));
-
-      if (monthlyError) throw monthlyError;
-
-      const totalRevenue = allShows?.reduce((sum, show) => sum + show.fee, 0) || 0;
-      const monthlyRevenue = monthlyShows?.reduce((sum, show) => sum + show.fee, 0) || 0;
-
-      setStats({
-        totalShows: allShows?.length || 0,
-        totalRevenue,
-        monthlyShows: monthlyShows?.length || 0,
-        monthlyRevenue,
-      });
+      setShows(showsData || []);
+      setLocomotionExpenses(expensesData || []);
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const calculateShowExpenses = (show: Show, locomotion: number) => {
+    const teamExpenses = Array.isArray(show.expenses_team) 
+      ? show.expenses_team.reduce((sum: number, exp: any) => sum + (Number(exp.amount) || 0), 0)
+      : 0;
+    
+    const otherExpenses = Array.isArray(show.expenses_other)
+      ? show.expenses_other.reduce((sum: number, exp: any) => sum + (Number(exp.amount) || 0), 0)
+      : 0;
+
+    return teamExpenses + otherExpenses + locomotion;
+  };
+
+  const getLocomotionForShow = (showId: string) => {
+    const expense = locomotionExpenses.find(exp => exp.show_id === showId);
+    return expense ? Number(expense.cost) : 0;
+  };
+
+  // Calculations
+  const totalShows = shows.length;
+  const totalRevenue = shows.reduce((sum, show) => sum + Number(show.fee), 0);
+  
+  const showsWithExpenses = shows.map(show => {
+    const locomotion = getLocomotionForShow(show.id);
+    const expenses = calculateShowExpenses(show, locomotion);
+    const profit = Number(show.fee) - expenses;
+    
+    return {
+      ...show,
+      locomotion,
+      expenses,
+      profit
+    };
+  });
+
+  const totalExpenses = showsWithExpenses.reduce((sum, show) => sum + show.expenses, 0);
+  const totalProfit = totalRevenue - totalExpenses;
+  const averageTicket = totalShows > 0 ? totalProfit / totalShows : 0;
+
+  // Calculate monthly average for all time
+  const [allTimeShows, setAllTimeShows] = useState<Show[]>([]);
+  
+  useEffect(() => {
+    const fetchAllTimeShows = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('shows')
+        .select('*')
+        .eq('uid', user.id);
+      
+      setAllTimeShows(data || []);
+    };
+    
+    fetchAllTimeShows();
+  }, [user]);
+
+  const calculateMonthlyAverage = () => {
+    if (allTimeShows.length === 0) return 0;
+    
+    const allTimeExpenses = allTimeShows.map(show => {
+      const locomotion = getLocomotionForShow(show.id);
+      const expenses = calculateShowExpenses(show, locomotion);
+      return Number(show.fee) - expenses;
+    });
+    
+    const allTimeProfit = allTimeExpenses.reduce((sum, profit) => sum + profit, 0);
+    
+    // Get first and last show dates
+    const dates = allTimeShows.map(s => new Date(s.date_local)).sort((a, b) => a.getTime() - b.getTime());
+    const firstDate = dates[0];
+    const lastDate = dates[dates.length - 1];
+    
+    const months = Math.max(1, differenceInMonths(lastDate, firstDate) + 1);
+    
+    return allTimeProfit / months;
+  };
+
+  const monthlyAverage = calculateMonthlyAverage();
+
+  // Top 5 calculations
+  const venuesByProfit = showsWithExpenses
+    .reduce((acc: any[], show) => {
+      const existing = acc.find(v => v.name === show.venue_name);
+      if (existing) {
+        existing.profit += show.profit;
+      } else {
+        acc.push({ name: show.venue_name, profit: show.profit });
+      }
+      return acc;
+    }, [])
+    .sort((a, b) => b.profit - a.profit)
+    .slice(0, 5);
+
+  const teamExpensesByMember = showsWithExpenses
+    .flatMap(show => 
+      Array.isArray(show.expenses_team) 
+        ? show.expenses_team.map((exp: any) => ({ name: exp.name, amount: Number(exp.amount) || 0 }))
+        : []
+    )
+    .reduce((acc: any[], exp) => {
+      const existing = acc.find(e => e.name === exp.name);
+      if (existing) {
+        existing.amount += exp.amount;
+      } else {
+        acc.push({ ...exp });
+      }
+      return acc;
+    }, [])
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 5);
+
+  const venuesByShowCount = showsWithExpenses
+    .reduce((acc: any[], show) => {
+      const existing = acc.find(v => v.name === show.venue_name);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        acc.push({ name: show.venue_name, count: 1 });
+      }
+      return acc;
+    }, [])
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  const formatCurrency = (value: number) => {
+    return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  const formatCompactCurrency = (value: number) => {
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(1).replace('.', ',')}k`;
+    }
+    return value.toFixed(0);
+  };
+
+  const getPeriodLabel = () => {
+    switch (period) {
+      case 'this-month': return 'Este Mês';
+      case 'last-month': return 'Mês Passado';
+      case 'this-week': return 'Esta Semana';
+      case 'last-7-days': return 'Últimos 7 dias';
+      case 'this-year': return 'Este Ano';
+      case 'year-2025': return 'Ano de 2025';
+      case 'all-time': return 'Todo o Período';
+      default: return 'Este Mês';
     }
   };
 
@@ -88,91 +261,288 @@ const ArtistReports = () => {
           </header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
-            <div className="max-w-6xl mx-auto">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Relatórios Financeiros</h2>
-                <p className="text-gray-600">Acompanhe seus ganhos e performance</p>
+            <div className="max-w-7xl mx-auto space-y-6">
+              {/* Period Filter and Export Buttons */}
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-900">Período:</span>
+                  <Select value={period} onValueChange={setPeriod}>
+                    <SelectTrigger className="w-[180px] bg-white border-gray-300 text-gray-900">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">Períodos Rápidos</div>
+                      <SelectItem value="this-month">Este Mês</SelectItem>
+                      <SelectItem value="last-month">Mês Passado</SelectItem>
+                      <SelectItem value="this-week">Esta Semana</SelectItem>
+                      <SelectItem value="last-7-days">Últimos 7 dias</SelectItem>
+                      <SelectItem value="this-year">Este Ano</SelectItem>
+                      <SelectItem value="all-time">Todo o Período</SelectItem>
+                      <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 mt-2">Selecionar por Ano</div>
+                      <SelectItem value="year-2025">Ano de 2025</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="bg-white border-gray-300 text-gray-900">
+                    <FileText className="w-4 h-4 mr-2" />
+                    PDF
+                  </Button>
+                  <Button variant="outline" size="sm" className="bg-white border-gray-300 text-gray-900">
+                    <FileText className="w-4 h-4 mr-2" />
+                    XLSX
+                  </Button>
+                </div>
               </div>
 
-              {loading ? (
-                <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-                  <p className="text-gray-500">Carregando relatórios...</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <Card className="bg-white">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Total de Shows</CardTitle>
-                        <Music className="h-4 w-4 text-muted-foreground" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">{stats.totalShows}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Todos os períodos</p>
-                      </CardContent>
-                    </Card>
+              {/* Main Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="bg-white border-gray-200">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Total de Shows</p>
+                        <p className="text-3xl font-bold text-gray-900 mt-2">{totalShows}</p>
+                      </div>
+                      <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                        <Music2 className="w-5 h-5 text-purple-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                    <Card className="bg-white">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">R$ {stats.totalRevenue.toFixed(2)}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Todos os períodos</p>
-                      </CardContent>
-                    </Card>
+                <Card className="bg-white border-gray-200">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Receita Bruta (Período)</p>
+                        <p className="text-3xl font-bold text-gray-900 mt-2">R$ {formatCurrency(totalRevenue)}</p>
+                      </div>
+                      <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                        <DollarSign className="w-5 h-5 text-green-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                    <Card className="bg-white">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Shows no Mês</CardTitle>
-                        <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">{stats.monthlyShows}</div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {format(new Date(), 'MMMM yyyy', { locale: ptBR })}
-                        </p>
-                      </CardContent>
-                    </Card>
+                <Card className="bg-white border-gray-200">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Custos de Show (Período)</p>
+                        <p className="text-3xl font-bold text-gray-900 mt-2">R$ {formatCurrency(totalExpenses)}</p>
+                      </div>
+                      <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                        <TrendingDown className="w-5 h-5 text-red-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                    <Card className="bg-white">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Receita Mensal</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">R$ {stats.monthlyRevenue.toFixed(2)}</div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {format(new Date(), 'MMMM yyyy', { locale: ptBR })}
-                        </p>
-                      </CardContent>
-                    </Card>
+                <Card className="bg-white border-gray-200">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Lucro Líquido (Período)</p>
+                        <p className="text-3xl font-bold text-gray-900 mt-2">R$ {formatCurrency(totalProfit)}</p>
+                      </div>
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <TrendingUp className="w-5 h-5 text-blue-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Monthly Average */}
+              <Card className="bg-white border-gray-200">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Média de Lucro Mensal (Todo o Período)</h3>
+                  <p className="text-sm text-gray-600 mb-4">Cálculo baseado no seu lucro líquido total dividido pelo número de meses com shows.</p>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                      <TrendingUpIcon className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="text-3xl font-bold text-gray-900">R$ {formatCompactCurrency(monthlyAverage)}</p>
+                      <p className="text-sm text-gray-600">Valor exato: R$ {formatCurrency(monthlyAverage)} / mês</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Average Ticket */}
+              <Card className="bg-white border-gray-200">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Ticket Médio (Período)</h3>
+                  <p className="text-sm text-gray-600 mb-4">Seu lucro líquido médio por show no período selecionado.</p>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                      <FileText className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="text-3xl font-bold text-gray-900">R$ {formatCurrency(averageTicket)}</p>
+                      <p className="text-sm text-gray-600">Valor exato: R$ {formatCurrency(averageTicket)} / show</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Shows Details Table */}
+              <Card className="bg-white border-gray-200">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-6">Detalhes dos Shows</h3>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Data</th>
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Local</th>
+                          <th className="text-right py-3 px-4 text-sm font-semibold text-gray-600">Cachê</th>
+                          <th className="text-right py-3 px-4 text-sm font-semibold text-gray-600">Despesas</th>
+                          <th className="text-right py-3 px-4 text-sm font-semibold text-gray-600">Locomoção</th>
+                          <th className="text-right py-3 px-4 text-sm font-semibold text-gray-600">Lucro</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {showsWithExpenses.slice(0, visibleShows).map((show) => (
+                          <tr key={show.id} className="border-b border-gray-100 hover:bg-gray-50">
+                            <td className="py-3 px-4 text-sm text-gray-900">
+                              {format(new Date(show.date_local), "dd/MM/yyyy")}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-gray-900">{show.venue_name}</td>
+                            <td className="py-3 px-4 text-sm text-right font-semibold text-green-600">
+                              R$ {formatCurrency(Number(show.fee))}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-right font-semibold text-red-600">
+                              R$ {formatCurrency(show.expenses - show.locomotion)}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900">
+                              R$ {formatCurrency(show.locomotion)}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-right">
+                              <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-purple-600 text-white font-semibold">
+                                R$ {formatCurrency(show.profit)}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
 
-                  <Card className="bg-white">
-                    <CardHeader>
-                      <CardTitle>Resumo Financeiro</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                          <span className="font-medium">Média por Show</span>
-                          <span className="text-lg font-bold">
-                            R$ {stats.totalShows > 0 ? (stats.totalRevenue / stats.totalShows).toFixed(2) : '0.00'}
+                  {showsWithExpenses.length > visibleShows && (
+                    <div className="flex justify-center mt-6">
+                      <Button
+                        variant="outline"
+                        onClick={() => setVisibleShows(prev => prev + 4)}
+                        className="bg-purple-100 border-purple-300 text-purple-700 hover:bg-purple-200"
+                      >
+                        Mostrar mais {Math.min(4, showsWithExpenses.length - visibleShows)} shows
+                      </Button>
+                    </div>
+                  )}
+
+                  {showsWithExpenses.length === 0 && (
+                    <p className="text-center text-gray-500 py-8">
+                      Nenhum show encontrado para o período selecionado
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Top 5 Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Top 5 Venues by Profit */}
+                <Card className="bg-white border-gray-200">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Building2 className="w-5 h-5 text-gray-900" />
+                      <h3 className="font-bold text-gray-900">Top 5 Locais por Lucro</h3>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {venuesByProfit.map((venue, index) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <span className="text-sm text-gray-900">{index + 1}. {venue.name}</span>
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-purple-600 text-white text-xs font-semibold">
+                            R$ {formatCurrency(venue.profit)}
                           </span>
                         </div>
-                        <div className="flex justify-between items-center p-4 bg-purple-50 rounded-lg">
-                          <span className="font-medium">Média Mensal</span>
-                          <span className="text-lg font-bold text-purple-700">
-                            R$ {stats.monthlyShows > 0 ? (stats.monthlyRevenue / stats.monthlyShows).toFixed(2) : '0.00'}
+                      ))}
+                      {venuesByProfit.length === 0 && (
+                        <p className="text-sm text-gray-500">Dados insuficientes para análise.</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Top 5 Team Costs */}
+                <Card className="bg-white border-gray-200">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Users className="w-5 h-5 text-gray-900" />
+                      <h3 className="font-bold text-gray-900">Top 5 Custos de Equipe</h3>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {teamExpensesByMember.map((member, index) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <span className="text-sm text-gray-900">{index + 1}. {member.name}</span>
+                          <span className="text-sm font-semibold text-gray-900">
+                            R$ {formatCurrency(member.amount)}
                           </span>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
+                      ))}
+                      {teamExpensesByMember.length === 0 && (
+                        <p className="text-sm text-gray-500">Dados insuficientes para análise.</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Top 5 Locomotion Costs */}
+                <Card className="bg-white border-gray-200">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Car className="w-5 h-5 text-gray-900" />
+                      <h3 className="font-bold text-gray-900">Top 5 Custos de Locomoção</h3>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <p className="text-sm text-gray-500">Dados insuficientes para análise.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Top 5 Venues by Show Count */}
+                <Card className="bg-white border-gray-200">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Building2 className="w-5 h-5 text-gray-900" />
+                      <h3 className="font-bold text-gray-900">Top 5 locais por nº de shows</h3>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {venuesByShowCount.map((venue, index) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <span className="text-sm text-gray-900">{index + 1}. {venue.name}</span>
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-purple-600 text-white text-xs font-semibold">
+                            {venue.count} {venue.count === 1 ? 'show' : 'shows'}
+                          </span>
+                        </div>
+                      ))}
+                      {venuesByShowCount.length === 0 && (
+                        <p className="text-sm text-gray-500">Dados insuficientes para análise.</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </main>
         </div>
