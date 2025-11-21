@@ -12,19 +12,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 const ArtistProfile = () => {
-  const { user, userData, signOut } = useAuth();
+  const {
+    user,
+    userData,
+    signOut
+  } = useAuth();
   const navigate = useNavigate();
-  
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -35,7 +30,6 @@ const ArtistProfile = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
   useEffect(() => {
     if (userData) {
       setName(userData.name || '');
@@ -44,7 +38,6 @@ const ArtistProfile = () => {
       setPhotoUrl(userData.photo_url || '');
     }
   }, [userData]);
-
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -54,36 +47,31 @@ const ArtistProfile = () => {
       toast.error('A imagem deve ter no máximo 5MB');
       return;
     }
-
     try {
       setUploading(true);
-
       const fileExt = file.name.split('.').pop();
       const fileName = `${user?.id}/profile.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('profile-photos')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
-
+      const {
+        error: uploadError
+      } = await supabase.storage.from('profile-photos').upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
       if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('profile-photos')
-        .getPublicUrl(fileName);
-
+      const {
+        data: {
+          publicUrl
+        }
+      } = supabase.storage.from('profile-photos').getPublicUrl(fileName);
       setPhotoUrl(publicUrl);
-      
+
       // Atualizar no banco
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ photo_url: publicUrl })
-        .eq('id', user?.id);
-
+      const {
+        error: updateError
+      } = await supabase.from('profiles').update({
+        photo_url: publicUrl
+      }).eq('id', user?.id);
       if (updateError) throw updateError;
-
       toast.success('Foto atualizada com sucesso!');
     } catch (error) {
       console.error('Error uploading photo:', error);
@@ -92,26 +80,20 @@ const ArtistProfile = () => {
       setUploading(false);
     }
   };
-
   const handleSaveChanges = async () => {
     if (!name.trim()) {
       toast.error('O nome é obrigatório');
       return;
     }
-
     try {
       setSaving(true);
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          name: name.trim(),
-          phone: phone.trim()
-        })
-        .eq('id', user?.id);
-
+      const {
+        error
+      } = await supabase.from('profiles').update({
+        name: name.trim(),
+        phone: phone.trim()
+      }).eq('id', user?.id);
       if (error) throw error;
-
       toast.success('Alterações salvas com sucesso!');
     } catch (error) {
       console.error('Error saving changes:', error);
@@ -120,30 +102,26 @@ const ArtistProfile = () => {
       setSaving(false);
     }
   };
-
   const handleChangePassword = async () => {
     if (!newPassword || !confirmPassword) {
       toast.error('Preencha todos os campos');
       return;
     }
-
     if (newPassword !== confirmPassword) {
       toast.error('As senhas não coincidem');
       return;
     }
-
     if (newPassword.length < 6) {
       toast.error('A senha deve ter no mínimo 6 caracteres');
       return;
     }
-
     try {
-      const { error } = await supabase.auth.updateUser({
+      const {
+        error
+      } = await supabase.auth.updateUser({
         password: newPassword
       });
-
       if (error) throw error;
-
       toast.success('Senha alterada com sucesso!');
       setPasswordDialogOpen(false);
       setCurrentPassword('');
@@ -154,7 +132,6 @@ const ArtistProfile = () => {
       toast.error('Erro ao alterar senha');
     }
   };
-
   const handleLogout = async () => {
     try {
       await signOut();
@@ -164,9 +141,7 @@ const ArtistProfile = () => {
       toast.error('Erro ao sair');
     }
   };
-
-  return (
-    <SidebarProvider>
+  return <SidebarProvider>
       <div className="flex min-h-screen w-full bg-white">
         <ArtistSidebar />
         
@@ -191,23 +166,13 @@ const ArtistProfile = () => {
                       {name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <label 
-                    htmlFor="photo-upload" 
-                    className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full cursor-pointer hover:bg-primary/90 transition-colors"
-                  >
+                  <label htmlFor="photo-upload" className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full cursor-pointer hover:bg-primary/90 transition-colors">
                     <Camera className="w-5 h-5" />
-                    <input
-                      id="photo-upload"
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                      disabled={uploading}
-                    />
+                    <input id="photo-upload" type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" disabled={uploading} />
                   </label>
                 </div>
                 <div className="text-center">
-                  <h2 className="text-2xl font-bold">Seu Perfil</h2>
+                  <h2 className="text-2xl font-bold text-gray-950">Seu Perfil</h2>
                   <p className="text-muted-foreground">Gerencie suas informações de conta.</p>
                 </div>
               </div>
@@ -219,13 +184,7 @@ const ArtistProfile = () => {
                     <User className="w-4 h-4" />
                     Nome de Exibição
                   </Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Seu nome"
-                    className="capitalize bg-white text-black border-gray-300"
-                  />
+                  <Input id="name" value={name} onChange={e => setName(e.target.value)} placeholder="Seu nome" className="capitalize bg-white text-black border-gray-300" />
                 </div>
 
                 <div className="space-y-2">
@@ -233,13 +192,7 @@ const ArtistProfile = () => {
                     <Mail className="w-4 h-4" />
                     Email
                   </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    disabled
-                    className="bg-gray-200 text-black cursor-not-allowed border-gray-300"
-                  />
+                  <Input id="email" type="email" value={email} disabled className="bg-gray-200 text-black cursor-not-allowed border-gray-300" />
                   <p className="text-xs text-gray-600">
                     O email não pode ser alterado
                   </p>
@@ -250,21 +203,10 @@ const ArtistProfile = () => {
                     <Phone className="w-4 h-4" />
                     Telefone
                   </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="(00) 00000-0000"
-                    className="bg-white text-black border-gray-300"
-                  />
+                  <Input id="phone" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="(00) 00000-0000" className="bg-white text-black border-gray-300" />
                 </div>
 
-                <Button 
-                  onClick={handleSaveChanges}
-                  disabled={saving || uploading}
-                  className="w-full bg-primary text-white hover:bg-primary/90"
-                >
+                <Button onClick={handleSaveChanges} disabled={saving || uploading} className="w-full bg-primary text-white hover:bg-primary/90">
                   {saving ? 'Salvando...' : 'Salvar Alterações'}
                 </Button>
               </div>
@@ -287,39 +229,20 @@ const ArtistProfile = () => {
                     <div className="space-y-4 mt-4">
                       <div className="space-y-2">
                         <Label htmlFor="new-password">Nova Senha</Label>
-                        <Input
-                          id="new-password"
-                          type="password"
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          placeholder="Mínimo 6 caracteres"
-                        />
+                        <Input id="new-password" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="confirm-password">Confirmar Nova Senha</Label>
-                        <Input
-                          id="confirm-password"
-                          type="password"
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          placeholder="Digite novamente"
-                        />
+                        <Input id="confirm-password" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Digite novamente" />
                       </div>
-                      <Button 
-                        onClick={handleChangePassword}
-                        className="w-full bg-primary text-white hover:bg-primary/90"
-                      >
+                      <Button onClick={handleChangePassword} className="w-full bg-primary text-white hover:bg-primary/90">
                         Confirmar Alteração
                       </Button>
                     </div>
                   </DialogContent>
                 </Dialog>
 
-                <Button 
-                  variant="destructive" 
-                  className="w-full"
-                  onClick={handleLogout}
-                >
+                <Button variant="destructive" className="w-full" onClick={handleLogout}>
                   <LogOut className="w-4 h-4 mr-2" />
                   Sair
                 </Button>
@@ -330,8 +253,6 @@ const ArtistProfile = () => {
           <MobileBottomNav role="artist" />
         </div>
       </div>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 };
-
 export default ArtistProfile;
