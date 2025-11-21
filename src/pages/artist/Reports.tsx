@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Bell, Music2, DollarSign, TrendingDown, TrendingUp, TrendingUpIcon, FileText, Users, Car, Building2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useReportVisibility } from '@/hooks/useReportVisibility';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subDays, startOfYear, endOfYear, subMonths, differenceInMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -24,6 +25,7 @@ interface Show {
 
 const ArtistReports = () => {
   const { user } = useAuth();
+  const { settings } = useReportVisibility();
   const [period, setPeriod] = useState('this-month');
   const [shows, setShows] = useState<Show[]>([]);
   const [locomotionExpenses, setLocomotionExpenses] = useState<any[]>([]);
@@ -316,47 +318,53 @@ const ArtistReports = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-white border-gray-200">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Receita Bruta (Período)</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-2">R$ {formatCurrency(totalRevenue)}</p>
+                {settings.showGrossRevenue && (
+                  <Card className="bg-white border-gray-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Receita Bruta (Período)</p>
+                          <p className="text-3xl font-bold text-gray-900 mt-2">R$ {formatCurrency(totalRevenue)}</p>
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                          <DollarSign className="w-5 h-5 text-green-600" />
+                        </div>
                       </div>
-                      <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                        <DollarSign className="w-5 h-5 text-green-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                )}
 
-                <Card className="bg-white border-gray-200">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Custos de Show (Período)</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-2">R$ {formatCurrency(totalExpenses)}</p>
+                {settings.showShowCosts && (
+                  <Card className="bg-white border-gray-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Custos de Show (Período)</p>
+                          <p className="text-3xl font-bold text-gray-900 mt-2">R$ {formatCurrency(totalExpenses)}</p>
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                          <TrendingDown className="w-5 h-5 text-red-600" />
+                        </div>
                       </div>
-                      <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                        <TrendingDown className="w-5 h-5 text-red-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                )}
 
-                <Card className="bg-white border-gray-200">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Lucro Líquido (Período)</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-2">R$ {formatCurrency(totalProfit)}</p>
+                {settings.showNetProfit && (
+                  <Card className="bg-white border-gray-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Lucro Líquido (Período)</p>
+                          <p className="text-3xl font-bold text-gray-900 mt-2">R$ {formatCurrency(totalProfit)}</p>
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <TrendingUp className="w-5 h-5 text-blue-600" />
+                        </div>
                       </div>
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <TrendingUp className="w-5 h-5 text-blue-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
 
               {/* Monthly Average */}
@@ -409,7 +417,7 @@ const ArtistReports = () => {
                             {format(new Date(show.date_local), "dd 'de' MMMM, yyyy", { locale: ptBR })}
                           </p>
                           
-                          <div className="grid grid-cols-3 gap-4 mb-3">
+                          <div className={`grid ${settings.showLocomotion ? 'grid-cols-3' : 'grid-cols-2'} gap-4 mb-3`}>
                             <div>
                               <p className="text-xs text-gray-600 mb-1">Cachê</p>
                               <p className="text-sm font-semibold text-green-600">
@@ -422,12 +430,14 @@ const ArtistReports = () => {
                                 R$ {formatCurrency(show.expenses - show.locomotion)}
                               </p>
                             </div>
-                            <div>
-                              <p className="text-xs text-gray-600 mb-1">Locomoção</p>
-                              <p className="text-sm font-semibold text-gray-900">
-                                R$ {formatCurrency(show.locomotion)}
-                              </p>
-                            </div>
+                            {settings.showLocomotion && (
+                              <div>
+                                <p className="text-xs text-gray-600 mb-1">Locomoção</p>
+                                <p className="text-sm font-semibold text-gray-900">
+                                  R$ {formatCurrency(show.locomotion)}
+                                </p>
+                              </div>
+                            )}
                           </div>
                           
                           <div className="flex items-center justify-between pt-3 border-t border-gray-200">
@@ -511,18 +521,20 @@ const ArtistReports = () => {
                 </Card>
 
                 {/* Top 5 Locomotion Costs */}
-                <Card className="bg-white border-gray-200">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Car className="w-5 h-5 text-gray-900" />
-                      <h3 className="font-bold text-gray-900">Top 5 Custos de Locomoção</h3>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <p className="text-sm text-gray-500">Dados insuficientes para análise.</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                {settings.showLocomotion && (
+                  <Card className="bg-white border-gray-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Car className="w-5 h-5 text-gray-900" />
+                        <h3 className="font-bold text-gray-900">Top 5 Custos de Locomoção</h3>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <p className="text-sm text-gray-500">Dados insuficientes para análise.</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Top 5 Venues by Show Count */}
                 <Card className="bg-white border-gray-200">

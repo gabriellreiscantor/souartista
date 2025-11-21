@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ArtistSidebar } from '@/components/ArtistSidebar';
 import { UserMenu } from '@/components/UserMenu';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { useAuth } from '@/hooks/useAuth';
+import { useReportVisibility } from '@/hooks/useReportVisibility';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -13,11 +14,8 @@ import { useNavigate } from 'react-router-dom';
 const ArtistSettings = () => {
   const { userData } = useAuth();
   const navigate = useNavigate();
+  const { settings, updateSettings } = useReportVisibility();
   
-  const [showGrossRevenue, setShowGrossRevenue] = useState(true);
-  const [showShowCosts, setShowShowCosts] = useState(true);
-  const [showNetProfit, setShowNetProfit] = useState(true);
-  const [showLocomotion, setShowLocomotion] = useState(true);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   return (
@@ -60,7 +58,10 @@ const ArtistSettings = () => {
                       <h4 className="font-semibold text-gray-900">Receita Bruta</h4>
                       <p className="text-sm text-gray-900">Exibir a receita total de cachês.</p>
                     </div>
-                    <Switch checked={showGrossRevenue} onCheckedChange={setShowGrossRevenue} />
+                    <Switch 
+                      checked={settings.showGrossRevenue} 
+                      onCheckedChange={(checked) => updateSettings({ showGrossRevenue: checked })} 
+                    />
                   </div>
 
                   <div className="flex items-center justify-between py-3 border-b border-gray-100">
@@ -70,7 +71,10 @@ const ArtistSettings = () => {
                         Exibir os custos com equipe e outras despesas (exceto locomoção).
                       </p>
                     </div>
-                    <Switch checked={showShowCosts} onCheckedChange={setShowShowCosts} />
+                    <Switch 
+                      checked={settings.showShowCosts} 
+                      onCheckedChange={(checked) => updateSettings({ showShowCosts: checked })} 
+                    />
                   </div>
 
                   <div className="flex items-center justify-between py-3 border-b border-gray-100">
@@ -80,7 +84,10 @@ const ArtistSettings = () => {
                         Exibir o lucro final após todas as despesas.
                       </p>
                     </div>
-                    <Switch checked={showNetProfit} onCheckedChange={setShowNetProfit} />
+                    <Switch 
+                      checked={settings.showNetProfit} 
+                      onCheckedChange={(checked) => updateSettings({ showNetProfit: checked })} 
+                    />
                   </div>
 
                   <div className="flex items-center justify-between py-3">
@@ -90,7 +97,10 @@ const ArtistSettings = () => {
                         Exibir as despesas totais com locomoção.
                       </p>
                     </div>
-                    <Switch checked={showLocomotion} onCheckedChange={setShowLocomotion} />
+                    <Switch 
+                      checked={settings.showLocomotion} 
+                      onCheckedChange={(checked) => updateSettings({ showLocomotion: checked })} 
+                    />
                   </div>
                 </div>
               </Card>
