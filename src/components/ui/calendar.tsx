@@ -92,10 +92,6 @@ function Calendar({ className, classNames, showOutsideDays = true, variant = "pr
   const bgClass = variant === "light" ? "bg-white" : "bg-background";
   const outsideClass = variant === "light" ? "text-gray-400" : "text-white/40";
 
-  const weekdays = variant === "light" 
-    ? undefined 
-    : ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-
   return (
     <DayPicker
       month={month}
@@ -103,8 +99,11 @@ function Calendar({ className, classNames, showOutsideDays = true, variant = "pr
       showOutsideDays={showOutsideDays}
       className={cn("p-3", bgClass, textClass, className)}
       weekStartsOn={0}
-      labels={{
-        labelWeekday: (date) => weekdays ? weekdays[date.getDay()] : date.toLocaleDateString('pt-BR', { weekday: 'short' })
+      formatters={{
+        formatWeekdayName: (date) => {
+          const weekdays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+          return weekdays[date.getDay()];
+        }
       }}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
