@@ -48,9 +48,9 @@ const MusicianSettings = () => {
               </div>
 
               {/* Visibilidade do Relatório */}
-              <Card className="p-6">
+              <Card className="p-6 bg-white">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Visibilidade do Relatório</h3>
-                <p className="text-gray-600 text-sm mb-6">
+                <p className="text-gray-900 text-sm mb-6">
                   Escolha quais informações financeiras você deseja ver na página de Relatórios.
                 </p>
 
@@ -58,7 +58,7 @@ const MusicianSettings = () => {
                   <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <div>
                       <h4 className="font-semibold text-gray-900">Receita Bruta</h4>
-                      <p className="text-sm text-gray-600">Exibir a receita total de cachês.</p>
+                      <p className="text-sm text-gray-900">Exibir a receita total de cachês.</p>
                     </div>
                     <Switch checked={showGrossRevenue} onCheckedChange={setShowGrossRevenue} />
                   </div>
@@ -66,7 +66,7 @@ const MusicianSettings = () => {
                   <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <div>
                       <h4 className="font-semibold text-gray-900">Custos de Show</h4>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-900">
                         Exibir os custos com equipe e outras despesas (exceto locomoção).
                       </p>
                     </div>
@@ -76,7 +76,7 @@ const MusicianSettings = () => {
                   <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <div>
                       <h4 className="font-semibold text-gray-900">Lucro Líquido</h4>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-900">
                         Exibir o lucro final após todas as despesas.
                       </p>
                     </div>
@@ -86,7 +86,7 @@ const MusicianSettings = () => {
                   <div className="flex items-center justify-between py-3">
                     <div>
                       <h4 className="font-semibold text-gray-900">Locomoção</h4>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-900">
                         Exibir as despesas totais com locomoção.
                       </p>
                     </div>
@@ -96,9 +96,9 @@ const MusicianSettings = () => {
               </Card>
 
               {/* Aparência */}
-              <Card className="p-6">
+              <Card className="p-6 bg-white">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Aparência</h3>
-                <p className="text-gray-600 text-sm mb-6">
+                <p className="text-gray-900 text-sm mb-6">
                   Customize a aparência do aplicativo.
                 </p>
 
@@ -130,9 +130,9 @@ const MusicianSettings = () => {
               </Card>
 
               {/* Legal */}
-              <Card className="p-6">
+              <Card className="p-6 bg-white">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Legal</h3>
-                <p className="text-gray-600 text-sm mb-6">
+                <p className="text-gray-900 text-sm mb-6">
                   Consulte nossos termos, políticas e outros recursos úteis.
                 </p>
 
