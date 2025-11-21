@@ -43,6 +43,7 @@ interface TeamMember {
 }
 
 interface AdditionalExpense {
+  type: string;
   description: string;
   cost: number;
 }
@@ -462,6 +463,13 @@ const ArtistShows = () => {
           cost: musician.default_fee,
         };
       }
+    } else if (field === 'musicianId' && !value) {
+      // Se selecionar freelancer, limpa mas mantém o custo
+      updated[index] = {
+        name: '',
+        instrument: '',
+        cost: updated[index].cost || 0,
+      };
     } else {
       updated[index] = { ...updated[index], [field]: value };
     }
@@ -470,7 +478,7 @@ const ArtistShows = () => {
   };
 
   const addExpense = () => {
-    setAdditionalExpenses([...additionalExpenses, { description: '', cost: 0 }]);
+    setAdditionalExpenses([...additionalExpenses, { type: '', description: '', cost: 0 }]);
   };
 
   const removeExpense = (index: number) => {
@@ -772,59 +780,37 @@ const ArtistShows = () => {
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-3">
-                                      <div>
-                                        <Select
-                                          value={member.musicianId || ''}
-                                          onValueChange={(value) => {
-                                            if (value === 'freelancer') {
-                                              updateTeamMember(index, 'musicianId', undefined);
-                                            } else {
-                                              updateTeamMember(index, 'musicianId', value);
-                                            }
-                                          }}
-                                        >
-                                          <SelectTrigger className="bg-white text-gray-900">
-                                            <SelectValue placeholder="Selecione um músico" />
-                                          </SelectTrigger>
-                                          <SelectContent className="bg-white">
-                                            {musicians.map((m) => (
-                                              <SelectItem key={m.id} value={m.id} className="text-gray-900">
-                                                {m.name} - {m.instrument}
-                                              </SelectItem>
-                                            ))}
-                                            <SelectItem value="freelancer" className="text-gray-900">Freelancer</SelectItem>
-                                          </SelectContent>
-                                        </Select>
+                                      <Select
+                                        value={member.musicianId || ''}
+                                        onValueChange={(value) => {
+                                          if (value === 'freelancer') {
+                                            updateTeamMember(index, 'musicianId', undefined);
+                                          } else {
+                                            updateTeamMember(index, 'musicianId', value);
+                                          }
+                                        }}
+                                      >
+                                        <SelectTrigger className="bg-white text-gray-900">
+                                          <SelectValue placeholder="Selecione um músico" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-white">
+                                          {musicians.map((m) => (
+                                            <SelectItem key={m.id} value={m.id} className="text-gray-900">
+                                              {m.name} - {m.instrument}
+                                            </SelectItem>
+                                          ))}
+                                          <SelectItem value="freelancer" className="text-gray-900">Freelancer</SelectItem>
+                                        </SelectContent>
+                                      </Select>
 
-                                        {!member.musicianId && (
-                                          <>
-                                            <Input
-                                              placeholder="Nome"
-                                              value={member.name}
-                                              onChange={(e) => updateTeamMember(index, 'name', e.target.value)}
-                                              className="mt-2 bg-white text-gray-900 placeholder:text-gray-500"
-                                              required
-                                            />
-                                            <Input
-                                              placeholder="Instrumento"
-                                              value={member.instrument}
-                                              onChange={(e) => updateTeamMember(index, 'instrument', e.target.value)}
-                                              className="mt-2 bg-white text-gray-900 placeholder:text-gray-500"
-                                              required
-                                            />
-                                          </>
-                                        )}
-                                      </div>
-                                      <div>
-                                        <Input
-                                          type="text"
-                                          placeholder="Custo (R$)"
-                                          value={member.cost || ''}
-                                          onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
-                                          className="bg-white text-gray-900 placeholder:text-gray-500"
-                                          required
-                                        />
-                                      </div>
+                                      <Input
+                                        type="text"
+                                        placeholder="Custo (R$)"
+                                        value={member.cost || ''}
+                                        onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
+                                        className="bg-white text-gray-900 placeholder:text-gray-500"
+                                        required
+                                      />
                                     </div>
                                   </div>
                                 ))}
@@ -857,12 +843,19 @@ const ArtistShows = () => {
                                       </Button>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-3 gap-3">
+                                      <Input
+                                        placeholder="Tipo"
+                                        value={expense.type}
+                                        onChange={(e) => updateExpense(index, 'type', e.target.value)}
+                                        className="bg-white text-gray-900 placeholder:text-gray-500"
+                                        required
+                                      />
                                       <Input
                                         placeholder="Descrição"
                                         value={expense.description}
                                         onChange={(e) => updateExpense(index, 'description', e.target.value)}
-                                        className="bg-white text-gray-900"
+                                        className="bg-white text-gray-900 placeholder:text-gray-500"
                                         required
                                       />
                                       <Input
@@ -870,7 +863,7 @@ const ArtistShows = () => {
                                         placeholder="Valor (R$)"
                                         value={expense.cost || ''}
                                         onChange={(e) => updateExpense(index, 'cost', parseFloat(e.target.value) || 0)}
-                                        className="bg-white text-gray-900"
+                                        className="bg-white text-gray-900 placeholder:text-gray-500"
                                         required
                                       />
                                     </div>
