@@ -14,6 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { TimePicker } from '@/components/ui/time-picker';
 import { Bell, Plus, Calendar as CalendarIcon, Clock, MapPin, DollarSign, Edit, Trash2, Music2, Users, List, Grid3x3, ChevronDown, ChevronUp, MoreVertical, TrendingDown, ArrowUpRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -701,13 +702,9 @@ const ArtistShows = () => {
                                   </div>
                                   <div>
                                     <Label htmlFor="time_local" className="text-gray-900">Horário</Label>
-                                    <Input
-                                      id="time_local"
-                                      type="time"
+                                    <TimePicker
                                       value={showFormData.time_local}
-                                      onChange={(e) => setShowFormData({ ...showFormData, time_local: e.target.value })}
-                                      className="bg-white text-gray-900 border-gray-300 [&::-webkit-calendar-picker-indicator]:brightness-0"
-                                      required
+                                      onChange={(time) => setShowFormData({ ...showFormData, time_local: time })}
                                     />
                                   </div>
                                   <div>
