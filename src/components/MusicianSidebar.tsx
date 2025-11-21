@@ -1,21 +1,19 @@
-import { Music, Calendar, BarChart3, Car, LogOut, LayoutDashboard, Mic2 } from 'lucide-react';
+import { Music, Calendar, BarChart3, Car, LogOut, LayoutDashboard, Mic2, HelpCircle, User, Settings } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
 
-const items = [
+const mainItems = [
   { title: 'Dashboard', url: '/musician/dashboard', icon: LayoutDashboard },
   { title: 'Shows', url: '/musician/shows', icon: Music },
   { title: 'Calendário', url: '/musician/calendar', icon: Calendar },
@@ -23,19 +21,22 @@ const items = [
   { title: 'Locomoção', url: '/musician/transportation', icon: Car },
 ];
 
+const settingsItems = [
+  { title: 'Artistas', url: '/musician/artists', icon: Mic2 },
+  { title: 'Suporte', url: '/musician/support', icon: HelpCircle },
+  { title: 'Perfil', url: '/musician/profile', icon: User },
+  { title: 'Ajustes', url: '/musician/settings', icon: Settings },
+];
+
 export function MusicianSidebar() {
   const { state, setOpenMobile, isMobile } = useSidebar();
+  const location = useLocation();
+  const currentPath = location.pathname;
   const collapsed = state === 'collapsed';
-  const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      toast.success('Logout realizado com sucesso!');
-      navigate('/login');
-    } catch (error) {
-      toast.error('Erro ao fazer logout');
-    }
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/login';
   };
 
   const handleSidebarClick = (e: React.MouseEvent) => {
@@ -46,29 +47,44 @@ export function MusicianSidebar() {
   };
 
   return (
-    <Sidebar className={collapsed ? "w-14" : "w-60"} collapsible="icon">
+    <Sidebar
+      className={collapsed ? 'w-14' : 'w-60'}
+      collapsible="icon"
+    >
       <SidebarContent className="bg-sidebar-background" onClick={handleSidebarClick}>
+        {/* Logo */}
         <div className="p-4 border-b border-sidebar-border">
           {!collapsed && (
-            <h2 className="text-lg font-semibold text-sidebar-foreground">Sou Músico</h2>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center">
+                <Mic2 className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-lg font-heading font-bold text-sidebar-foreground">Sou Músico</h1>
+              </div>
+            </div>
+          )}
+          {collapsed && (
+            <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center mx-auto">
+              <Mic2 className="w-6 h-6 text-primary-foreground" />
+            </div>
           )}
         </div>
 
-        <SidebarGroup>
-          {!collapsed && <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>}
-          
+        {/* Main Navigation */}
+        <SidebarGroup className="mt-4">
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      end 
-                      className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    <NavLink
+                      to={item.url}
+                      end
+                      className="hover:bg-sidebar-accent"
+                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                     >
-                      <item.icon className={collapsed ? "mx-auto" : "mr-2 h-4 w-4"} />
+                      <item.icon className="h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -78,12 +94,30 @@ export function MusicianSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup className="mt-auto">
+        {/* Settings Navigation */}
+        <SidebarGroup className="mt-auto border-t border-sidebar-border pt-4">
           <SidebarGroupContent>
             <SidebarMenu>
+              {settingsItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      end
+                      className="hover:bg-sidebar-accent"
+                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+              
+              {/* Sair button */}
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={handleLogout}>
-                  <LogOut className={collapsed ? "mx-auto" : "mr-2 h-4 w-4"} />
+                <SidebarMenuButton onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4" />
                   {!collapsed && <span>Sair</span>}
                 </SidebarMenuButton>
               </SidebarMenuItem>
