@@ -49,7 +49,7 @@ export function ArtistSidebar() {
 
   return (
     <Sidebar
-      className={collapsed ? 'w-14' : 'w-60'}
+      className={collapsed ? 'w-14' : 'w-48 md:w-60'}
       collapsible="icon"
     >
       <SidebarContent className="bg-sidebar-background" onClick={handleSidebarClick}>
