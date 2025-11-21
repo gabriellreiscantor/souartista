@@ -360,6 +360,21 @@ const MusicianShows = () => {
           <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
             <div className="max-w-4xl mx-auto">
               <Tabs defaultValue="shows" className="w-full">
+                {/* Mobile tabs */}
+                <Card className="md:hidden bg-[#EAD6F5] border-0 mb-4">
+                  <TabsList className="w-full grid grid-cols-2 bg-transparent p-0 h-auto">
+                    <TabsTrigger value="shows" className="flex flex-col items-center gap-1 bg-transparent text-gray-700 data-[state=active]:bg-transparent data-[state=active]:text-primary py-3 border-b-2 border-transparent data-[state=active]:border-primary rounded-none">
+                      <Music2 className="w-5 h-5" />
+                      <span className="text-xs">Meus Freelas</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="artists" className="flex flex-col items-center gap-1 bg-transparent text-gray-700 data-[state=active]:bg-transparent data-[state=active]:text-primary py-3 border-b-2 border-transparent data-[state=active]:border-primary rounded-none">
+                      <Mic2 className="w-5 h-5" />
+                      <span className="text-xs">Artistas</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </Card>
+
+                {/* Desktop tabs */}
                 <TabsList className="hidden md:grid w-full grid-cols-2 bg-white">
                   <TabsTrigger value="shows" className="flex items-center gap-2">
                     <Music2 className="w-4 h-4" />
@@ -373,6 +388,31 @@ const MusicianShows = () => {
 
                 {/* SHOWS TAB */}
                 <TabsContent value="shows" className="mt-0 md:mt-6">
+                  {/* Mobile header */}
+                  <Card className="md:hidden bg-white border border-gray-200 p-4 space-y-3 mb-4">
+                    <h2 className="text-xl font-bold text-gray-900">Meus Freelas</h2>
+                    
+                    <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button onClick={resetShowForm} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
+                          <Plus className="w-5 h-5 mr-2" />
+                          Adicionar
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white text-gray-900">
+                        <DialogHeader>
+                          <DialogTitle className="text-gray-900 font-semibold">
+                            {editingShow ? 'Editar Show' : 'Adicionar Show'}
+                          </DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleShowSubmit} className="space-y-6">
+...
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </Card>
+
+                  {/* Desktop header */}
                   <div className="hidden md:flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-gray-900">Meus Freelas</h2>
                     
@@ -552,19 +592,6 @@ const MusicianShows = () => {
                     </Dialog>
                   </div>
 
-                  {/* Mobile: Add button */}
-                  <div className="md:hidden mb-4">
-                    <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button onClick={resetShowForm} className="w-full bg-primary hover:bg-primary/90 text-white h-12">
-                          <Plus className="w-5 h-5 mr-2" />
-                          Adicionar
-                        </Button>
-                      </DialogTrigger>
-                      {/* Dialog content reused from desktop */}
-                    </Dialog>
-                  </div>
-
                   {loading ? (
                     <div className="text-center py-12">
                       <p className="text-gray-500">Carregando...</p>
@@ -572,10 +599,7 @@ const MusicianShows = () => {
                   ) : shows.length === 0 ? (
                     <Card className="p-8 text-center bg-white border border-gray-200">
                       <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500 mb-4">Nenhum show agendado</p>
-                      <p className="text-sm text-gray-400">
-                        Clique em "Adicionar" para cadastrar seu primeiro freela
-                      </p>
+                      <p className="text-gray-500">Nenhum show encontrado para o filtro selecionado.</p>
                     </Card>
                   ) : (
                     <div className="grid gap-4">

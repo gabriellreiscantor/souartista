@@ -602,6 +602,25 @@ const ArtistShows = () => {
           <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
             <div className="max-w-5xl mx-auto">
               <Tabs defaultValue="shows" className="w-full">
+                {/* Mobile tabs */}
+                <Card className="md:hidden bg-[#EAD6F5] border-0 mb-4">
+                  <TabsList className="w-full grid grid-cols-3 bg-transparent p-0 h-auto">
+                    <TabsTrigger value="shows" className="flex flex-col items-center gap-1 bg-transparent text-gray-700 data-[state=active]:bg-transparent data-[state=active]:text-primary py-3 border-b-2 border-transparent data-[state=active]:border-primary rounded-none">
+                      <Music2 className="w-5 h-5" />
+                      <span className="text-xs">Agenda de Shows</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="venues" className="flex flex-col items-center gap-1 bg-transparent text-gray-700 data-[state=active]:bg-transparent data-[state=active]:text-primary py-3 border-b-2 border-transparent data-[state=active]:border-primary rounded-none">
+                      <MapPin className="w-5 h-5" />
+                      <span className="text-xs">Locais e Bares</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="musicians" className="flex flex-col items-center gap-1 bg-transparent text-gray-700 data-[state=active]:bg-transparent data-[state=active]:text-primary py-3 border-b-2 border-transparent data-[state=active]:border-primary rounded-none">
+                      <Users className="w-5 h-5" />
+                      <span className="text-xs">Músicos e Equipe</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </Card>
+
+                {/* Desktop tabs */}
                 <TabsList className="hidden md:grid w-full grid-cols-3 bg-white p-0 h-auto">
                   <TabsTrigger value="shows" className="flex items-center gap-2 bg-[#EAD6F5] text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 rounded-none border-b-2 border-transparent data-[state=active]:border-primary py-3">
                     <Music2 className="w-4 h-4" />
@@ -620,6 +639,51 @@ const ArtistShows = () => {
                 {/* AGENDA DE SHOWS TAB */}
                 <TabsContent value="shows" className="mt-0 md:mt-6 space-y-4 md:space-y-6">
                   <div className="space-y-4">
+                    {/* Mobile header */}
+                    <Card className="md:hidden bg-white border border-gray-200 p-4 space-y-3">
+                      <div>
+                        <h2 className="text-xl font-bold text-gray-900">Agenda de Shows</h2>
+                        <p className="text-xs text-gray-500">
+                          Atualizado em {format(lastUpdated, "dd/MM/yyyy 'às' HH:mm:ss")}
+                        </p>
+                      </div>
+                      
+                      <Select defaultValue="week">
+                        <SelectTrigger className="w-full bg-white text-gray-900 border-gray-300">
+                          <CalendarIcon className="w-4 h-4 mr-2 text-gray-900" />
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white">
+                          <SelectItem value="week" className="text-gray-900">Próximos Shows</SelectItem>
+                          <SelectItem value="month" className="text-gray-900">Este Mês</SelectItem>
+                          <SelectItem value="all" className="text-gray-900">Todos</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button onClick={resetShowForm} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
+                            <Plus className="w-5 h-5 mr-2" />
+                            Adicionar
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
+                          <DialogHeader>
+                            <DialogTitle className="text-gray-900">
+                              {editingShow ? 'Editar Show' : 'Adicionar Novo Show'}
+                            </DialogTitle>
+                            <p className="text-sm text-muted-foreground">
+                              Preencha as informações abaixo para gerenciar o show.
+                            </p>
+                          </DialogHeader>
+                          <form onSubmit={handleShowSubmit} className="space-y-6">
+...
+                          </form>
+                        </DialogContent>
+                      </Dialog>
+                    </Card>
+
+                    {/* Desktop header */}
                     <div className="hidden md:flex items-center justify-between">
                       <div>
                         <h2 className="text-2xl font-bold text-gray-900">Agenda de Shows</h2>
@@ -944,10 +1008,7 @@ const ArtistShows = () => {
                     ) : shows.length === 0 ? (
                       <Card className="p-8 text-center bg-white border border-gray-200">
                         <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500 mb-4">Nenhum show agendado</p>
-                        <p className="text-sm text-gray-400">
-                          Clique em "Adicionar" para cadastrar seu primeiro evento
-                        </p>
+                        <p className="text-gray-500">Nenhum show encontrado para o filtro selecionado.</p>
                       </Card>
                     ) : (
                       <>
