@@ -217,40 +217,41 @@ const ArtistVenues = () => {
                       Adicionar Local
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="bg-white max-w-md">
+                  <DialogContent className="bg-white text-gray-900 max-w-md">
                     <DialogHeader>
-                      <DialogTitle>
+                      <DialogTitle className="text-gray-900 text-xl font-semibold">
                         {editingVenue ? 'Editar Local/Bar' : 'Adicionar Novo Local/Bar'}
                       </DialogTitle>
                       <p className="text-sm text-gray-600 mt-1">
                         Cadastre um local fixo para selecioná-lo facilmente ao agendar shows.
                       </p>
-                      <p className="text-xs text-gray-500 italic">
+                      <p className="text-xs text-gray-500 italic mt-1">
                         (Caso for um particular, adicione pela aba "Agenda de Shows".)
                       </p>
                     </DialogHeader>
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                       <div>
-                        <Label htmlFor="name">Nome do Local/Bar</Label>
+                        <Label htmlFor="name" className="text-gray-900 font-medium">Nome do Local/Bar</Label>
                         <Input
                           id="name"
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           placeholder="Ex: Bar do Zé"
                           required
+                          className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                         />
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="state">Estado</Label>
+                          <Label htmlFor="state" className="text-gray-900 font-medium">Estado</Label>
                           <Select value={formData.state} onValueChange={handleStateChange} required>
-                            <SelectTrigger id="state">
+                            <SelectTrigger id="state" className="mt-1.5 bg-white border-gray-300 text-gray-900">
                               <SelectValue placeholder="Selecione o estado" />
                             </SelectTrigger>
                             <SelectContent className="bg-white max-h-[200px]">
                               {brazilStates.map((state) => (
-                                <SelectItem key={state.value} value={state.value}>
+                                <SelectItem key={state.value} value={state.value} className="text-gray-900">
                                   {state.label}
                                 </SelectItem>
                               ))}
@@ -259,23 +260,23 @@ const ArtistVenues = () => {
                         </div>
                         
                         <div>
-                          <Label htmlFor="city">Cidade</Label>
+                          <Label htmlFor="city" className="text-gray-900 font-medium">Cidade</Label>
                           <Select 
                             value={formData.city} 
                             onValueChange={(value) => setFormData({ ...formData, city: value, customCity: '' })}
                             disabled={!formData.state}
                             required
                           >
-                            <SelectTrigger id="city">
-                              <SelectValue placeholder={formData.state ? "Escolha um estado" : "Escolha um estado"} />
+                            <SelectTrigger id="city" className="mt-1.5 bg-white border-gray-300 text-gray-900">
+                              <SelectValue placeholder="Escolha um estado" />
                             </SelectTrigger>
                             <SelectContent className="bg-white max-h-[200px]">
                               {availableCities.map((city) => (
-                                <SelectItem key={city} value={city}>
+                                <SelectItem key={city} value={city} className="text-gray-900">
                                   {city}
                                 </SelectItem>
                               ))}
-                              <SelectItem value="Outro (digitar)">Outro (digitar)</SelectItem>
+                              <SelectItem value="Outro (digitar)" className="text-gray-900">Outro (digitar)</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -283,13 +284,14 @@ const ArtistVenues = () => {
 
                       {formData.city === 'Outro (digitar)' && (
                         <div>
-                          <Label htmlFor="customCity">Qual cidade?</Label>
+                          <Label htmlFor="customCity" className="text-gray-900 font-medium">Qual cidade?</Label>
                           <Input
                             id="customCity"
                             value={formData.customCity}
                             onChange={(e) => setFormData({ ...formData, customCity: e.target.value })}
                             placeholder="Digite o nome da cidade"
                             required
+                            className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                           />
                         </div>
                       )}
@@ -299,11 +301,11 @@ const ArtistVenues = () => {
                           type="button"
                           variant="outline"
                           onClick={() => handleDialogClose(false)}
-                          className="flex-1"
+                          className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
                         >
                           Cancelar
                         </Button>
-                        <Button type="submit" className="flex-1">
+                        <Button type="submit" className="flex-1 bg-primary text-white hover:bg-primary/90">
                           Salvar Local
                         </Button>
                       </div>
