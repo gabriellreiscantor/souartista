@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TimePicker } from '@/components/ui/time-picker';
 import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -422,12 +423,9 @@ const MusicianShows = () => {
                               </div>
                               <div>
                                 <Label htmlFor="time_local">Horário *</Label>
-                                <Input
-                                  id="time_local"
-                                  type="time"
+                                <TimePicker
                                   value={showFormData.time_local}
-                                  onChange={(e) => setShowFormData({ ...showFormData, time_local: e.target.value })}
-                                  required
+                                  onChange={(time) => setShowFormData({ ...showFormData, time_local: time })}
                                 />
                               </div>
                             </div>
