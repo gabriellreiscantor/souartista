@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Bell, Music2, DollarSign, TrendingDown, TrendingUp, TrendingUpIcon, FileText, Building2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useReportVisibility } from '@/hooks/useReportVisibility';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subDays, startOfYear, endOfYear, subMonths, differenceInMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -24,6 +25,7 @@ interface Show {
 
 const MusicianReports = () => {
   const { user, userData, userRole } = useAuth();
+  const { settings } = useReportVisibility();
   const [period, setPeriod] = useState('this-month');
   const [shows, setShows] = useState<Show[]>([]);
   const [loading, setLoading] = useState(true);
@@ -220,47 +222,53 @@ const MusicianReports = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-white border-gray-200">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Cachê Total (Período)</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-2">R$ {formatCurrency(totalRevenue)}</p>
+                {settings.showGrossRevenue && (
+                  <Card className="bg-white border-gray-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Cachê Total (Período)</p>
+                          <p className="text-3xl font-bold text-gray-900 mt-2">R$ {formatCurrency(totalRevenue)}</p>
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                          <DollarSign className="w-5 h-5 text-green-600" />
+                        </div>
                       </div>
-                      <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                        <DollarSign className="w-5 h-5 text-green-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                )}
 
-                <Card className="bg-white border-gray-200">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Despesas (Período)</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-2">R$ {formatCurrency(totalExpenses)}</p>
+                {settings.showShowCosts && (
+                  <Card className="bg-white border-gray-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Despesas (Período)</p>
+                          <p className="text-3xl font-bold text-gray-900 mt-2">R$ {formatCurrency(totalExpenses)}</p>
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                          <TrendingDown className="w-5 h-5 text-red-600" />
+                        </div>
                       </div>
-                      <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                        <TrendingDown className="w-5 h-5 text-red-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                )}
 
-                <Card className="bg-white border-gray-200">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Lucro Líquido (Período)</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-2">R$ {formatCurrency(totalProfit)}</p>
+                {settings.showNetProfit && (
+                  <Card className="bg-white border-gray-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Lucro Líquido (Período)</p>
+                          <p className="text-3xl font-bold text-gray-900 mt-2">R$ {formatCurrency(totalProfit)}</p>
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <TrendingUp className="w-5 h-5 text-blue-600" />
+                        </div>
                       </div>
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <TrendingUp className="w-5 h-5 text-blue-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
 
               {/* Average Ticket */}
