@@ -234,10 +234,10 @@ const ArtistSupport = () => {
                       Novo Ticket
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="bg-white">
+                  <DialogContent className="bg-white text-black">
                     <DialogHeader>
-                      <DialogTitle>Criar Novo Ticket</DialogTitle>
-                      <DialogDescription>
+                      <DialogTitle className="text-black">Criar Novo Ticket</DialogTitle>
+                      <DialogDescription className="text-gray-600">
                         Descreva seu problema ou dúvida e nossa equipe responderá em breve.
                       </DialogDescription>
                     </DialogHeader>
@@ -251,7 +251,7 @@ const ArtistSupport = () => {
                           value={subject}
                           onChange={(e) => setSubject(e.target.value)}
                           placeholder="Ex: Problema com pagamento"
-                          className="bg-white"
+                          className="bg-white text-black placeholder:text-gray-400"
                         />
                       </div>
 
@@ -260,10 +260,10 @@ const ArtistSupport = () => {
                           Prioridade
                         </label>
                         <Select value={priority} onValueChange={setPriority}>
-                          <SelectTrigger className="bg-white">
+                          <SelectTrigger className="bg-white text-black">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="bg-white">
+                          <SelectContent className="bg-white text-black">
                             <SelectItem value="low">Baixa</SelectItem>
                             <SelectItem value="medium">Média</SelectItem>
                             <SelectItem value="high">Alta</SelectItem>
@@ -281,7 +281,7 @@ const ArtistSupport = () => {
                           onChange={(e) => setMessage(e.target.value)}
                           placeholder="Descreva detalhadamente seu problema..."
                           rows={5}
-                          className="bg-white"
+                          className="bg-white text-black placeholder:text-gray-400"
                         />
                       </div>
 
