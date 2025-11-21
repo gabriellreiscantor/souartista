@@ -465,26 +465,23 @@ const ArtistTransportation = () => {
 
                     <div className="flex items-center gap-2">
                       <Button
-                        variant="outline"
                         size="sm"
                         onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                        className="border-gray-300"
+                        className="bg-primary text-white hover:bg-primary/90"
                       >
                         <ChevronLeft className="w-4 h-4" />
                       </Button>
                       <Button
-                        variant="outline"
                         size="sm"
                         onClick={() => setCurrentMonth(new Date())}
-                        className="border-gray-300"
+                        className="bg-primary text-white hover:bg-primary/90"
                       >
                         Hoje
                       </Button>
                       <Button
-                        variant="outline"
                         size="sm"
                         onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                        className="border-gray-300"
+                        className="bg-primary text-white hover:bg-primary/90"
                       >
                         <ChevronRight className="w-4 h-4" />
                       </Button>

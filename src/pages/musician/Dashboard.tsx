@@ -161,7 +161,7 @@ const MusicianDashboard = () => {
                   <p className="text-sm text-gray-600">De 02/11 a 08/11</p>
                 </div>
                 <div className="hidden md:flex items-center gap-2">
-                  <Button variant="outline" size="icon" className="h-8 w-8 bg-white border-gray-300">
+                  <Button size="icon" className="h-8 w-8 bg-primary text-white hover:bg-primary/90">
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
                   <Select value={selectedWeek} onValueChange={setSelectedWeek}>
@@ -173,7 +173,7 @@ const MusicianDashboard = () => {
                       <SelectItem value="Próxima Semana">Próxima Semana</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button variant="outline" size="icon" className="h-8 w-8 bg-white border-gray-300">
+                  <Button size="icon" className="h-8 w-8 bg-primary text-white hover:bg-primary/90">
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
@@ -272,8 +272,8 @@ const MusicianDashboard = () => {
                   tenha controle total dos seus ganhos.
                 </p>
                 <div className="flex flex-wrap justify-center gap-4 pt-4">
-                  <Button>Adicionar Show</Button>
-                  <Button variant="outline">Cadastrar Artista</Button>
+                  <Button className="bg-primary text-white hover:bg-primary/90">Adicionar Show</Button>
+                  <Button className="bg-primary text-white hover:bg-primary/90">Cadastrar Artista</Button>
                 </div>
               </div>
             </Card>

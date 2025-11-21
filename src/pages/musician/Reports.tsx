@@ -193,11 +193,11 @@ const MusicianReports = () => {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="bg-white border-gray-300 text-gray-900">
+                  <Button size="sm" className="bg-primary text-white hover:bg-primary/90">
                     <FileText className="w-4 h-4 mr-2" />
                     PDF
                   </Button>
-                  <Button variant="outline" size="sm" className="bg-white border-gray-300 text-gray-900">
+                  <Button size="sm" className="bg-primary text-white hover:bg-primary/90">
                     <FileText className="w-4 h-4 mr-2" />
                     XLSX
                   </Button>
