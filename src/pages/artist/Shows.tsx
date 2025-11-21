@@ -444,7 +444,7 @@ const ArtistShows = () => {
                         </div>
 
                         {teamMembers.map((member, index) => (
-                          <Card key={index} className="p-4">
+                          <Card key={index} className="p-4 bg-white border border-gray-200">
                             <div className="space-y-3">
                               <div className="flex items-center justify-between">
                                 <Label>Músico {index + 1}</Label>
@@ -522,7 +522,7 @@ const ArtistShows = () => {
                         </div>
 
                         {additionalExpenses.map((expense, index) => (
-                          <Card key={index} className="p-4">
+                          <Card key={index} className="p-4 bg-white border border-gray-200">
                             <div className="space-y-3">
                               <div className="flex items-center justify-between">
                                 <Label>Despesa {index + 1}</Label>
@@ -574,7 +574,7 @@ const ArtistShows = () => {
                   <p className="text-gray-500">Carregando...</p>
                 </div>
               ) : shows.length === 0 ? (
-                <Card className="p-8 text-center border border-gray-200">
+                <Card className="p-8 text-center bg-white border border-gray-200">
                   <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-500 mb-4">Nenhum show agendado</p>
                   <p className="text-sm text-gray-400">
@@ -584,7 +584,7 @@ const ArtistShows = () => {
               ) : (
                 <div className="grid gap-4">
                   {shows.map((show) => (
-                    <Card key={show.id} className="p-6 border border-gray-200">
+                    <Card key={show.id} className="p-6 bg-white border border-gray-200">
                       <div className="flex items-start justify-between">
                         <div className="flex-1 space-y-3">
                           <div className="flex items-center gap-2">

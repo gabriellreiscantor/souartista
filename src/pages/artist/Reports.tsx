@@ -101,7 +101,7 @@ const ArtistReports = () => {
               ) : (
                 <div className="space-y-6">
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <Card>
+                    <Card className="bg-white">
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Total de Shows</CardTitle>
                         <Music className="h-4 w-4 text-muted-foreground" />
@@ -112,7 +112,7 @@ const ArtistReports = () => {
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-white">
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -123,7 +123,7 @@ const ArtistReports = () => {
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-white">
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Shows no Mês</CardTitle>
                         <CalendarIcon className="h-4 w-4 text-muted-foreground" />
@@ -136,7 +136,7 @@ const ArtistReports = () => {
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="bg-white">
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Receita Mensal</CardTitle>
                         <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -150,7 +150,7 @@ const ArtistReports = () => {
                     </Card>
                   </div>
 
-                  <Card>
+                  <Card className="bg-white">
                     <CardHeader>
                       <CardTitle>Resumo Financeiro</CardTitle>
                     </CardHeader>
