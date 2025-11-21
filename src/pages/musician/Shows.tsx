@@ -357,10 +357,10 @@ const MusicianShows = () => {
             </div>
           </header>
 
-          <main className="flex-1 p-6 overflow-auto pb-20 md:pb-6">
+          <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
             <div className="max-w-4xl mx-auto">
               <Tabs defaultValue="shows" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-white">
+                <TabsList className="hidden md:grid w-full grid-cols-2 bg-white">
                   <TabsTrigger value="shows" className="flex items-center gap-2">
                     <Music2 className="w-4 h-4" />
                     Meus Freelas
@@ -372,13 +372,13 @@ const MusicianShows = () => {
                 </TabsList>
 
                 {/* SHOWS TAB */}
-                <TabsContent value="shows" className="mt-6">
-                  <div className="flex items-center justify-between mb-6">
+                <TabsContent value="shows" className="mt-0 md:mt-6">
+                  <div className="hidden md:flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-gray-900">Meus Freelas</h2>
                     
                     <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button onClick={resetShowForm}>
+                        <Button onClick={resetShowForm} className="bg-primary hover:bg-primary/90">
                           <Plus className="w-4 h-4 mr-2" />
                           Adicionar
                         </Button>
@@ -552,6 +552,19 @@ const MusicianShows = () => {
                     </Dialog>
                   </div>
 
+                  {/* Mobile: Add button */}
+                  <div className="md:hidden mb-4">
+                    <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button onClick={resetShowForm} className="w-full bg-primary hover:bg-primary/90 text-white h-12">
+                          <Plus className="w-5 h-5 mr-2" />
+                          Adicionar
+                        </Button>
+                      </DialogTrigger>
+                      {/* Dialog content reused from desktop */}
+                    </Dialog>
+                  </div>
+
                   {loading ? (
                     <div className="text-center py-12">
                       <p className="text-gray-500">Carregando...</p>
@@ -566,53 +579,63 @@ const MusicianShows = () => {
                     </Card>
                   ) : (
                     <div className="grid gap-4">
-                      {shows.map((show) => (
-                        <Card key={show.id} className="p-6 bg-white border border-gray-200">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 space-y-3">
-                              <div className="flex items-center gap-2">
-                                <MapPin className="w-5 h-5 text-purple-600" />
-                                <h3 className="text-lg font-semibold text-gray-900">{show.venue_name}</h3>
+                      {shows.map((show) => {
+                        const showDate = new Date(show.date_local);
+                        const myFee = getMyFee(show);
+                        const totalExpenses = show.expenses_other.reduce((sum, e) => sum + e.cost, 0);
+                        
+                        return (
+                          <Card key={show.id} className="p-4 md:p-6 bg-white border border-gray-200">
+                            <div className="flex items-start gap-3 mb-3">
+                              <div className="flex-shrink-0 w-16 text-center bg-[#F5F0FA] rounded-lg p-2 border-2 border-purple-200">
+                                <div className="text-xs text-primary font-bold uppercase">{format(showDate, 'MMM', { locale: ptBR })}</div>
+                                <div className="text-3xl font-bold text-gray-900">{format(showDate, 'dd')}</div>
                               </div>
-
-                              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                                <div className="flex items-center gap-2">
-                                  <Calendar className="w-4 h-4" />
-                                  {format(new Date(show.date_local), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Clock className="w-4 h-4" />
+                              
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-base md:text-lg font-bold text-gray-900 truncate">{show.venue_name}</h3>
+                                <p className="text-sm text-gray-600 flex items-center gap-1">
+                                  {format(showDate, "EEEE", { locale: ptBR })} • 
+                                  <Clock className="w-3 h-3" />
                                   {show.time_local}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <DollarSign className="w-4 h-4" />
-                                  <span className="font-semibold text-green-600">
-                                    R$ {getMyFee(show).toFixed(2)}
-                                  </span>
+                                </p>
+                              </div>
+                              
+                              <div className="flex gap-1 flex-shrink-0">
+                                <Button variant="outline" size="icon" onClick={() => handleShowEdit(show)} className="h-8 w-8 md:h-10 md:w-10">
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button variant="outline" size="icon" onClick={() => handleShowDelete(show.id)} className="h-8 w-8 md:h-10 md:w-10">
+                                  <Trash2 className="w-4 h-4 text-red-600" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            <div className="flex gap-3 text-sm">
+                              <div className="flex-1 text-center">
+                                <div className="text-gray-600 text-xs mb-1">Cachê</div>
+                                <div className="text-green-600 font-bold text-sm md:text-base">
+                                  R$ {myFee.toFixed(2).replace('.', ',')}
                                 </div>
                               </div>
-
-                              {show.expenses_other.length > 0 && (
-                                <div className="text-sm">
-                                  <span className="text-gray-600">Despesas:</span>{' '}
-                                  <span className="text-red-600">
-                                    R$ {show.expenses_other.reduce((sum, e) => sum + e.cost, 0).toFixed(2)}
-                                  </span>
+                              {totalExpenses > 0 && (
+                                <div className="flex-1 text-center">
+                                  <div className="text-gray-600 text-xs mb-1">Despesas</div>
+                                  <div className="text-red-600 font-bold text-sm md:text-base">
+                                    R$ {totalExpenses.toFixed(2).replace('.', ',')}
+                                  </div>
                                 </div>
                               )}
+                              <div className="flex-1 text-center">
+                                <div className="text-gray-600 text-xs mb-1">Líquido</div>
+                                <div className="px-2 py-1 rounded-full bg-primary text-white font-bold text-xs md:text-sm inline-block">
+                                  R$ {(myFee - totalExpenses).toFixed(2).replace('.', ',')}
+                                </div>
+                              </div>
                             </div>
-
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="icon" onClick={() => handleShowEdit(show)}>
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button variant="outline" size="icon" onClick={() => handleShowDelete(show.id)}>
-                                <Trash2 className="w-4 h-4 text-red-600" />
-                              </Button>
-                            </div>
-                          </div>
-                        </Card>
-                      ))}
+                          </Card>
+                        );
+                      })}
                     </div>
                   )}
                 </TabsContent>
