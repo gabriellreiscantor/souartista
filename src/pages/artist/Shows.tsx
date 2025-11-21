@@ -523,7 +523,7 @@ const ArtistShows = () => {
                         </DialogHeader>
                         <form onSubmit={handleShowSubmit} className="space-y-6">
                           <div className="space-y-4">
-                            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                            <div className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-lg">
                               <Switch
                                 checked={showFormData.is_private_event}
                                 onCheckedChange={(checked) => 
@@ -633,14 +633,14 @@ const ArtistShows = () => {
                                 <h3 className="font-semibold text-gray-900">Equipe/Músicos</h3>
                                 <p className="text-xs text-muted-foreground">Custo total: R$ {teamMembers.reduce((sum, m) => sum + m.cost, 0).toFixed(2)}</p>
                               </div>
-                              <Button type="button" variant="outline" size="sm" onClick={addTeamMember} className="bg-white">
+                              <Button type="button" variant="outline" onClick={addTeamMember} className="bg-white hover:bg-gray-50">
                                 <Plus className="w-4 h-4 mr-2" />
-                                Adicionar
+                                Adicionar Músico
                               </Button>
                             </div>
 
                             {teamMembers.map((member, index) => (
-                              <div key={index} className="p-4 bg-muted rounded-lg border border-border space-y-3">
+                              <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
                                 <div className="flex items-center justify-between">
                                   <Label className="text-gray-900">Membro</Label>
                                   <Button
@@ -674,13 +674,22 @@ const ArtistShows = () => {
                                     </Select>
 
                                     {!member.musicianId && (
-                                      <Input
-                                        placeholder="Nome"
-                                        value={member.name}
-                                        onChange={(e) => updateTeamMember(index, 'name', e.target.value)}
-                                        className="mt-2 bg-white"
-                                        required
-                                      />
+                                      <>
+                                        <Input
+                                          placeholder="Nome"
+                                          value={member.name}
+                                          onChange={(e) => updateTeamMember(index, 'name', e.target.value)}
+                                          className="mt-2 bg-white"
+                                          required
+                                        />
+                                        <Input
+                                          placeholder="Instrumento"
+                                          value={member.instrument}
+                                          onChange={(e) => updateTeamMember(index, 'instrument', e.target.value)}
+                                          className="mt-2 bg-white"
+                                          required
+                                        />
+                                      </>
                                     )}
                                   </div>
                                   <div>
@@ -704,14 +713,14 @@ const ArtistShows = () => {
                                 <h3 className="font-semibold text-gray-900">Despesas Adicionais (Optional)</h3>
                                 <p className="text-xs text-muted-foreground">Custo total: R$ {additionalExpenses.reduce((sum, e) => sum + e.cost, 0).toFixed(2)}</p>
                               </div>
-                              <Button type="button" variant="outline" size="sm" onClick={addExpense} className="bg-white">
+                              <Button type="button" variant="outline" onClick={addExpense} className="bg-white hover:bg-gray-50">
                                 <Plus className="w-4 h-4 mr-2" />
                                 Adicionar Despesa
                               </Button>
                             </div>
 
                             {additionalExpenses.map((expense, index) => (
-                              <div key={index} className="p-4 bg-muted rounded-lg border border-border space-y-3">
+                              <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
                                 <div className="flex items-center justify-between">
                                   <Label className="text-gray-900">Despesa</Label>
                                   <Button
@@ -725,14 +734,7 @@ const ArtistShows = () => {
                                   </Button>
                                 </div>
 
-                                <div className="grid grid-cols-3 gap-3">
-                                  <Input
-                                    placeholder="Tipo"
-                                    value={expense.description}
-                                    onChange={(e) => updateExpense(index, 'description', e.target.value)}
-                                    className="bg-white"
-                                    required
-                                  />
+                                <div className="grid grid-cols-2 gap-3">
                                   <Input
                                     placeholder="Descrição"
                                     value={expense.description}
@@ -754,7 +756,7 @@ const ArtistShows = () => {
                           </div>
 
                           <div className="flex gap-3">
-                            <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white">
+                            <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white border-gray-300 text-gray-900 hover:bg-gray-50">
                               Cancelar
                             </Button>
                             <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
