@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TimePicker } from '@/components/ui/time-picker';
 import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2 } from 'lucide-react';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -487,13 +488,11 @@ const MusicianShows = () => {
                             <h3 className="font-semibold text-gray-900">Seu Cachê</h3>
                             
                             <div>
-                              <Label htmlFor="fee" className="text-gray-900 font-medium">Seu Cachê Individual (R$) *</Label>
-                              <Input
+                              <Label htmlFor="fee" className="text-gray-900 font-medium">Seu Cachê Individual *</Label>
+                              <CurrencyInput
                                 id="fee"
-                                type="number"
-                                step="0.01"
                                 value={showFormData.fee}
-                                onChange={(e) => setShowFormData({ ...showFormData, fee: e.target.value })}
+                                onChange={(value) => setShowFormData({ ...showFormData, fee: value })}
                                 className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                                 required
                               />
@@ -565,12 +564,9 @@ const MusicianShows = () => {
                                     className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                                     required
                                   />
-                                  <Input
-                                    type="number"
-                                    step="0.01"
-                                    placeholder="Valor (R$)"
+                                  <CurrencyInput
                                     value={expense.cost}
-                                    onChange={(e) => updateExpense(index, 'cost', parseFloat(e.target.value) || 0)}
+                                    onChange={(value) => updateExpense(index, 'cost', parseFloat(value) || 0)}
                                     className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                                     required
                                   />

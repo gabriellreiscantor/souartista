@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Bell, Car, Truck, Bus, Plane, PlusCircle, Fuel, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -284,18 +285,12 @@ const MusicianTransportation = () => {
                         <>
                           <div>
                             <Label htmlFor="ride-cost" className="text-gray-900 font-medium mb-2 block">Corridas</Label>
-                            <div className="flex gap-2">
-                              <Input
-                                id="ride-cost"
-                                type="number"
-                                placeholder="R$ 0,00"
-                                value={currentRide}
-                                onChange={(e) => setCurrentRide(e.target.value)}
-                                className="bg-white border-gray-300 text-gray-900"
-                                step="0.01"
-                                min="0"
-                              />
-                            </div>
+                            <CurrencyInput
+                              id="ride-cost"
+                              value={currentRide}
+                              onChange={(value) => setCurrentRide(value)}
+                              className="bg-white border-gray-300 text-gray-900"
+                            />
                           </div>
 
                           <Button
@@ -354,16 +349,12 @@ const MusicianTransportation = () => {
                           </div>
 
                           <div>
-                            <Label htmlFor="price-per-liter" className="text-gray-900 font-medium mb-2 block">Preço do Litro (R$)</Label>
-                            <Input
+                            <Label htmlFor="price-per-liter" className="text-gray-900 font-medium mb-2 block">Preço do Litro</Label>
+                            <CurrencyInput
                               id="price-per-liter"
-                              type="number"
-                              placeholder="R$ 0,00"
                               value={kmData.pricePerLiter}
-                              onChange={(e) => setKmData({ ...kmData, pricePerLiter: e.target.value })}
+                              onChange={(value) => setKmData({ ...kmData, pricePerLiter: value })}
                               className="bg-white border-gray-300 text-gray-900"
-                              step="0.01"
-                              min="0"
                             />
                           </div>
                         </>
@@ -380,15 +371,11 @@ const MusicianTransportation = () => {
 
                           <div>
                             <Label htmlFor="cost" className="text-gray-900 font-medium mb-2 block">Valor da Despesa</Label>
-                            <Input
+                            <CurrencyInput
                               id="cost"
-                              type="number"
-                              placeholder="R$ 0,00"
                               value={otherData.cost}
-                              onChange={(e) => setOtherData({ ...otherData, cost: e.target.value })}
+                              onChange={(value) => setOtherData({ ...otherData, cost: value })}
                               className="bg-white border-gray-300 text-gray-900"
-                              step="0.01"
-                              min="0"
                             />
                           </div>
 
