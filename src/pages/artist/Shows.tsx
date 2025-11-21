@@ -1312,45 +1312,64 @@ const ArtistShows = () => {
                           Adicionar
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-white">
+                      <DialogContent className="bg-white text-gray-900 max-w-md">
                         <DialogHeader>
-                          <DialogTitle>
-                            {editingMusician ? 'Editar Músico' : 'Adicionar Músico'}
+                          <DialogTitle className="text-gray-900 text-xl font-semibold">
+                            {editingMusician ? 'Editar Músico/Equipe' : 'Adicionar Novo Músico/Equipe'}
                           </DialogTitle>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Cadastre músicos da sua equipe para facilitar o registro de shows.
+                          </p>
                         </DialogHeader>
-                        <form onSubmit={handleMusicianSubmit} className="space-y-4">
+                        <form onSubmit={handleMusicianSubmit} className="space-y-4 mt-4">
                           <div>
-                            <Label htmlFor="musician_name">Nome *</Label>
+                            <Label htmlFor="musician_name" className="text-gray-900 font-medium">Nome *</Label>
                             <Input
                               id="musician_name"
                               value={musicianFormData.name}
                               onChange={(e) => setMusicianFormData({ ...musicianFormData, name: e.target.value })}
+                              placeholder="Ex: João Silva"
                               required
+                              className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                             />
                           </div>
                           <div>
-                            <Label htmlFor="musician_instrument">Instrumento *</Label>
+                            <Label htmlFor="musician_instrument" className="text-gray-900 font-medium">Instrumento *</Label>
                             <Input
                               id="musician_instrument"
                               value={musicianFormData.instrument}
                               onChange={(e) => setMusicianFormData({ ...musicianFormData, instrument: e.target.value })}
+                              placeholder="Ex: Guitarrista"
                               required
+                              className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                             />
                           </div>
                           <div>
-                            <Label htmlFor="musician_fee">Cachê Padrão (R$) *</Label>
+                            <Label htmlFor="musician_fee" className="text-gray-900 font-medium">Cachê Padrão (R$) *</Label>
                             <Input
                               id="musician_fee"
                               type="number"
                               step="0.01"
                               value={musicianFormData.default_fee}
                               onChange={(e) => setMusicianFormData({ ...musicianFormData, default_fee: e.target.value })}
+                              placeholder="0,00"
                               required
+                              className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                             />
                           </div>
-                          <Button type="submit" className="w-full">
-                            {editingMusician ? 'Atualizar' : 'Cadastrar'}
-                          </Button>
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setMusicianDialogOpen(false)}
+                              className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                            >
+                              Cancelar
+                            </Button>
+                            <Button type="submit" className="flex-1 bg-primary text-white hover:bg-primary/90">
+                              {editingMusician ? 'Salvar' : 'Cadastrar'}
+                            </Button>
+                          </div>
                         </form>
                       </DialogContent>
                     </Dialog>
