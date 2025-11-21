@@ -8,10 +8,12 @@ import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Bell, Plus, Pencil, Trash2, Music2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { instruments } from '@/data/brazilLocations';
 
 interface Musician {
   id: string;
@@ -30,8 +32,10 @@ const ArtistMusicians = () => {
   const [formData, setFormData] = useState({
     name: '',
     instrument: '',
+    customInstrument: '',
     default_fee: '',
   });
+  const [isFreelancer, setIsFreelancer] = useState(false);
 
   useEffect(() => {
     fetchMusicians();
@@ -61,10 +65,12 @@ const ArtistMusicians = () => {
     e.preventDefault();
     if (!user) return;
 
+    const finalInstrument = formData.instrument === 'Outro...' ? formData.customInstrument : formData.instrument;
+
     try {
       const musicianData = {
-        name: formData.name,
-        instrument: formData.instrument,
+        name: isFreelancer ? 'Freelancer' : formData.name,
+        instrument: finalInstrument,
         default_fee: parseFloat(formData.default_fee),
         owner_uid: user.id,
       };
@@ -97,9 +103,16 @@ const ArtistMusicians = () => {
 
   const handleEdit = (musician: Musician) => {
     setEditingMusician(musician);
+    const isFreelancerEdit = musician.name === 'Freelancer';
+    setIsFreelancer(isFreelancerEdit);
+    
+    // Check if instrument is in predefined list
+    const isCustomInstrument = !instruments.slice(0, -1).includes(musician.instrument);
+    
     setFormData({
       name: musician.name,
-      instrument: musician.instrument,
+      instrument: isCustomInstrument ? 'Outro...' : musician.instrument,
+      customInstrument: isCustomInstrument ? musician.instrument : '',
       default_fee: musician.default_fee.toString(),
     });
     setDialogOpen(true);
@@ -124,7 +137,8 @@ const ArtistMusicians = () => {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', instrument: '', default_fee: '' });
+    setFormData({ name: '', instrument: '', customInstrument: '', default_fee: '' });
+    setIsFreelancer(false);
     setEditingMusician(null);
   };
 
@@ -168,45 +182,107 @@ const ArtistMusicians = () => {
                       Adicionar Músico
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="bg-white">
+                  <DialogContent className="bg-white max-w-md">
                     <DialogHeader>
                       <DialogTitle>
-                        {editingMusician ? 'Editar Músico' : 'Adicionar Músico'}
+                        {editingMusician ? 'Editar Membro' : 'Adicionar Novo Membro'}
                       </DialogTitle>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Preencha os detalhes do membro da sua equipe.
+                      </p>
+                      <div className="mt-3">
+                        <Button
+                          type="button"
+                          variant={isFreelancer ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => {
+                            setIsFreelancer(!isFreelancer);
+                            if (!isFreelancer) {
+                              setFormData({ ...formData, name: 'Freelancer' });
+                            } else {
+                              setFormData({ ...formData, name: '' });
+                            }
+                          }}
+                        >
+                          {isFreelancer ? 'Desmarcar Freelancer' : 'Marcar como Freelancer'}
+                        </Button>
+                      </div>
                     </DialogHeader>
                     <form onSubmit={handleSubmit} className="space-y-4">
                       <div>
-                        <Label htmlFor="name">Nome *</Label>
+                        <Label htmlFor="name">Nome do Membro</Label>
                         <Input
                           id="name"
-                          value={formData.name}
+                          value={isFreelancer ? 'Freelancer' : formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="Ex: João da Silva"
                           required
+                          disabled={isFreelancer}
+                          className={isFreelancer ? 'bg-gray-100' : ''}
                         />
                       </div>
+                      
                       <div>
-                        <Label htmlFor="instrument">Instrumento *</Label>
-                        <Input
-                          id="instrument"
-                          value={formData.instrument}
-                          onChange={(e) => setFormData({ ...formData, instrument: e.target.value })}
+                        <Label htmlFor="instrument">Função / Instrumento</Label>
+                        <Select 
+                          value={formData.instrument} 
+                          onValueChange={(value) => setFormData({ ...formData, instrument: value, customInstrument: '' })}
                           required
-                        />
+                        >
+                          <SelectTrigger id="instrument">
+                            <SelectValue placeholder="Selecione uma função" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white max-h-[200px]">
+                            {instruments.map((instrument) => (
+                              <SelectItem key={instrument} value={instrument}>
+                                {instrument}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
+
+                      {formData.instrument === 'Outro...' && (
+                        <div>
+                          <Label htmlFor="customInstrument">Qual função?</Label>
+                          <Input
+                            id="customInstrument"
+                            value={formData.customInstrument}
+                            onChange={(e) => setFormData({ ...formData, customInstrument: e.target.value })}
+                            placeholder="Digite a função/instrumento"
+                            required
+                          />
+                        </div>
+                      )}
+                      
                       <div>
-                        <Label htmlFor="default_fee">Cachê Padrão (R$) *</Label>
+                        <Label htmlFor="default_fee">Cachê Padrão (R$)</Label>
                         <Input
                           id="default_fee"
-                          type="number"
-                          step="0.01"
+                          type="text"
                           value={formData.default_fee}
-                          onChange={(e) => setFormData({ ...formData, default_fee: e.target.value })}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^\d,]/g, '');
+                            setFormData({ ...formData, default_fee: value });
+                          }}
+                          placeholder="R$ 0,00"
                           required
                         />
                       </div>
-                      <Button type="submit" className="w-full">
-                        {editingMusician ? 'Atualizar' : 'Cadastrar'}
-                      </Button>
+
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => handleDialogClose(false)}
+                          className="flex-1"
+                        >
+                          Cancelar
+                        </Button>
+                        <Button type="submit" className="flex-1">
+                          Salvar
+                        </Button>
+                      </div>
                     </form>
                   </DialogContent>
                 </Dialog>
