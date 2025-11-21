@@ -30,6 +30,7 @@ interface Ticket {
   priority: string;
   created_at: string;
   updated_at: string;
+  attachment_url?: string | null;
 }
 
 interface Response {
@@ -454,6 +455,24 @@ const Admin = () => {
                         </span>
                       </div>
                       <p className="text-gray-700">{selectedTicket.message}</p>
+                      {selectedTicket.attachment_url && (
+                        <div className="mt-3">
+                          <p className="text-sm text-gray-600 mb-2">Anexo:</p>
+                          <a 
+                            href={selectedTicket.attachment_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="block"
+                          >
+                            <img 
+                              src={selectedTicket.attachment_url} 
+                              alt="Anexo do ticket" 
+                              className="max-w-full h-auto rounded border border-gray-300 hover:opacity-90 transition-opacity"
+                              style={{ maxHeight: '400px' }}
+                            />
+                          </a>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
 
