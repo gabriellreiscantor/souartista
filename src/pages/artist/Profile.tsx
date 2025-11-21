@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Mail, Phone, Camera, LogOut } from 'lucide-react';
+import { User, Mail, Phone, Camera, LogOut, Bell } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -152,6 +152,9 @@ const ArtistProfile = () => {
               <h1 className="text-xl font-semibold text-black">Perfil</h1>
             </div>
             <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <Bell className="w-5 h-5 text-gray-900" />
+              </Button>
               <UserMenu userName={userData?.name} userRole="artist" />
             </div>
           </header>
