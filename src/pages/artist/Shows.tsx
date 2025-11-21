@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { brazilStates, citiesByState } from '@/data/brazilLocations';
 
 interface Musician {
   id: string;
@@ -100,8 +101,11 @@ const ArtistShows = () => {
   const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
   const [venueFormData, setVenueFormData] = useState({
     name: '',
-    address: '',
+    state: '',
+    city: '',
+    customCity: '',
   });
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -365,10 +369,14 @@ const ArtistShows = () => {
     e.preventDefault();
     if (!user) return;
 
+    const finalCity = venueFormData.city === 'Outro (digitar)' ? venueFormData.customCity : venueFormData.city;
+    const stateLabel = brazilStates.find(s => s.value === venueFormData.state)?.value || '';
+    const address = finalCity && stateLabel ? `${finalCity}, ${stateLabel}` : null;
+
     try {
       const venueData = {
         name: venueFormData.name,
-        address: venueFormData.address || null,
+        address: address,
         owner_uid: user.id,
       };
 
@@ -400,10 +408,41 @@ const ArtistShows = () => {
 
   const handleVenueEdit = (venue: Venue) => {
     setEditingVenue(venue);
+    
+    // Parse address to extract city and state
+    let city = '';
+    let state = '';
+    let customCity = '';
+    
+    if (venue.address) {
+      const parts = venue.address.split(', ');
+      if (parts.length === 2) {
+        city = parts[0];
+        state = parts[1];
+        
+        // Check if city is in the state's list
+        const stateData = brazilStates.find(s => s.value === state);
+        if (stateData) {
+          const cities = citiesByState[state] || [];
+          if (!cities.includes(city)) {
+            customCity = city;
+            city = 'Outro (digitar)';
+          }
+        }
+      }
+    }
+    
     setVenueFormData({
       name: venue.name,
-      address: venue.address || '',
+      state: state,
+      city: city,
+      customCity: customCity,
     });
+    
+    if (state) {
+      setAvailableCities(citiesByState[state] || []);
+    }
+    
     setVenueDialogOpen(true);
   };
 
@@ -426,8 +465,14 @@ const ArtistShows = () => {
   };
 
   const resetVenueForm = () => {
-    setVenueFormData({ name: '', address: '' });
+    setVenueFormData({ name: '', state: '', city: '', customCity: '' });
+    setAvailableCities([]);
     setEditingVenue(null);
+  };
+
+  const handleStateChange = (value: string) => {
+    setVenueFormData({ ...venueFormData, state: value, city: '', customCity: '' });
+    setAvailableCities(citiesByState[value] || []);
   };
 
   // Team member helpers
@@ -1116,35 +1161,98 @@ const ArtistShows = () => {
                           Adicionar
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="bg-white">
+                      <DialogContent className="bg-white text-gray-900 max-w-md">
                         <DialogHeader>
-                          <DialogTitle>
-                            {editingVenue ? 'Editar Local' : 'Adicionar Local'}
+                          <DialogTitle className="text-gray-900 text-xl font-semibold">
+                            {editingVenue ? 'Editar Local/Bar' : 'Adicionar Novo Local/Bar'}
                           </DialogTitle>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Cadastre um local fixo para selecioná-lo facilmente ao agendar shows.
+                          </p>
+                          <p className="text-xs text-gray-500 italic mt-1">
+                            (Caso for um particular, adicione pela aba "Agenda de Shows".)
+                          </p>
                         </DialogHeader>
-                        <form onSubmit={handleVenueSubmit} className="space-y-4">
+                        <form onSubmit={handleVenueSubmit} className="space-y-4 mt-4">
                           <div>
-                            <Label htmlFor="venue_name">Nome do Local *</Label>
+                            <Label htmlFor="venue_name" className="text-gray-900 font-medium">Nome do Local/Bar</Label>
                             <Input
                               id="venue_name"
                               value={venueFormData.name}
                               onChange={(e) => setVenueFormData({ ...venueFormData, name: e.target.value })}
-                              placeholder="Ex: Bar do João"
+                              placeholder="Ex: Bar do Zé"
                               required
+                              className="mt-1.5 bg-[#2d1b4e] border-[#2d1b4e] text-white placeholder:text-white/60"
                             />
                           </div>
-                          <div>
-                            <Label htmlFor="venue_address">Endereço (opcional)</Label>
-                            <Input
-                              id="venue_address"
-                              value={venueFormData.address}
-                              onChange={(e) => setVenueFormData({ ...venueFormData, address: e.target.value })}
-                              placeholder="Ex: Rua das Flores, 123"
-                            />
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="venue_state" className="text-gray-900 font-medium">Estado</Label>
+                              <Select value={venueFormData.state} onValueChange={handleStateChange} required>
+                                <SelectTrigger id="venue_state" className="mt-1.5 bg-[#2d1b4e] border-[#2d1b4e] text-white">
+                                  <SelectValue placeholder="Selecione o estado" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white max-h-[200px] z-50">
+                                  {brazilStates.map((state) => (
+                                    <SelectItem key={state.value} value={state.value} className="text-gray-900">
+                                      {state.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            
+                            <div>
+                              <Label htmlFor="venue_city" className="text-gray-900 font-medium">Cidade</Label>
+                              <Select 
+                                value={venueFormData.city} 
+                                onValueChange={(value) => setVenueFormData({ ...venueFormData, city: value, customCity: '' })}
+                                disabled={!venueFormData.state}
+                                required
+                              >
+                                <SelectTrigger id="venue_city" className="mt-1.5 bg-[#2d1b4e] border-[#2d1b4e] text-white">
+                                  <SelectValue placeholder="Escolha um estado" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white max-h-[200px] z-50">
+                                  {availableCities.map((city) => (
+                                    <SelectItem key={city} value={city} className="text-gray-900">
+                                      {city}
+                                    </SelectItem>
+                                  ))}
+                                  <SelectItem value="Outro (digitar)" className="text-gray-900">Outro (digitar)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
-                          <Button type="submit" className="w-full">
-                            {editingVenue ? 'Atualizar' : 'Cadastrar'}
-                          </Button>
+
+                          {venueFormData.city === 'Outro (digitar)' && (
+                            <div>
+                              <Label htmlFor="venue_custom_city" className="text-gray-900 font-medium">Qual cidade?</Label>
+                              <Input
+                                id="venue_custom_city"
+                                value={venueFormData.customCity}
+                                onChange={(e) => setVenueFormData({ ...venueFormData, customCity: e.target.value })}
+                                placeholder="Digite o nome da cidade"
+                                required
+                                className="mt-1.5 bg-[#2d1b4e] border-[#2d1b4e] text-white placeholder:text-white/60"
+                              />
+                            </div>
+                          )}
+
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setVenueDialogOpen(false)}
+                              className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                            >
+                              Cancelar
+                            </Button>
+                            <Button type="submit" className="flex-1 bg-primary text-white hover:bg-primary/90">
+                              Salvar Local
+                            </Button>
+                          </div>
                         </form>
                       </DialogContent>
                     </Dialog>
