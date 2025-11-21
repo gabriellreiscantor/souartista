@@ -26,6 +26,8 @@ import MusicianReports from "./pages/musician/Reports";
 import MusicianTransportation from "./pages/musician/Transportation";
 import ArtistSupport from "./pages/artist/Support";
 import MusicianSupport from "./pages/musician/Support";
+import ArtistProfile from "./pages/artist/Profile";
+import MusicianProfile from "./pages/musician/Profile";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
@@ -54,6 +56,7 @@ const App = () => (
             <Route path="/artist/reports" element={<ArtistReports />} />
             <Route path="/artist/transportation" element={<ArtistTransportation />} />
             <Route path="/artist/support" element={<ArtistSupport />} />
+            <Route path="/artist/profile" element={<ArtistProfile />} />
             <Route path="/musician/dashboard" element={<MusicianDashboard />} />
             <Route path="/musician/shows" element={<MusicianShows />} />
             <Route path="/musician/artists" element={<MusicianArtists />} />
@@ -61,6 +64,7 @@ const App = () => (
             <Route path="/musician/reports" element={<MusicianReports />} />
             <Route path="/musician/transportation" element={<MusicianTransportation />} />
             <Route path="/musician/support" element={<MusicianSupport />} />
+            <Route path="/musician/profile" element={<MusicianProfile />} />
             <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
