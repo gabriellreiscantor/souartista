@@ -599,10 +599,10 @@ const ArtistShows = () => {
             </div>
           </header>
 
-          <main className="flex-1 p-6 overflow-auto pb-20 md:pb-6">
+          <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
             <div className="max-w-5xl mx-auto">
               <Tabs defaultValue="shows" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-white p-0 h-auto">
+                <TabsList className="hidden md:grid w-full grid-cols-3 bg-white p-0 h-auto">
                   <TabsTrigger value="shows" className="flex items-center gap-2 bg-[#EAD6F5] text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 rounded-none border-b-2 border-transparent data-[state=active]:border-primary py-3">
                     <Music2 className="w-4 h-4" />
                     Agenda de Shows
@@ -618,9 +618,9 @@ const ArtistShows = () => {
                 </TabsList>
 
                 {/* AGENDA DE SHOWS TAB */}
-                <TabsContent value="shows" className="mt-6 space-y-6">
+                <TabsContent value="shows" className="mt-0 md:mt-6 space-y-4 md:space-y-6">
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="hidden md:flex items-center justify-between">
                       <div>
                         <h2 className="text-2xl font-bold text-gray-900">Agenda de Shows</h2>
                         <p className="text-sm text-gray-500">
@@ -952,7 +952,7 @@ const ArtistShows = () => {
                     ) : (
                       <>
                         {viewMode === 'list' ? (
-                          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                          <div className="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden">
                             <div className="grid grid-cols-[1fr,120px,120px,120px,80px] gap-4 p-4 bg-gray-50 border-b text-sm font-medium text-gray-600">
                               <div>Data e Local</div>
                               <div className="text-center">Cachê</div>
@@ -998,7 +998,7 @@ const ArtistShows = () => {
                                             <MoreVertical className="h-4 w-4" />
                                           </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
+                                        <DropdownMenuContent className="bg-white z-50">
                                           <DropdownMenuItem onClick={() => handleShowEdit(show)}>
                                             <Edit className="w-4 h-4 mr-2" />
                                             Editar
@@ -1030,7 +1030,7 @@ const ArtistShows = () => {
                             })}
                           </div>
                         ) : (
-                          <div className="space-y-4">
+                          <div className="grid gap-4 md:grid-cols-2">
                             {shows.map((show) => {
                               const expenses = calculateShowExpenses(show);
                               const profit = calculateShowProfit(show);
@@ -1039,18 +1039,20 @@ const ArtistShows = () => {
                               
                               return (
                                 <Card key={show.id} className="bg-white border border-gray-200 overflow-hidden">
-                                  <div className="p-6">
-                                    <div className="flex gap-4">
-                                      <div className="flex-shrink-0 w-16 text-center bg-[#F5F0FA] rounded-lg p-2">
-                                        <div className="text-xs text-primary font-semibold uppercase">{format(showDate, 'MMM', { locale: ptBR })}</div>
-                                        <div className="text-3xl font-bold text-primary">{format(showDate, 'dd')}</div>
+                                  <div className="p-4 md:p-6">
+                                    <div className="flex gap-3 md:gap-4">
+                                      <div className="flex-shrink-0 w-16 text-center bg-[#F5F0FA] rounded-lg p-2 border-2 border-purple-200">
+                                        <div className="text-xs text-primary font-bold uppercase">{format(showDate, 'MMM', { locale: ptBR })}</div>
+                                        <div className="text-3xl font-bold text-gray-900">{format(showDate, 'dd')}</div>
                                       </div>
                                       <div className="flex-1">
                                         <div className="flex items-start justify-between mb-2">
                                           <div>
-                                            <h3 className="text-lg font-bold text-gray-900">{show.venue_name}</h3>
-                                            <p className="text-sm text-gray-600">
-                                              {format(showDate, "EEEE", { locale: ptBR })} • ⏰ {show.time_local}
+                                            <h3 className="text-base md:text-lg font-bold text-gray-900">{show.venue_name}</h3>
+                                            <p className="text-sm text-gray-600 flex items-center gap-1">
+                                              {format(showDate, "EEEE", { locale: ptBR })} • 
+                                              <Clock className="w-3 h-3" />
+                                              {show.time_local}
                                             </p>
                                           </div>
                                           <DropdownMenu>
@@ -1059,7 +1061,7 @@ const ArtistShows = () => {
                                                 <MoreVertical className="h-4 w-4" />
                                               </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
+                                            <DropdownMenuContent className="bg-white z-50">
                                               <DropdownMenuItem onClick={() => handleShowEdit(show)}>
                                                 <Edit className="w-4 h-4 mr-2" />
                                                 Editar
@@ -1071,18 +1073,18 @@ const ArtistShows = () => {
                                             </DropdownMenuContent>
                                           </DropdownMenu>
                                         </div>
-                                        <div className="flex gap-6 text-sm">
-                                          <div className="text-center">
+                                        <div className="flex gap-3 md:gap-6 text-sm">
+                                          <div className="flex-1 text-center">
                                             <div className="text-gray-600 text-xs">Cachê</div>
-                                            <div className="text-green-600 font-semibold">R$ {show.fee.toFixed(2).replace('.', ',')}</div>
+                                            <div className="text-green-600 font-bold text-sm md:text-base">R$ {show.fee.toFixed(2).replace('.', ',')}</div>
                                           </div>
-                                          <div className="text-center">
+                                          <div className="flex-1 text-center">
                                             <div className="text-gray-600 text-xs">Despesas</div>
-                                            <div className="text-red-600 font-semibold">R$ {expenses.toFixed(2).replace('.', ',')}</div>
+                                            <div className="text-red-600 font-bold text-sm md:text-base">R$ {expenses.toFixed(2).replace('.', ',')}</div>
                                           </div>
-                                          <div className="text-center">
+                                          <div className="flex-1 text-center">
                                             <div className="text-gray-600 text-xs">Lucro</div>
-                                            <div className="px-3 py-1 rounded-full bg-primary text-white font-semibold text-sm inline-block">
+                                            <div className="px-2 md:px-3 py-1 rounded-full bg-primary text-white font-bold text-xs md:text-sm inline-block">
                                               R$ {profit.toFixed(2).replace('.', ',')}
                                             </div>
                                           </div>
@@ -1092,23 +1094,48 @@ const ArtistShows = () => {
                                     {show.expenses_team.length > 0 && (
                                       <Collapsible open={isExpanded} onOpenChange={() => toggleShowExpanded(show.id)}>
                                         <CollapsibleTrigger asChild>
-                                          <Button variant="ghost" className="w-full mt-4 bg-[#F5F0FA] hover:bg-[#EAD6F5] text-primary">
+                                          <Button variant="ghost" className="w-full mt-4 bg-[#F5F0FA] hover:bg-[#EAD6F5] text-primary font-semibold">
                                             Detalhes das Despesas
                                             {isExpanded ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
                                           </Button>
                                         </CollapsibleTrigger>
                                         <CollapsibleContent className="mt-4">
-                                          <div className="p-4 bg-[#F5F0FA] rounded-lg">
+                                          <div className="p-3 md:p-4 bg-[#F5F0FA] rounded-lg">
                                             <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 mb-2">
                                               <Users className="w-4 h-4" />
                                               Equipe
                                             </div>
                                             {show.expenses_team.map((member, idx) => (
                                               <div key={idx} className="flex justify-between text-sm text-gray-600 mb-1">
-                                                <span>{member.name} ({member.instrument})</span>
-                                                <span>R$ {member.cost.toFixed(2).replace('.', ',')}</span>
+                                                <span className="text-gray-500">{member.name} ({member.instrument})</span>
+                                                <span className="font-medium">R$ {member.cost.toFixed(2).replace('.', ',')}</span>
                                               </div>
                                             ))}
+                                          </div>
+                                          
+                                          {/* Mobile: Financial summary */}
+                                          <div className="md:hidden mt-3 p-4 bg-[#F5F0FA] rounded-lg space-y-3">
+                                            <div className="flex items-center justify-between">
+                                              <div className="flex items-center gap-2">
+                                                <DollarSign className="w-5 h-5 text-green-600" />
+                                                <span className="text-sm text-gray-600">Receita Bruta</span>
+                                              </div>
+                                              <span className="text-lg font-bold text-gray-900">R$ {show.fee.toFixed(2).replace('.', ',')}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                              <div className="flex items-center gap-2">
+                                                <TrendingDown className="w-5 h-5 text-red-600" />
+                                                <span className="text-sm text-gray-600">Despesas</span>
+                                              </div>
+                                              <span className="text-lg font-bold text-red-600">R$ {expenses.toFixed(2).replace('.', ',')}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                              <div className="flex items-center gap-2">
+                                                <ArrowUpRight className="w-5 h-5 text-blue-600" />
+                                                <span className="text-sm text-gray-600">Lucro Líquido</span>
+                                              </div>
+                                              <span className="text-lg font-bold text-blue-600">R$ {profit.toFixed(2).replace('.', ',')}</span>
+                                            </div>
                                           </div>
                                         </CollapsibleContent>
                                       </Collapsible>
@@ -1120,7 +1147,8 @@ const ArtistShows = () => {
                           </div>
                         )}
                         
-                        <Card className="p-6 bg-[#F5F0FA] border-0">
+                        {/* Desktop: Financial summary */}
+                        <Card className="hidden md:block p-6 bg-[#F5F0FA] border-0">
                           <div className="grid grid-cols-3 gap-8">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
