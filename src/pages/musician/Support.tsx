@@ -32,6 +32,7 @@ interface Ticket {
   priority: string;
   created_at: string;
   updated_at: string;
+  attachment_url?: string | null;
 }
 
 interface Response {
@@ -55,6 +56,8 @@ const MusicianSupport = () => {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [priority, setPriority] = useState('medium');
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -102,6 +105,30 @@ const MusicianSupport = () => {
     }
 
     try {
+      setUploading(true);
+      let attachmentUrl = null;
+
+      // Upload attachment if exists
+      if (attachmentFile) {
+        const fileExt = attachmentFile.name.split('.').pop();
+        const fileName = `${user?.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('support-attachments')
+          .upload(fileName, attachmentFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('support-attachments')
+          .getPublicUrl(fileName);
+
+        attachmentUrl = publicUrl;
+      }
+
       const { error } = await supabase
         .from('support_tickets')
         .insert({
@@ -109,7 +136,8 @@ const MusicianSupport = () => {
           subject,
           message,
           priority,
-          status: 'open'
+          status: 'open',
+          attachment_url: attachmentUrl
         });
 
       if (error) throw error;
@@ -118,11 +146,14 @@ const MusicianSupport = () => {
       setSubject('');
       setMessage('');
       setPriority('medium');
+      setAttachmentFile(null);
       setDialogOpen(false);
       fetchTickets();
     } catch (error) {
       console.error('Error creating ticket:', error);
       toast.error('Erro ao criar ticket');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -251,7 +282,7 @@ const MusicianSupport = () => {
                           value={subject}
                           onChange={(e) => setSubject(e.target.value)}
                           placeholder="Ex: Problema com pagamento"
-                          className="bg-white text-black placeholder:text-gray-400"
+                          className="bg-white text-black placeholder:text-gray-400 capitalize"
                         />
                       </div>
 
@@ -281,15 +312,31 @@ const MusicianSupport = () => {
                           onChange={(e) => setMessage(e.target.value)}
                           placeholder="Descreva detalhadamente seu problema..."
                           rows={5}
-                          className="bg-white text-black placeholder:text-gray-400"
+                          className="bg-white text-black placeholder:text-gray-400 capitalize"
                         />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Anexar Print (opcional)
+                        </label>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => setAttachmentFile(e.target.files?.[0] || null)}
+                          className="bg-white text-black"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Formatos aceitos: JPG, PNG, GIF, WEBP. Tamanho máximo: 15MB
+                        </p>
                       </div>
 
                       <Button 
                         onClick={handleCreateTicket}
+                        disabled={uploading}
                         className="w-full bg-primary text-white hover:bg-primary/90"
                       >
-                        Criar Ticket
+                        {uploading ? 'Enviando...' : 'Criar Ticket'}
                       </Button>
                     </div>
                   </DialogContent>
@@ -369,6 +416,24 @@ const MusicianSupport = () => {
                             </span>
                           </div>
                           <p className="text-gray-700">{selectedTicket.message}</p>
+                          {selectedTicket.attachment_url && (
+                            <div className="mt-3">
+                              <p className="text-sm text-gray-600 mb-2">Anexo:</p>
+                              <a 
+                                href={selectedTicket.attachment_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="block"
+                              >
+                                <img 
+                                  src={selectedTicket.attachment_url} 
+                                  alt="Anexo do ticket" 
+                                  className="max-w-full h-auto rounded border border-gray-300 hover:opacity-90 transition-opacity"
+                                  style={{ maxHeight: '400px' }}
+                                />
+                              </a>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
 

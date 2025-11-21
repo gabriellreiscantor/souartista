@@ -279,6 +279,7 @@ export type Database = {
       }
       support_tickets: {
         Row: {
+          attachment_url: string | null
           created_at: string
           id: string
           message: string
@@ -289,6 +290,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attachment_url?: string | null
           created_at?: string
           id?: string
           message: string
@@ -299,6 +301,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attachment_url?: string | null
           created_at?: string
           id?: string
           message?: string
