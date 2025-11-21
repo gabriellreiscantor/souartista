@@ -426,7 +426,19 @@ const ArtistShows = () => {
 
   // Team member helpers
   const addTeamMember = () => {
-    setTeamMembers([...teamMembers, { name: '', instrument: '', cost: 0 }]);
+    // Se houver músicos cadastrados, adiciona o primeiro como padrão
+    if (musicians.length > 0) {
+      const firstMusician = musicians[0];
+      setTeamMembers([...teamMembers, {
+        musicianId: firstMusician.id,
+        name: firstMusician.name,
+        instrument: firstMusician.instrument,
+        cost: firstMusician.default_fee,
+      }]);
+    } else {
+      // Se não houver músicos, adiciona um membro vazio
+      setTeamMembers([...teamMembers, { name: '', instrument: '', cost: 0 }]);
+    }
   };
 
   const removeTeamMember = (index: number) => {
@@ -691,7 +703,7 @@ const ArtistShows = () => {
                                     value={showFormData.fee}
                                     onChange={(e) => setShowFormData({ ...showFormData, fee: e.target.value })}
                                     placeholder="R$ 0,00"
-                                    className="bg-white text-gray-900"
+                                    className="bg-white text-gray-900 placeholder:text-gray-500"
                                     required
                                   />
                                 </div>
@@ -701,11 +713,11 @@ const ArtistShows = () => {
                                 <div className="flex items-center justify-between">
                                   <div>
                                     <h3 className="font-semibold text-gray-900">Equipe/Músicos</h3>
-                                    <p className="text-xs text-muted-foreground">Custo total: R$ {teamMembers.reduce((sum, m) => sum + m.cost, 0).toFixed(2)}</p>
+                                    <p className="text-xs text-gray-900">Custo total: R$ {teamMembers.reduce((sum, m) => sum + m.cost, 0).toFixed(2)}</p>
                                   </div>
-                                  <Button type="button" variant="outline" onClick={addTeamMember} className="bg-white hover:bg-gray-50">
+                                  <Button type="button" variant="outline" onClick={addTeamMember} className="bg-white hover:bg-gray-50 text-gray-900">
                                     <Plus className="w-4 h-4 mr-2" />
-                                    Adicionar Músico
+                                    Adicionar
                                   </Button>
                                 </div>
 
@@ -727,19 +739,25 @@ const ArtistShows = () => {
                                     <div className="grid grid-cols-2 gap-3">
                                       <div>
                                         <Select
-                                          value={member.musicianId || 'freelancer'}
-                                          onValueChange={(value) => updateTeamMember(index, 'musicianId', value === 'freelancer' ? undefined : value)}
+                                          value={member.musicianId || ''}
+                                          onValueChange={(value) => {
+                                            if (value === 'freelancer') {
+                                              updateTeamMember(index, 'musicianId', undefined);
+                                            } else {
+                                              updateTeamMember(index, 'musicianId', value);
+                                            }
+                                          }}
                                         >
                                           <SelectTrigger className="bg-white text-gray-900">
-                                            <SelectValue placeholder="Membro" />
+                                            <SelectValue placeholder="Selecione um músico" />
                                           </SelectTrigger>
                                           <SelectContent className="bg-white">
                                             {musicians.map((m) => (
-                                              <SelectItem key={m.id} value={m.id}>
+                                              <SelectItem key={m.id} value={m.id} className="text-gray-900">
                                                 {m.name} - {m.instrument}
                                               </SelectItem>
                                             ))}
-                                            <SelectItem value="freelancer">Freelancer</SelectItem>
+                                            <SelectItem value="freelancer" className="text-gray-900">Freelancer</SelectItem>
                                           </SelectContent>
                                         </Select>
 
@@ -749,14 +767,14 @@ const ArtistShows = () => {
                                               placeholder="Nome"
                                               value={member.name}
                                               onChange={(e) => updateTeamMember(index, 'name', e.target.value)}
-                                              className="mt-2 bg-white text-gray-900"
+                                              className="mt-2 bg-white text-gray-900 placeholder:text-gray-500"
                                               required
                                             />
                                             <Input
                                               placeholder="Instrumento"
                                               value={member.instrument}
                                               onChange={(e) => updateTeamMember(index, 'instrument', e.target.value)}
-                                              className="mt-2 bg-white text-gray-900"
+                                              className="mt-2 bg-white text-gray-900 placeholder:text-gray-500"
                                               required
                                             />
                                           </>
@@ -768,7 +786,7 @@ const ArtistShows = () => {
                                           placeholder="Custo (R$)"
                                           value={member.cost || ''}
                                           onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
-                                          className="bg-white text-gray-900"
+                                          className="bg-white text-gray-900 placeholder:text-gray-500"
                                           required
                                         />
                                       </div>
@@ -781,9 +799,9 @@ const ArtistShows = () => {
                                 <div className="flex items-center justify-between">
                                   <div>
                                     <h3 className="font-semibold text-gray-900">Despesas Adicionais (Optional)</h3>
-                                    <p className="text-xs text-muted-foreground">Custo total: R$ {additionalExpenses.reduce((sum, e) => sum + e.cost, 0).toFixed(2)}</p>
+                                    <p className="text-xs text-gray-900">Custo total: R$ {additionalExpenses.reduce((sum, e) => sum + e.cost, 0).toFixed(2)}</p>
                                   </div>
-                                  <Button type="button" variant="outline" onClick={addExpense} className="bg-white hover:bg-gray-50">
+                                  <Button type="button" variant="outline" onClick={addExpense} className="bg-white hover:bg-gray-50 text-gray-900">
                                     <Plus className="w-4 h-4 mr-2" />
                                     Adicionar Despesa
                                   </Button>
@@ -1068,9 +1086,9 @@ const ArtistShows = () => {
                     
                     <Dialog open={venueDialogOpen} onOpenChange={setVenueDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button onClick={resetVenueForm}>
+                        <Button onClick={resetVenueForm} className="bg-primary hover:bg-primary/90 text-white">
                           <Plus className="w-4 h-4 mr-2" />
-                          Adicionar Local
+                          Adicionar
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="bg-white">
@@ -1156,9 +1174,9 @@ const ArtistShows = () => {
                     
                     <Dialog open={musicianDialogOpen} onOpenChange={setMusicianDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button onClick={resetMusicianForm}>
+                        <Button onClick={resetMusicianForm} className="bg-primary hover:bg-primary/90 text-white">
                           <Plus className="w-4 h-4 mr-2" />
-                          Adicionar Músico
+                          Adicionar
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="bg-white">
