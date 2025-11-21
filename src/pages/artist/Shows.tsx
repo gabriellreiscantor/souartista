@@ -507,47 +507,49 @@ const ArtistShows = () => {
                     
                     <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button onClick={resetShowForm}>
+                        <Button onClick={resetShowForm} className="bg-primary hover:bg-primary/90">
                           <Plus className="w-4 h-4 mr-2" />
                           Adicionar
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
                         <DialogHeader>
-                          <DialogTitle>
-                            {editingShow ? 'Editar Show' : 'Adicionar Show'}
+                          <DialogTitle className="text-gray-900">
+                            {editingShow ? 'Editar Show' : 'Adicionar Novo Show'}
                           </DialogTitle>
+                          <p className="text-sm text-muted-foreground">
+                            Preencha as informações abaixo para gerenciar o show.
+                          </p>
                         </DialogHeader>
                         <form onSubmit={handleShowSubmit} className="space-y-6">
                           <div className="space-y-4">
-                            <h3 className="font-semibold text-gray-900">Informações Básicas</h3>
-                            
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
                               <Switch
                                 checked={showFormData.is_private_event}
                                 onCheckedChange={(checked) => 
                                   setShowFormData({ ...showFormData, is_private_event: checked })
                                 }
                               />
-                              <Label>Evento Particular</Label>
+                              <Label className="text-sm font-normal cursor-pointer">Evento Particular</Label>
                             </div>
 
                             {showFormData.is_private_event ? (
                               <div>
-                                <Label htmlFor="custom_venue">Nome do Evento *</Label>
+                                <Label htmlFor="custom_venue" className="text-gray-900">Nome do local</Label>
                                 <Input
                                   id="custom_venue"
                                   value={showFormData.custom_venue}
                                   onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
                                   placeholder="Ex: Casamento Ana e Pedro"
+                                  className="bg-white"
                                   required
                                 />
                               </div>
                             ) : (
                               <div>
-                                <Label htmlFor="venue_id">Local *</Label>
+                                <Label htmlFor="venue_id" className="text-gray-900">Nome do local</Label>
                                 <Select value={showFormData.venue_id} onValueChange={(value) => setShowFormData({ ...showFormData, venue_id: value })}>
-                                  <SelectTrigger>
+                                  <SelectTrigger className="bg-white">
                                     <SelectValue placeholder="Selecione um local" />
                                   </SelectTrigger>
                                   <SelectContent className="bg-white">
@@ -561,7 +563,7 @@ const ArtistShows = () => {
                                 </Select>
                                 {showFormData.venue_id === 'custom' && (
                                   <Input
-                                    className="mt-2"
+                                    className="mt-2 bg-white"
                                     value={showFormData.custom_venue}
                                     onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
                                     placeholder="Digite o nome do local"
@@ -571,37 +573,55 @@ const ArtistShows = () => {
                               </div>
                             )}
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-3 gap-4">
                               <div>
-                                <Label htmlFor="date_local">Data *</Label>
+                                <Label htmlFor="date_local" className="text-gray-900">Data do show</Label>
                                 <Input
                                   id="date_local"
                                   type="date"
                                   value={showFormData.date_local}
                                   onChange={(e) => setShowFormData({ ...showFormData, date_local: e.target.value })}
+                                  className="bg-white"
                                   required
                                 />
                               </div>
                               <div>
-                                <Label htmlFor="time_local">Horário *</Label>
+                                <Label htmlFor="time_local" className="text-gray-900">Horário</Label>
                                 <Input
                                   id="time_local"
                                   type="time"
                                   value={showFormData.time_local}
                                   onChange={(e) => setShowFormData({ ...showFormData, time_local: e.target.value })}
+                                  className="bg-white"
                                   required
                                 />
+                              </div>
+                              <div>
+                                <Label htmlFor="duration" className="text-gray-900">Duração de show</Label>
+                                <Select defaultValue="4h">
+                                  <SelectTrigger className="bg-white">
+                                    <SelectValue placeholder="Horas..." />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-white">
+                                    <SelectItem value="2h">2 horas</SelectItem>
+                                    <SelectItem value="3h">3 horas</SelectItem>
+                                    <SelectItem value="4h">4 horas</SelectItem>
+                                    <SelectItem value="5h">5 horas</SelectItem>
+                                    <SelectItem value="6h">6 horas</SelectItem>
+                                  </SelectContent>
+                                </Select>
                               </div>
                             </div>
 
                             <div>
-                              <Label htmlFor="fee">Cachê Total do Show (R$) *</Label>
+                              <Label htmlFor="fee" className="text-gray-900">Cachê (R$)</Label>
                               <Input
                                 id="fee"
-                                type="number"
-                                step="0.01"
+                                type="text"
                                 value={showFormData.fee}
                                 onChange={(e) => setShowFormData({ ...showFormData, fee: e.target.value })}
+                                placeholder="R$ 0,00"
+                                className="bg-white"
                                 required
                               />
                             </div>
@@ -609,121 +629,138 @@ const ArtistShows = () => {
 
                           <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                              <h3 className="font-semibold text-gray-900">Equipe/Músicos</h3>
-                              <Button type="button" variant="outline" size="sm" onClick={addTeamMember}>
+                              <div>
+                                <h3 className="font-semibold text-gray-900">Equipe/Músicos</h3>
+                                <p className="text-xs text-muted-foreground">Custo total: R$ {teamMembers.reduce((sum, m) => sum + m.cost, 0).toFixed(2)}</p>
+                              </div>
+                              <Button type="button" variant="outline" size="sm" onClick={addTeamMember} className="bg-white">
                                 <Plus className="w-4 h-4 mr-2" />
-                                Adicionar Músico
+                                Adicionar
                               </Button>
                             </div>
 
                             {teamMembers.map((member, index) => (
-                              <Card key={index} className="p-4 bg-white border border-gray-200">
-                                <div className="space-y-3">
-                                  <div className="flex items-center justify-between">
-                                    <Label>Músico {index + 1}</Label>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => removeTeamMember(index)}
-                                    >
-                                      <X className="w-4 h-4" />
-                                    </Button>
-                                  </div>
-
-                                  <Select
-                                    value={member.musicianId || 'freelancer'}
-                                    onValueChange={(value) => updateTeamMember(index, 'musicianId', value === 'freelancer' ? undefined : value)}
+                              <div key={index} className="p-4 bg-muted rounded-lg border border-border space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <Label className="text-gray-900">Membro</Label>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeTeamMember(index)}
+                                    className="text-destructive hover:text-destructive"
                                   >
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Selecione um músico" />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-white">
-                                      {musicians.map((m) => (
-                                        <SelectItem key={m.id} value={m.id}>
-                                          {m.name} - {m.instrument}
-                                        </SelectItem>
-                                      ))}
-                                      <SelectItem value="freelancer">Freelancer</SelectItem>
-                                    </SelectContent>
-                                  </Select>
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
 
-                                  {!member.musicianId && (
-                                    <>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <Select
+                                      value={member.musicianId || 'freelancer'}
+                                      onValueChange={(value) => updateTeamMember(index, 'musicianId', value === 'freelancer' ? undefined : value)}
+                                    >
+                                      <SelectTrigger className="bg-white">
+                                        <SelectValue placeholder="Membro" />
+                                      </SelectTrigger>
+                                      <SelectContent className="bg-white">
+                                        {musicians.map((m) => (
+                                          <SelectItem key={m.id} value={m.id}>
+                                            {m.name} - {m.instrument}
+                                          </SelectItem>
+                                        ))}
+                                        <SelectItem value="freelancer">Freelancer</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+
+                                    {!member.musicianId && (
                                       <Input
                                         placeholder="Nome"
                                         value={member.name}
                                         onChange={(e) => updateTeamMember(index, 'name', e.target.value)}
+                                        className="mt-2 bg-white"
                                         required
                                       />
-                                      <Input
-                                        placeholder="Instrumento"
-                                        value={member.instrument}
-                                        onChange={(e) => updateTeamMember(index, 'instrument', e.target.value)}
-                                        required
-                                      />
-                                    </>
-                                  )}
-
-                                  <Input
-                                    type="number"
-                                    step="0.01"
-                                    placeholder="Cachê (R$)"
-                                    value={member.cost}
-                                    onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
-                                    required
-                                  />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <Input
+                                      type="text"
+                                      placeholder="Custo (R$)"
+                                      value={member.cost || ''}
+                                      onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
+                                      className="bg-white"
+                                      required
+                                    />
+                                  </div>
                                 </div>
-                              </Card>
+                              </div>
                             ))}
                           </div>
 
                           <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                              <h3 className="font-semibold text-gray-900">Despesas Adicionais</h3>
-                              <Button type="button" variant="outline" size="sm" onClick={addExpense}>
+                              <div>
+                                <h3 className="font-semibold text-gray-900">Despesas Adicionais (Optional)</h3>
+                                <p className="text-xs text-muted-foreground">Custo total: R$ {additionalExpenses.reduce((sum, e) => sum + e.cost, 0).toFixed(2)}</p>
+                              </div>
+                              <Button type="button" variant="outline" size="sm" onClick={addExpense} className="bg-white">
                                 <Plus className="w-4 h-4 mr-2" />
                                 Adicionar Despesa
                               </Button>
                             </div>
 
                             {additionalExpenses.map((expense, index) => (
-                              <Card key={index} className="p-4 bg-white border border-gray-200">
-                                <div className="space-y-3">
-                                  <div className="flex items-center justify-between">
-                                    <Label>Despesa {index + 1}</Label>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => removeExpense(index)}
-                                    >
-                                      <X className="w-4 h-4" />
-                                    </Button>
-                                  </div>
+                              <div key={index} className="p-4 bg-muted rounded-lg border border-border space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <Label className="text-gray-900">Despesa</Label>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeExpense(index)}
+                                    className="text-destructive hover:text-destructive"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
 
+                                <div className="grid grid-cols-3 gap-3">
+                                  <Input
+                                    placeholder="Tipo"
+                                    value={expense.description}
+                                    onChange={(e) => updateExpense(index, 'description', e.target.value)}
+                                    className="bg-white"
+                                    required
+                                  />
                                   <Input
                                     placeholder="Descrição"
                                     value={expense.description}
                                     onChange={(e) => updateExpense(index, 'description', e.target.value)}
+                                    className="bg-white"
                                     required
                                   />
                                   <Input
-                                    type="number"
-                                    step="0.01"
+                                    type="text"
                                     placeholder="Valor (R$)"
-                                    value={expense.cost}
+                                    value={expense.cost || ''}
                                     onChange={(e) => updateExpense(index, 'cost', parseFloat(e.target.value) || 0)}
+                                    className="bg-white"
                                     required
                                   />
                                 </div>
-                              </Card>
+                              </div>
                             ))}
                           </div>
 
-                          <Button type="submit" className="w-full">
-                            {editingShow ? 'Atualizar Show' : 'Cadastrar Show'}
-                          </Button>
+                          <div className="flex gap-3">
+                            <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white">
+                              Cancelar
+                            </Button>
+                            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
+                              Salvar Show
+                            </Button>
+                          </div>
                         </form>
                       </DialogContent>
                     </Dialog>
