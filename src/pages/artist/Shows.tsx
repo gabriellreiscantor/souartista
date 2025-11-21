@@ -1412,6 +1412,32 @@ const ArtistShows = () => {
                                         </div>
                                       </div>
                                     </div>
+                                    
+                                    {/* Mobile: Financial summary - ALWAYS VISIBLE */}
+                                    <div className="md:hidden mt-3 p-4 bg-[#F5F0FA] rounded-lg space-y-3">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          <DollarSign className="w-5 h-5 text-green-600" />
+                                          <span className="text-sm text-gray-600">Receita Bruta</span>
+                                        </div>
+                                        <span className="text-lg font-bold text-gray-900">R$ {show.fee.toFixed(2).replace('.', ',')}</span>
+                                      </div>
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          <TrendingDown className="w-5 h-5 text-red-600" />
+                                          <span className="text-sm text-gray-600">Despesas</span>
+                                        </div>
+                                        <span className="text-lg font-bold text-red-600">R$ {expenses.toFixed(2).replace('.', ',')}</span>
+                                      </div>
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          <ArrowUpRight className="w-5 h-5 text-blue-600" />
+                                          <span className="text-sm text-gray-600">Lucro Líquido</span>
+                                        </div>
+                                        <span className="text-lg font-bold text-blue-600">R$ {profit.toFixed(2).replace('.', ',')}</span>
+                                      </div>
+                                    </div>
+
                                     {show.expenses_team.length > 0 && (
                                       <Collapsible open={isExpanded} onOpenChange={() => toggleShowExpanded(show.id)}>
                                         <CollapsibleTrigger asChild>
@@ -1432,31 +1458,6 @@ const ArtistShows = () => {
                                                 <span className="font-medium">R$ {member.cost.toFixed(2).replace('.', ',')}</span>
                                               </div>
                                             ))}
-                                          </div>
-                                          
-                                          {/* Mobile: Financial summary */}
-                                          <div className="md:hidden mt-3 p-4 bg-[#F5F0FA] rounded-lg space-y-3">
-                                            <div className="flex items-center justify-between">
-                                              <div className="flex items-center gap-2">
-                                                <DollarSign className="w-5 h-5 text-green-600" />
-                                                <span className="text-sm text-gray-600">Receita Bruta</span>
-                                              </div>
-                                              <span className="text-lg font-bold text-gray-900">R$ {show.fee.toFixed(2).replace('.', ',')}</span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                              <div className="flex items-center gap-2">
-                                                <TrendingDown className="w-5 h-5 text-red-600" />
-                                                <span className="text-sm text-gray-600">Despesas</span>
-                                              </div>
-                                              <span className="text-lg font-bold text-red-600">R$ {expenses.toFixed(2).replace('.', ',')}</span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                              <div className="flex items-center gap-2">
-                                                <ArrowUpRight className="w-5 h-5 text-blue-600" />
-                                                <span className="text-sm text-gray-600">Lucro Líquido</span>
-                                              </div>
-                                              <span className="text-lg font-bold text-blue-600">R$ {profit.toFixed(2).replace('.', ',')}</span>
-                                            </div>
                                           </div>
                                         </CollapsibleContent>
                                       </Collapsible>
