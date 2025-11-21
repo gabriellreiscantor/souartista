@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ImageEditor } from '@/components/ImageEditor';
 const ArtistProfile = () => {
   const {
     user,
@@ -30,6 +31,8 @@ const ArtistProfile = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [imageEditorOpen, setImageEditorOpen] = useState(false);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   useEffect(() => {
     if (userData) {
       setName(userData.name || '');
@@ -38,7 +41,7 @@ const ArtistProfile = () => {
       setPhotoUrl(userData.photo_url || '');
     }
   }, [userData]);
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -47,31 +50,48 @@ const ArtistProfile = () => {
       toast.error('A imagem deve ter no máximo 5MB');
       return;
     }
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor, selecione uma imagem válida');
+      return;
+    }
+
+    setSelectedImageFile(file);
+    setImageEditorOpen(true);
+  };
+
+  const handlePhotoUpload = async (croppedImage: Blob) => {
     try {
       setUploading(true);
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user?.id}/profile.${fileExt}`;
-      const {
-        error: uploadError
-      } = await supabase.storage.from('profile-photos').upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: true
-      });
+      const fileName = `${user?.id}/profile.jpg`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('profile-photos')
+        .upload(fileName, croppedImage, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: 'image/jpeg'
+        });
+
       if (uploadError) throw uploadError;
-      const {
-        data: {
-          publicUrl
-        }
-      } = supabase.storage.from('profile-photos').getPublicUrl(fileName);
-      setPhotoUrl(publicUrl);
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-photos')
+        .getPublicUrl(fileName);
+
+      // Adicionar timestamp para forçar atualização da imagem
+      const urlWithTimestamp = `${publicUrl}?t=${Date.now()}`;
+      setPhotoUrl(urlWithTimestamp);
 
       // Atualizar no banco
-      const {
-        error: updateError
-      } = await supabase.from('profiles').update({
-        photo_url: publicUrl
-      }).eq('id', user?.id);
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ photo_url: publicUrl })
+        .eq('id', user?.id);
+
       if (updateError) throw updateError;
+
       toast.success('Foto atualizada com sucesso!');
     } catch (error) {
       console.error('Error uploading photo:', error);
@@ -172,7 +192,14 @@ const ArtistProfile = () => {
                   </Avatar>
                   <label htmlFor="photo-upload" className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full cursor-pointer hover:bg-primary/90 transition-colors">
                     <Camera className="w-5 h-5" />
-                    <input id="photo-upload" type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" disabled={uploading} />
+                    <input 
+                      id="photo-upload" 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handlePhotoSelect} 
+                      className="hidden" 
+                      disabled={uploading} 
+                    />
                   </label>
                 </div>
                 <div className="text-center">
@@ -180,6 +207,13 @@ const ArtistProfile = () => {
                   <p className="text-muted-foreground">Gerencie suas informações de conta.</p>
                 </div>
               </div>
+
+              <ImageEditor
+                open={imageEditorOpen}
+                onOpenChange={setImageEditorOpen}
+                imageFile={selectedImageFile}
+                onSave={handlePhotoUpload}
+              />
 
               {/* Form */}
               <div className="space-y-4 bg-white border border-border rounded-lg p-6">
