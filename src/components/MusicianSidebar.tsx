@@ -1,4 +1,5 @@
 import { Music, Calendar, BarChart3, Car, LogOut, LayoutDashboard, Mic2, HelpCircle, User, Settings } from 'lucide-react';
+import logo from '@/assets/logo.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -54,20 +55,10 @@ export function MusicianSidebar() {
       <SidebarContent className="bg-sidebar-background" onClick={handleSidebarClick}>
         {/* Logo */}
         <div className="p-4 border-b border-sidebar-border">
-          {!collapsed && (
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <Mic2 className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="text-lg font-heading font-bold text-sidebar-foreground">Sou Músico</h1>
-              </div>
-            </div>
-          )}
-          {collapsed && (
-            <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center mx-auto">
-              <Mic2 className="w-6 h-6 text-primary-foreground" />
-            </div>
+          {!collapsed ? (
+            <img src={logo} alt="Sou Artista" className="h-12 w-auto mx-auto" />
+          ) : (
+            <img src={logo} alt="Sou Artista" className="h-8 w-auto mx-auto" />
           )}
         </div>
 

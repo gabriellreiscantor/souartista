@@ -11,6 +11,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
 import { Music, Loader2, ArrowLeft, CalendarIcon } from 'lucide-react';
+import logo from '@/assets/logo.png';
 import { cn } from '@/lib/utils';
 
 // Formatação de CPF: 000.000.000-00
@@ -144,11 +145,8 @@ const Register = () => {
     <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-gradient-to-br from-background via-background to-primary/5">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center">
-            <Music className="w-7 h-7 text-primary-foreground" />
-          </div>
-          <span className="text-2xl font-heading font-bold">Sou Artista</span>
+        <div className="flex items-center justify-center mb-8">
+          <img src={logo} alt="Sou Artista" className="h-16 w-auto" />
         </div>
 
         {/* Card */}

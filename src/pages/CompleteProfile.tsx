@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Music, Loader2 } from 'lucide-react';
+import logo from '@/assets/logo.png';
 
 const CompleteProfile = () => {
   const [loading, setLoading] = useState(false);
@@ -52,11 +53,8 @@ const CompleteProfile = () => {
     <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-background via-background to-primary/5">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center">
-            <Music className="w-7 h-7 text-primary-foreground" />
-          </div>
-          <span className="text-2xl font-heading font-bold">Sou Artista</span>
+        <div className="flex items-center justify-center mb-8">
+          <img src={logo} alt="Sou Artista" className="h-16 w-auto" />
         </div>
 
         {/* Card */}

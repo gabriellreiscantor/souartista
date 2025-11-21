@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Music, Check } from 'lucide-react';
+import logo from '@/assets/logo.png';
 
 const Subscribe = () => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
@@ -25,11 +26,8 @@ const Subscribe = () => {
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-background via-background to-primary/5">
       <div className="w-full max-w-5xl">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-12">
-          <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center">
-            <Music className="w-7 h-7 text-primary-foreground" />
-          </div>
-          <span className="text-2xl font-heading font-bold">Sou Artista</span>
+        <div className="flex items-center justify-center mb-12">
+          <img src={logo} alt="Sou Artista" className="h-16 w-auto" />
         </div>
 
         <div className="text-center mb-12">
