@@ -190,7 +190,7 @@ const MusicianArtists = () => {
                   <p className="text-gray-500">Carregando...</p>
                 </div>
               ) : artists.length === 0 ? (
-                <Card className="p-8 text-center border border-gray-200">
+                <Card className="p-8 text-center bg-white border border-gray-200">
                   <Mic2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-500 mb-4">Nenhum artista cadastrado</p>
                   <p className="text-sm text-gray-400">
@@ -200,7 +200,7 @@ const MusicianArtists = () => {
               ) : (
                 <div className="grid gap-4">
                   {artists.map((artist) => (
-                    <Card key={artist.id} className="p-4 border border-gray-200">
+                    <Card key={artist.id} className="p-4 bg-white border border-gray-200">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">

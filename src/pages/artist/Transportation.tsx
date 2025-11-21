@@ -299,7 +299,7 @@ const ArtistTransportation = () => {
                 </Dialog>
               </div>
 
-              <Card className="mb-6">
+              <Card className="mb-6 bg-white">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <DollarSign className="h-5 w-5" />
@@ -324,7 +324,7 @@ const ArtistTransportation = () => {
               ) : (
                 <div className="space-y-3">
                   {expenses.map((expense) => (
-                    <Card key={expense.id}>
+                    <Card key={expense.id} className="bg-white">
                       <CardContent className="p-4 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           <div className="p-2 bg-purple-100 rounded-lg">

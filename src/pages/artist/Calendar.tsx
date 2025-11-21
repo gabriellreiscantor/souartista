@@ -79,7 +79,7 @@ const ArtistCalendar = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Calendário de Shows</h2>
               
               <div className="grid md:grid-cols-[auto,1fr] gap-6">
-                <Card className="w-full md:w-auto">
+                <Card className="w-full md:w-auto bg-white">
                   <CardContent className="p-4">
                     <CalendarComponent
                       mode="single"
@@ -100,7 +100,7 @@ const ArtistCalendar = () => {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-white">
                   <CardContent className="p-6">
                     <h3 className="text-lg font-semibold mb-4">
                       {date ? format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'Selecione uma data'}
