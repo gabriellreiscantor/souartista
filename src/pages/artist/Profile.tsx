@@ -215,7 +215,7 @@ const ArtistProfile = () => {
               {/* Form */}
               <div className="space-y-4 bg-white border border-border rounded-lg p-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="flex items-center gap-2">
+                  <Label htmlFor="name" className="flex items-center gap-2 text-black">
                     <User className="w-4 h-4" />
                     Nome de Exibição
                   </Label>
@@ -224,12 +224,12 @@ const ArtistProfile = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Seu nome"
-                    className="capitalize"
+                    className="capitalize bg-white text-black border-gray-300"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="flex items-center gap-2">
+                  <Label htmlFor="email" className="flex items-center gap-2 text-black">
                     <Mail className="w-4 h-4" />
                     Email
                   </Label>
@@ -238,15 +238,15 @@ const ArtistProfile = () => {
                     type="email"
                     value={email}
                     disabled
-                    className="bg-muted cursor-not-allowed"
+                    className="bg-gray-200 text-black cursor-not-allowed border-gray-300"
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-gray-600">
                     O email não pode ser alterado
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="flex items-center gap-2">
+                  <Label htmlFor="phone" className="flex items-center gap-2 text-black">
                     <Phone className="w-4 h-4" />
                     Telefone
                   </Label>
@@ -256,6 +256,7 @@ const ArtistProfile = () => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="(00) 00000-0000"
+                    className="bg-white text-black border-gray-300"
                   />
                 </div>
 
