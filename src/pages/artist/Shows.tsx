@@ -19,6 +19,7 @@ import { TimePicker } from '@/components/ui/time-picker';
 import { Bell, Plus, Calendar as CalendarIcon, Clock, MapPin, DollarSign, Edit, Trash2, Music2, Users, List, Grid3x3, ChevronDown, ChevronUp, MoreVertical, TrendingDown, ArrowUpRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -65,6 +66,7 @@ interface Show {
 
 const ArtistShows = () => {
   const { user, userData, userRole } = useAuth();
+  const isMobile = useIsMobile();
   const [shows, setShows] = useState<Show[]>([]);
   const [musicians, setMusicians] = useState<Musician[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
@@ -661,15 +663,16 @@ const ArtistShows = () => {
                         </SelectContent>
                       </Select>
 
-                      {/* Mobile: Sheet */}
-                      <Sheet open={showDialogOpen} onOpenChange={setShowDialogOpen}>
-                        <SheetTrigger asChild>
-                          <Button onClick={resetShowForm} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
-                            <Plus className="w-5 h-5 mr-2" />
-                            Adicionar
-                          </Button>
-                        </SheetTrigger>
-                        <SheetContent side="bottom" className="h-[90vh] overflow-y-auto bg-white p-0">
+                      {/* Mobile/Desktop Modal - Only one renders based on screen size */}
+                      {isMobile ? (
+                        <Sheet open={showDialogOpen} onOpenChange={setShowDialogOpen}>
+                          <SheetTrigger asChild>
+                            <Button onClick={resetShowForm} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
+                              <Plus className="w-5 h-5 mr-2" />
+                              Adicionar
+                            </Button>
+                          </SheetTrigger>
+                          <SheetContent side="bottom" className="h-[90vh] overflow-y-auto bg-white p-0">
                           <div className="p-6 pb-8">
                             <SheetHeader className="mb-4">
                               <SheetTitle className="text-gray-900 text-left">
@@ -921,29 +924,12 @@ const ArtistShows = () => {
                           </div>
                         </SheetContent>
                       </Sheet>
-
-                      {/* Desktop: Dialog */}
-                      <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
-                        <DialogTrigger asChild className="hidden md:inline-flex">
-                          <Button onClick={resetShowForm} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
-                            <Plus className="w-5 h-5 mr-2" />
-                            Adicionar
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
-                          <DialogHeader>
-                            <DialogTitle className="text-gray-900">
-                              {editingShow ? 'Editar Show' : 'Adicionar Novo Show'}
-                            </DialogTitle>
-                            <p className="text-sm text-muted-foreground">
-                              Preencha as informações abaixo para gerenciar o show.
-                            </p>
-                          </DialogHeader>
-                          <form onSubmit={handleShowSubmit} className="space-y-6">
-...
-                          </form>
-                        </DialogContent>
-                      </Dialog>
+                      ) : (
+                        <Button onClick={() => { resetShowForm(); setShowDialogOpen(true); }} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
+                          <Plus className="w-5 h-5 mr-2" />
+                          Adicionar
+                        </Button>
+                      )}
                     </Card>
 
                     {/* Desktop header */}
@@ -983,14 +969,20 @@ const ArtistShows = () => {
                             <SelectItem value="all" className="text-gray-900">Todos</SelectItem>
                           </SelectContent>
                         </Select>
-                        <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
-                          <DialogTrigger asChild>
-                            <Button onClick={resetShowForm} className="bg-primary hover:bg-primary/90 text-white">
-                              <Plus className="w-4 h-4 mr-2" />
-                              Adicionar
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
+                        {isMobile ? (
+                          <Button onClick={() => { resetShowForm(); setShowDialogOpen(true); }} className="bg-primary hover:bg-primary/90 text-white">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Adicionar
+                          </Button>
+                        ) : (
+                          <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
+                            <DialogTrigger asChild>
+                              <Button onClick={resetShowForm} className="bg-primary hover:bg-primary/90 text-white">
+                                <Plus className="w-4 h-4 mr-2" />
+                                Adicionar
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
                             <DialogHeader>
                               <DialogTitle className="text-gray-900">
                                 {editingShow ? 'Editar Show' : 'Adicionar Novo Show'}
@@ -1066,20 +1058,24 @@ const ArtistShows = () => {
                                           {showFormData.date_local ? format(new Date(showFormData.date_local), "dd/MM/yyyy", { locale: ptBR }) : "Selecione a data"}
                                         </Button>
                                       </PopoverTrigger>
-                                      <PopoverContent className="w-auto p-0 bg-primary border-0" align="start">
+                                       <PopoverContent className="w-auto p-0 bg-primary border-0" align="start">
                                         <Calendar
                                           mode="single"
-                                          selected={showFormData.date_local ? new Date(showFormData.date_local) : undefined}
+                                          selected={showFormData.date_local ? new Date(showFormData.date_local + 'T12:00:00') : undefined}
                                           onSelect={(date) => {
                                             if (date) {
-                                              setShowFormData({ ...showFormData, date_local: format(date, 'yyyy-MM-dd') });
+                                              // Format to yyyy-MM-dd in local timezone to avoid date shifting
+                                              const year = date.getFullYear();
+                                              const month = String(date.getMonth() + 1).padStart(2, '0');
+                                              const day = String(date.getDate()).padStart(2, '0');
+                                              setShowFormData({ ...showFormData, date_local: `${year}-${month}-${day}` });
                                               setCalendarOpen(false);
                                             }
                                           }}
                                           initialFocus
                                           className="bg-primary text-white pointer-events-auto"
                                         />
-                                      </PopoverContent>
+                                       </PopoverContent>
                                     </Popover>
                                   </div>
                                   <div>
@@ -1261,6 +1257,7 @@ const ArtistShows = () => {
                             </form>
                           </DialogContent>
                         </Dialog>
+                        )}
                       </div>
                     </div>
 
