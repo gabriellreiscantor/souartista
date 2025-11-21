@@ -12,12 +12,15 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, Music2, Users, List, Grid3x3, ChevronDown, ChevronUp, MoreVertical, TrendingDown, ArrowUpRight } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Bell, Plus, Calendar as CalendarIcon, Clock, MapPin, DollarSign, Edit, Trash2, Music2, Users, List, Grid3x3, ChevronDown, ChevronUp, MoreVertical, TrendingDown, ArrowUpRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 interface Musician {
   id: string;
@@ -65,6 +68,7 @@ const ArtistShows = () => {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
   const [expandedShows, setExpandedShows] = useState<Set<string>>(new Set());
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [calendarOpen, setCalendarOpen] = useState(false);
   
   // Shows dialog
   const [showDialogOpen, setShowDialogOpen] = useState(false);
@@ -579,13 +583,13 @@ const ArtistShows = () => {
                         </Button>
                         <Select defaultValue="week">
                           <SelectTrigger className="w-[160px] bg-white text-gray-900">
-                            <Calendar className="w-4 h-4 mr-2 text-gray-900" />
+                            <CalendarIcon className="w-4 h-4 mr-2 text-gray-900" />
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="week">Esta Semana</SelectItem>
-                            <SelectItem value="month">Este Mês</SelectItem>
-                            <SelectItem value="all">Todos</SelectItem>
+                          <SelectContent className="bg-white">
+                            <SelectItem value="week" className="text-gray-900">Esta Semana</SelectItem>
+                            <SelectItem value="month" className="text-gray-900">Este Mês</SelectItem>
+                            <SelectItem value="all" className="text-gray-900">Todos</SelectItem>
                           </SelectContent>
                         </Select>
                         <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
@@ -658,14 +662,34 @@ const ArtistShows = () => {
                                 <div className="grid grid-cols-3 gap-4">
                                   <div>
                                     <Label htmlFor="date_local" className="text-gray-900">Data do show</Label>
-                                    <Input
-                                      id="date_local"
-                                      type="date"
-                                      value={showFormData.date_local}
-                                      onChange={(e) => setShowFormData({ ...showFormData, date_local: e.target.value })}
-                                      className="bg-white text-gray-900"
-                                      required
-                                    />
+                                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                                      <PopoverTrigger asChild>
+                                        <Button
+                                          variant="outline"
+                                          className={cn(
+                                            "w-full justify-start text-left font-normal bg-white text-gray-900",
+                                            !showFormData.date_local && "text-gray-500"
+                                          )}
+                                        >
+                                          <CalendarIcon className="mr-2 h-4 w-4" />
+                                          {showFormData.date_local ? format(new Date(showFormData.date_local), "dd/MM/yyyy", { locale: ptBR }) : "Selecione a data"}
+                                        </Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-auto p-0 bg-primary border-0" align="start">
+                                        <Calendar
+                                          mode="single"
+                                          selected={showFormData.date_local ? new Date(showFormData.date_local) : undefined}
+                                          onSelect={(date) => {
+                                            if (date) {
+                                              setShowFormData({ ...showFormData, date_local: format(date, 'yyyy-MM-dd') });
+                                              setCalendarOpen(false);
+                                            }
+                                          }}
+                                          initialFocus
+                                          className="bg-primary text-white pointer-events-auto"
+                                        />
+                                      </PopoverContent>
+                                    </Popover>
                                   </div>
                                   <div>
                                     <Label htmlFor="time_local" className="text-gray-900">Horário</Label>
@@ -674,7 +698,7 @@ const ArtistShows = () => {
                                       type="time"
                                       value={showFormData.time_local}
                                       onChange={(e) => setShowFormData({ ...showFormData, time_local: e.target.value })}
-                                      className="bg-white text-gray-900"
+                                      className="bg-primary text-white placeholder:text-white/70 [&::-webkit-calendar-picker-indicator]:invert"
                                       required
                                     />
                                   </div>
@@ -685,11 +709,11 @@ const ArtistShows = () => {
                                         <SelectValue placeholder="Horas..." />
                                       </SelectTrigger>
                                       <SelectContent className="bg-white">
-                                        <SelectItem value="2h">2 horas</SelectItem>
-                                        <SelectItem value="3h">3 horas</SelectItem>
-                                        <SelectItem value="4h">4 horas</SelectItem>
-                                        <SelectItem value="5h">5 horas</SelectItem>
-                                        <SelectItem value="6h">6 horas</SelectItem>
+                                        <SelectItem value="2h" className="text-gray-900">2 horas</SelectItem>
+                                        <SelectItem value="3h" className="text-gray-900">3 horas</SelectItem>
+                                        <SelectItem value="4h" className="text-gray-900">4 horas</SelectItem>
+                                        <SelectItem value="5h" className="text-gray-900">5 horas</SelectItem>
+                                        <SelectItem value="6h" className="text-gray-900">6 horas</SelectItem>
                                       </SelectContent>
                                     </Select>
                                   </div>
