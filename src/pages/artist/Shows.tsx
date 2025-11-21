@@ -1660,8 +1660,7 @@ const ArtistShows = () => {
                           {/* Quick Freelancer Button */}
                           <Button
                             type="button"
-                            variant="outline"
-                            className="w-full border-2 border-primary text-primary hover:bg-primary hover:text-white"
+                            className="w-full bg-primary text-white hover:bg-primary/90"
                             onClick={() => setMusicianFormData({ ...musicianFormData, name: 'Freelancer', instrument: 'Freelancer', customInstrument: '' })}
                           >
                             <Users className="w-4 h-4 mr-2" />
