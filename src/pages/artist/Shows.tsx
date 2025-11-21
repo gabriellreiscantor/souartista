@@ -553,7 +553,7 @@ const ArtistShows = () => {
                           variant={viewMode === 'list' ? 'default' : 'outline'}
                           size="icon"
                           onClick={() => setViewMode('list')}
-                          className={viewMode === 'list' ? 'bg-[#EAD6F5]' : ''}
+                          className={viewMode === 'list' ? 'bg-[#EAD6F5] text-gray-900 hover:bg-[#EAD6F5]' : 'bg-white text-gray-900'}
                         >
                           <List className="w-4 h-4" />
                         </Button>
@@ -561,13 +561,13 @@ const ArtistShows = () => {
                           variant={viewMode === 'grid' ? 'default' : 'outline'}
                           size="icon"
                           onClick={() => setViewMode('grid')}
-                          className={viewMode === 'grid' ? 'bg-[#EAD6F5]' : ''}
+                          className={viewMode === 'grid' ? 'bg-[#EAD6F5] text-gray-900 hover:bg-[#EAD6F5]' : 'bg-white text-gray-900'}
                         >
                           <Grid3x3 className="w-4 h-4" />
                         </Button>
                         <Select defaultValue="week">
-                          <SelectTrigger className="w-[160px]">
-                            <Calendar className="w-4 h-4 mr-2" />
+                          <SelectTrigger className="w-[160px] bg-white text-gray-900">
+                            <Calendar className="w-4 h-4 mr-2 text-gray-900" />
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -578,7 +578,7 @@ const ArtistShows = () => {
                         </Select>
                         <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
                           <DialogTrigger asChild>
-                            <Button onClick={resetShowForm} className="bg-primary hover:bg-primary/90">
+                            <Button onClick={resetShowForm} className="bg-primary hover:bg-primary/90 text-white">
                               <Plus className="w-4 h-4 mr-2" />
                               Adicionar
                             </Button>
