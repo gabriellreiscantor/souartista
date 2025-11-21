@@ -498,7 +498,7 @@ const ArtistReports = () => {
                       {teamExpensesByMember.map((member, index) => (
                         <div key={index} className="flex items-center justify-between">
                           <span className="text-sm text-gray-900">{index + 1}. {member.name}</span>
-                          <span className="text-sm font-semibold text-gray-900">
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-purple-600 text-white text-xs font-semibold">
                             R$ {formatCurrency(member.amount)}
                           </span>
                         </div>
