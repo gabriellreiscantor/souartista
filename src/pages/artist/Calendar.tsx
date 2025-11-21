@@ -132,6 +132,7 @@ const ArtistCalendar = () => {
                         variant="outline" 
                         size="icon"
                         onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                        className="bg-primary text-white hover:bg-primary/90 border-primary"
                       >
                         <ChevronLeft className="w-4 h-4" />
                       </Button>
@@ -139,6 +140,7 @@ const ArtistCalendar = () => {
                         variant="outline" 
                         size="icon"
                         onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                        className="bg-primary text-white hover:bg-primary/90 border-primary"
                       >
                         <ChevronRight className="w-4 h-4" />
                       </Button>
