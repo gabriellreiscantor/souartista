@@ -164,8 +164,8 @@ const ArtistCalendar = () => {
                           onClick={() => handleDateClick(dayDate)}
                           className={`aspect-square relative rounded-lg border transition-all hover:border-purple-500 ${
                             isSelected ? 'bg-purple-600 text-white border-purple-600' : 
-                            isToday ? 'bg-purple-50 border-purple-300' :
-                            'bg-white border-gray-200'
+                            isToday ? 'bg-purple-50 border-purple-300 text-gray-900' :
+                            'bg-white border-gray-200 text-gray-900'
                           }`}
                         >
                           <span className="text-sm font-medium">{i + 1}</span>
