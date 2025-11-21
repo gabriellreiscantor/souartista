@@ -22,7 +22,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { brazilStates, citiesByState } from '@/data/brazilLocations';
+import { brazilStates, citiesByState, instruments } from '@/data/brazilLocations';
 
 interface Musician {
   id: string;
@@ -93,6 +93,7 @@ const ArtistShows = () => {
   const [musicianFormData, setMusicianFormData] = useState({
     name: '',
     instrument: '',
+    customInstrument: '',
     default_fee: '',
   });
 
@@ -297,10 +298,14 @@ const ArtistShows = () => {
     e.preventDefault();
     if (!user) return;
 
+    const finalInstrument = musicianFormData.instrument === 'Outro...' 
+      ? musicianFormData.customInstrument 
+      : musicianFormData.instrument;
+
     try {
       const musicianData = {
         name: musicianFormData.name,
-        instrument: musicianFormData.instrument,
+        instrument: finalInstrument,
         default_fee: parseFloat(musicianFormData.default_fee),
         owner_uid: user.id,
       };
@@ -333,9 +338,14 @@ const ArtistShows = () => {
 
   const handleMusicianEdit = (musician: Musician) => {
     setEditingMusician(musician);
+    
+    // Check if instrument is in the list
+    const isCustomInstrument = !instruments.includes(musician.instrument);
+    
     setMusicianFormData({
       name: musician.name,
-      instrument: musician.instrument,
+      instrument: isCustomInstrument ? 'Outro...' : musician.instrument,
+      customInstrument: isCustomInstrument ? musician.instrument : '',
       default_fee: musician.default_fee.toString(),
     });
     setMusicianDialogOpen(true);
@@ -360,7 +370,7 @@ const ArtistShows = () => {
   };
 
   const resetMusicianForm = () => {
-    setMusicianFormData({ name: '', instrument: '', default_fee: '' });
+    setMusicianFormData({ name: '', instrument: '', customInstrument: '', default_fee: '' });
     setEditingMusician(null);
   };
 
@@ -1334,16 +1344,38 @@ const ArtistShows = () => {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="musician_instrument" className="text-gray-900 font-medium">Instrumento *</Label>
-                            <Input
-                              id="musician_instrument"
-                              value={musicianFormData.instrument}
-                              onChange={(e) => setMusicianFormData({ ...musicianFormData, instrument: e.target.value })}
-                              placeholder="Ex: Guitarrista"
+                            <Label htmlFor="musician_instrument" className="text-gray-900 font-medium">Função/Instrumento *</Label>
+                            <Select 
+                              value={musicianFormData.instrument} 
+                              onValueChange={(value) => setMusicianFormData({ ...musicianFormData, instrument: value, customInstrument: '' })}
                               required
-                              className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-                            />
+                            >
+                              <SelectTrigger id="musician_instrument" className="mt-1.5 bg-white border-gray-300 text-gray-900">
+                                <SelectValue placeholder="Selecione uma função" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-white max-h-[200px] z-50">
+                                {instruments.map((instrument) => (
+                                  <SelectItem key={instrument} value={instrument} className="text-gray-900">
+                                    {instrument}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
+                          
+                          {musicianFormData.instrument === 'Outro...' && (
+                            <div>
+                              <Label htmlFor="custom_instrument" className="text-gray-900 font-medium">Qual função?</Label>
+                              <Input
+                                id="custom_instrument"
+                                value={musicianFormData.customInstrument}
+                                onChange={(e) => setMusicianFormData({ ...musicianFormData, customInstrument: e.target.value })}
+                                placeholder="Digite a função/instrumento"
+                                required
+                                className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                              />
+                            </div>
+                          )}
                           <div>
                             <Label htmlFor="musician_fee" className="text-gray-900 font-medium">Cachê Padrão (R$) *</Label>
                             <Input

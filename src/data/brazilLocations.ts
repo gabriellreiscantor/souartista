@@ -59,13 +59,13 @@ export const citiesByState: Record<string, string[]> = {
 };
 
 export const instruments = [
-  'Backing vocal',
+  'Back vocal',
   'Baixista',
   'Baterista',
   'Equipe de luz',
   'Equipe de vídeo',
   'Guitarrista',
-  'Percussionista',
+  'Profissional',
   'Produtor de palco',
   'Roadie',
   'Sanfoneiro',
