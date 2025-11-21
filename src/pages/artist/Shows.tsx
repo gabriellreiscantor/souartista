@@ -10,8 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Users, Map } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, Music2, Users, List, Grid3x3, ChevronDown, ChevronUp, MoreVertical, TrendingDown, ArrowUpRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -61,6 +62,9 @@ const ArtistShows = () => {
   const [musicians, setMusicians] = useState<Musician[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
+  const [expandedShows, setExpandedShows] = useState<Set<string>>(new Set());
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   
   // Shows dialog
   const [showDialogOpen, setShowDialogOpen] = useState(false);
@@ -122,6 +126,7 @@ const ArtistShows = () => {
       })) as Show[];
       
       setShows(typedShows);
+      setLastUpdated(new Date());
     } catch (error: any) {
       console.error('Error fetching shows:', error);
       toast.error('Erro ao carregar shows');
@@ -462,6 +467,38 @@ const ArtistShows = () => {
     setAdditionalExpenses(updated);
   };
 
+  const toggleShowExpanded = (showId: string) => {
+    const newExpanded = new Set(expandedShows);
+    if (newExpanded.has(showId)) {
+      newExpanded.delete(showId);
+    } else {
+      newExpanded.add(showId);
+    }
+    setExpandedShows(newExpanded);
+  };
+
+  const calculateTotals = () => {
+    const totalRevenue = shows.reduce((sum, show) => sum + show.fee, 0);
+    const totalExpenses = shows.reduce((sum, show) => {
+      const teamCosts = show.expenses_team.reduce((teamSum, member) => teamSum + member.cost, 0);
+      const otherCosts = show.expenses_other.reduce((otherSum, expense) => otherSum + expense.cost, 0);
+      return sum + teamCosts + otherCosts;
+    }, 0);
+    const netProfit = totalRevenue - totalExpenses;
+    
+    return { totalRevenue, totalExpenses, netProfit };
+  };
+
+  const calculateShowExpenses = (show: Show) => {
+    const teamCosts = show.expenses_team.reduce((sum, member) => sum + member.cost, 0);
+    const otherCosts = show.expenses_other.reduce((sum, expense) => sum + expense.cost, 0);
+    return teamCosts + otherCosts;
+  };
+
+  const calculateShowProfit = (show: Show) => {
+    return show.fee - calculateShowExpenses(show);
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-[#fafafa]">
@@ -501,340 +538,524 @@ const ArtistShows = () => {
                 </TabsList>
 
                 {/* AGENDA DE SHOWS TAB */}
-                <TabsContent value="shows" className="mt-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">Agenda de Shows</h2>
-                    
-                    <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button onClick={resetShowForm} className="bg-primary hover:bg-primary/90">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Adicionar
+                <TabsContent value="shows" className="mt-6 space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900">Agenda de Shows</h2>
+                        <p className="text-sm text-gray-500">
+                          Atualizado em {format(lastUpdated, "dd/MM/yyyy 'às' HH:mm:ss")}
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant={viewMode === 'list' ? 'default' : 'outline'}
+                          size="icon"
+                          onClick={() => setViewMode('list')}
+                          className={viewMode === 'list' ? 'bg-[#EAD6F5]' : ''}
+                        >
+                          <List className="w-4 h-4" />
                         </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
-                        <DialogHeader>
-                          <DialogTitle className="text-gray-900">
-                            {editingShow ? 'Editar Show' : 'Adicionar Novo Show'}
-                          </DialogTitle>
-                          <p className="text-sm text-muted-foreground">
-                            Preencha as informações abaixo para gerenciar o show.
-                          </p>
-                        </DialogHeader>
-                        <form onSubmit={handleShowSubmit} className="space-y-6">
-                          <div className="space-y-4">
-                            <Button
-                              type="button"
-                              variant={showFormData.is_private_event ? "default" : "outline"}
-                              onClick={() => setShowFormData({ ...showFormData, is_private_event: !showFormData.is_private_event })}
-                              className={showFormData.is_private_event ? "bg-primary hover:bg-primary/90 text-white" : "bg-white hover:bg-gray-50 text-gray-900"}
-                            >
-                              Evento Particular
+                        <Button
+                          variant={viewMode === 'grid' ? 'default' : 'outline'}
+                          size="icon"
+                          onClick={() => setViewMode('grid')}
+                          className={viewMode === 'grid' ? 'bg-[#EAD6F5]' : ''}
+                        >
+                          <Grid3x3 className="w-4 h-4" />
+                        </Button>
+                        <Select defaultValue="week">
+                          <SelectTrigger className="w-[160px]">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="week">Esta Semana</SelectItem>
+                            <SelectItem value="month">Este Mês</SelectItem>
+                            <SelectItem value="all">Todos</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button onClick={resetShowForm} className="bg-primary hover:bg-primary/90">
+                              <Plus className="w-4 h-4 mr-2" />
+                              Adicionar
                             </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
+                            <DialogHeader>
+                              <DialogTitle className="text-gray-900">
+                                {editingShow ? 'Editar Show' : 'Adicionar Novo Show'}
+                              </DialogTitle>
+                              <p className="text-sm text-muted-foreground">
+                                Preencha as informações abaixo para gerenciar o show.
+                              </p>
+                            </DialogHeader>
+                            <form onSubmit={handleShowSubmit} className="space-y-6">
+                              <div className="space-y-4">
+                                <Button
+                                  type="button"
+                                  variant={showFormData.is_private_event ? "default" : "outline"}
+                                  onClick={() => setShowFormData({ ...showFormData, is_private_event: !showFormData.is_private_event })}
+                                  className={showFormData.is_private_event ? "bg-primary hover:bg-primary/90 text-white" : "bg-white hover:bg-gray-50 text-gray-900"}
+                                >
+                                  Evento Particular
+                                </Button>
 
-                            {showFormData.is_private_event ? (
-                              <div>
-                                <Label htmlFor="custom_venue" className="text-gray-900">Nome do local</Label>
-                                <Input
-                                  id="custom_venue"
-                                  value={showFormData.custom_venue}
-                                  onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
-                                  placeholder="Ex: Casamento Ana e Pedro"
-                                  className="bg-white text-gray-900"
-                                  required
-                                />
-                              </div>
-                            ) : (
-                              <div>
-                                <Label htmlFor="venue_id" className="text-gray-900">Nome do local</Label>
-                                <Select value={showFormData.venue_id} onValueChange={(value) => setShowFormData({ ...showFormData, venue_id: value })}>
-                                  <SelectTrigger className="bg-white text-gray-900">
-                                    <SelectValue placeholder="Selecione um local" />
-                                  </SelectTrigger>
-                                  <SelectContent className="bg-white">
-                                    {venues.map((venue) => (
-                                      <SelectItem key={venue.id} value={venue.id}>
-                                        {venue.name}
-                                      </SelectItem>
-                                    ))}
-                                    <SelectItem value="custom">Outro local...</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                {showFormData.venue_id === 'custom' && (
-                                  <Input
-                                    className="mt-2 bg-white text-gray-900"
-                                    value={showFormData.custom_venue}
-                                    onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
-                                    placeholder="Digite o nome do local"
-                                    required
-                                  />
-                                )}
-                              </div>
-                            )}
-
-                            <div className="grid grid-cols-3 gap-4">
-                              <div>
-                                <Label htmlFor="date_local" className="text-gray-900">Data do show</Label>
-                                <Input
-                                  id="date_local"
-                                  type="date"
-                                  value={showFormData.date_local}
-                                  onChange={(e) => setShowFormData({ ...showFormData, date_local: e.target.value })}
-                                  className="bg-white text-gray-900"
-                                  required
-                                />
-                              </div>
-                              <div>
-                                <Label htmlFor="time_local" className="text-gray-900">Horário</Label>
-                                <Input
-                                  id="time_local"
-                                  type="time"
-                                  value={showFormData.time_local}
-                                  onChange={(e) => setShowFormData({ ...showFormData, time_local: e.target.value })}
-                                  className="bg-white text-gray-900"
-                                  required
-                                />
-                              </div>
-                              <div>
-                                <Label htmlFor="duration" className="text-gray-900">Duração de show</Label>
-                                <Select defaultValue="4h">
-                                  <SelectTrigger className="bg-white text-gray-900">
-                                    <SelectValue placeholder="Horas..." />
-                                  </SelectTrigger>
-                                  <SelectContent className="bg-white">
-                                    <SelectItem value="2h">2 horas</SelectItem>
-                                    <SelectItem value="3h">3 horas</SelectItem>
-                                    <SelectItem value="4h">4 horas</SelectItem>
-                                    <SelectItem value="5h">5 horas</SelectItem>
-                                    <SelectItem value="6h">6 horas</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </div>
-
-                            <div>
-                              <Label htmlFor="fee" className="text-gray-900">Cachê (R$)</Label>
-                              <Input
-                                id="fee"
-                                type="text"
-                                value={showFormData.fee}
-                                onChange={(e) => setShowFormData({ ...showFormData, fee: e.target.value })}
-                                placeholder="R$ 0,00"
-                                className="bg-white text-gray-900"
-                                required
-                              />
-                            </div>
-                          </div>
-
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <h3 className="font-semibold text-gray-900">Equipe/Músicos</h3>
-                                <p className="text-xs text-muted-foreground">Custo total: R$ {teamMembers.reduce((sum, m) => sum + m.cost, 0).toFixed(2)}</p>
-                              </div>
-                              <Button type="button" variant="outline" onClick={addTeamMember} className="bg-white hover:bg-gray-50">
-                                <Plus className="w-4 h-4 mr-2" />
-                                Adicionar Músico
-                              </Button>
-                            </div>
-
-                            {teamMembers.map((member, index) => (
-                              <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <Label className="text-gray-900">Membro</Label>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => removeTeamMember(index)}
-                                    className="text-destructive hover:text-destructive"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-3">
+                                {showFormData.is_private_event ? (
                                   <div>
-                                    <Select
-                                      value={member.musicianId || 'freelancer'}
-                                      onValueChange={(value) => updateTeamMember(index, 'musicianId', value === 'freelancer' ? undefined : value)}
-                                    >
-                                      <SelectTrigger className="bg-white text-gray-900">
-                                        <SelectValue placeholder="Membro" />
-                                      </SelectTrigger>
-                                      <SelectContent className="bg-white">
-                                        {musicians.map((m) => (
-                                          <SelectItem key={m.id} value={m.id}>
-                                            {m.name} - {m.instrument}
-                                          </SelectItem>
-                                        ))}
-                                        <SelectItem value="freelancer">Freelancer</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-
-                                    {!member.musicianId && (
-                                      <>
-                                        <Input
-                                          placeholder="Nome"
-                                          value={member.name}
-                                          onChange={(e) => updateTeamMember(index, 'name', e.target.value)}
-                                          className="mt-2 bg-white text-gray-900"
-                                          required
-                                        />
-                                        <Input
-                                          placeholder="Instrumento"
-                                          value={member.instrument}
-                                          onChange={(e) => updateTeamMember(index, 'instrument', e.target.value)}
-                                          className="mt-2 bg-white text-gray-900"
-                                          required
-                                        />
-                                      </>
-                                    )}
-                                  </div>
-                                  <div>
+                                    <Label htmlFor="custom_venue" className="text-gray-900">Nome do local</Label>
                                     <Input
-                                      type="text"
-                                      placeholder="Custo (R$)"
-                                      value={member.cost || ''}
-                                      onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
+                                      id="custom_venue"
+                                      value={showFormData.custom_venue}
+                                      onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
+                                      placeholder="Ex: Casamento Ana e Pedro"
                                       className="bg-white text-gray-900"
                                       required
                                     />
                                   </div>
+                                ) : (
+                                  <div>
+                                    <Label htmlFor="venue_id" className="text-gray-900">Nome do local</Label>
+                                    <Select value={showFormData.venue_id} onValueChange={(value) => setShowFormData({ ...showFormData, venue_id: value })}>
+                                      <SelectTrigger className="bg-white text-gray-900">
+                                        <SelectValue placeholder="Selecione um local" />
+                                      </SelectTrigger>
+                                      <SelectContent className="bg-white">
+                                        {venues.map((venue) => (
+                                          <SelectItem key={venue.id} value={venue.id}>
+                                            {venue.name}
+                                          </SelectItem>
+                                        ))}
+                                        <SelectItem value="custom">Outro local...</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                    {showFormData.venue_id === 'custom' && (
+                                      <Input
+                                        className="mt-2 bg-white text-gray-900"
+                                        value={showFormData.custom_venue}
+                                        onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
+                                        placeholder="Digite o nome do local"
+                                        required
+                                      />
+                                    )}
+                                  </div>
+                                )}
+
+                                <div className="grid grid-cols-3 gap-4">
+                                  <div>
+                                    <Label htmlFor="date_local" className="text-gray-900">Data do show</Label>
+                                    <Input
+                                      id="date_local"
+                                      type="date"
+                                      value={showFormData.date_local}
+                                      onChange={(e) => setShowFormData({ ...showFormData, date_local: e.target.value })}
+                                      className="bg-white text-gray-900"
+                                      required
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="time_local" className="text-gray-900">Horário</Label>
+                                    <Input
+                                      id="time_local"
+                                      type="time"
+                                      value={showFormData.time_local}
+                                      onChange={(e) => setShowFormData({ ...showFormData, time_local: e.target.value })}
+                                      className="bg-white text-gray-900"
+                                      required
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="duration" className="text-gray-900">Duração de show</Label>
+                                    <Select defaultValue="4h">
+                                      <SelectTrigger className="bg-white text-gray-900">
+                                        <SelectValue placeholder="Horas..." />
+                                      </SelectTrigger>
+                                      <SelectContent className="bg-white">
+                                        <SelectItem value="2h">2 horas</SelectItem>
+                                        <SelectItem value="3h">3 horas</SelectItem>
+                                        <SelectItem value="4h">4 horas</SelectItem>
+                                        <SelectItem value="5h">5 horas</SelectItem>
+                                        <SelectItem value="6h">6 horas</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <Label htmlFor="fee" className="text-gray-900">Cachê (R$)</Label>
+                                  <Input
+                                    id="fee"
+                                    type="text"
+                                    value={showFormData.fee}
+                                    onChange={(e) => setShowFormData({ ...showFormData, fee: e.target.value })}
+                                    placeholder="R$ 0,00"
+                                    className="bg-white text-gray-900"
+                                    required
+                                  />
                                 </div>
                               </div>
-                            ))}
-                          </div>
 
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <h3 className="font-semibold text-gray-900">Despesas Adicionais (Optional)</h3>
-                                <p className="text-xs text-muted-foreground">Custo total: R$ {additionalExpenses.reduce((sum, e) => sum + e.cost, 0).toFixed(2)}</p>
-                              </div>
-                              <Button type="button" variant="outline" onClick={addExpense} className="bg-white hover:bg-gray-50">
-                                <Plus className="w-4 h-4 mr-2" />
-                                Adicionar Despesa
-                              </Button>
-                            </div>
-
-                            {additionalExpenses.map((expense, index) => (
-                              <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+                              <div className="space-y-4">
                                 <div className="flex items-center justify-between">
-                                  <Label className="text-gray-900">Despesa</Label>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => removeExpense(index)}
-                                    className="text-destructive hover:text-destructive"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
+                                  <div>
+                                    <h3 className="font-semibold text-gray-900">Equipe/Músicos</h3>
+                                    <p className="text-xs text-muted-foreground">Custo total: R$ {teamMembers.reduce((sum, m) => sum + m.cost, 0).toFixed(2)}</p>
+                                  </div>
+                                  <Button type="button" variant="outline" onClick={addTeamMember} className="bg-white hover:bg-gray-50">
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Adicionar Músico
                                   </Button>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3">
-                                  <Input
-                                    placeholder="Descrição"
-                                    value={expense.description}
-                                    onChange={(e) => updateExpense(index, 'description', e.target.value)}
-                                    className="bg-white text-gray-900"
-                                    required
-                                  />
-                                  <Input
-                                    type="text"
-                                    placeholder="Valor (R$)"
-                                    value={expense.cost || ''}
-                                    onChange={(e) => updateExpense(index, 'cost', parseFloat(e.target.value) || 0)}
-                                    className="bg-white text-gray-900"
-                                    required
-                                  />
-                                </div>
+                                {teamMembers.map((member, index) => (
+                                  <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                      <Label className="text-gray-900">Membro</Label>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => removeTeamMember(index)}
+                                        className="text-destructive hover:text-destructive"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                      <div>
+                                        <Select
+                                          value={member.musicianId || 'freelancer'}
+                                          onValueChange={(value) => updateTeamMember(index, 'musicianId', value === 'freelancer' ? undefined : value)}
+                                        >
+                                          <SelectTrigger className="bg-white text-gray-900">
+                                            <SelectValue placeholder="Membro" />
+                                          </SelectTrigger>
+                                          <SelectContent className="bg-white">
+                                            {musicians.map((m) => (
+                                              <SelectItem key={m.id} value={m.id}>
+                                                {m.name} - {m.instrument}
+                                              </SelectItem>
+                                            ))}
+                                            <SelectItem value="freelancer">Freelancer</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+
+                                        {!member.musicianId && (
+                                          <>
+                                            <Input
+                                              placeholder="Nome"
+                                              value={member.name}
+                                              onChange={(e) => updateTeamMember(index, 'name', e.target.value)}
+                                              className="mt-2 bg-white text-gray-900"
+                                              required
+                                            />
+                                            <Input
+                                              placeholder="Instrumento"
+                                              value={member.instrument}
+                                              onChange={(e) => updateTeamMember(index, 'instrument', e.target.value)}
+                                              className="mt-2 bg-white text-gray-900"
+                                              required
+                                            />
+                                          </>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <Input
+                                          type="text"
+                                          placeholder="Custo (R$)"
+                                          value={member.cost || ''}
+                                          onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
+                                          className="bg-white text-gray-900"
+                                          required
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
 
-                          <div className="flex gap-3">
-                            <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white border-gray-300 text-gray-900 hover:bg-gray-50">
-                              Cancelar
-                            </Button>
-                            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-white">
-                              Salvar Show
-                            </Button>
-                          </div>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
+                              <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <h3 className="font-semibold text-gray-900">Despesas Adicionais (Optional)</h3>
+                                    <p className="text-xs text-muted-foreground">Custo total: R$ {additionalExpenses.reduce((sum, e) => sum + e.cost, 0).toFixed(2)}</p>
+                                  </div>
+                                  <Button type="button" variant="outline" onClick={addExpense} className="bg-white hover:bg-gray-50">
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Adicionar Despesa
+                                  </Button>
+                                </div>
 
-                  {loading ? (
-                    <div className="text-center py-12">
-                      <p className="text-gray-500">Carregando...</p>
+                                {additionalExpenses.map((expense, index) => (
+                                  <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                      <Label className="text-gray-900">Despesa</Label>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => removeExpense(index)}
+                                        className="text-destructive hover:text-destructive"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                      <Input
+                                        placeholder="Descrição"
+                                        value={expense.description}
+                                        onChange={(e) => updateExpense(index, 'description', e.target.value)}
+                                        className="bg-white text-gray-900"
+                                        required
+                                      />
+                                      <Input
+                                        type="text"
+                                        placeholder="Valor (R$)"
+                                        value={expense.cost || ''}
+                                        onChange={(e) => updateExpense(index, 'cost', parseFloat(e.target.value) || 0)}
+                                        className="bg-white text-gray-900"
+                                        required
+                                      />
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div className="flex gap-3">
+                                <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white border-gray-300 text-gray-900 hover:bg-gray-50">
+                                  Cancelar
+                                </Button>
+                                <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-white">
+                                  Salvar Show
+                                </Button>
+                              </div>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
                     </div>
-                  ) : shows.length === 0 ? (
-                    <Card className="p-8 text-center bg-white border border-gray-200">
-                      <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500 mb-4">Nenhum show agendado</p>
-                      <p className="text-sm text-gray-400">
-                        Clique em "Adicionar" para cadastrar seu primeiro evento
-                      </p>
-                    </Card>
-                  ) : (
-                    <div className="grid gap-4">
-                      {shows.map((show) => (
-                        <Card key={show.id} className="p-6 bg-white border border-gray-200">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 space-y-3">
-                              <div className="flex items-center gap-2">
-                                <MapPin className="w-5 h-5 text-purple-600" />
-                                <h3 className="text-lg font-semibold text-gray-900">{show.venue_name}</h3>
-                                {show.is_private_event && (
-                                  <span className="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded">
-                                    Evento Particular
-                                  </span>
-                                )}
-                              </div>
 
-                              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                                <div className="flex items-center gap-2">
-                                  <Calendar className="w-4 h-4" />
-                                  {format(new Date(show.date_local), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Clock className="w-4 h-4" />
-                                  {show.time_local}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <DollarSign className="w-4 h-4" />
-                                  <span className="font-semibold text-green-600">
-                                    R$ {show.fee.toFixed(2)}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {show.expenses_team.length > 0 && (
-                                <div className="text-sm">
-                                  <span className="text-gray-600">Equipe:</span>{' '}
-                                  <span className="text-gray-900">
-                                    {show.expenses_team.length} músico(s)
-                                  </span>
-                                </div>
-                              )}
+                    {loading ? (
+                      <div className="text-center py-12">
+                        <p className="text-gray-500">Carregando...</p>
+                      </div>
+                    ) : shows.length === 0 ? (
+                      <Card className="p-8 text-center bg-white border border-gray-200">
+                        <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500 mb-4">Nenhum show agendado</p>
+                        <p className="text-sm text-gray-400">
+                          Clique em "Adicionar" para cadastrar seu primeiro evento
+                        </p>
+                      </Card>
+                    ) : (
+                      <>
+                        {viewMode === 'list' ? (
+                          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                            <div className="grid grid-cols-[1fr,120px,120px,120px,80px] gap-4 p-4 bg-gray-50 border-b text-sm font-medium text-gray-600">
+                              <div>Data e Local</div>
+                              <div className="text-center">Cachê</div>
+                              <div className="text-center">Despesas</div>
+                              <div className="text-center">Lucro</div>
+                              <div className="text-center">Ações</div>
                             </div>
-
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="icon" onClick={() => handleShowEdit(show)}>
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button variant="outline" size="icon" onClick={() => handleShowDelete(show.id)}>
-                                <Trash2 className="w-4 h-4 text-red-600" />
-                              </Button>
+                            {shows.map((show) => {
+                              const expenses = calculateShowExpenses(show);
+                              const profit = calculateShowProfit(show);
+                              const isExpanded = expandedShows.has(show.id);
+                              
+                              return (
+                                <div key={show.id} className="border-b last:border-b-0">
+                                  <div className="grid grid-cols-[1fr,120px,120px,120px,80px] gap-4 p-4 items-center hover:bg-gray-50">
+                                    <div className="flex items-center gap-2">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6"
+                                        onClick={() => toggleShowExpanded(show.id)}
+                                      >
+                                        {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                      </Button>
+                                      <div>
+                                        <div className="font-semibold text-gray-900">{show.venue_name}</div>
+                                        <div className="text-sm text-gray-600">
+                                          {format(new Date(show.date_local), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })} ⏰ {show.time_local}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="text-center text-green-600 font-semibold">R$ {show.fee.toFixed(2).replace('.', ',')}</div>
+                                    <div className="text-center text-red-600 font-semibold">R$ {expenses.toFixed(2).replace('.', ',')}</div>
+                                    <div className="text-center">
+                                      <span className="inline-block px-3 py-1 rounded-full bg-primary text-white font-semibold text-sm">
+                                        R$ {profit.toFixed(2).replace('.', ',')}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-center">
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Button variant="ghost" size="icon">
+                                            <MoreVertical className="h-4 w-4" />
+                                          </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                          <DropdownMenuItem onClick={() => handleShowEdit(show)}>
+                                            <Edit className="w-4 h-4 mr-2" />
+                                            Editar
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleShowDelete(show.id)} className="text-red-600">
+                                            <Trash2 className="w-4 h-4 mr-2" />
+                                            Excluir
+                                          </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
+                                    </div>
+                                  </div>
+                                  {isExpanded && show.expenses_team.length > 0 && (
+                                    <div className="px-4 pb-4 bg-[#F5F0FA]">
+                                      <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 mb-2">
+                                        <Users className="w-4 h-4" />
+                                        Equipe
+                                      </div>
+                                      {show.expenses_team.map((member, idx) => (
+                                        <div key={idx} className="flex justify-between text-sm text-gray-600 ml-6 mb-1">
+                                          <span>{member.name} ({member.instrument})</span>
+                                          <span>R$ {member.cost.toFixed(2).replace('.', ',')}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {shows.map((show) => {
+                              const expenses = calculateShowExpenses(show);
+                              const profit = calculateShowProfit(show);
+                              const isExpanded = expandedShows.has(show.id);
+                              const showDate = new Date(show.date_local);
+                              
+                              return (
+                                <Card key={show.id} className="bg-white border border-gray-200 overflow-hidden">
+                                  <div className="p-6">
+                                    <div className="flex gap-4">
+                                      <div className="flex-shrink-0 w-16 text-center bg-[#F5F0FA] rounded-lg p-2">
+                                        <div className="text-xs text-primary font-semibold uppercase">{format(showDate, 'MMM', { locale: ptBR })}</div>
+                                        <div className="text-3xl font-bold text-primary">{format(showDate, 'dd')}</div>
+                                      </div>
+                                      <div className="flex-1">
+                                        <div className="flex items-start justify-between mb-2">
+                                          <div>
+                                            <h3 className="text-lg font-bold text-gray-900">{show.venue_name}</h3>
+                                            <p className="text-sm text-gray-600">
+                                              {format(showDate, "EEEE", { locale: ptBR })} • ⏰ {show.time_local}
+                                            </p>
+                                          </div>
+                                          <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                              <Button variant="ghost" size="icon">
+                                                <MoreVertical className="h-4 w-4" />
+                                              </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                              <DropdownMenuItem onClick={() => handleShowEdit(show)}>
+                                                <Edit className="w-4 h-4 mr-2" />
+                                                Editar
+                                              </DropdownMenuItem>
+                                              <DropdownMenuItem onClick={() => handleShowDelete(show.id)} className="text-red-600">
+                                                <Trash2 className="w-4 h-4 mr-2" />
+                                                Excluir
+                                              </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                          </DropdownMenu>
+                                        </div>
+                                        <div className="flex gap-6 text-sm">
+                                          <div className="text-center">
+                                            <div className="text-gray-600 text-xs">Cachê</div>
+                                            <div className="text-green-600 font-semibold">R$ {show.fee.toFixed(2).replace('.', ',')}</div>
+                                          </div>
+                                          <div className="text-center">
+                                            <div className="text-gray-600 text-xs">Despesas</div>
+                                            <div className="text-red-600 font-semibold">R$ {expenses.toFixed(2).replace('.', ',')}</div>
+                                          </div>
+                                          <div className="text-center">
+                                            <div className="text-gray-600 text-xs">Lucro</div>
+                                            <div className="px-3 py-1 rounded-full bg-primary text-white font-semibold text-sm inline-block">
+                                              R$ {profit.toFixed(2).replace('.', ',')}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    {show.expenses_team.length > 0 && (
+                                      <Collapsible open={isExpanded} onOpenChange={() => toggleShowExpanded(show.id)}>
+                                        <CollapsibleTrigger asChild>
+                                          <Button variant="ghost" className="w-full mt-4 bg-[#F5F0FA] hover:bg-[#EAD6F5] text-primary">
+                                            Detalhes das Despesas
+                                            {isExpanded ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+                                          </Button>
+                                        </CollapsibleTrigger>
+                                        <CollapsibleContent className="mt-4">
+                                          <div className="p-4 bg-[#F5F0FA] rounded-lg">
+                                            <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 mb-2">
+                                              <Users className="w-4 h-4" />
+                                              Equipe
+                                            </div>
+                                            {show.expenses_team.map((member, idx) => (
+                                              <div key={idx} className="flex justify-between text-sm text-gray-600 mb-1">
+                                                <span>{member.name} ({member.instrument})</span>
+                                                <span>R$ {member.cost.toFixed(2).replace('.', ',')}</span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </CollapsibleContent>
+                                      </Collapsible>
+                                    )}
+                                  </div>
+                                </Card>
+                              );
+                            })}
+                          </div>
+                        )}
+                        
+                        <Card className="p-6 bg-[#F5F0FA] border-0">
+                          <div className="grid grid-cols-3 gap-8">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                                <DollarSign className="w-5 h-5 text-green-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm text-gray-600">Receita Bruta</div>
+                                <div className="text-xl font-bold text-gray-900">R$ {calculateTotals().totalRevenue.toFixed(2).replace('.', ',')}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                                <TrendingDown className="w-5 h-5 text-red-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm text-gray-600">Despesas</div>
+                                <div className="text-xl font-bold text-gray-900">R$ {calculateTotals().totalExpenses.toFixed(2).replace('.', ',')}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <ArrowUpRight className="w-5 h-5 text-blue-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm text-gray-600">Lucro Líquido</div>
+                                <div className="text-xl font-bold text-gray-900">R$ {calculateTotals().netProfit.toFixed(2).replace('.', ',')}</div>
+                              </div>
                             </div>
                           </div>
                         </Card>
-                      ))}
-                    </div>
-                  )}
+                      </>
+                    )}
+                  </div>
                 </TabsContent>
 
                 {/* LOCAIS E BARES TAB */}
