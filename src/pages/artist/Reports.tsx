@@ -94,11 +94,11 @@ const ArtistReports = () => {
 
   const calculateShowExpenses = (show: Show, locomotion: number) => {
     const teamExpenses = Array.isArray(show.expenses_team) 
-      ? show.expenses_team.reduce((sum: number, exp: any) => sum + (Number(exp.amount) || 0), 0)
+      ? show.expenses_team.reduce((sum: number, exp: any) => sum + (Number(exp.cost) || 0), 0)
       : 0;
     
     const otherExpenses = Array.isArray(show.expenses_other)
-      ? show.expenses_other.reduce((sum: number, exp: any) => sum + (Number(exp.amount) || 0), 0)
+      ? show.expenses_other.reduce((sum: number, exp: any) => sum + (Number(exp.cost) || Number(exp.amount) || 0), 0)
       : 0;
 
     return teamExpenses + otherExpenses + locomotion;
@@ -188,7 +188,7 @@ const ArtistReports = () => {
   const teamExpensesByMember = showsWithExpenses
     .flatMap(show => 
       Array.isArray(show.expenses_team) 
-        ? show.expenses_team.map((exp: any) => ({ name: exp.name, amount: Number(exp.amount) || 0 }))
+        ? show.expenses_team.map((exp: any) => ({ name: exp.name, amount: Number(exp.cost) || 0 }))
         : []
     )
     .reduce((acc: any[], exp) => {
