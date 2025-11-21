@@ -215,12 +215,12 @@ const ArtistDashboard = () => {
 
             {/* Weekly Schedule */}
             <Card className="p-4 md:p-6 bg-white border border-gray-200 mb-4 md:mb-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Agenda da Semana</h3>
-                  <p className="text-sm text-gray-600">De 16/11 a 22/11</p>
+                  <p className="text-sm text-gray-600">De 02/11 a 08/11</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="hidden md:flex items-center gap-2">
                   <Button variant="outline" size="icon" className="h-8 w-8 bg-white border-gray-300">
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
@@ -239,15 +239,41 @@ const ArtistDashboard = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-7 gap-2 mb-4">
+              {/* Mobile: Vertical event cards */}
+              <div className="md:hidden space-y-3 mb-4">
                 {[
-                  { day: 'DOM', date: '16/11' },
-                  { day: 'SEG', date: '17/11' },
-                  { day: 'TER', date: '18/11' },
-                  { day: 'QUA', date: '19/11' },
-                  { day: 'QUI', date: '20/11', event: 'Casament...', highlight: true },
-                  { day: 'SEX', date: '21/11' },
-                  { day: 'SAB', date: '22/11' },
+                  { day: 'DOMINGO', dayNum: '02', date: '02/11', event: 'Pub 65' },
+                  { day: 'TERÇA', dayNum: '04', date: '04/11', event: 'Zenaide' },
+                  { day: 'QUINTA', dayNum: '06', date: '06/11', event: 'Ditado Popular' },
+                  { day: 'SEXTA', dayNum: '07', date: '07/11', event: 'Pub 65' },
+                  { day: 'SÁBADO', dayNum: '08', date: '08/11', event: 'SAPEZAL' },
+                ].map((item) => (
+                  <div
+                    key={item.day}
+                    className="flex items-center gap-4 p-4 bg-purple-50 border border-purple-200 rounded-lg"
+                  >
+                    <div className="flex flex-col items-center justify-center bg-white border-2 border-purple-300 rounded-lg px-4 py-2 min-w-[70px]">
+                      <span className="text-xs font-bold text-purple-600 uppercase">{item.day}</span>
+                      <span className="text-3xl font-bold text-gray-900">{item.dayNum}</span>
+                    </div>
+                    <div className="flex-1 flex items-center gap-2">
+                      <Music className="w-5 h-5 text-purple-600 flex-shrink-0" />
+                      <span className="text-base font-semibold text-gray-900">{item.event}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop: Grid calendar */}
+              <div className="hidden md:grid grid-cols-7 gap-2 mb-4">
+                {[
+                  { day: 'DOM', date: '02/11', event: 'Pub 65', highlight: true },
+                  { day: 'SEG', date: '03/11' },
+                  { day: 'TER', date: '04/11', event: 'Zenaide', highlight: true },
+                  { day: 'QUA', date: '05/11' },
+                  { day: 'QUI', date: '06/11', event: 'Ditado Popular', highlight: true },
+                  { day: 'SEX', date: '07/11', event: 'Pub 65', highlight: true },
+                  { day: 'SAB', date: '08/11', event: 'SAPEZAL', highlight: true },
                 ].map((item) => (
                   <div
                     key={item.day}
@@ -268,30 +294,30 @@ const ArtistDashboard = () => {
                     {item.event && (
                       <div className="mt-2 text-xs font-medium text-purple-600 flex items-center justify-center gap-1">
                         <Music className="w-3 h-3" />
-                        {item.event}
+                        <span className="line-clamp-2">{item.event}</span>
                       </div>
                     )}
                   </div>
                 ))}
               </div>
 
-              <div className="flex items-center justify-center text-sm text-gray-600 mb-4">
+              <div className="hidden md:flex items-center justify-center text-sm text-gray-600 mb-4">
                 <CalendarIcon className="w-4 h-4 mr-2" />
                 Clique em um dia com eventos para ver os detalhes.
               </div>
 
-              <div className="grid grid-cols-3 gap-4 bg-purple-50 p-4 rounded-lg border border-purple-200">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 bg-purple-50 p-4 rounded-lg border border-purple-200">
                 <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-1">Receita Bruta (Semanal)</p>
-                  <p className="text-2xl font-bold text-green-600">R$ 1.500,00</p>
+                  <p className="text-xs md:text-sm text-gray-600 mb-1">Receita Bruta (Semanal)</p>
+                  <p className="text-xl md:text-2xl font-bold text-green-600">R$ 5.700,00</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-1">Despesas (Semanal)</p>
-                  <p className="text-2xl font-bold text-red-600">R$ 330,00</p>
+                  <p className="text-xs md:text-sm text-gray-600 mb-1">Despesas (Semanal)</p>
+                  <p className="text-xl md:text-2xl font-bold text-red-600">R$ 2.902,09</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-1">Lucro (Semanal)</p>
-                  <p className="text-2xl font-bold text-blue-600">R$ 1.170,00</p>
+                  <p className="text-xs md:text-sm text-gray-600 mb-1">Lucro (Semanal)</p>
+                  <p className="text-xl md:text-2xl font-bold text-blue-600">R$ 2.797,91</p>
                 </div>
               </div>
             </Card>

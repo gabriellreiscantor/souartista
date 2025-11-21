@@ -36,21 +36,21 @@ export function MobileBottomNav({ role }: MobileBottomNavProps) {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-2 z-50 shadow-lg">
-      <div className="flex items-center justify-around">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 safe-area-inset-bottom">
+      <div className="flex items-center justify-around px-2 py-2">
         {items.map((item) => (
           <NavLink
             key={item.title}
             to={item.url}
             end
             className={cn(
-              "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors",
+              "flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors min-w-[60px]",
               "text-gray-600 hover:text-purple-600"
             )}
             activeClassName="text-purple-600 bg-purple-50"
           >
-            <item.icon className="w-5 h-5" />
-            <span className="text-xs font-medium">{item.title}</span>
+            <item.icon className="w-6 h-6" />
+            <span className="text-[10px] font-medium leading-tight text-center">{item.title}</span>
           </NavLink>
         ))}
       </div>
