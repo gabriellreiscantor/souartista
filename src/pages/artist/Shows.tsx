@@ -6,6 +6,7 @@ import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -660,8 +661,284 @@ const ArtistShows = () => {
                         </SelectContent>
                       </Select>
 
+                      {/* Mobile: Sheet */}
+                      <Sheet open={showDialogOpen} onOpenChange={setShowDialogOpen}>
+                        <SheetTrigger asChild>
+                          <Button onClick={resetShowForm} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
+                            <Plus className="w-5 h-5 mr-2" />
+                            Adicionar
+                          </Button>
+                        </SheetTrigger>
+                        <SheetContent side="bottom" className="h-[90vh] overflow-y-auto bg-white p-0">
+                          <div className="p-6 pb-8">
+                            <SheetHeader className="mb-4">
+                              <SheetTitle className="text-gray-900 text-left">
+                                {editingShow ? 'Editar Show' : 'Adicionar Novo Show'}
+                              </SheetTitle>
+                              <p className="text-sm text-gray-600 text-left">
+                                Preencha as informações abaixo para gerenciar o show.
+                              </p>
+                            </SheetHeader>
+                            <form onSubmit={handleShowSubmit} className="space-y-4">
+                              <div className="space-y-3">
+                                <Button
+                                  type="button"
+                                  variant={showFormData.is_private_event ? "default" : "outline"}
+                                  onClick={() => setShowFormData({ ...showFormData, is_private_event: !showFormData.is_private_event })}
+                                  className={showFormData.is_private_event ? "bg-primary hover:bg-primary/90 text-white w-full" : "bg-white hover:bg-gray-50 text-gray-900 w-full"}
+                                >
+                                  Evento Particular
+                                </Button>
+
+                                {showFormData.is_private_event ? (
+                                  <div>
+                                    <Label htmlFor="custom_venue" className="text-gray-900 text-sm">Nome do local</Label>
+                                    <Input
+                                      id="custom_venue"
+                                      value={showFormData.custom_venue}
+                                      onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
+                                      placeholder="Ex: Casamento Ana e Pedro"
+                                      className="bg-white text-gray-900 mt-1.5"
+                                      required
+                                    />
+                                  </div>
+                                ) : (
+                                  <div>
+                                    <Label htmlFor="venue_id" className="text-gray-900 text-sm">Nome do local</Label>
+                                    <Select value={showFormData.venue_id} onValueChange={(value) => setShowFormData({ ...showFormData, venue_id: value })}>
+                                      <SelectTrigger className="bg-white text-gray-900 mt-1.5">
+                                        <SelectValue placeholder="Selecione um local" />
+                                      </SelectTrigger>
+                                      <SelectContent className="bg-white z-[200]">
+                                        {venues.map((venue) => (
+                                          <SelectItem key={venue.id} value={venue.id}>
+                                            {venue.name}
+                                          </SelectItem>
+                                        ))}
+                                        <SelectItem value="custom">Outro local...</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                    {showFormData.venue_id === 'custom' && (
+                                      <Input
+                                        className="mt-2 bg-white text-gray-900"
+                                        value={showFormData.custom_venue}
+                                        onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
+                                        placeholder="Digite o nome do local"
+                                        required
+                                      />
+                                    )}
+                                  </div>
+                                )}
+
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <Label htmlFor="date_local_mobile" className="text-gray-900 text-sm">Data do show</Label>
+                                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                                      <PopoverTrigger asChild>
+                                        <Button
+                                          variant="outline"
+                                          className={cn(
+                                            "w-full justify-start text-left font-normal bg-white text-gray-900 mt-1.5",
+                                            !showFormData.date_local && "text-gray-500"
+                                          )}
+                                        >
+                                          <CalendarIcon className="mr-2 h-4 w-4" />
+                                          {showFormData.date_local ? format(new Date(showFormData.date_local), "dd/MM/yyyy", { locale: ptBR }) : "Selecione"}
+                                        </Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-auto p-0 bg-primary border-0 z-[200]" align="start">
+                                        <Calendar
+                                          mode="single"
+                                          selected={showFormData.date_local ? new Date(showFormData.date_local) : undefined}
+                                          onSelect={(date) => {
+                                            if (date) {
+                                              setShowFormData({ ...showFormData, date_local: format(date, 'yyyy-MM-dd') });
+                                              setCalendarOpen(false);
+                                            }
+                                          }}
+                                          initialFocus
+                                          className="bg-primary text-white pointer-events-auto"
+                                        />
+                                      </PopoverContent>
+                                    </Popover>
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="time_local_mobile" className="text-gray-900 text-sm">Horário</Label>
+                                    <TimePicker
+                                      value={showFormData.time_local}
+                                      onChange={(time) => setShowFormData({ ...showFormData, time_local: time })}
+                                    />
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <Label htmlFor="duration_mobile" className="text-gray-900 text-sm">Duração de show</Label>
+                                  <Select defaultValue="4h">
+                                    <SelectTrigger className="bg-white text-gray-900 mt-1.5">
+                                      <SelectValue placeholder="Horas..." />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white z-[200]">
+                                      <SelectItem value="1h">1 hora</SelectItem>
+                                      <SelectItem value="2h">2 horas</SelectItem>
+                                      <SelectItem value="3h">3 horas</SelectItem>
+                                      <SelectItem value="4h">4 horas</SelectItem>
+                                      <SelectItem value="5h">5 horas</SelectItem>
+                                      <SelectItem value="6h">6 horas</SelectItem>
+                                      <SelectItem value="7h">7 horas</SelectItem>
+                                      <SelectItem value="8h">8 horas</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                <div>
+                                  <Label htmlFor="fee_mobile" className="text-gray-900 text-sm">Cachê (R$)</Label>
+                                  <Input
+                                    id="fee_mobile"
+                                    type="text"
+                                    value={showFormData.fee}
+                                    onChange={(e) => setShowFormData({ ...showFormData, fee: e.target.value })}
+                                    placeholder="R$ 0,00"
+                                    className="bg-white text-gray-900 placeholder:text-gray-500 mt-1.5"
+                                    required
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="space-y-3 pt-2">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <h3 className="font-semibold text-gray-900 text-sm">Equipe/Músicos</h3>
+                                    <p className="text-xs text-gray-600">Custo total: R$ {teamMembers.reduce((sum, m) => sum + m.cost, 0).toFixed(2)}</p>
+                                  </div>
+                                  <Button type="button" variant="outline" size="sm" onClick={addTeamMember} className="bg-white hover:bg-gray-50 text-gray-900">
+                                    <Plus className="w-4 h-4 mr-1" />
+                                    Adicionar
+                                  </Button>
+                                </div>
+
+                                {teamMembers.map((member, index) => (
+                                  <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <Label className="text-gray-900 text-xs">Membro</Label>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => removeTeamMember(index)}
+                                        className="text-destructive hover:text-destructive h-7 w-7 p-0"
+                                      >
+                                        <Trash2 className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <Select
+                                        value={member.musicianId || ''}
+                                        onValueChange={(value) => {
+                                          if (value === 'freelancer') {
+                                            updateTeamMember(index, 'musicianId', undefined);
+                                          } else {
+                                            updateTeamMember(index, 'musicianId', value);
+                                          }
+                                        }}
+                                      >
+                                        <SelectTrigger className="bg-white text-gray-900 text-sm h-9">
+                                          <SelectValue placeholder="Selecione" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-white z-[200]">
+                                          {musicians.map((m) => (
+                                            <SelectItem key={m.id} value={m.id} className="text-sm">
+                                              {m.name}
+                                            </SelectItem>
+                                          ))}
+                                          <SelectItem value="freelancer" className="text-sm">Freelancer</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+
+                                      <Input
+                                        type="text"
+                                        placeholder="R$ 0,00"
+                                        value={member.cost || ''}
+                                        onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
+                                        className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9"
+                                        required
+                                      />
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div className="space-y-3 pt-2">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <h3 className="font-semibold text-gray-900 text-sm">Despesas Adicionais</h3>
+                                    <p className="text-xs text-gray-600">Custo total: R$ {additionalExpenses.reduce((sum, e) => sum + e.cost, 0).toFixed(2)}</p>
+                                  </div>
+                                  <Button type="button" variant="outline" size="sm" onClick={addExpense} className="bg-white hover:bg-gray-50 text-gray-900">
+                                    <Plus className="w-4 h-4 mr-1" />
+                                    Adicionar
+                                  </Button>
+                                </div>
+
+                                {additionalExpenses.map((expense, index) => (
+                                  <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <Label className="text-gray-900 text-xs">Despesa</Label>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => removeExpense(index)}
+                                        className="text-destructive hover:text-destructive h-7 w-7 p-0"
+                                      >
+                                        <Trash2 className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-2">
+                                      <Input
+                                        placeholder="Tipo"
+                                        value={expense.type}
+                                        onChange={(e) => updateExpense(index, 'type', e.target.value)}
+                                        className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9"
+                                        required
+                                      />
+                                      <Input
+                                        placeholder="Descrição"
+                                        value={expense.description}
+                                        onChange={(e) => updateExpense(index, 'description', e.target.value)}
+                                        className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9"
+                                        required
+                                      />
+                                      <Input
+                                        type="text"
+                                        placeholder="R$ 0,00"
+                                        value={expense.cost || ''}
+                                        onChange={(e) => updateExpense(index, 'cost', parseFloat(e.target.value) || 0)}
+                                        className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9"
+                                        required
+                                      />
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div className="flex gap-3 pt-4 sticky bottom-0 bg-white pb-2">
+                                <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white border-gray-300 text-gray-900 hover:bg-gray-50">
+                                  Cancelar
+                                </Button>
+                                <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-white">
+                                  Salvar Show
+                                </Button>
+                              </div>
+                            </form>
+                          </div>
+                        </SheetContent>
+                      </Sheet>
+
+                      {/* Desktop: Dialog */}
                       <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
-                        <DialogTrigger asChild>
+                        <DialogTrigger asChild className="hidden md:inline-flex">
                           <Button onClick={resetShowForm} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
                             <Plus className="w-5 h-5 mr-2" />
                             Adicionar
