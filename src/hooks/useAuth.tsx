@@ -44,6 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchUserData = async (userId: string) => {
     try {
       console.log('[useAuth] Fetching user data for:', userId);
+      setLoading(true); // Always set loading when starting to fetch
       
       // Add timeout to prevent infinite loading
       const timeoutPromise = new Promise((_, reject) => 
@@ -133,22 +134,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       (event, session) => {
         console.log('[useAuth] Auth state changed:', event, session?.user?.id);
         
-        // Skip initial SIGNED_IN event to avoid duplicate fetch
-        if (isInitialLoad && event === 'SIGNED_IN') {
-          console.log('[useAuth] Skipping initial SIGNED_IN event');
-          return;
-        }
-        
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          fetchUserData(session.user.id);
+          // Only fetch if not the initial load (which already fetched)
+          if (!isInitialLoad) {
+            fetchUserData(session.user.id);
+          }
         } else {
           setUserData(null);
           setUserRoleState(null);
           setLoading(false);
         }
+        
+        isInitialLoad = false;
       }
     );
 
