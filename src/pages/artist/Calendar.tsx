@@ -171,7 +171,7 @@ const ArtistCalendar = () => {
                           <span className="text-base font-medium">{i + 1}</span>
                           {hasShow && (
                             <Music2 
-                              className={`w-5 h-5 ${
+                              className={`w-3 h-3 ${
                                 isSelected ? 'text-white' : 'text-purple-600'
                               }`} 
                             />
@@ -255,36 +255,23 @@ const ArtistCalendar = () => {
                   </div>
                 </SheetHeader>
 
-                {/* Time Grid */}
-                <div className="relative">
-                  {timeSlots.map((time, index) => (
-                    <div key={time} className="relative border-b border-gray-100" style={{ height: '60px' }}>
-                      <div className="absolute left-0 top-0 w-16 text-xs text-gray-500 font-medium">
-                        {time}
+                {/* Shows List */}
+                <div className="space-y-3">
+                  {selectedDayShows.length > 0 ? (
+                    selectedDayShows.map((show) => (
+                      <div
+                        key={show.id}
+                        className="bg-purple-500 text-white rounded-lg p-4 shadow-md"
+                      >
+                        <div className="font-semibold text-lg">{show.venue_name}</div>
+                        <div className="text-sm mt-1">{show.time_local}</div>
                       </div>
-                      <div className="ml-20 h-full relative">
-                        {/* Shows positioned at their time */}
-                        {selectedDayShows
-                          .filter(show => {
-                            const [hours] = show.time_local.split(':').map(Number);
-                            return hours === index;
-                          })
-                          .map((show) => (
-                            <div
-                              key={show.id}
-                              className="absolute left-0 right-0 bg-purple-500 text-white rounded-md p-3 shadow-md"
-                              style={{
-                                top: '2px',
-                                height: '56px'
-                              }}
-                            >
-                              <div className="font-semibold text-sm">{show.venue_name}</div>
-                              <div className="text-xs mt-1">{show.time_local}</div>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500 py-8">
+                      Nenhum show agendado para esta data
+                    </p>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>
