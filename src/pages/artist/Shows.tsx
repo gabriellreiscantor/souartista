@@ -6,11 +6,12 @@ import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2 } from 'lucide-react';
+import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Users, Map } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -27,6 +28,7 @@ interface Musician {
 interface Venue {
   id: string;
   name: string;
+  address: string | null;
 }
 
 interface TeamMember {
@@ -59,10 +61,11 @@ const ArtistShows = () => {
   const [musicians, setMusicians] = useState<Musician[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingShow, setEditingShow] = useState<Show | null>(null);
   
-  const [formData, setFormData] = useState({
+  // Shows dialog
+  const [showDialogOpen, setShowDialogOpen] = useState(false);
+  const [editingShow, setEditingShow] = useState<Show | null>(null);
+  const [showFormData, setShowFormData] = useState({
     venue_id: '',
     custom_venue: '',
     date_local: '',
@@ -70,9 +73,25 @@ const ArtistShows = () => {
     fee: '',
     is_private_event: false,
   });
-
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [additionalExpenses, setAdditionalExpenses] = useState<AdditionalExpense[]>([]);
+
+  // Musicians dialog
+  const [musicianDialogOpen, setMusicianDialogOpen] = useState(false);
+  const [editingMusician, setEditingMusician] = useState<Musician | null>(null);
+  const [musicianFormData, setMusicianFormData] = useState({
+    name: '',
+    instrument: '',
+    default_fee: '',
+  });
+
+  // Venues dialog
+  const [venueDialogOpen, setVenueDialogOpen] = useState(false);
+  const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
+  const [venueFormData, setVenueFormData] = useState({
+    name: '',
+    address: '',
+  });
 
   useEffect(() => {
     if (user) {
@@ -118,7 +137,8 @@ const ArtistShows = () => {
       const { data, error } = await supabase
         .from('musicians')
         .select('*')
-        .eq('owner_uid', user.id);
+        .eq('owner_uid', user.id)
+        .order('name', { ascending: true });
 
       if (error) throw error;
       setMusicians(data || []);
@@ -134,7 +154,8 @@ const ArtistShows = () => {
       const { data, error } = await supabase
         .from('venues')
         .select('*')
-        .eq('owner_uid', user.id);
+        .eq('owner_uid', user.id)
+        .order('name', { ascending: true });
 
       if (error) throw error;
       setVenues(data || []);
@@ -143,14 +164,15 @@ const ArtistShows = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Show handlers
+  const handleShowSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
     try {
-      const venueName = formData.is_private_event 
-        ? formData.custom_venue 
-        : venues.find(v => v.id === formData.venue_id)?.name || formData.custom_venue;
+      const venueName = showFormData.is_private_event 
+        ? showFormData.custom_venue 
+        : venues.find(v => v.id === showFormData.venue_id)?.name || showFormData.custom_venue;
 
       if (!venueName) {
         toast.error('Selecione ou digite o nome do local');
@@ -163,10 +185,10 @@ const ArtistShows = () => {
 
       const showData = {
         venue_name: venueName,
-        date_local: formData.date_local,
-        time_local: formData.time_local,
-        fee: parseFloat(formData.fee),
-        is_private_event: formData.is_private_event,
+        date_local: showFormData.date_local,
+        time_local: showFormData.time_local,
+        fee: parseFloat(showFormData.fee),
+        is_private_event: showFormData.is_private_event,
         expenses_team: teamMembers,
         expenses_other: additionalExpenses,
         team_musician_ids: teamMusicianIds,
@@ -199,8 +221,8 @@ const ArtistShows = () => {
         toast.success('Show cadastrado com sucesso!');
       }
 
-      setDialogOpen(false);
-      resetForm();
+      setShowDialogOpen(false);
+      resetShowForm();
       fetchShows();
     } catch (error: any) {
       console.error('Error saving show:', error);
@@ -208,7 +230,7 @@ const ArtistShows = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleShowDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este show?')) return;
 
     try {
@@ -226,9 +248,9 @@ const ArtistShows = () => {
     }
   };
 
-  const handleEdit = (show: Show) => {
+  const handleShowEdit = (show: Show) => {
     setEditingShow(show);
-    setFormData({
+    setShowFormData({
       venue_id: '',
       custom_venue: show.venue_name,
       date_local: show.date_local,
@@ -238,11 +260,11 @@ const ArtistShows = () => {
     });
     setTeamMembers(show.expenses_team || []);
     setAdditionalExpenses(show.expenses_other || []);
-    setDialogOpen(true);
+    setShowDialogOpen(true);
   };
 
-  const resetForm = () => {
-    setFormData({
+  const resetShowForm = () => {
+    setShowFormData({
       venue_id: '',
       custom_venue: '',
       date_local: '',
@@ -255,6 +277,149 @@ const ArtistShows = () => {
     setEditingShow(null);
   };
 
+  // Musician handlers
+  const handleMusicianSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    try {
+      const musicianData = {
+        name: musicianFormData.name,
+        instrument: musicianFormData.instrument,
+        default_fee: parseFloat(musicianFormData.default_fee),
+        owner_uid: user.id,
+      };
+
+      if (editingMusician) {
+        const { error } = await supabase
+          .from('musicians')
+          .update(musicianData)
+          .eq('id', editingMusician.id);
+
+        if (error) throw error;
+        toast.success('Músico atualizado com sucesso!');
+      } else {
+        const { error } = await supabase
+          .from('musicians')
+          .insert(musicianData);
+
+        if (error) throw error;
+        toast.success('Músico cadastrado com sucesso!');
+      }
+
+      setMusicianDialogOpen(false);
+      resetMusicianForm();
+      fetchMusicians();
+    } catch (error: any) {
+      toast.error('Erro ao salvar músico');
+      console.error(error);
+    }
+  };
+
+  const handleMusicianEdit = (musician: Musician) => {
+    setEditingMusician(musician);
+    setMusicianFormData({
+      name: musician.name,
+      instrument: musician.instrument,
+      default_fee: musician.default_fee.toString(),
+    });
+    setMusicianDialogOpen(true);
+  };
+
+  const handleMusicianDelete = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este músico?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('musicians')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success('Músico excluído com sucesso!');
+      fetchMusicians();
+    } catch (error: any) {
+      toast.error('Erro ao excluir músico');
+      console.error(error);
+    }
+  };
+
+  const resetMusicianForm = () => {
+    setMusicianFormData({ name: '', instrument: '', default_fee: '' });
+    setEditingMusician(null);
+  };
+
+  // Venue handlers
+  const handleVenueSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    try {
+      const venueData = {
+        name: venueFormData.name,
+        address: venueFormData.address || null,
+        owner_uid: user.id,
+      };
+
+      if (editingVenue) {
+        const { error } = await supabase
+          .from('venues')
+          .update(venueData)
+          .eq('id', editingVenue.id);
+
+        if (error) throw error;
+        toast.success('Local atualizado com sucesso!');
+      } else {
+        const { error } = await supabase
+          .from('venues')
+          .insert(venueData);
+
+        if (error) throw error;
+        toast.success('Local cadastrado com sucesso!');
+      }
+
+      setVenueDialogOpen(false);
+      resetVenueForm();
+      fetchVenues();
+    } catch (error: any) {
+      toast.error('Erro ao salvar local');
+      console.error(error);
+    }
+  };
+
+  const handleVenueEdit = (venue: Venue) => {
+    setEditingVenue(venue);
+    setVenueFormData({
+      name: venue.name,
+      address: venue.address || '',
+    });
+    setVenueDialogOpen(true);
+  };
+
+  const handleVenueDelete = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este local?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('venues')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success('Local excluído com sucesso!');
+      fetchVenues();
+    } catch (error: any) {
+      toast.error('Erro ao excluir local');
+      console.error(error);
+    }
+  };
+
+  const resetVenueForm = () => {
+    setVenueFormData({ name: '', address: '' });
+    setEditingVenue(null);
+  };
+
+  // Team member helpers
   const addTeamMember = () => {
     setTeamMembers([...teamMembers, { name: '', instrument: '', cost: 0 }]);
   };
@@ -297,14 +462,6 @@ const ArtistShows = () => {
     setAdditionalExpenses(updated);
   };
 
-  const calculateTotalTeamCost = () => {
-    return teamMembers.reduce((sum, member) => sum + (member.cost || 0), 0);
-  };
-
-  const calculateTotalExpenses = () => {
-    return additionalExpenses.reduce((sum, exp) => sum + (exp.cost || 0), 0);
-  };
-
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-[#fafafa]">
@@ -327,325 +484,508 @@ const ArtistShows = () => {
 
           <main className="flex-1 p-6 overflow-auto pb-20 md:pb-6">
             <div className="max-w-5xl mx-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Agenda de Shows</h2>
-                
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button onClick={resetForm}>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Adicionar Show
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>
-                        {editingShow ? 'Editar Show' : 'Adicionar Show'}
-                      </DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                      {/* Basic Info */}
-                      <div className="space-y-4">
-                        <h3 className="font-semibold text-gray-900">Informações Básicas</h3>
-                        
-                        <div className="flex items-center gap-4">
-                          <Switch
-                            checked={formData.is_private_event}
-                            onCheckedChange={(checked) => 
-                              setFormData({ ...formData, is_private_event: checked })
-                            }
-                          />
-                          <Label>Evento Particular</Label>
-                        </div>
+              <Tabs defaultValue="shows" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 bg-white">
+                  <TabsTrigger value="shows" className="flex items-center gap-2">
+                    <Music2 className="w-4 h-4" />
+                    Agenda de Shows
+                  </TabsTrigger>
+                  <TabsTrigger value="venues" className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    Locais e Bares
+                  </TabsTrigger>
+                  <TabsTrigger value="musicians" className="flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    Músicos e Equipe
+                  </TabsTrigger>
+                </TabsList>
 
-                        {formData.is_private_event ? (
-                          <div>
-                            <Label htmlFor="custom_venue">Nome do Evento *</Label>
-                            <Input
-                              id="custom_venue"
-                              value={formData.custom_venue}
-                              onChange={(e) => setFormData({ ...formData, custom_venue: e.target.value })}
-                              placeholder="Ex: Casamento Ana e Pedro"
-                              required
-                            />
-                          </div>
-                        ) : (
-                          <div>
-                            <Label htmlFor="venue_id">Local *</Label>
-                            <Select value={formData.venue_id} onValueChange={(value) => setFormData({ ...formData, venue_id: value })}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione um local" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {venues.map((venue) => (
-                                  <SelectItem key={venue.id} value={venue.id}>
-                                    {venue.name}
-                                  </SelectItem>
-                                ))}
-                                <SelectItem value="custom">Outro local...</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            {formData.venue_id === 'custom' && (
+                {/* AGENDA DE SHOWS TAB */}
+                <TabsContent value="shows" className="mt-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">Agenda de Shows</h2>
+                    
+                    <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button onClick={resetShowForm}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Adicionar
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
+                        <DialogHeader>
+                          <DialogTitle>
+                            {editingShow ? 'Editar Show' : 'Adicionar Show'}
+                          </DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleShowSubmit} className="space-y-6">
+                          <div className="space-y-4">
+                            <h3 className="font-semibold text-gray-900">Informações Básicas</h3>
+                            
+                            <div className="flex items-center gap-4">
+                              <Switch
+                                checked={showFormData.is_private_event}
+                                onCheckedChange={(checked) => 
+                                  setShowFormData({ ...showFormData, is_private_event: checked })
+                                }
+                              />
+                              <Label>Evento Particular</Label>
+                            </div>
+
+                            {showFormData.is_private_event ? (
+                              <div>
+                                <Label htmlFor="custom_venue">Nome do Evento *</Label>
+                                <Input
+                                  id="custom_venue"
+                                  value={showFormData.custom_venue}
+                                  onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
+                                  placeholder="Ex: Casamento Ana e Pedro"
+                                  required
+                                />
+                              </div>
+                            ) : (
+                              <div>
+                                <Label htmlFor="venue_id">Local *</Label>
+                                <Select value={showFormData.venue_id} onValueChange={(value) => setShowFormData({ ...showFormData, venue_id: value })}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecione um local" />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-white">
+                                    {venues.map((venue) => (
+                                      <SelectItem key={venue.id} value={venue.id}>
+                                        {venue.name}
+                                      </SelectItem>
+                                    ))}
+                                    <SelectItem value="custom">Outro local...</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                {showFormData.venue_id === 'custom' && (
+                                  <Input
+                                    className="mt-2"
+                                    value={showFormData.custom_venue}
+                                    onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
+                                    placeholder="Digite o nome do local"
+                                    required
+                                  />
+                                )}
+                              </div>
+                            )}
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="date_local">Data *</Label>
+                                <Input
+                                  id="date_local"
+                                  type="date"
+                                  value={showFormData.date_local}
+                                  onChange={(e) => setShowFormData({ ...showFormData, date_local: e.target.value })}
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="time_local">Horário *</Label>
+                                <Input
+                                  id="time_local"
+                                  type="time"
+                                  value={showFormData.time_local}
+                                  onChange={(e) => setShowFormData({ ...showFormData, time_local: e.target.value })}
+                                  required
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <Label htmlFor="fee">Cachê Total do Show (R$) *</Label>
                               <Input
-                                className="mt-2"
-                                value={formData.custom_venue}
-                                onChange={(e) => setFormData({ ...formData, custom_venue: e.target.value })}
-                                placeholder="Digite o nome do local"
+                                id="fee"
+                                type="number"
+                                step="0.01"
+                                value={showFormData.fee}
+                                onChange={(e) => setShowFormData({ ...showFormData, fee: e.target.value })}
                                 required
                               />
-                            )}
+                            </div>
                           </div>
-                        )}
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="date_local">Data *</Label>
-                            <Input
-                              id="date_local"
-                              type="date"
-                              value={formData.date_local}
-                              onChange={(e) => setFormData({ ...formData, date_local: e.target.value })}
-                              required
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="time_local">Horário *</Label>
-                            <Input
-                              id="time_local"
-                              type="time"
-                              value={formData.time_local}
-                              onChange={(e) => setFormData({ ...formData, time_local: e.target.value })}
-                              required
-                            />
-                          </div>
-                        </div>
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h3 className="font-semibold text-gray-900">Equipe/Músicos</h3>
+                              <Button type="button" variant="outline" size="sm" onClick={addTeamMember}>
+                                <Plus className="w-4 h-4 mr-2" />
+                                Adicionar Músico
+                              </Button>
+                            </div>
 
-                        <div>
-                          <Label htmlFor="fee">Cachê Total do Show (R$) *</Label>
-                          <Input
-                            id="fee"
-                            type="number"
-                            step="0.01"
-                            value={formData.fee}
-                            onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
-                            required
-                          />
-                        </div>
-                      </div>
+                            {teamMembers.map((member, index) => (
+                              <Card key={index} className="p-4 bg-white border border-gray-200">
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <Label>Músico {index + 1}</Label>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => removeTeamMember(index)}
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </Button>
+                                  </div>
 
-                      {/* Team Members */}
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-semibold text-gray-900">Equipe/Músicos</h3>
-                          <Button type="button" variant="outline" size="sm" onClick={addTeamMember}>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Adicionar Músico
-                          </Button>
-                        </div>
+                                  <Select
+                                    value={member.musicianId || 'freelancer'}
+                                    onValueChange={(value) => updateTeamMember(index, 'musicianId', value === 'freelancer' ? undefined : value)}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Selecione um músico" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white">
+                                      {musicians.map((m) => (
+                                        <SelectItem key={m.id} value={m.id}>
+                                          {m.name} - {m.instrument}
+                                        </SelectItem>
+                                      ))}
+                                      <SelectItem value="freelancer">Freelancer</SelectItem>
+                                    </SelectContent>
+                                  </Select>
 
-                        {teamMembers.map((member, index) => (
-                          <Card key={index} className="p-4 bg-white border border-gray-200">
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between">
-                                <Label>Músico {index + 1}</Label>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => removeTeamMember(index)}
-                                >
-                                  <X className="w-4 h-4" />
-                                </Button>
-                              </div>
+                                  {!member.musicianId && (
+                                    <>
+                                      <Input
+                                        placeholder="Nome"
+                                        value={member.name}
+                                        onChange={(e) => updateTeamMember(index, 'name', e.target.value)}
+                                        required
+                                      />
+                                      <Input
+                                        placeholder="Instrumento"
+                                        value={member.instrument}
+                                        onChange={(e) => updateTeamMember(index, 'instrument', e.target.value)}
+                                        required
+                                      />
+                                    </>
+                                  )}
 
-                              <Select
-                                value={member.musicianId || 'freelancer'}
-                                onValueChange={(value) => updateTeamMember(index, 'musicianId', value === 'freelancer' ? undefined : value)}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione um músico" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {musicians.map((m) => (
-                                    <SelectItem key={m.id} value={m.id}>
-                                      {m.name} - {m.instrument}
-                                    </SelectItem>
-                                  ))}
-                                  <SelectItem value="freelancer">Freelancer</SelectItem>
-                                </SelectContent>
-                              </Select>
-
-                              {!member.musicianId && (
-                                <>
                                   <Input
-                                    placeholder="Nome"
-                                    value={member.name}
-                                    onChange={(e) => updateTeamMember(index, 'name', e.target.value)}
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="Cachê (R$)"
+                                    value={member.cost}
+                                    onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
+                                    required
+                                  />
+                                </div>
+                              </Card>
+                            ))}
+                          </div>
+
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h3 className="font-semibold text-gray-900">Despesas Adicionais</h3>
+                              <Button type="button" variant="outline" size="sm" onClick={addExpense}>
+                                <Plus className="w-4 h-4 mr-2" />
+                                Adicionar Despesa
+                              </Button>
+                            </div>
+
+                            {additionalExpenses.map((expense, index) => (
+                              <Card key={index} className="p-4 bg-white border border-gray-200">
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <Label>Despesa {index + 1}</Label>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => removeExpense(index)}
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+
+                                  <Input
+                                    placeholder="Descrição"
+                                    value={expense.description}
+                                    onChange={(e) => updateExpense(index, 'description', e.target.value)}
                                     required
                                   />
                                   <Input
-                                    placeholder="Instrumento"
-                                    value={member.instrument}
-                                    onChange={(e) => updateTeamMember(index, 'instrument', e.target.value)}
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="Valor (R$)"
+                                    value={expense.cost}
+                                    onChange={(e) => updateExpense(index, 'cost', parseFloat(e.target.value) || 0)}
                                     required
                                   />
-                                </>
-                              )}
-
-                              <Input
-                                type="number"
-                                step="0.01"
-                                placeholder="Cachê (R$)"
-                                value={member.cost}
-                                onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
-                                required
-                              />
-                            </div>
-                          </Card>
-                        ))}
-
-                        {teamMembers.length > 0 && (
-                          <div className="text-sm font-medium text-gray-900">
-                            Total Equipe: R$ {calculateTotalTeamCost().toFixed(2)}
+                                </div>
+                              </Card>
+                            ))}
                           </div>
-                        )}
-                      </div>
 
-                      {/* Additional Expenses */}
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-semibold text-gray-900">Despesas Adicionais</h3>
-                          <Button type="button" variant="outline" size="sm" onClick={addExpense}>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Adicionar Despesa
+                          <Button type="submit" className="w-full">
+                            {editingShow ? 'Atualizar Show' : 'Cadastrar Show'}
                           </Button>
-                        </div>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
 
-                        {additionalExpenses.map((expense, index) => (
-                          <Card key={index} className="p-4 bg-white border border-gray-200">
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between">
-                                <Label>Despesa {index + 1}</Label>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => removeExpense(index)}
-                                >
-                                  <X className="w-4 h-4" />
-                                </Button>
-                              </div>
-
-                              <Input
-                                placeholder="Descrição (ex: Aluguel de equipamento)"
-                                value={expense.description}
-                                onChange={(e) => updateExpense(index, 'description', e.target.value)}
-                                required
-                              />
-                              <Input
-                                type="number"
-                                step="0.01"
-                                placeholder="Valor (R$)"
-                                value={expense.cost}
-                                onChange={(e) => updateExpense(index, 'cost', parseFloat(e.target.value) || 0)}
-                                required
-                              />
-                            </div>
-                          </Card>
-                        ))}
-
-                        {additionalExpenses.length > 0 && (
-                          <div className="text-sm font-medium text-gray-900">
-                            Total Despesas: R$ {calculateTotalExpenses().toFixed(2)}
-                          </div>
-                        )}
-                      </div>
-
-                      <Button type="submit" className="w-full">
-                        {editingShow ? 'Atualizar Show' : 'Cadastrar Show'}
-                      </Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </div>
-
-              {loading ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-500">Carregando...</p>
-                </div>
-              ) : shows.length === 0 ? (
-                <Card className="p-8 text-center bg-white border border-gray-200">
-                  <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 mb-4">Nenhum show agendado</p>
-                  <p className="text-sm text-gray-400">
-                    Clique em "Adicionar Show" para cadastrar seu primeiro evento
-                  </p>
-                </Card>
-              ) : (
-                <div className="grid gap-4">
-                  {shows.map((show) => (
-                    <Card key={show.id} className="p-6 bg-white border border-gray-200">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 space-y-3">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-5 h-5 text-purple-600" />
-                            <h3 className="text-lg font-semibold text-gray-900">{show.venue_name}</h3>
-                            {show.is_private_event && (
-                              <span className="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded">
-                                Evento Particular
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                            <div className="flex items-center gap-2">
-                              <Calendar className="w-4 h-4" />
-                              {format(new Date(show.date_local), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4" />
-                              {show.time_local}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <DollarSign className="w-4 h-4" />
-                              <span className="font-semibold text-green-600">
-                                R$ {show.fee.toFixed(2)}
-                              </span>
-                            </div>
-                          </div>
-
-                          {show.expenses_team.length > 0 && (
-                            <div className="text-sm">
-                              <span className="text-gray-600">Equipe:</span>{' '}
-                              <span className="text-gray-900">
-                                {show.expenses_team.length} músico(s)
-                              </span>
-                            </div>
-                          )}
-
-                          {show.expenses_other.length > 0 && (
-                            <div className="text-sm">
-                              <span className="text-gray-600">Despesas adicionais:</span>{' '}
-                              <span className="text-gray-900">
-                                R$ {show.expenses_other.reduce((sum, e) => sum + e.cost, 0).toFixed(2)}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="icon" onClick={() => handleEdit(show)}>
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button variant="outline" size="icon" onClick={() => handleDelete(show.id)}>
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                          </Button>
-                        </div>
-                      </div>
+                  {loading ? (
+                    <div className="text-center py-12">
+                      <p className="text-gray-500">Carregando...</p>
+                    </div>
+                  ) : shows.length === 0 ? (
+                    <Card className="p-8 text-center bg-white border border-gray-200">
+                      <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500 mb-4">Nenhum show agendado</p>
+                      <p className="text-sm text-gray-400">
+                        Clique em "Adicionar" para cadastrar seu primeiro evento
+                      </p>
                     </Card>
-                  ))}
-                </div>
-              )}
+                  ) : (
+                    <div className="grid gap-4">
+                      {shows.map((show) => (
+                        <Card key={show.id} className="p-6 bg-white border border-gray-200">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 space-y-3">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="w-5 h-5 text-purple-600" />
+                                <h3 className="text-lg font-semibold text-gray-900">{show.venue_name}</h3>
+                                {show.is_private_event && (
+                                  <span className="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded">
+                                    Evento Particular
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="w-4 h-4" />
+                                  {format(new Date(show.date_local), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Clock className="w-4 h-4" />
+                                  {show.time_local}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <DollarSign className="w-4 h-4" />
+                                  <span className="font-semibold text-green-600">
+                                    R$ {show.fee.toFixed(2)}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {show.expenses_team.length > 0 && (
+                                <div className="text-sm">
+                                  <span className="text-gray-600">Equipe:</span>{' '}
+                                  <span className="text-gray-900">
+                                    {show.expenses_team.length} músico(s)
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="icon" onClick={() => handleShowEdit(show)}>
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button variant="outline" size="icon" onClick={() => handleShowDelete(show.id)}>
+                                <Trash2 className="w-4 h-4 text-red-600" />
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* LOCAIS E BARES TAB */}
+                <TabsContent value="venues" className="mt-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">Locais e Bares</h2>
+                      <p className="text-gray-600">Gerencie os locais onde você realiza shows</p>
+                    </div>
+                    
+                    <Dialog open={venueDialogOpen} onOpenChange={setVenueDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button onClick={resetVenueForm}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Adicionar Local
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-white">
+                        <DialogHeader>
+                          <DialogTitle>
+                            {editingVenue ? 'Editar Local' : 'Adicionar Local'}
+                          </DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleVenueSubmit} className="space-y-4">
+                          <div>
+                            <Label htmlFor="venue_name">Nome do Local *</Label>
+                            <Input
+                              id="venue_name"
+                              value={venueFormData.name}
+                              onChange={(e) => setVenueFormData({ ...venueFormData, name: e.target.value })}
+                              placeholder="Ex: Bar do João"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="venue_address">Endereço (opcional)</Label>
+                            <Input
+                              id="venue_address"
+                              value={venueFormData.address}
+                              onChange={(e) => setVenueFormData({ ...venueFormData, address: e.target.value })}
+                              placeholder="Ex: Rua das Flores, 123"
+                            />
+                          </div>
+                          <Button type="submit" className="w-full">
+                            {editingVenue ? 'Atualizar' : 'Cadastrar'}
+                          </Button>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+
+                  {venues.length === 0 ? (
+                    <Card className="p-8 text-center bg-white border border-gray-200">
+                      <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500 mb-4">Nenhum local cadastrado</p>
+                      <p className="text-sm text-gray-400">
+                        Adicione os locais onde você costuma fazer shows
+                      </p>
+                    </Card>
+                  ) : (
+                    <div className="grid gap-4">
+                      {venues.map((venue) => (
+                        <Card key={venue.id} className="p-4 bg-white border border-gray-200">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                                <MapPin className="w-6 h-6 text-purple-600" />
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-gray-900">{venue.name}</h3>
+                                {venue.address && (
+                                  <p className="text-sm text-gray-600">{venue.address}</p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="icon" onClick={() => handleVenueEdit(venue)}>
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button variant="outline" size="icon" onClick={() => handleVenueDelete(venue.id)}>
+                                <Trash2 className="w-4 h-4 text-red-600" />
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* MÚSICOS E EQUIPE TAB */}
+                <TabsContent value="musicians" className="mt-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">Músicos e Equipe</h2>
+                      <p className="text-gray-600">Gerencie seus músicos e cachês padrão</p>
+                    </div>
+                    
+                    <Dialog open={musicianDialogOpen} onOpenChange={setMusicianDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button onClick={resetMusicianForm}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Adicionar Músico
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-white">
+                        <DialogHeader>
+                          <DialogTitle>
+                            {editingMusician ? 'Editar Músico' : 'Adicionar Músico'}
+                          </DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleMusicianSubmit} className="space-y-4">
+                          <div>
+                            <Label htmlFor="musician_name">Nome *</Label>
+                            <Input
+                              id="musician_name"
+                              value={musicianFormData.name}
+                              onChange={(e) => setMusicianFormData({ ...musicianFormData, name: e.target.value })}
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="musician_instrument">Instrumento *</Label>
+                            <Input
+                              id="musician_instrument"
+                              value={musicianFormData.instrument}
+                              onChange={(e) => setMusicianFormData({ ...musicianFormData, instrument: e.target.value })}
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="musician_fee">Cachê Padrão (R$) *</Label>
+                            <Input
+                              id="musician_fee"
+                              type="number"
+                              step="0.01"
+                              value={musicianFormData.default_fee}
+                              onChange={(e) => setMusicianFormData({ ...musicianFormData, default_fee: e.target.value })}
+                              required
+                            />
+                          </div>
+                          <Button type="submit" className="w-full">
+                            {editingMusician ? 'Atualizar' : 'Cadastrar'}
+                          </Button>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+
+                  {musicians.length === 0 ? (
+                    <Card className="p-8 text-center bg-white border border-gray-200">
+                      <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500 mb-4">Nenhum músico cadastrado</p>
+                      <p className="text-sm text-gray-400">
+                        Adicione músicos da sua equipe para facilitar o cadastro de shows
+                      </p>
+                    </Card>
+                  ) : (
+                    <div className="grid gap-4">
+                      {musicians.map((musician) => (
+                        <Card key={musician.id} className="p-4 bg-white border border-gray-200">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                                <Music2 className="w-6 h-6 text-purple-600" />
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-gray-900">{musician.name}</h3>
+                                <p className="text-sm text-gray-600">{musician.instrument}</p>
+                                <p className="text-sm font-medium text-green-600">
+                                  Cachê padrão: R$ {musician.default_fee.toFixed(2)}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="icon" onClick={() => handleMusicianEdit(musician)}>
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button variant="outline" size="icon" onClick={() => handleMusicianDelete(musician.id)}>
+                                <Trash2 className="w-4 h-4 text-red-600" />
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
           </main>
         </div>
