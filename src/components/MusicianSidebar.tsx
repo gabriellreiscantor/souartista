@@ -24,7 +24,7 @@ const items = [
 ];
 
 export function MusicianSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpenMobile, isMobile } = useSidebar();
   const collapsed = state === 'collapsed';
   const navigate = useNavigate();
 
@@ -38,9 +38,16 @@ export function MusicianSidebar() {
     }
   };
 
+  const handleSidebarClick = (e: React.MouseEvent) => {
+    // Fecha o sidebar se clicar em área vazia (não em link ou botão) no mobile
+    if (isMobile && e.target === e.currentTarget) {
+      setOpenMobile(false);
+    }
+  };
+
   return (
     <Sidebar className={collapsed ? "w-14" : "w-60"} collapsible="icon">
-      <SidebarContent className="bg-sidebar-background">
+      <SidebarContent className="bg-sidebar-background" onClick={handleSidebarClick}>
         <div className="p-4 border-b border-sidebar-border">
           {!collapsed && (
             <h2 className="text-lg font-semibold text-sidebar-foreground">Sou Músico</h2>

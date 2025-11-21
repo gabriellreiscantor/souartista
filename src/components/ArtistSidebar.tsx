@@ -30,7 +30,7 @@ const settingsItems = [
 ];
 
 export function ArtistSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpenMobile, isMobile } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === 'collapsed';
@@ -40,12 +40,19 @@ export function ArtistSidebar() {
     window.location.href = '/login';
   };
 
+  const handleSidebarClick = (e: React.MouseEvent) => {
+    // Fecha o sidebar se clicar em área vazia (não em link ou botão) no mobile
+    if (isMobile && e.target === e.currentTarget) {
+      setOpenMobile(false);
+    }
+  };
+
   return (
     <Sidebar
       className={collapsed ? 'w-14' : 'w-60'}
       collapsible="icon"
     >
-      <SidebarContent className="bg-sidebar-background">
+      <SidebarContent className="bg-sidebar-background" onClick={handleSidebarClick}>
         {/* Logo */}
         <div className="p-4 border-b border-sidebar-border">
           {!collapsed && (
