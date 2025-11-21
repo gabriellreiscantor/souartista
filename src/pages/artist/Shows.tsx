@@ -691,25 +691,25 @@ const ArtistShows = () => {
                                 </Button>
 
                                 {showFormData.is_private_event ? (
-                                  <div>
-                                    <Label htmlFor="custom_venue" className="text-gray-900 text-sm">Nome do local</Label>
+                                <div>
+                                    <Label htmlFor="custom_venue" className="text-gray-900 text-sm font-medium">Nome do local</Label>
                                     <Input
                                       id="custom_venue"
                                       value={showFormData.custom_venue}
                                       onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
                                       placeholder="Ex: Casamento Ana e Pedro"
-                                      className="bg-white text-gray-900 mt-1.5"
+                                      className="bg-white text-gray-900 mt-1.5 h-10"
                                       required
                                     />
                                   </div>
                                 ) : (
                                   <div>
-                                    <Label htmlFor="venue_id" className="text-gray-900 text-sm">Nome do local</Label>
+                                    <Label htmlFor="venue_id" className="text-gray-900 text-sm font-medium">Nome do local</Label>
                                     <Select value={showFormData.venue_id} onValueChange={(value) => setShowFormData({ ...showFormData, venue_id: value })}>
-                                      <SelectTrigger className="bg-white text-gray-900 mt-1.5">
+                                      <SelectTrigger className="bg-white text-gray-900 mt-1.5 h-10">
                                         <SelectValue placeholder="Selecione um local" />
                                       </SelectTrigger>
-                                      <SelectContent className="bg-white z-[200]">
+                                      <SelectContent className="bg-white z-[100]">
                                         {venues.map((venue) => (
                                           <SelectItem key={venue.id} value={venue.id}>
                                             {venue.name}
@@ -720,7 +720,7 @@ const ArtistShows = () => {
                                     </Select>
                                     {showFormData.venue_id === 'custom' && (
                                       <Input
-                                        className="mt-2 bg-white text-gray-900"
+                                        className="mt-2 bg-white text-gray-900 h-10"
                                         value={showFormData.custom_venue}
                                         onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
                                         placeholder="Digite o nome do local"
@@ -730,54 +730,39 @@ const ArtistShows = () => {
                                   </div>
                                 )}
 
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-3">
                                   <div>
-                                    <Label htmlFor="date_local_mobile" className="text-gray-900 text-sm">Data do show</Label>
-                                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-                                      <PopoverTrigger asChild>
-                                        <Button
-                                          variant="outline"
-                                          className={cn(
-                                            "w-full justify-start text-left font-normal bg-white text-gray-900 mt-1.5",
-                                            !showFormData.date_local && "text-gray-500"
-                                          )}
-                                        >
-                                          <CalendarIcon className="mr-2 h-4 w-4" />
-                                          {showFormData.date_local ? format(new Date(showFormData.date_local), "dd/MM/yyyy", { locale: ptBR }) : "Selecione"}
-                                        </Button>
-                                      </PopoverTrigger>
-                                      <PopoverContent className="w-auto p-0 bg-primary border-0 z-[200]" align="start">
-                                        <Calendar
-                                          mode="single"
-                                          selected={showFormData.date_local ? new Date(showFormData.date_local) : undefined}
-                                          onSelect={(date) => {
-                                            if (date) {
-                                              setShowFormData({ ...showFormData, date_local: format(date, 'yyyy-MM-dd') });
-                                              setCalendarOpen(false);
-                                            }
-                                          }}
-                                          initialFocus
-                                          className="bg-primary text-white pointer-events-auto"
-                                        />
-                                      </PopoverContent>
-                                    </Popover>
+                                    <Label htmlFor="date_local_mobile" className="text-gray-900 text-sm font-medium">Data do show</Label>
+                                    <Input
+                                      id="date_local_mobile"
+                                      type="date"
+                                      value={showFormData.date_local}
+                                      onChange={(e) => setShowFormData({ ...showFormData, date_local: e.target.value })}
+                                      className="bg-white text-gray-900 mt-1.5"
+                                      required
+                                    />
                                   </div>
+                                  
                                   <div>
-                                    <Label htmlFor="time_local_mobile" className="text-gray-900 text-sm">Horário</Label>
-                                    <TimePicker
+                                    <Label htmlFor="time_local_mobile" className="text-gray-900 text-sm font-medium">Horário</Label>
+                                    <Input
+                                      id="time_local_mobile"
+                                      type="time"
                                       value={showFormData.time_local}
-                                      onChange={(time) => setShowFormData({ ...showFormData, time_local: time })}
+                                      onChange={(e) => setShowFormData({ ...showFormData, time_local: e.target.value })}
+                                      className="bg-white text-gray-900 mt-1.5"
+                                      required
                                     />
                                   </div>
                                 </div>
 
                                 <div>
-                                  <Label htmlFor="duration_mobile" className="text-gray-900 text-sm">Duração de show</Label>
+                                  <Label htmlFor="duration_mobile" className="text-gray-900 text-sm font-medium">Duração de show</Label>
                                   <Select defaultValue="4h">
-                                    <SelectTrigger className="bg-white text-gray-900 mt-1.5">
+                                    <SelectTrigger className="bg-white text-gray-900 mt-1.5 h-10">
                                       <SelectValue placeholder="Horas..." />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-white z-[200]">
+                                    <SelectContent className="bg-white z-[100]">
                                       <SelectItem value="1h">1 hora</SelectItem>
                                       <SelectItem value="2h">2 horas</SelectItem>
                                       <SelectItem value="3h">3 horas</SelectItem>
@@ -791,14 +776,15 @@ const ArtistShows = () => {
                                 </div>
 
                                 <div>
-                                  <Label htmlFor="fee_mobile" className="text-gray-900 text-sm">Cachê (R$)</Label>
+                                  <Label htmlFor="fee_mobile" className="text-gray-900 text-sm font-medium">Cachê (R$)</Label>
                                   <Input
                                     id="fee_mobile"
-                                    type="text"
+                                    type="number"
+                                    step="0.01"
                                     value={showFormData.fee}
                                     onChange={(e) => setShowFormData({ ...showFormData, fee: e.target.value })}
-                                    placeholder="R$ 0,00"
-                                    className="bg-white text-gray-900 placeholder:text-gray-500 mt-1.5"
+                                    placeholder="0,00"
+                                    className="bg-white text-gray-900 placeholder:text-gray-500 mt-1.5 h-10"
                                     required
                                   />
                                 </div>
