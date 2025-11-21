@@ -163,12 +163,12 @@ const MusicianSettings = () => {
 
                   <button
                     onClick={() => navigate('/musician/support')}
-                    className="w-full flex items-center gap-4 p-4 rounded-lg bg-pink-500 hover:bg-pink-600 transition-colors text-left text-white"
+                    className="w-full flex items-center gap-4 p-4 rounded-lg bg-white hover:bg-gray-50 transition-colors text-left border border-gray-200"
                   >
-                    <MessageCircle className="w-5 h-5" />
+                    <MessageCircle className="w-5 h-5 text-gray-600" />
                     <div>
-                      <h4 className="font-semibold">Fale Conosco</h4>
-                      <p className="text-sm text-pink-100">Entre em contato com nosso suporte.</p>
+                      <h4 className="font-semibold text-gray-900">Fale Conosco</h4>
+                      <p className="text-sm text-gray-600">Entre em contato com nosso suporte.</p>
                     </div>
                   </button>
 
