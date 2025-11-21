@@ -1182,7 +1182,7 @@ const ArtistShows = () => {
                               onChange={(e) => setVenueFormData({ ...venueFormData, name: e.target.value })}
                               placeholder="Ex: Bar do Zé"
                               required
-                              className="mt-1.5 bg-[#2d1b4e] border-[#2d1b4e] text-white placeholder:text-white/60"
+                              className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                             />
                           </div>
                           
@@ -1190,7 +1190,7 @@ const ArtistShows = () => {
                             <div>
                               <Label htmlFor="venue_state" className="text-gray-900 font-medium">Estado</Label>
                               <Select value={venueFormData.state} onValueChange={handleStateChange} required>
-                                <SelectTrigger id="venue_state" className="mt-1.5 bg-[#2d1b4e] border-[#2d1b4e] text-white">
+                                <SelectTrigger id="venue_state" className="mt-1.5 bg-white border-gray-300 text-gray-900">
                                   <SelectValue placeholder="Selecione o estado" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-white max-h-[200px] z-50">
@@ -1211,7 +1211,7 @@ const ArtistShows = () => {
                                 disabled={!venueFormData.state}
                                 required
                               >
-                                <SelectTrigger id="venue_city" className="mt-1.5 bg-[#2d1b4e] border-[#2d1b4e] text-white">
+                                <SelectTrigger id="venue_city" className="mt-1.5 bg-white border-gray-300 text-gray-900">
                                   <SelectValue placeholder="Escolha um estado" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-white max-h-[200px] z-50">
@@ -1235,7 +1235,7 @@ const ArtistShows = () => {
                                 onChange={(e) => setVenueFormData({ ...venueFormData, customCity: e.target.value })}
                                 placeholder="Digite o nome da cidade"
                                 required
-                                className="mt-1.5 bg-[#2d1b4e] border-[#2d1b4e] text-white placeholder:text-white/60"
+                                className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                               />
                             </div>
                           )}
