@@ -709,11 +709,22 @@ const ArtistShows = () => {
                                         <SelectValue placeholder="Horas..." />
                                       </SelectTrigger>
                                       <SelectContent className="bg-white">
+                                        <SelectItem value="1h" className="text-gray-900">1 hora</SelectItem>
+                                        <SelectItem value="1.5h" className="text-gray-900">1 hora e meia</SelectItem>
                                         <SelectItem value="2h" className="text-gray-900">2 horas</SelectItem>
+                                        <SelectItem value="2.5h" className="text-gray-900">2 horas e meia</SelectItem>
                                         <SelectItem value="3h" className="text-gray-900">3 horas</SelectItem>
+                                        <SelectItem value="3.5h" className="text-gray-900">3 horas e meia</SelectItem>
                                         <SelectItem value="4h" className="text-gray-900">4 horas</SelectItem>
+                                        <SelectItem value="4.5h" className="text-gray-900">4 horas e meia</SelectItem>
                                         <SelectItem value="5h" className="text-gray-900">5 horas</SelectItem>
+                                        <SelectItem value="5.5h" className="text-gray-900">5 horas e meia</SelectItem>
                                         <SelectItem value="6h" className="text-gray-900">6 horas</SelectItem>
+                                        <SelectItem value="6.5h" className="text-gray-900">6 horas e meia</SelectItem>
+                                        <SelectItem value="7h" className="text-gray-900">7 horas</SelectItem>
+                                        <SelectItem value="7.5h" className="text-gray-900">7 horas e meia</SelectItem>
+                                        <SelectItem value="8h" className="text-gray-900">8 horas</SelectItem>
+                                        <SelectItem value="8.5h" className="text-gray-900">8 horas e meia</SelectItem>
                                       </SelectContent>
                                     </Select>
                                   </div>
