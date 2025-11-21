@@ -140,7 +140,7 @@ const ArtistCalendar = () => {
                   </div>
 
                   {/* Calendar Grid */}
-                  <div className="grid grid-cols-7 gap-2">
+                  <div className="grid grid-cols-7 gap-3">
                     {['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'].map((day) => (
                       <div key={day} className="text-center text-sm font-medium text-gray-600 py-2">
                         {day}
@@ -162,16 +162,16 @@ const ArtistCalendar = () => {
                         <button
                           key={i}
                           onClick={() => handleDateClick(dayDate)}
-                          className={`aspect-square relative rounded-lg border transition-all hover:border-purple-500 ${
+                          className={`aspect-square relative rounded-lg border transition-all hover:border-purple-500 flex flex-col items-center justify-center gap-1 py-2 ${
                             isSelected ? 'bg-purple-600 text-white border-purple-600' : 
                             isToday ? 'bg-purple-50 border-purple-300 text-gray-900' :
                             'bg-white border-gray-200 text-gray-900'
                           }`}
                         >
-                          <span className="text-sm font-medium">{i + 1}</span>
+                          <span className="text-base font-medium">{i + 1}</span>
                           {hasShow && (
                             <Music2 
-                              className={`w-3 h-3 absolute bottom-1 right-1 ${
+                              className={`w-5 h-5 ${
                                 isSelected ? 'text-white' : 'text-purple-600'
                               }`} 
                             />
@@ -246,12 +246,11 @@ const ArtistCalendar = () => {
                       {selectedDate && `Agenda para ${format(selectedDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}`}
                     </SheetTitle>
                     <Button 
-                      variant="ghost" 
-                      size="icon"
                       onClick={() => setShowAgenda(false)}
-                      className="rounded-full"
+                      className="bg-primary text-white hover:bg-primary/90 gap-2"
                     >
-                      <X className="w-5 h-5" />
+                      <X className="w-4 h-4" />
+                      Fechar
                     </Button>
                   </div>
                 </SheetHeader>
