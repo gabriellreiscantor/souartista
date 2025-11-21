@@ -17,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { TimePicker } from '@/components/ui/time-picker';
 import { Bell, Plus, Calendar as CalendarIcon, Clock, MapPin, DollarSign, Edit, Trash2, Music2, Users, List, Grid3x3, ChevronDown, ChevronUp, MoreVertical, TrendingDown, ArrowUpRight } from 'lucide-react';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -779,14 +780,11 @@ const ArtistShows = () => {
                                 </div>
 
                                 <div>
-                                  <Label htmlFor="fee_mobile" className="text-gray-900 text-sm font-medium">Cachê (R$)</Label>
-                                  <Input
+                                  <Label htmlFor="fee_mobile" className="text-gray-900 text-sm font-medium">Cachê</Label>
+                                  <CurrencyInput
                                     id="fee_mobile"
-                                    type="number"
-                                    step="0.01"
                                     value={showFormData.fee}
-                                    onChange={(e) => setShowFormData({ ...showFormData, fee: e.target.value })}
-                                    placeholder="0,00"
+                                    onChange={(value) => setShowFormData({ ...showFormData, fee: value })}
                                     className="bg-white text-gray-900 placeholder:text-gray-500 mt-1.5 h-10"
                                     required
                                   />
@@ -844,11 +842,9 @@ const ArtistShows = () => {
                                         </SelectContent>
                                       </Select>
 
-                                      <Input
-                                        type="text"
-                                        placeholder="R$ 0,00"
-                                        value={member.cost || ''}
-                                        onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
+                                      <CurrencyInput
+                                        value={member.cost || 0}
+                                        onChange={(value) => updateTeamMember(index, 'cost', parseFloat(value) || 0)}
                                         className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9"
                                         required
                                       />
@@ -899,11 +895,9 @@ const ArtistShows = () => {
                                         className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9"
                                         required
                                       />
-                                      <Input
-                                        type="text"
-                                        placeholder="R$ 0,00"
-                                        value={expense.cost || ''}
-                                        onChange={(e) => updateExpense(index, 'cost', parseFloat(e.target.value) || 0)}
+                                      <CurrencyInput
+                                        value={expense.cost || 0}
+                                        onChange={(value) => updateExpense(index, 'cost', parseFloat(value) || 0)}
                                         className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9"
                                         required
                                       />

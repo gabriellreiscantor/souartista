@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Bell, Plus, Pencil, Trash2, Music2 } from 'lucide-react';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -256,16 +257,11 @@ const ArtistMusicians = () => {
                       )}
                       
                       <div>
-                        <Label htmlFor="default_fee">Cachê Padrão (R$)</Label>
-                        <Input
+                        <Label htmlFor="default_fee">Cachê Padrão</Label>
+                        <CurrencyInput
                           id="default_fee"
-                          type="text"
                           value={formData.default_fee}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/[^\d,]/g, '');
-                            setFormData({ ...formData, default_fee: value });
-                          }}
-                          placeholder="R$ 0,00"
+                          onChange={(value) => setFormData({ ...formData, default_fee: value })}
                           required
                         />
                       </div>
