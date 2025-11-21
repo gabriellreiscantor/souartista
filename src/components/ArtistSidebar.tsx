@@ -1,4 +1,4 @@
-import { LayoutDashboard, Music, Calendar, BarChart3, Truck, HelpCircle, User, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Music, Calendar, BarChart3, Truck, HelpCircle, User, Settings, LogOut, MapPin } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +18,8 @@ import {
 const mainItems = [
   { title: 'Dashboard', url: '/artist/dashboard', icon: LayoutDashboard },
   { title: 'Shows', url: '/artist/shows', icon: Music },
+  { title: 'Músicos', url: '/artist/musicians', icon: User },
+  { title: 'Locais', url: '/artist/venues', icon: MapPin },
   { title: 'Calendário', url: '/artist/calendar', icon: Calendar },
   { title: 'Relatórios', url: '/artist/reports', icon: BarChart3 },
   { title: 'Locomoção', url: '/artist/transportation', icon: Truck },
