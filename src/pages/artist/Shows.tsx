@@ -706,7 +706,7 @@ const ArtistShows = () => {
                                       type="time"
                                       value={showFormData.time_local}
                                       onChange={(e) => setShowFormData({ ...showFormData, time_local: e.target.value })}
-                                      className="bg-primary text-white placeholder:text-white/70 [&::-webkit-calendar-picker-indicator]:invert"
+                                      className="bg-white text-gray-900 border-gray-300 [&::-webkit-calendar-picker-indicator]:brightness-0"
                                       required
                                     />
                                   </div>

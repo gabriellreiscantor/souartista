@@ -23,6 +23,8 @@ function Calendar({ className, classNames, showOutsideDays = true, variant = "pr
       "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
       "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
     ];
+    
+    const weekdaysShort = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
     const handleYearChange = (year: string) => {
       const newDate = new Date(parseInt(year), currentMonth, 1);
@@ -85,9 +87,14 @@ function Calendar({ className, classNames, showOutsideDays = true, variant = "pr
     ? "bg-gray-100 text-gray-900"
     : "bg-accent text-accent-foreground";
 
-  const textClass = variant === "light" ? "text-gray-900" : "text-foreground";
-  const mutedClass = variant === "light" ? "text-gray-500" : "text-muted-foreground";
+  const textClass = variant === "light" ? "text-gray-900" : "text-white";
+  const mutedClass = variant === "light" ? "text-gray-500" : "text-white/60";
   const bgClass = variant === "light" ? "bg-white" : "bg-background";
+  const outsideClass = variant === "light" ? "text-gray-400" : "text-white/40";
+
+  const weekdays = variant === "light" 
+    ? undefined 
+    : ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
   return (
     <DayPicker
@@ -95,6 +102,10 @@ function Calendar({ className, classNames, showOutsideDays = true, variant = "pr
       onMonthChange={setMonth}
       showOutsideDays={showOutsideDays}
       className={cn("p-3", bgClass, textClass, className)}
+      weekStartsOn={0}
+      labels={{
+        labelWeekday: (date) => weekdays ? weekdays[date.getDay()] : date.toLocaleDateString('pt-BR', { weekday: 'short' })
+      }}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
@@ -118,8 +129,8 @@ function Calendar({ className, classNames, showOutsideDays = true, variant = "pr
         day_selected: daySelectedClass,
         day_today: dayTodayClass,
         day_outside: cn(
-          "day-outside opacity-50 aria-selected:bg-accent/50 aria-selected:opacity-30",
-          mutedClass
+          "day-outside aria-selected:bg-accent/50",
+          variant === "light" ? "text-gray-400 opacity-50" : "text-white/40"
         ),
         day_disabled: "opacity-50",
         day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
