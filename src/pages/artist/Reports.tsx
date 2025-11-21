@@ -263,38 +263,42 @@ const ArtistReports = () => {
           <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
             <div className="max-w-7xl mx-auto space-y-6">
               {/* Period Filter and Export Buttons */}
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-900">Período:</span>
-                  <Select value={period} onValueChange={setPeriod}>
-                    <SelectTrigger className="w-[180px] bg-white border-gray-300 text-gray-900">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white">
-                      <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">Períodos Rápidos</div>
-                      <SelectItem value="this-month">Este Mês</SelectItem>
-                      <SelectItem value="last-month">Mês Passado</SelectItem>
-                      <SelectItem value="this-week">Esta Semana</SelectItem>
-                      <SelectItem value="last-7-days">Últimos 7 dias</SelectItem>
-                      <SelectItem value="this-year">Este Ano</SelectItem>
-                      <SelectItem value="all-time">Todo o Período</SelectItem>
-                      <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 mt-2">Selecionar por Ano</div>
-                      <SelectItem value="year-2025">Ano de 2025</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <Card className="bg-white border-gray-200">
+                <CardContent className="p-4">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Período:</label>
+                      <Select value={period} onValueChange={setPeriod}>
+                        <SelectTrigger className="w-full bg-white border-2 border-primary text-gray-900 font-medium">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white z-50">
+                          <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">Períodos Rápidos</div>
+                          <SelectItem value="this-month">Este Mês</SelectItem>
+                          <SelectItem value="last-month">Mês Passado</SelectItem>
+                          <SelectItem value="this-week">Esta Semana</SelectItem>
+                          <SelectItem value="last-7-days">Últimos 7 dias</SelectItem>
+                          <SelectItem value="this-year">Este Ano</SelectItem>
+                          <SelectItem value="all-time">Todo o Período</SelectItem>
+                          <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 mt-2">Selecionar por Ano</div>
+                          <SelectItem value="year-2025">Ano de 2025</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="bg-white border-gray-300 text-gray-900">
-                    <FileText className="w-4 h-4 mr-2" />
-                    PDF
-                  </Button>
-                  <Button variant="outline" size="sm" className="bg-white border-gray-300 text-gray-900">
-                    <FileText className="w-4 h-4 mr-2" />
-                    XLSX
-                  </Button>
-                </div>
-              </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" className="flex-1 bg-white border-gray-300 text-gray-900">
+                        <FileText className="w-4 h-4 mr-2" />
+                        PDF
+                      </Button>
+                      <Button variant="outline" size="sm" className="flex-1 bg-white border-gray-300 text-gray-900">
+                        <FileText className="w-4 h-4 mr-2" />
+                        XLSX
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Main Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -391,58 +395,59 @@ const ArtistReports = () => {
                 </CardContent>
               </Card>
 
-              {/* Shows Details Table */}
+              {/* Shows Details Cards */}
               <Card className="bg-white border-gray-200">
                 <CardContent className="p-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-6">Detalhes dos Shows</h3>
                   
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-gray-200">
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Data</th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Local</th>
-                          <th className="text-right py-3 px-4 text-sm font-semibold text-gray-600">Cachê</th>
-                          <th className="text-right py-3 px-4 text-sm font-semibold text-gray-600">Despesas</th>
-                          <th className="text-right py-3 px-4 text-sm font-semibold text-gray-600">Locomoção</th>
-                          <th className="text-right py-3 px-4 text-sm font-semibold text-gray-600">Lucro</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {showsWithExpenses.slice(0, visibleShows).map((show) => (
-                          <tr key={show.id} className="border-b border-gray-100 hover:bg-gray-50">
-                            <td className="py-3 px-4 text-sm text-gray-900">
-                              {format(new Date(show.date_local), "dd/MM/yyyy")}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-gray-900">{show.venue_name}</td>
-                            <td className="py-3 px-4 text-sm text-right font-semibold text-green-600">
-                              R$ {formatCurrency(Number(show.fee))}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-right font-semibold text-red-600">
-                              R$ {formatCurrency(show.expenses - show.locomotion)}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900">
-                              R$ {formatCurrency(show.locomotion)}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-right">
-                              <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-purple-600 text-white font-semibold">
-                                R$ {formatCurrency(show.profit)}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="space-y-4">
+                    {showsWithExpenses.slice(0, visibleShows).map((show) => (
+                      <Card key={show.id} className="border-2 border-gray-200">
+                        <CardContent className="p-4">
+                          <h4 className="font-bold text-lg text-gray-900 mb-1">{show.venue_name}</h4>
+                          <p className="text-sm text-gray-600 mb-3">
+                            {format(new Date(show.date_local), "dd 'de' MMMM, yyyy", { locale: ptBR })}
+                          </p>
+                          
+                          <div className="grid grid-cols-3 gap-4 mb-3">
+                            <div>
+                              <p className="text-xs text-gray-600 mb-1">Cachê</p>
+                              <p className="text-sm font-semibold text-green-600">
+                                R$ {formatCurrency(Number(show.fee))}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-600 mb-1">Despesas</p>
+                              <p className="text-sm font-semibold text-red-600">
+                                R$ {formatCurrency(show.expenses - show.locomotion)}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-600 mb-1">Locomoção</p>
+                              <p className="text-sm font-semibold text-gray-900">
+                                R$ {formatCurrency(show.locomotion)}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+                            <span className="text-sm font-medium text-gray-900">Lucro</span>
+                            <span className="inline-flex items-center justify-center px-3 py-1.5 rounded-full bg-purple-600 text-white font-semibold">
+                              R$ {formatCurrency(show.profit)}
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
 
                   {showsWithExpenses.length > visibleShows && (
                     <div className="flex justify-center mt-6">
                       <Button
-                        variant="outline"
                         onClick={() => setVisibleShows(prev => prev + 4)}
                         className="bg-purple-100 border-purple-300 text-purple-700 hover:bg-purple-200"
                       >
-                        Mostrar mais {Math.min(4, showsWithExpenses.length - visibleShows)} shows
+                        Mostrar mais 4 shows
                       </Button>
                     </div>
                   )}
