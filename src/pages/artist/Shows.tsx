@@ -596,7 +596,7 @@ const ArtistShows = () => {
             
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" className="rounded-full">
-                <Bell className="w-5 h-5 text-gray-600" />
+                <Bell className="w-5 h-5 text-gray-900" />
               </Button>
               <UserMenu userName={userData?.name} userRole={userRole} />
             </div>
