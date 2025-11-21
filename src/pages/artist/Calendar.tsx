@@ -36,6 +36,12 @@ const ArtistCalendar = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (showAgenda && user) {
+      fetchShows();
+    }
+  }, [showAgenda, user]);
+
   const fetchShows = async () => {
     try {
       const { data, error } = await supabase
