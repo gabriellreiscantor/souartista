@@ -1665,14 +1665,21 @@ const ArtistShows = () => {
                               onChange={(e) => setMusicianFormData({ ...musicianFormData, name: e.target.value })}
                               placeholder="Ex: João Silva"
                               required
-                              className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                              disabled={musicianFormData.instrument === 'Freelancer'}
+                              className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
                             />
                           </div>
                           <div>
                             <Label htmlFor="musician_instrument" className="text-gray-900 font-medium">Função/Instrumento *</Label>
                             <Select 
                               value={musicianFormData.instrument} 
-                              onValueChange={(value) => setMusicianFormData({ ...musicianFormData, instrument: value, customInstrument: '' })}
+                              onValueChange={(value) => {
+                                if (value === 'Freelancer') {
+                                  setMusicianFormData({ ...musicianFormData, instrument: value, name: 'Freelancer', customInstrument: '' });
+                                } else {
+                                  setMusicianFormData({ ...musicianFormData, instrument: value, customInstrument: '' });
+                                }
+                              }}
                               required
                             >
                               <SelectTrigger id="musician_instrument" className="mt-1.5 bg-white border-gray-300 text-gray-900">
