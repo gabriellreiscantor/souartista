@@ -167,7 +167,7 @@ const ArtistProfile = () => {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
+      <div className="flex min-h-screen w-full bg-white">
         <ArtistSidebar />
         
         <div className="flex flex-col flex-1 w-full">
@@ -187,7 +187,7 @@ const ArtistProfile = () => {
                 <div className="relative">
                   <Avatar className="w-32 h-32 border-4 border-primary">
                     <AvatarImage src={photoUrl} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-3xl">
+                    <AvatarFallback className="bg-white text-primary text-3xl">
                       {name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -213,7 +213,7 @@ const ArtistProfile = () => {
               </div>
 
               {/* Form */}
-              <div className="space-y-4 bg-card border border-border rounded-lg p-6">
+              <div className="space-y-4 bg-white border border-border rounded-lg p-6">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="flex items-center gap-2">
                     <User className="w-4 h-4" />
