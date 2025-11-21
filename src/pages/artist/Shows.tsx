@@ -1412,31 +1412,6 @@ const ArtistShows = () => {
                                         </div>
                                       </div>
                                     </div>
-                                    
-                                    {/* Mobile: Financial summary - ALWAYS VISIBLE */}
-                                    <div className="md:hidden mt-3 p-4 bg-[#F5F0FA] rounded-lg space-y-3">
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                          <DollarSign className="w-5 h-5 text-green-600" />
-                                          <span className="text-sm text-gray-600">Receita Bruta</span>
-                                        </div>
-                                        <span className="text-lg font-bold text-gray-900">R$ {show.fee.toFixed(2).replace('.', ',')}</span>
-                                      </div>
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                          <TrendingDown className="w-5 h-5 text-red-600" />
-                                          <span className="text-sm text-gray-600">Despesas</span>
-                                        </div>
-                                        <span className="text-lg font-bold text-red-600">R$ {expenses.toFixed(2).replace('.', ',')}</span>
-                                      </div>
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                          <ArrowUpRight className="w-5 h-5 text-blue-600" />
-                                          <span className="text-sm text-gray-600">Lucro Líquido</span>
-                                        </div>
-                                        <span className="text-lg font-bold text-blue-600">R$ {profit.toFixed(2).replace('.', ',')}</span>
-                                      </div>
-                                    </div>
 
                                     {show.expenses_team.length > 0 && (
                                       <Collapsible open={isExpanded} onOpenChange={() => toggleShowExpanded(show.id)}>
@@ -1469,16 +1444,16 @@ const ArtistShows = () => {
                           </div>
                         )}
                         
-                        {/* Desktop: Financial summary */}
-                        <Card className="hidden md:block p-6 bg-[#F5F0FA] border-0">
-                          <div className="grid grid-cols-3 gap-8">
+                        {/* Financial summary - Mobile and Desktop */}
+                        <Card className="p-4 md:p-6 bg-[#F5F0FA] border-0 mt-4">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
                                 <DollarSign className="w-5 h-5 text-green-600" />
                               </div>
                               <div>
                                 <div className="text-sm text-gray-600">Receita Bruta</div>
-                                <div className="text-xl font-bold text-gray-900">R$ {calculateTotals().totalRevenue.toFixed(2).replace('.', ',')}</div>
+                                <div className="text-lg md:text-xl font-bold text-gray-900">R$ {calculateTotals().totalRevenue.toFixed(2).replace('.', ',')}</div>
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
@@ -1487,7 +1462,7 @@ const ArtistShows = () => {
                               </div>
                               <div>
                                 <div className="text-sm text-gray-600">Despesas</div>
-                                <div className="text-xl font-bold text-gray-900">R$ {calculateTotals().totalExpenses.toFixed(2).replace('.', ',')}</div>
+                                <div className="text-lg md:text-xl font-bold text-gray-900">R$ {calculateTotals().totalExpenses.toFixed(2).replace('.', ',')}</div>
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
@@ -1496,7 +1471,7 @@ const ArtistShows = () => {
                               </div>
                               <div>
                                 <div className="text-sm text-gray-600">Lucro Líquido</div>
-                                <div className="text-xl font-bold text-gray-900">R$ {calculateTotals().netProfit.toFixed(2).replace('.', ',')}</div>
+                                <div className="text-lg md:text-xl font-bold text-gray-900">R$ {calculateTotals().netProfit.toFixed(2).replace('.', ',')}</div>
                               </div>
                             </div>
                           </div>
