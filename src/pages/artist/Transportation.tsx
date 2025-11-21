@@ -302,7 +302,7 @@ const ArtistTransportation = () => {
                             type="button"
                             variant="outline"
                             onClick={addRide}
-                            className="w-full border-gray-300 text-gray-900 hover:bg-gray-50"
+                            className="w-full bg-white border-gray-300 text-gray-900 hover:bg-gray-50"
                           >
                             <PlusCircle className="w-4 h-4 mr-2" />
                             Adicionar Corrida
