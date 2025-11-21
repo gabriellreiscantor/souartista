@@ -168,7 +168,7 @@ const ArtistMusicians = () => {
                       Adicionar Músico
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="bg-white">
                     <DialogHeader>
                       <DialogTitle>
                         {editingMusician ? 'Editar Músico' : 'Adicionar Músico'}

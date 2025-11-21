@@ -203,7 +203,7 @@ const ArtistTransportation = () => {
                       Adicionar Despesa
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[500px]">
+                  <DialogContent className="sm:max-w-[500px] bg-white">
                     <DialogHeader>
                       <DialogTitle>Adicionar Despesa de Locomoção</DialogTitle>
                       <DialogDescription>

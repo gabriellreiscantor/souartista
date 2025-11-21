@@ -164,7 +164,7 @@ const ArtistVenues = () => {
                       Adicionar Local
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="bg-white">
                     <DialogHeader>
                       <DialogTitle>
                         {editingVenue ? 'Editar Local' : 'Adicionar Local'}
