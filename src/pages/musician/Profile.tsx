@@ -20,6 +20,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { ImageEditor } from '@/components/ImageEditor';
 
 const MusicianProfile = () => {
   const { user, userData, signOut } = useAuth();
@@ -35,6 +36,8 @@ const MusicianProfile = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [imageEditorOpen, setImageEditorOpen] = useState(false);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (userData) {
@@ -45,7 +48,7 @@ const MusicianProfile = () => {
     }
   }, [userData]);
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -55,17 +58,27 @@ const MusicianProfile = () => {
       return;
     }
 
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor, selecione uma imagem válida');
+      return;
+    }
+
+    setSelectedImageFile(file);
+    setImageEditorOpen(true);
+  };
+
+  const handlePhotoUpload = async (croppedImage: Blob) => {
     try {
       setUploading(true);
-
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user?.id}/profile.${fileExt}`;
-
+      const fileName = `${user?.id}/profile.jpg`;
+      
       const { error: uploadError } = await supabase.storage
         .from('profile-photos')
-        .upload(fileName, file, {
+        .upload(fileName, croppedImage, {
           cacheControl: '3600',
-          upsert: true
+          upsert: true,
+          contentType: 'image/jpeg'
         });
 
       if (uploadError) throw uploadError;
@@ -74,8 +87,10 @@ const MusicianProfile = () => {
         .from('profile-photos')
         .getPublicUrl(fileName);
 
-      setPhotoUrl(publicUrl);
-      
+      // Adicionar timestamp para forçar atualização da imagem
+      const urlWithTimestamp = `${publicUrl}?t=${Date.now()}`;
+      setPhotoUrl(urlWithTimestamp);
+
       // Atualizar no banco
       const { error: updateError } = await supabase
         .from('profiles')
@@ -204,7 +219,7 @@ const MusicianProfile = () => {
                       id="photo-upload"
                       type="file"
                       accept="image/*"
-                      onChange={handlePhotoUpload}
+                      onChange={handlePhotoSelect}
                       className="hidden"
                       disabled={uploading}
                     />
@@ -215,6 +230,13 @@ const MusicianProfile = () => {
                   <p className="text-muted-foreground">Gerencie suas informações de conta.</p>
                 </div>
               </div>
+
+              <ImageEditor
+                open={imageEditorOpen}
+                onOpenChange={setImageEditorOpen}
+                imageFile={selectedImageFile}
+                onSave={handlePhotoUpload}
+              />
 
               {/* Form */}
               <div className="space-y-4 bg-white border border-border rounded-lg p-6">
