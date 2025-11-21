@@ -523,15 +523,14 @@ const ArtistShows = () => {
                         </DialogHeader>
                         <form onSubmit={handleShowSubmit} className="space-y-6">
                           <div className="space-y-4">
-                            <div className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-lg">
-                              <Switch
-                                checked={showFormData.is_private_event}
-                                onCheckedChange={(checked) => 
-                                  setShowFormData({ ...showFormData, is_private_event: checked })
-                                }
-                              />
-                              <Label className="text-sm font-normal cursor-pointer">Evento Particular</Label>
-                            </div>
+                            <Button
+                              type="button"
+                              variant={showFormData.is_private_event ? "default" : "outline"}
+                              onClick={() => setShowFormData({ ...showFormData, is_private_event: !showFormData.is_private_event })}
+                              className={showFormData.is_private_event ? "bg-primary hover:bg-primary/90 text-white" : "bg-white hover:bg-gray-50 text-gray-900"}
+                            >
+                              Evento Particular
+                            </Button>
 
                             {showFormData.is_private_event ? (
                               <div>
@@ -541,7 +540,7 @@ const ArtistShows = () => {
                                   value={showFormData.custom_venue}
                                   onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
                                   placeholder="Ex: Casamento Ana e Pedro"
-                                  className="bg-white"
+                                  className="bg-white text-gray-900"
                                   required
                                 />
                               </div>
@@ -549,7 +548,7 @@ const ArtistShows = () => {
                               <div>
                                 <Label htmlFor="venue_id" className="text-gray-900">Nome do local</Label>
                                 <Select value={showFormData.venue_id} onValueChange={(value) => setShowFormData({ ...showFormData, venue_id: value })}>
-                                  <SelectTrigger className="bg-white">
+                                  <SelectTrigger className="bg-white text-gray-900">
                                     <SelectValue placeholder="Selecione um local" />
                                   </SelectTrigger>
                                   <SelectContent className="bg-white">
@@ -563,7 +562,7 @@ const ArtistShows = () => {
                                 </Select>
                                 {showFormData.venue_id === 'custom' && (
                                   <Input
-                                    className="mt-2 bg-white"
+                                    className="mt-2 bg-white text-gray-900"
                                     value={showFormData.custom_venue}
                                     onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
                                     placeholder="Digite o nome do local"
@@ -581,7 +580,7 @@ const ArtistShows = () => {
                                   type="date"
                                   value={showFormData.date_local}
                                   onChange={(e) => setShowFormData({ ...showFormData, date_local: e.target.value })}
-                                  className="bg-white"
+                                  className="bg-white text-gray-900"
                                   required
                                 />
                               </div>
@@ -592,14 +591,14 @@ const ArtistShows = () => {
                                   type="time"
                                   value={showFormData.time_local}
                                   onChange={(e) => setShowFormData({ ...showFormData, time_local: e.target.value })}
-                                  className="bg-white"
+                                  className="bg-white text-gray-900"
                                   required
                                 />
                               </div>
                               <div>
                                 <Label htmlFor="duration" className="text-gray-900">Duração de show</Label>
                                 <Select defaultValue="4h">
-                                  <SelectTrigger className="bg-white">
+                                  <SelectTrigger className="bg-white text-gray-900">
                                     <SelectValue placeholder="Horas..." />
                                   </SelectTrigger>
                                   <SelectContent className="bg-white">
@@ -621,7 +620,7 @@ const ArtistShows = () => {
                                 value={showFormData.fee}
                                 onChange={(e) => setShowFormData({ ...showFormData, fee: e.target.value })}
                                 placeholder="R$ 0,00"
-                                className="bg-white"
+                                className="bg-white text-gray-900"
                                 required
                               />
                             </div>
@@ -660,7 +659,7 @@ const ArtistShows = () => {
                                       value={member.musicianId || 'freelancer'}
                                       onValueChange={(value) => updateTeamMember(index, 'musicianId', value === 'freelancer' ? undefined : value)}
                                     >
-                                      <SelectTrigger className="bg-white">
+                                      <SelectTrigger className="bg-white text-gray-900">
                                         <SelectValue placeholder="Membro" />
                                       </SelectTrigger>
                                       <SelectContent className="bg-white">
@@ -679,14 +678,14 @@ const ArtistShows = () => {
                                           placeholder="Nome"
                                           value={member.name}
                                           onChange={(e) => updateTeamMember(index, 'name', e.target.value)}
-                                          className="mt-2 bg-white"
+                                          className="mt-2 bg-white text-gray-900"
                                           required
                                         />
                                         <Input
                                           placeholder="Instrumento"
                                           value={member.instrument}
                                           onChange={(e) => updateTeamMember(index, 'instrument', e.target.value)}
-                                          className="mt-2 bg-white"
+                                          className="mt-2 bg-white text-gray-900"
                                           required
                                         />
                                       </>
@@ -698,7 +697,7 @@ const ArtistShows = () => {
                                       placeholder="Custo (R$)"
                                       value={member.cost || ''}
                                       onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
-                                      className="bg-white"
+                                      className="bg-white text-gray-900"
                                       required
                                     />
                                   </div>
@@ -739,7 +738,7 @@ const ArtistShows = () => {
                                     placeholder="Descrição"
                                     value={expense.description}
                                     onChange={(e) => updateExpense(index, 'description', e.target.value)}
-                                    className="bg-white"
+                                    className="bg-white text-gray-900"
                                     required
                                   />
                                   <Input
@@ -747,7 +746,7 @@ const ArtistShows = () => {
                                     placeholder="Valor (R$)"
                                     value={expense.cost || ''}
                                     onChange={(e) => updateExpense(index, 'cost', parseFloat(e.target.value) || 0)}
-                                    className="bg-white"
+                                    className="bg-white text-gray-900"
                                     required
                                   />
                                 </div>
@@ -759,7 +758,7 @@ const ArtistShows = () => {
                             <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white border-gray-300 text-gray-900 hover:bg-gray-50">
                               Cancelar
                             </Button>
-                            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
+                            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-white">
                               Salvar Show
                             </Button>
                           </div>
