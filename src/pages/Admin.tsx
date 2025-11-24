@@ -614,6 +614,7 @@ export default function Admin() {
   const fetchAdminUsers = async () => {
     try {
       setLoadingAdmins(true);
+      console.log('🔄 Buscando usuários e permissões...');
       
       // Buscar todos os usuários
       const { data: allUsers, error: usersError } = await supabase
@@ -622,6 +623,7 @@ export default function Admin() {
         .order('name', { ascending: true });
       
       if (usersError) throw usersError;
+      console.log(`📋 ${allUsers?.length || 0} usuários encontrados`);
       
       // Buscar quem são os admins
       const { data: admins, error: adminsError } = await supabase
@@ -629,6 +631,7 @@ export default function Admin() {
         .select('user_id');
       
       if (adminsError) throw adminsError;
+      console.log(`👑 ${admins?.length || 0} admins encontrados:`, admins);
       
       // Buscar quem tem role de support
       const { data: supports, error: supportsError } = await supabase
@@ -637,21 +640,32 @@ export default function Admin() {
         .eq('role', 'support');
       
       if (supportsError) throw supportsError;
+      console.log(`🎧 ${supports?.length || 0} suportes encontrados:`, supports);
       
       const adminIds = new Set(admins?.map(a => a.user_id) || []);
       const supportIds = new Set(supports?.map(s => s.user_id) || []);
       
       // Adicionar flags de admin e support aos usuários
-      const usersWithPermissions = allUsers?.map(user => ({
-        ...user,
-        isAdmin: adminIds.has(user.id),
-        isSupport: supportIds.has(user.id)
-      })) || [];
+      const usersWithPermissions = allUsers?.map(user => {
+        const isAdmin = adminIds.has(user.id);
+        const isSupport = supportIds.has(user.id);
+        
+        if (isAdmin || isSupport) {
+          console.log(`✅ ${user.email}: Admin=${isAdmin}, Support=${isSupport}`);
+        }
+        
+        return {
+          ...user,
+          isAdmin,
+          isSupport
+        };
+      }) || [];
       
+      console.log('✅ Permissões carregadas com sucesso');
       setAdminUsers(usersWithPermissions);
       setLastUpdate(new Date());
     } catch (error) {
-      console.error('Erro ao buscar permissões:', error);
+      console.error('❌ Erro ao buscar permissões:', error);
       toast.error('Erro ao carregar permissões');
     } finally {
       setLoadingAdmins(false);
