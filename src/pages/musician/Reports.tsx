@@ -32,6 +32,7 @@ const MusicianReports = () => {
   const [loading, setLoading] = useState(true);
   const [visibleShows, setVisibleShows] = useState(5);
   const [locomotionExpenses, setLocomotionExpenses] = useState<any[]>([]);
+  const [artistProfiles, setArtistProfiles] = useState<{[key: string]: string}>({});
 
   useEffect(() => {
     if (user) {
@@ -87,6 +88,23 @@ const MusicianReports = () => {
 
       if (expensesError) throw expensesError;
 
+      // Fetch artist profiles for the shows
+      const artistIds = [...new Set(showsData?.map(show => show.uid) || [])];
+      if (artistIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, name')
+          .in('id', artistIds);
+
+        if (!profilesError && profilesData) {
+          const profilesMap = profilesData.reduce((acc: {[key: string]: string}, profile) => {
+            acc[profile.id] = profile.name;
+            return acc;
+          }, {});
+          setArtistProfiles(profilesMap);
+        }
+      }
+
       setShows(showsData || []);
       setLocomotionExpenses(expensesData || []);
     } catch (error) {
@@ -141,7 +159,11 @@ const MusicianReports = () => {
       if (existing) {
         existing.profit += show.profit;
       } else {
-        acc.push({ id: artistId, name: `Artista ${artistId.substring(0, 8)}`, profit: show.profit });
+        acc.push({ 
+          id: artistId, 
+          name: artistProfiles[artistId] || 'Artista', 
+          profit: show.profit 
+        });
       }
       return acc;
     }, [])
