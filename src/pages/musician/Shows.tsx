@@ -890,15 +890,15 @@ const MusicianShows = () => {
 
                 {/* ARTISTAS TAB */}
                 <TabsContent value="artists" className="mt-6">
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Meus Artistas</h2>
-                      <p className="text-gray-600">Gerencie os artistas com quem você trabalha</p>
+                      <h2 className="text-xl md:text-2xl font-bold text-gray-900">Meus Artistas</h2>
+                      <p className="text-sm text-gray-600">Gerencie os artistas com quem você trabalha</p>
                     </div>
                     
                     <Dialog open={artistDialogOpen} onOpenChange={setArtistDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button onClick={resetArtistForm}>
+                        <Button onClick={resetArtistForm} className="w-full md:w-auto">
                           <Plus className="w-4 h-4 mr-2" />
                           Adicionar Artista
                         </Button>
@@ -972,15 +972,15 @@ const MusicianShows = () => {
 
                 {/* INSTRUMENTOS TAB */}
                 <TabsContent value="instruments" className="mt-6">
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Meus Instrumentos</h2>
-                      <p className="text-gray-600">Gerencie os instrumentos que você toca</p>
+                      <h2 className="text-xl md:text-2xl font-bold text-gray-900">Meus Instrumentos</h2>
+                      <p className="text-sm text-gray-600">Gerencie os instrumentos que você toca</p>
                     </div>
                     
                     <Dialog open={instrumentDialogOpen} onOpenChange={setInstrumentDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button onClick={resetInstrumentForm}>
+                        <Button onClick={resetInstrumentForm} className="w-full md:w-auto">
                           <Plus className="w-4 h-4 mr-2" />
                           Adicionar Instrumento
                         </Button>
@@ -1054,15 +1054,15 @@ const MusicianShows = () => {
 
                 {/* LOCAIS E BARES TAB */}
                 <TabsContent value="venues" className="mt-6">
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Locais e Bares</h2>
-                      <p className="text-gray-600">Gerencie os locais onde você trabalha</p>
+                      <h2 className="text-xl md:text-2xl font-bold text-gray-900">Locais e Bares</h2>
+                      <p className="text-sm text-gray-600">Gerencie os locais onde você trabalha</p>
                     </div>
                     
                     <Dialog open={venueDialogOpen} onOpenChange={setVenueDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button onClick={resetVenueForm}>
+                        <Button onClick={resetVenueForm} className="w-full md:w-auto">
                           <Plus className="w-4 h-4 mr-2" />
                           Adicionar Local
                         </Button>
