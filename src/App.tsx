@@ -38,8 +38,6 @@ import ArtistUpdates from "./pages/artist/Updates";
 import MusicianUpdates from "./pages/musician/Updates";
 import ArtistTutorial from "./pages/artist/Tutorial";
 import MusicianTutorial from "./pages/musician/Tutorial";
-import MusicianInstruments from "./pages/musician/Instruments";
-import MusicianVenues from "./pages/musician/Venues";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
@@ -77,8 +75,6 @@ const App = () => (
             <Route path="/musician/dashboard" element={<MusicianDashboard />} />
             <Route path="/musician/shows" element={<MusicianShows />} />
             <Route path="/musician/artists" element={<MusicianArtists />} />
-            <Route path="/musician/instruments" element={<MusicianInstruments />} />
-            <Route path="/musician/venues" element={<MusicianVenues />} />
             <Route path="/musician/calendar" element={<MusicianCalendar />} />
             <Route path="/musician/reports" element={<MusicianReports />} />
             <Route path="/musician/transportation" element={<MusicianTransportation />} />

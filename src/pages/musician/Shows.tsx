@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TimePicker } from '@/components/ui/time-picker';
 import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2 } from 'lucide-react';
@@ -85,6 +86,21 @@ const MusicianShows = () => {
   const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
   const [artistFormData, setArtistFormData] = useState({
     name: '',
+  });
+
+  // Instruments dialog
+  const [instrumentDialogOpen, setInstrumentDialogOpen] = useState(false);
+  const [editingInstrument, setEditingInstrument] = useState<Instrument | null>(null);
+  const [instrumentFormData, setInstrumentFormData] = useState({
+    name: '',
+  });
+
+  // Venues dialog
+  const [venueDialogOpen, setVenueDialogOpen] = useState(false);
+  const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
+  const [venueFormData, setVenueFormData] = useState({
+    name: '',
+    address: '',
   });
 
   useEffect(() => {
@@ -377,6 +393,142 @@ const MusicianShows = () => {
     setEditingArtist(null);
   };
 
+  // Instrument handlers
+  const handleInstrumentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    try {
+      const instrumentData = {
+        name: instrumentFormData.name,
+        owner_uid: user.id,
+      };
+
+      if (editingInstrument) {
+        const { error } = await supabase
+          .from('musician_instruments')
+          .update(instrumentData)
+          .eq('id', editingInstrument.id);
+
+        if (error) throw error;
+        toast.success('Instrumento atualizado!');
+      } else {
+        const { error } = await supabase
+          .from('musician_instruments')
+          .insert(instrumentData);
+
+        if (error) throw error;
+        toast.success('Instrumento cadastrado!');
+      }
+
+      setInstrumentDialogOpen(false);
+      resetInstrumentForm();
+      fetchInstruments();
+    } catch (error: any) {
+      toast.error('Erro ao salvar instrumento');
+      console.error(error);
+    }
+  };
+
+  const handleInstrumentEdit = (instrument: Instrument) => {
+    setEditingInstrument(instrument);
+    setInstrumentFormData({ name: instrument.name });
+    setInstrumentDialogOpen(true);
+  };
+
+  const handleInstrumentDelete = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este instrumento?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('musician_instruments')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success('Instrumento excluído!');
+      fetchInstruments();
+    } catch (error: any) {
+      toast.error('Erro ao excluir instrumento');
+      console.error(error);
+    }
+  };
+
+  const resetInstrumentForm = () => {
+    setInstrumentFormData({ name: '' });
+    setEditingInstrument(null);
+  };
+
+  // Venue handlers
+  const handleVenueSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    try {
+      const venueData = {
+        name: venueFormData.name,
+        address: venueFormData.address || null,
+        owner_uid: user.id,
+      };
+
+      if (editingVenue) {
+        const { error } = await supabase
+          .from('musician_venues')
+          .update(venueData)
+          .eq('id', editingVenue.id);
+
+        if (error) throw error;
+        toast.success('Local atualizado!');
+      } else {
+        const { error } = await supabase
+          .from('musician_venues')
+          .insert(venueData);
+
+        if (error) throw error;
+        toast.success('Local cadastrado!');
+      }
+
+      setVenueDialogOpen(false);
+      resetVenueForm();
+      fetchVenues();
+    } catch (error: any) {
+      toast.error('Erro ao salvar local');
+      console.error(error);
+    }
+  };
+
+  const handleVenueEdit = (venue: Venue) => {
+    setEditingVenue(venue);
+    setVenueFormData({
+      name: venue.name,
+      address: venue.address || '',
+    });
+    setVenueDialogOpen(true);
+  };
+
+  const handleVenueDelete = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este local?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('musician_venues')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success('Local excluído!');
+      fetchVenues();
+    } catch (error: any) {
+      toast.error('Erro ao excluir local');
+      console.error(error);
+    }
+  };
+
+  const resetVenueForm = () => {
+    setVenueFormData({ name: '', address: '' });
+    setEditingVenue(null);
+  };
+
   const addExpense = () => {
     setPersonalExpenses([...personalExpenses, { description: '', cost: 0 }]);
   };
@@ -421,20 +573,28 @@ const MusicianShows = () => {
               <Tabs defaultValue="shows" className="w-full">
                 {/* Mobile tabs */}
                 <Card className="md:hidden bg-[#EAD6F5] border-0 mb-4">
-                  <TabsList className="w-full grid grid-cols-2 bg-transparent p-0 h-auto">
+                  <TabsList className="w-full grid grid-cols-4 bg-transparent p-0 h-auto">
                     <TabsTrigger value="shows" className="flex flex-col items-center gap-1 bg-transparent text-gray-700 data-[state=active]:bg-transparent data-[state=active]:text-primary py-3 border-b-2 border-transparent data-[state=active]:border-primary rounded-none">
                       <Music2 className="w-5 h-5" />
-                      <span className="text-xs">Meus Freelas</span>
+                      <span className="text-xs">Freelas</span>
                     </TabsTrigger>
                     <TabsTrigger value="artists" className="flex flex-col items-center gap-1 bg-transparent text-gray-700 data-[state=active]:bg-transparent data-[state=active]:text-primary py-3 border-b-2 border-transparent data-[state=active]:border-primary rounded-none">
                       <Mic2 className="w-5 h-5" />
                       <span className="text-xs">Artistas</span>
                     </TabsTrigger>
+                    <TabsTrigger value="instruments" className="flex flex-col items-center gap-1 bg-transparent text-gray-700 data-[state=active]:bg-transparent data-[state=active]:text-primary py-3 border-b-2 border-transparent data-[state=active]:border-primary rounded-none">
+                      <Music2 className="w-5 h-5" />
+                      <span className="text-xs">Instrumentos</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="venues" className="flex flex-col items-center gap-1 bg-transparent text-gray-700 data-[state=active]:bg-transparent data-[state=active]:text-primary py-3 border-b-2 border-transparent data-[state=active]:border-primary rounded-none">
+                      <MapPin className="w-5 h-5" />
+                      <span className="text-xs">Locais</span>
+                    </TabsTrigger>
                   </TabsList>
                 </Card>
 
                 {/* Desktop tabs */}
-                <TabsList className="hidden md:grid w-full grid-cols-2 bg-white">
+                <TabsList className="hidden md:grid w-full grid-cols-4 bg-white">
                   <TabsTrigger value="shows" className="flex items-center gap-2">
                     <Music2 className="w-4 h-4" />
                     Meus Freelas
@@ -442,6 +602,14 @@ const MusicianShows = () => {
                   <TabsTrigger value="artists" className="flex items-center gap-2">
                     <Mic2 className="w-4 h-4" />
                     Artistas
+                  </TabsTrigger>
+                  <TabsTrigger value="instruments" className="flex items-center gap-2">
+                    <Music2 className="w-4 h-4" />
+                    Instrumentos
+                  </TabsTrigger>
+                  <TabsTrigger value="venues" className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    Locais e Bares
                   </TabsTrigger>
                 </TabsList>
 
@@ -792,6 +960,183 @@ const MusicianShows = () => {
                                 <Edit className="w-4 h-4" />
                               </Button>
                               <Button variant="outline" size="icon" onClick={() => handleArtistDelete(artist.id)}>
+                                <Trash2 className="w-4 h-4 text-red-600" />
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* INSTRUMENTOS TAB */}
+                <TabsContent value="instruments" className="mt-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">Meus Instrumentos</h2>
+                      <p className="text-gray-600">Gerencie os instrumentos que você toca</p>
+                    </div>
+                    
+                    <Dialog open={instrumentDialogOpen} onOpenChange={setInstrumentDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button onClick={resetInstrumentForm}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Adicionar Instrumento
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-white text-gray-900">
+                        <DialogHeader>
+                          <DialogTitle className="text-gray-900 font-semibold">
+                            {editingInstrument ? 'Editar Instrumento' : 'Adicionar Instrumento'}
+                          </DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleInstrumentSubmit} className="space-y-4">
+                          <div>
+                            <Label htmlFor="instrument_name" className="text-gray-900 font-medium">Nome do Instrumento *</Label>
+                            <Input
+                              id="instrument_name"
+                              value={instrumentFormData.name}
+                              onChange={(e) => setInstrumentFormData({ ...instrumentFormData, name: e.target.value })}
+                              placeholder="Ex: Guitarra, Bateria, Baixo..."
+                              className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                              required
+                            />
+                          </div>
+                          <div className="flex gap-3">
+                            <Button type="button" variant="outline" onClick={() => setInstrumentDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
+                              Cancelar
+                            </Button>
+                            <Button type="submit" className="flex-1">
+                              {editingInstrument ? 'Atualizar' : 'Cadastrar'}
+                            </Button>
+                          </div>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+
+                  {instruments.length === 0 ? (
+                    <Card className="p-8 text-center bg-white border border-gray-200">
+                      <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500 mb-4">Nenhum instrumento cadastrado</p>
+                      <p className="text-sm text-gray-400">
+                        Adicione os instrumentos que você toca
+                      </p>
+                    </Card>
+                  ) : (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {instruments.map((instrument) => (
+                        <Card key={instrument.id} className="p-4 bg-white border border-gray-200">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                                <Music2 className="w-6 h-6 text-purple-600" />
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-gray-900">{instrument.name}</h3>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="icon" onClick={() => handleInstrumentEdit(instrument)}>
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button variant="outline" size="icon" onClick={() => handleInstrumentDelete(instrument.id)}>
+                                <Trash2 className="w-4 h-4 text-red-600" />
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* LOCAIS E BARES TAB */}
+                <TabsContent value="venues" className="mt-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">Locais e Bares</h2>
+                      <p className="text-gray-600">Gerencie os locais onde você trabalha</p>
+                    </div>
+                    
+                    <Dialog open={venueDialogOpen} onOpenChange={setVenueDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button onClick={resetVenueForm}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Adicionar Local
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-white text-gray-900">
+                        <DialogHeader>
+                          <DialogTitle className="text-gray-900 font-semibold">
+                            {editingVenue ? 'Editar Local' : 'Adicionar Local'}
+                          </DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleVenueSubmit} className="space-y-4">
+                          <div>
+                            <Label htmlFor="venue_name" className="text-gray-900 font-medium">Nome do Local *</Label>
+                            <Input
+                              id="venue_name"
+                              value={venueFormData.name}
+                              onChange={(e) => setVenueFormData({ ...venueFormData, name: e.target.value })}
+                              placeholder="Ex: Bar do João, Casa de Shows..."
+                              className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="venue_address" className="text-gray-900 font-medium">Endereço (opcional)</Label>
+                            <Input
+                              id="venue_address"
+                              value={venueFormData.address}
+                              onChange={(e) => setVenueFormData({ ...venueFormData, address: e.target.value })}
+                              placeholder="Rua, número, bairro, cidade..."
+                              className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                            />
+                          </div>
+                          <div className="flex gap-3">
+                            <Button type="button" variant="outline" onClick={() => setVenueDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
+                              Cancelar
+                            </Button>
+                            <Button type="submit" className="flex-1">
+                              {editingVenue ? 'Atualizar' : 'Cadastrar'}
+                            </Button>
+                          </div>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+
+                  {venues.length === 0 ? (
+                    <Card className="p-8 text-center bg-white border border-gray-200">
+                      <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500 mb-4">Nenhum local cadastrado</p>
+                      <p className="text-sm text-gray-400">
+                        Adicione os locais onde você trabalha
+                      </p>
+                    </Card>
+                  ) : (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {venues.map((venue) => (
+                        <Card key={venue.id} className="p-4 bg-white border border-gray-200">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-start gap-4 flex-1">
+                              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                <MapPin className="w-6 h-6 text-purple-600" />
+                              </div>
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-gray-900 mb-1">{venue.name}</h3>
+                                {venue.address && (
+                                  <p className="text-sm text-gray-600">{venue.address}</p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex gap-2 flex-shrink-0">
+                              <Button variant="outline" size="icon" onClick={() => handleVenueEdit(venue)}>
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button variant="outline" size="icon" onClick={() => handleVenueDelete(venue.id)}>
                                 <Trash2 className="w-4 h-4 text-red-600" />
                               </Button>
                             </div>
