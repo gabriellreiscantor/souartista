@@ -6,13 +6,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Bell, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
 const MusicianTerms = () => {
-  const { userData } = useAuth();
+  const {
+    userData
+  } = useAuth();
   const navigate = useNavigate();
-
-  return (
-    <SidebarProvider>
+  return <SidebarProvider>
       <div className="flex min-h-screen w-full bg-white">
         <MusicianSidebar />
         
@@ -34,16 +33,16 @@ const MusicianTerms = () => {
           </header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6 scrollbar-hide" style={{
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            WebkitOverflowScrolling: 'touch'
-          }}>
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch'
+        }}>
             <div className="max-w-3xl mx-auto prose prose-slate">
               <h1>Termos de Uso</h1>
               <p className="text-gray-600">Última atualização: {new Date().toLocaleDateString('pt-BR')}</p>
 
               <h2>1. Aceitação dos Termos</h2>
-              <p>
+              <p className="text-zinc-950">
                 Ao acessar e usar esta plataforma, você aceita e concorda em estar vinculado aos termos e 
                 condições aqui estabelecidos.
               </p>
@@ -94,8 +93,6 @@ const MusicianTerms = () => {
           <MobileBottomNav role="musician" />
         </div>
       </div>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 };
-
 export default MusicianTerms;
