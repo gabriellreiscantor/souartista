@@ -65,9 +65,13 @@ All colors MUST be HSL.
     /* Shadows */
     --shadow-primary: 0 10px 30px -10px hsl(273 85% 65% / 0.3);
     --shadow-card: 0 4px 20px hsl(273 25% 8% / 0.5);
+    --shadow-premium: 0 20px 60px -20px hsl(273 85% 65% / 0.5);
+    --shadow-glow: 0 0 40px hsl(273 85% 65% / 0.3);
+    --shadow-icon: 0 8px 24px -8px hsl(273 85% 65% / 0.4);
 
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
   .dark {
@@ -125,9 +129,13 @@ All colors MUST be HSL.
     /* Shadows */
     --shadow-primary: 0 10px 30px -10px hsl(273 85% 65% / 0.3);
     --shadow-card: 0 4px 20px hsl(273 25% 8% / 0.5);
+    --shadow-premium: 0 20px 60px -20px hsl(273 85% 65% / 0.5);
+    --shadow-glow: 0 0 40px hsl(273 85% 65% / 0.3);
+    --shadow-icon: 0 8px 24px -8px hsl(273 85% 65% / 0.4);
 
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 }
 
