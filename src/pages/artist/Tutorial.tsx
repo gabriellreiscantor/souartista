@@ -5,98 +5,45 @@ import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { 
-  Bell, 
-  ArrowLeft, 
-  Calendar, 
-  Users, 
-  DollarSign, 
-  BarChart3, 
-  Car,
-  MapPin 
-} from 'lucide-react';
+import { Bell, ArrowLeft, Calendar, Users, DollarSign, BarChart3, Car, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
 const ArtistTutorial = () => {
-  const { userData } = useAuth();
+  const {
+    userData
+  } = useAuth();
   const navigate = useNavigate();
-
-  const tutorials = [
-    {
-      icon: Calendar,
-      title: 'Gerenciar Shows',
-      description: 'Aprenda a criar, editar e organizar seus shows',
-      steps: [
-        'Acesse a página "Shows" no menu lateral',
-        'Clique em "Novo Show" para adicionar um evento',
-        'Preencha os dados: data, horário, local e cachê',
-        'Adicione músicos da sua equipe ao show',
-        'Gerencie despesas e pagamentos'
-      ]
-    },
-    {
-      icon: Users,
-      title: 'Gerenciar Músicos',
-      description: 'Cadastre e organize sua equipe de músicos',
-      steps: [
-        'Vá para a seção "Músicos"',
-        'Clique em "Adicionar Músico"',
-        'Informe nome, instrumento e cachê padrão',
-        'O músico estará disponível para adicionar em shows',
-        'Edite ou remova músicos conforme necessário'
-      ]
-    },
-    {
-      icon: MapPin,
-      title: 'Gerenciar Locais',
-      description: 'Cadastre os locais onde você se apresenta',
-      steps: [
-        'Acesse "Locais" no menu',
-        'Adicione novos locais com nome e endereço',
-        'Use esses locais ao criar shows',
-        'Mantenha seu histórico de apresentações organizado'
-      ]
-    },
-    {
-      icon: Car,
-      title: 'Controle de Locomoção',
-      description: 'Registre despesas com transporte',
-      steps: [
-        'Na página "Locomoção", clique em "Nova Despesa"',
-        'Escolha o tipo: Uber, Km, Van, Ônibus ou Avião',
-        'Para Km: informe distância, consumo e preço do combustível',
-        'Associe a despesa a um show específico',
-        'Acompanhe o total gasto em transporte'
-      ]
-    },
-    {
-      icon: BarChart3,
-      title: 'Relatórios Financeiros',
-      description: 'Acompanhe receitas, despesas e lucros',
-      steps: [
-        'Acesse a página "Relatórios"',
-        'Visualize gráficos de receita, despesas e lucro',
-        'Filtre por período para análises específicas',
-        'Use os dados para tomar decisões financeiras',
-        'Configure visibilidade em "Ajustes"'
-      ]
-    },
-    {
-      icon: DollarSign,
-      title: 'Dashboard',
-      description: 'Visão geral da sua carreira',
-      steps: [
-        'O Dashboard mostra métricas principais',
-        'Veja total de shows, receitas e despesas',
-        'Acompanhe shows próximos no calendário',
-        'Analise gráficos de performance mensal',
-        'Use filtros para diferentes períodos'
-      ]
-    }
-  ];
-
-  return (
-    <SidebarProvider>
+  const tutorials = [{
+    icon: Calendar,
+    title: 'Gerenciar Shows',
+    description: 'Aprenda a criar, editar e organizar seus shows',
+    steps: ['Acesse a página "Shows" no menu lateral', 'Clique em "Novo Show" para adicionar um evento', 'Preencha os dados: data, horário, local e cachê', 'Adicione músicos da sua equipe ao show', 'Gerencie despesas e pagamentos']
+  }, {
+    icon: Users,
+    title: 'Gerenciar Músicos',
+    description: 'Cadastre e organize sua equipe de músicos',
+    steps: ['Vá para a seção "Músicos"', 'Clique em "Adicionar Músico"', 'Informe nome, instrumento e cachê padrão', 'O músico estará disponível para adicionar em shows', 'Edite ou remova músicos conforme necessário']
+  }, {
+    icon: MapPin,
+    title: 'Gerenciar Locais',
+    description: 'Cadastre os locais onde você se apresenta',
+    steps: ['Acesse "Locais" no menu', 'Adicione novos locais com nome e endereço', 'Use esses locais ao criar shows', 'Mantenha seu histórico de apresentações organizado']
+  }, {
+    icon: Car,
+    title: 'Controle de Locomoção',
+    description: 'Registre despesas com transporte',
+    steps: ['Na página "Locomoção", clique em "Nova Despesa"', 'Escolha o tipo: Uber, Km, Van, Ônibus ou Avião', 'Para Km: informe distância, consumo e preço do combustível', 'Associe a despesa a um show específico', 'Acompanhe o total gasto em transporte']
+  }, {
+    icon: BarChart3,
+    title: 'Relatórios Financeiros',
+    description: 'Acompanhe receitas, despesas e lucros',
+    steps: ['Acesse a página "Relatórios"', 'Visualize gráficos de receita, despesas e lucro', 'Filtre por período para análises específicas', 'Use os dados para tomar decisões financeiras', 'Configure visibilidade em "Ajustes"']
+  }, {
+    icon: DollarSign,
+    title: 'Dashboard',
+    description: 'Visão geral da sua carreira',
+    steps: ['O Dashboard mostra métricas principais', 'Veja total de shows, receitas e despesas', 'Acompanhe shows próximos no calendário', 'Analise gráficos de performance mensal', 'Use filtros para diferentes períodos']
+  }];
+  return <SidebarProvider>
       <div className="flex min-h-screen w-full bg-white">
         <ArtistSidebar />
         
@@ -125,33 +72,29 @@ const ArtistTutorial = () => {
               </div>
 
               <div className="grid gap-6 md:grid-cols-2">
-                {tutorials.map((tutorial, index) => (
-                  <Card key={index} className="p-6 hover:shadow-lg transition-shadow border-2 border-purple-100">
+                {tutorials.map((tutorial, index) => <Card key={index} className="p-6 hover:shadow-lg transition-shadow border-2 border-purple-100">
                     <div className="flex items-start gap-4 mb-6">
                       <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-md">
                         <tutorial.icon className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">
+                        <h3 className="text-lg font-bold mb-1 text-zinc-50">
                           {tutorial.title}
                         </h3>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-white">
                           {tutorial.description}
                         </p>
                       </div>
                     </div>
                     <div className="space-y-3">
-                      {tutorial.steps.map((step, stepIndex) => (
-                        <div key={stepIndex} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                      {tutorial.steps.map((step, stepIndex) => <div key={stepIndex} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
                           <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-sm">
                             {stepIndex + 1}
                           </span>
                           <span className="text-sm text-gray-900 pt-0.5 leading-relaxed">{step}</span>
-                        </div>
-                      ))}
+                        </div>)}
                     </div>
-                  </Card>
-                ))}
+                  </Card>)}
               </div>
             </div>
           </main>
@@ -159,8 +102,6 @@ const ArtistTutorial = () => {
           <MobileBottomNav role="artist" />
         </div>
       </div>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 };
-
 export default ArtistTutorial;
