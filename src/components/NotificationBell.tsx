@@ -143,7 +143,13 @@ export function NotificationBell() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 md:w-96 p-0 bg-white border border-gray-200 z-50 shadow-lg" align="end" side="bottom" sideOffset={8}>
+      <PopoverContent 
+        className="w-[calc(100vw-2rem)] md:w-96 p-0 bg-white border border-gray-200 z-50 shadow-lg" 
+        align="end" 
+        side="bottom" 
+        sideOffset={8}
+        alignOffset={0}
+      >
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-gray-900">Notificações</h3>
