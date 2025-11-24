@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const ArtistDashboard = () => {
   const { userData, userRole, loading } = useAuth();
@@ -166,13 +166,22 @@ const ArtistDashboard = () => {
                 </Select>
               </div>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={monthlyData}>
+                  <LineChart data={monthlyData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis dataKey="month" stroke="#666" />
                     <YAxis stroke="#666" />
-                    <Tooltip />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#fff', 
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        padding: '12px'
+                      }}
+                      formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`}
+                      labelFormatter={(label) => `Mês: ${label}`}
+                    />
                     <Legend 
-                      iconType="square"
+                      iconType="circle"
                       formatter={(value) => {
                         const labels: Record<string, string> = {
                           receita: 'Receita',
@@ -182,10 +191,31 @@ const ArtistDashboard = () => {
                         return labels[value] || value;
                       }}
                     />
-                    <Bar dataKey="receita" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="despesa" fill="#ef4444" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="lucro" fill="#a855f7" radius={[4, 4, 0, 0]} />
-                  </BarChart>
+                    <Line 
+                      type="monotone" 
+                      dataKey="receita" 
+                      stroke="#22c55e" 
+                      strokeWidth={3}
+                      dot={{ fill: '#22c55e', strokeWidth: 2, r: 5, stroke: '#fff' }}
+                      activeDot={{ r: 7, fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="despesa" 
+                      stroke="#ef4444" 
+                      strokeWidth={3}
+                      dot={{ fill: '#ef4444', strokeWidth: 2, r: 5, stroke: '#fff' }}
+                      activeDot={{ r: 7, fill: '#ef4444', stroke: '#fff', strokeWidth: 2 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="lucro" 
+                      stroke="#a855f7" 
+                      strokeWidth={3}
+                      dot={{ fill: '#a855f7', strokeWidth: 2, r: 5, stroke: '#fff' }}
+                      activeDot={{ r: 7, fill: '#a855f7', stroke: '#fff', strokeWidth: 2 }}
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
               </Card>
 
@@ -337,13 +367,29 @@ const ArtistDashboard = () => {
                 <Card className="lg:col-span-2 p-6 bg-white border border-gray-200">
                   <h4 className="text-lg font-semibold text-gray-900 mb-4">Locomoção por Mês</h4>
                   <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={locomotionData}>
+                    <LineChart data={locomotionData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                       <XAxis dataKey="month" stroke="#666" />
                       <YAxis stroke="#666" />
-                      <Tooltip />
-                      <Bar dataKey="value" fill="#eab308" radius={[4, 4, 0, 0]} />
-                    </BarChart>
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: '#fff', 
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          padding: '12px'
+                        }}
+                        formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`}
+                        labelFormatter={(label) => `Mês: ${label}`}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="value" 
+                        stroke="#eab308" 
+                        strokeWidth={3}
+                        dot={{ fill: '#eab308', strokeWidth: 2, r: 5, stroke: '#fff' }}
+                        activeDot={{ r: 7, fill: '#eab308', stroke: '#fff', strokeWidth: 2 }}
+                      />
+                    </LineChart>
                   </ResponsiveContainer>
                 </Card>
               </div>
