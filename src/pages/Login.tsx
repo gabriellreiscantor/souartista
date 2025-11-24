@@ -81,7 +81,7 @@ const Login = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center mb-8">
-          <img src={logo} alt="Sou Artista" className="h-16 w-auto" />
+          <img src={logo} alt="Sou Artista" className="h-32 w-auto" />
         </div>
 
         {/* Card */}
