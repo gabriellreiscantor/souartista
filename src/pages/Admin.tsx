@@ -1661,6 +1661,15 @@ export default function Admin() {
                               {importReport.shows_imported}
                             </p>
                           </div>
+                          {importReport.shows_skipped > 0 && (
+                            <div className="bg-white p-4 rounded-lg border border-yellow-200">
+                              <p className="text-xs text-gray-600 mb-1">Shows Ignorados</p>
+                              <p className="text-3xl font-bold text-yellow-600">
+                                {importReport.shows_skipped}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">Sem data</p>
+                            </div>
+                          )}
                           <div className="bg-white p-4 rounded-lg border border-blue-200">
                             <p className="text-xs text-gray-600 mb-1">Músicos Criados</p>
                             <p className="text-3xl font-bold text-blue-600">
