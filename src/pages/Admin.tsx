@@ -86,6 +86,7 @@ export default function Admin() {
   // Estados para Financeiro Global
   const [googleTax, setGoogleTax] = useState(30);
   const [activeUsersCount, setActiveUsersCount] = useState(0);
+  const [savingTax, setSavingTax] = useState(false);
   
   // Estados para Notificações
   const [notificationTitle, setNotificationTitle] = useState('');
@@ -330,8 +331,27 @@ export default function Admin() {
         .eq('status_plano', 'ativo');
       
       setActiveUsersCount(count || 0);
+      
+      // Carregar taxa Google salva
+      const savedTax = localStorage.getItem('admin_google_tax');
+      if (savedTax) {
+        setGoogleTax(Number(savedTax));
+      }
     } catch (error) {
       console.error('Erro ao buscar dados financeiros:', error);
+    }
+  };
+
+  const handleSaveTax = () => {
+    setSavingTax(true);
+    try {
+      localStorage.setItem('admin_google_tax', googleTax.toString());
+      toast.success('Taxa Google salva com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar taxa:', error);
+      toast.error('Erro ao salvar taxa');
+    } finally {
+      setTimeout(() => setSavingTax(false), 500);
     }
   };
 
@@ -939,27 +959,39 @@ export default function Admin() {
                     <CardTitle className="text-gray-900">Configuração de Taxas</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="google-tax" className="text-gray-900">Taxa Google Play (%)</Label>
-                        <Input
-                          id="google-tax"
-                          type="number"
-                          value={googleTax}
-                          onChange={(e) => setGoogleTax(Number(e.target.value))}
-                          className="bg-white text-gray-900 border-gray-200"
-                          min="0"
-                          max="100"
-                        />
+                    <div className="space-y-4">
+                      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="google-tax" className="text-gray-900">Taxa Google Play (%)</Label>
+                          <Input
+                            id="google-tax"
+                            type="number"
+                            value={googleTax}
+                            onChange={(e) => setGoogleTax(Number(e.target.value))}
+                            className="bg-white text-gray-900 border-gray-200"
+                            min="0"
+                            max="100"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-gray-900">Taxa Apple Store (%)</Label>
+                          <Input
+                            value="15"
+                            disabled
+                            className="bg-gray-100 text-gray-600 border-gray-200"
+                          />
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-gray-900">Taxa Apple Store (%)</Label>
-                        <Input
-                          value="15"
-                          disabled
-                          className="bg-gray-100 text-gray-600 border-gray-200"
-                        />
-                      </div>
+                      <Button 
+                        onClick={handleSaveTax} 
+                        disabled={savingTax}
+                        className="w-full md:w-auto"
+                      >
+                        {savingTax ? (
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        ) : null}
+                        Salvar Configuração
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
