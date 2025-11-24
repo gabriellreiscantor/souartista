@@ -7,18 +7,24 @@ import "./index.css";
 
 function AppWithLoading() {
   const [isLoading, setIsLoading] = useState(true);
+  const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    // Simula loading mínimo de 1.5s para mostrar a splash screen
+    // Loading de 800ms + 200ms de fade out
     const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
+      setFadeOut(true);
+      setTimeout(() => setIsLoading(false), 200);
+    }, 800);
 
     return () => clearTimeout(timer);
   }, []);
 
   if (isLoading) {
-    return <LoadingScreen />;
+    return (
+      <div className={`transition-opacity duration-200 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}>
+        <LoadingScreen />
+      </div>
+    );
   }
 
   return (
