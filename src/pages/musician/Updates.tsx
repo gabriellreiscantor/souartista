@@ -8,44 +8,27 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Bell, ArrowLeft, Sparkles, Bug, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
 const MusicianUpdates = () => {
-  const { userData } = useAuth();
+  const {
+    userData
+  } = useAuth();
   const navigate = useNavigate();
-
-  const updates = [
-    {
-      version: '1.2.0',
-      date: '15 de Janeiro, 2025',
-      type: 'feature',
-      items: [
-        'Nova página de Ajustes com controles de visibilidade',
-        'Seleção de tema claro/escuro',
-        'Editor de fotos de perfil com zoom e corte'
-      ]
-    },
-    {
-      version: '1.1.0',
-      date: '10 de Janeiro, 2025',
-      type: 'improvement',
-      items: [
-        'Melhorias na performance do dashboard',
-        'Interface redesenhada para melhor usabilidade',
-        'Novos gráficos de relatórios financeiros'
-      ]
-    },
-    {
-      version: '1.0.5',
-      date: '05 de Janeiro, 2025',
-      type: 'bugfix',
-      items: [
-        'Correção de erro ao salvar shows',
-        'Ajuste no cálculo de despesas de locomoção',
-        'Melhorias na navegação mobile'
-      ]
-    }
-  ];
-
+  const updates = [{
+    version: '1.2.0',
+    date: '15 de Janeiro, 2025',
+    type: 'feature',
+    items: ['Nova página de Ajustes com controles de visibilidade', 'Seleção de tema claro/escuro', 'Editor de fotos de perfil com zoom e corte']
+  }, {
+    version: '1.1.0',
+    date: '10 de Janeiro, 2025',
+    type: 'improvement',
+    items: ['Melhorias na performance do dashboard', 'Interface redesenhada para melhor usabilidade', 'Novos gráficos de relatórios financeiros']
+  }, {
+    version: '1.0.5',
+    date: '05 de Janeiro, 2025',
+    type: 'bugfix',
+    items: ['Correção de erro ao salvar shows', 'Ajuste no cálculo de despesas de locomoção', 'Melhorias na navegação mobile']
+  }];
   const getIcon = (type: string) => {
     switch (type) {
       case 'feature':
@@ -58,7 +41,6 @@ const MusicianUpdates = () => {
         return <Sparkles className="w-5 h-5" />;
     }
   };
-
   const getBadgeColor = (type: string) => {
     switch (type) {
       case 'feature':
@@ -71,7 +53,6 @@ const MusicianUpdates = () => {
         return 'bg-gray-100 text-gray-700';
     }
   };
-
   const getTypeName = (type: string) => {
     switch (type) {
       case 'feature':
@@ -84,9 +65,7 @@ const MusicianUpdates = () => {
         return 'Atualização';
     }
   };
-
-  return (
-    <SidebarProvider>
+  return <SidebarProvider>
       <div className="flex min-h-screen w-full bg-white">
         <MusicianSidebar />
         
@@ -108,10 +87,10 @@ const MusicianUpdates = () => {
           </header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6 scrollbar-hide" style={{
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            WebkitOverflowScrolling: 'touch'
-          }}>
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch'
+        }}>
             <div className="max-w-3xl mx-auto">
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">Atualizações</h2>
@@ -119,8 +98,7 @@ const MusicianUpdates = () => {
               </div>
 
               <div className="space-y-6">
-                {updates.map((update, index) => (
-                  <Card key={index} className="p-6">
+                {updates.map((update, index) => <Card key={index} className="p-6 text-slate-50">
                     <div className="flex items-start gap-4">
                       <div className="mt-1">{getIcon(update.type)}</div>
                       <div className="flex-1">
@@ -132,19 +110,16 @@ const MusicianUpdates = () => {
                             {getTypeName(update.type)}
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-600 mb-4">{update.date}</p>
+                        <p className="text-sm mb-4 text-red-50">{update.date}</p>
                         <ul className="space-y-2">
-                          {update.items.map((item, itemIndex) => (
-                            <li key={itemIndex} className="flex items-start gap-2">
+                          {update.items.map((item, itemIndex) => <li key={itemIndex} className="flex items-start gap-2">
                               <span className="text-primary mt-1">•</span>
-                              <span className="text-gray-700">{item}</span>
-                            </li>
-                          ))}
+                              <span className="text-red-50">{item}</span>
+                            </li>)}
                         </ul>
                       </div>
                     </div>
-                  </Card>
-                ))}
+                  </Card>)}
               </div>
             </div>
           </main>
@@ -152,8 +127,6 @@ const MusicianUpdates = () => {
           <MobileBottomNav role="musician" />
         </div>
       </div>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 };
-
 export default MusicianUpdates;
