@@ -247,6 +247,7 @@ export type Database = {
           name: string
           phone: string | null
           photo_url: string | null
+          plan_purchased_at: string | null
           status_plano: string | null
           updated_at: string
         }
@@ -261,6 +262,7 @@ export type Database = {
           name: string
           phone?: string | null
           photo_url?: string | null
+          plan_purchased_at?: string | null
           status_plano?: string | null
           updated_at?: string
         }
@@ -275,6 +277,7 @@ export type Database = {
           name?: string
           phone?: string | null
           photo_url?: string | null
+          plan_purchased_at?: string | null
           status_plano?: string | null
           updated_at?: string
         }
