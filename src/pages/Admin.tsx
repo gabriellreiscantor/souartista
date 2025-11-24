@@ -1383,7 +1383,7 @@ export default function Admin() {
                         <div>
                           <h3 className="text-sm font-semibold text-gray-900 mb-3">
                             Usuários do Sistema ({adminUsers.filter((u: any) => {
-                              if (u.isAdmin && u.isSupport) return false;
+                              if (u.isAdmin || u.isSupport) return false;
                               if (!adminSearchQuery) return true;
                               const query = adminSearchQuery.toLowerCase();
                               return (
@@ -1397,7 +1397,7 @@ export default function Admin() {
                           </h3>
                           <div className="space-y-2 max-h-96 overflow-y-auto">
                             {adminUsers.filter((u: any) => {
-                              if (u.isAdmin && u.isSupport) return false;
+                              if (u.isAdmin || u.isSupport) return false;
                               if (!adminSearchQuery) return true;
                               const query = adminSearchQuery.toLowerCase();
                               return (
