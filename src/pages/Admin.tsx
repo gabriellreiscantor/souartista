@@ -41,7 +41,6 @@ interface Show {
   expenses_other: any;
   uid?: string;
 }
-
 interface LocomotionExpense {
   id: string;
   cost: number;
@@ -83,13 +82,13 @@ export default function Admin() {
   const [userShows, setUserShows] = useState<Show[]>([]);
   const [userExpenses, setUserExpenses] = useState<LocomotionExpense[]>([]);
   const [searchInputRef, setSearchInputRef] = useState<HTMLInputElement | null>(null);
-  
+
   // Estados para Financeiro Global
   const [googleTax, setGoogleTax] = useState(30);
   const [appleTax, setAppleTax] = useState(15);
   const [activeUsersCount, setActiveUsersCount] = useState(0);
   const [savingTax, setSavingTax] = useState(false);
-  
+
   // Estados para Notificações
   const [notificationTitle, setNotificationTitle] = useState('');
   const [notificationMessage, setNotificationMessage] = useState('');
@@ -100,12 +99,11 @@ export default function Admin() {
   const [deletingNotificationId, setDeletingNotificationId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showRouteSelector, setShowRouteSelector] = useState(false);
-  
+
   // Estados para Contatos WhatsApp
   const [contacts, setContacts] = useState<any[]>([]);
   const [contactFilter, setContactFilter] = useState('todos');
   const [loadingContacts, setLoadingContacts] = useState(false);
-  
   const usersPerPage = 50;
   useEffect(() => {
     if (!adminLoading && !isAdmin && user) {
@@ -134,7 +132,7 @@ export default function Admin() {
       setUserShows([]);
       setUserExpenses([]);
       setSearchId('');
-      
+
       // Carrega dados específicos por tab
       if (currentTab === 'financeiro') {
         fetchFinancialData();
@@ -245,7 +243,6 @@ export default function Admin() {
       const {
         data: roleData
       } = await supabase.from('user_roles').select('role').eq('user_id', searchId.trim()).single();
-
       console.log('User role:', roleData?.role);
 
       // Buscar shows se for artista
@@ -268,7 +265,6 @@ export default function Admin() {
         } = await supabase.from('shows').select('id, venue_name, date_local, time_local, fee, expenses_team, expenses_other, uid').contains('team_musician_ids', [searchId.trim()]).order('date_local', {
           ascending: false
         });
-        
         console.log('Shows do músico:', showsData?.length, 'Error:', showsError);
         shows = showsData || [];
       }
@@ -279,9 +275,7 @@ export default function Admin() {
       } = await supabase.from('locomotion_expenses').select('id, cost, type, created_at').eq('uid', searchId.trim()).order('created_at', {
         ascending: false
       });
-
       console.log('Despesas:', expensesData?.length);
-
       setSearchedUser({
         ...profile,
         role: roleData?.role
@@ -303,22 +297,21 @@ export default function Admin() {
     navigator.clipboard.writeText(text);
     toast.success('ID copiado!');
   };
-
   const handlePasteClick = () => {
     // Foca no input e instrui o usuário
     if (searchInputRef) {
       searchInputRef.focus();
       searchInputRef.select();
-      
+
       // Tenta executar paste programaticamente
       const pasteSuccess = document.execCommand('paste');
-      
       if (!pasteSuccess) {
-        toast.info('Cole agora (Ctrl+V ou toque longo)', { duration: 2000 });
+        toast.info('Cole agora (Ctrl+V ou toque longo)', {
+          duration: 2000
+        });
       }
     }
   };
-
   const handleClearSearch = () => {
     setSearchId('');
     setSearchedUser(null);
@@ -330,19 +323,19 @@ export default function Admin() {
   // Funções para Financeiro Global
   const fetchFinancialData = async () => {
     try {
-      const { count } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .eq('status_plano', 'ativo');
-      
+      const {
+        count
+      } = await supabase.from('profiles').select('*', {
+        count: 'exact',
+        head: true
+      }).eq('status_plano', 'ativo');
       setActiveUsersCount(count || 0);
-      
+
       // Carregar taxas salvas
       const savedGoogleTax = localStorage.getItem('admin_google_tax');
       if (savedGoogleTax) {
         setGoogleTax(Number(savedGoogleTax));
       }
-      
       const savedAppleTax = localStorage.getItem('admin_apple_tax');
       if (savedAppleTax) {
         setAppleTax(Number(savedAppleTax));
@@ -351,7 +344,6 @@ export default function Admin() {
       console.error('Erro ao buscar dados financeiros:', error);
     }
   };
-
   const handleSaveTax = () => {
     setSavingTax(true);
     try {
@@ -369,11 +361,12 @@ export default function Admin() {
   // Funções para Notificações
   const fetchNotifications = async () => {
     try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
+      const {
+        data,
+        error
+      } = await supabase.from('notifications').select('*').order('created_at', {
+        ascending: false
+      });
       if (error) throw error;
       setNotifications(data || []);
     } catch (error) {
@@ -381,27 +374,22 @@ export default function Admin() {
       toast.error('Erro ao carregar notificações');
     }
   };
-
   const handleSendNotification = async () => {
     if (!notificationTitle.trim() || !notificationMessage.trim()) {
       toast.error('Preencha título e mensagem');
       return;
     }
-
     try {
       setSendingNotification(true);
-      
-      const { error } = await supabase
-        .from('notifications')
-        .insert({
-          title: notificationTitle,
-          message: notificationMessage,
-          link: notificationLink || null,
-          created_by: user?.id
-        });
-
+      const {
+        error
+      } = await supabase.from('notifications').insert({
+        title: notificationTitle,
+        message: notificationMessage,
+        link: notificationLink || null,
+        created_by: user?.id
+      });
       if (error) throw error;
-
       toast.success('Notificação enviada com sucesso!');
       setNotificationTitle('');
       setNotificationMessage('');
@@ -414,18 +402,13 @@ export default function Admin() {
       setSendingNotification(false);
     }
   };
-
   const handleDeleteNotification = async () => {
     if (!deletingNotificationId) return;
-
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('id', deletingNotificationId);
-
+      const {
+        error
+      } = await supabase.from('notifications').delete().eq('id', deletingNotificationId);
       if (error) throw error;
-
       toast.success('Notificação removida com sucesso!');
       setShowDeleteDialog(false);
       setDeletingNotificationId(null);
@@ -440,30 +423,24 @@ export default function Admin() {
   const fetchContacts = async () => {
     try {
       setLoadingContacts(true);
-      
+
       // Buscar todos os perfis com roles
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, name, email, phone, status_plano');
-      
+      const {
+        data: profiles,
+        error: profilesError
+      } = await supabase.from('profiles').select('id, name, email, phone, status_plano');
       if (profilesError) throw profilesError;
 
       // Buscar roles de cada usuário
-      const profilesWithRoles = await Promise.all(
-        (profiles || []).map(async (profile) => {
-          const { data: roleData } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', profile.id)
-            .single();
-          
-          return {
-            ...profile,
-            role: roleData?.role || 'Não definido'
-          };
-        })
-      );
-
+      const profilesWithRoles = await Promise.all((profiles || []).map(async profile => {
+        const {
+          data: roleData
+        } = await supabase.from('user_roles').select('role').eq('user_id', profile.id).single();
+        return {
+          ...profile,
+          role: roleData?.role || 'Não definido'
+        };
+      }));
       setContacts(profilesWithRoles);
     } catch (error) {
       console.error('Erro ao buscar contatos:', error);
@@ -472,18 +449,14 @@ export default function Admin() {
       setLoadingContacts(false);
     }
   };
-
   const handleExportContacts = () => {
-    const filteredContacts = contactFilter === 'todos' 
-      ? contacts 
-      : contacts.filter(c => {
-          if (contactFilter === 'ativos') return c.status_plano === 'ativo';
-          if (contactFilter === 'inativos') return c.status_plano === 'inativo';
-          if (contactFilter === 'artistas') return c.role === 'artist';
-          if (contactFilter === 'musicos') return c.role === 'musician';
-          return true;
-        });
-
+    const filteredContacts = contactFilter === 'todos' ? contacts : contacts.filter(c => {
+      if (contactFilter === 'ativos') return c.status_plano === 'ativo';
+      if (contactFilter === 'inativos') return c.status_plano === 'inativo';
+      if (contactFilter === 'artistas') return c.role === 'artist';
+      if (contactFilter === 'musicos') return c.role === 'musician';
+      return true;
+    });
     const exportData = filteredContacts.map(contact => ({
       Nome: contact.name,
       Email: contact.email,
@@ -491,12 +464,10 @@ export default function Admin() {
       Role: contact.role,
       Plano: contact.status_plano
     }));
-
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Contatos');
     XLSX.writeFile(wb, `contatos-whatsapp-${new Date().toISOString().split('T')[0]}.xlsx`);
-    
     toast.success('Planilha exportada com sucesso!');
   };
   const getStatusBadge = (status: string) => {
@@ -543,15 +514,10 @@ export default function Admin() {
           <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white border-gray-200 px-4 md:px-6">
             <SidebarTrigger />
             <h1 className="text-lg md:text-2xl font-bold text-gray-900">🛡️ Admin</h1>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const userRole = localStorage.getItem('userRole');
-                navigate(userRole === 'artist' ? '/artist/dashboard' : '/musician/dashboard');
-              }}
-              className="ml-auto"
-            >
+            <Button variant="outline" size="sm" onClick={() => {
+            const userRole = localStorage.getItem('userRole');
+            navigate(userRole === 'artist' ? '/artist/dashboard' : '/musician/dashboard');
+          }} className="ml-auto">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar para app
             </Button>
@@ -695,23 +661,15 @@ export default function Admin() {
                 <CardContent>
                   <div className="space-y-6">
                     <div className="flex flex-col sm:flex-row gap-2">
-                      <Input 
-                        ref={setSearchInputRef}
-                        placeholder="Cole o ID do usuário aqui..." 
-                        value={searchId} 
-                        onChange={e => setSearchId(e.target.value)} 
-                        className="bg-white text-gray-900 border-gray-200 flex-1" 
-                      />
+                      <Input ref={setSearchInputRef} placeholder="Cole o ID do usuário aqui..." value={searchId} onChange={e => setSearchId(e.target.value)} className="bg-white text-gray-900 border-gray-200 flex-1" />
                       <Button variant="outline" onClick={handlePasteClick} className="w-full sm:w-auto">
                         <Clipboard className="h-4 w-4 sm:mr-2" />
                         <span className="hidden sm:inline">Colar</span>
                       </Button>
-                      {(searchId || searchedUser) && (
-                        <Button variant="outline" onClick={handleClearSearch} className="w-full sm:w-auto">
+                      {(searchId || searchedUser) && <Button variant="outline" onClick={handleClearSearch} className="w-full sm:w-auto">
                           <X className="h-4 w-4 sm:mr-2" />
                           <span className="hidden sm:inline">Limpar</span>
-                        </Button>
-                      )}
+                        </Button>}
                       <Button onClick={handleSearchUser} disabled={searching} className="w-full sm:w-auto">
                         {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Buscar'}
                       </Button>
@@ -782,42 +740,31 @@ export default function Admin() {
 
                         {/* Resumo Financeiro */}
                         {(searchedUser.role === 'artist' || searchedUser.role === 'musician') && (userShows.length > 0 || userExpenses.length > 0) && (() => {
-                          const userId = searchedUser.id;
-                          const isArtist = searchedUser.role === 'artist';
-                          
-                          // Cálculos para Artista
-                          const totalReceita = isArtist ? userShows.reduce((sum, show) => sum + Number(show.fee), 0) : 0;
-                          
-                          // Cálculos para Músico - quanto recebeu de participações
-                          const totalRecebidoMusico = !isArtist ? userShows.reduce((sum, show) => {
-                            const expenses = Array.isArray(show.expenses_team) ? show.expenses_team : [];
-                            const myPayment = expenses.find((exp: any) => exp.musicianId === userId);
-                            return sum + Number(myPayment?.cost || 0);
-                          }, 0) : 0;
+                    const userId = searchedUser.id;
+                    const isArtist = searchedUser.role === 'artist';
 
-                          const totalDespesasEquipe = isArtist ? userShows.reduce((sum, show) => {
-                            const expenses = Array.isArray(show.expenses_team) ? show.expenses_team : [];
-                            return sum + expenses.reduce((expSum: number, exp: any) => expSum + Number(exp.cost || 0), 0);
-                          }, 0) : 0;
-                          
-                          const totalDespesasOutras = isArtist ? userShows.reduce((sum, show) => {
-                            const expenses = Array.isArray(show.expenses_other) ? show.expenses_other : [];
-                            return sum + expenses.reduce((expSum: number, exp: any) => expSum + Number(exp.amount || 0), 0);
-                          }, 0) : 0;
-                          
-                          const totalDespesasLocomocao = userExpenses.reduce((sum, exp) => sum + Number(exp.cost), 0);
-                          const totalDespesas = totalDespesasEquipe + totalDespesasOutras + totalDespesasLocomocao;
-                          
-                          const lucroLiquido = isArtist 
-                            ? totalReceita - totalDespesas 
-                            : totalRecebidoMusico - totalDespesasLocomocao;
-                            
-                          const mediaShow = isArtist
-                            ? (userShows.length > 0 ? totalReceita / userShows.length : 0)
-                            : (userShows.length > 0 ? totalRecebidoMusico / userShows.length : 0);
+                    // Cálculos para Artista
+                    const totalReceita = isArtist ? userShows.reduce((sum, show) => sum + Number(show.fee), 0) : 0;
 
-                          return (
-                            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+                    // Cálculos para Músico - quanto recebeu de participações
+                    const totalRecebidoMusico = !isArtist ? userShows.reduce((sum, show) => {
+                      const expenses = Array.isArray(show.expenses_team) ? show.expenses_team : [];
+                      const myPayment = expenses.find((exp: any) => exp.musicianId === userId);
+                      return sum + Number(myPayment?.cost || 0);
+                    }, 0) : 0;
+                    const totalDespesasEquipe = isArtist ? userShows.reduce((sum, show) => {
+                      const expenses = Array.isArray(show.expenses_team) ? show.expenses_team : [];
+                      return sum + expenses.reduce((expSum: number, exp: any) => expSum + Number(exp.cost || 0), 0);
+                    }, 0) : 0;
+                    const totalDespesasOutras = isArtist ? userShows.reduce((sum, show) => {
+                      const expenses = Array.isArray(show.expenses_other) ? show.expenses_other : [];
+                      return sum + expenses.reduce((expSum: number, exp: any) => expSum + Number(exp.amount || 0), 0);
+                    }, 0) : 0;
+                    const totalDespesasLocomocao = userExpenses.reduce((sum, exp) => sum + Number(exp.cost), 0);
+                    const totalDespesas = totalDespesasEquipe + totalDespesasOutras + totalDespesasLocomocao;
+                    const lucroLiquido = isArtist ? totalReceita - totalDespesas : totalRecebidoMusico - totalDespesasLocomocao;
+                    const mediaShow = isArtist ? userShows.length > 0 ? totalReceita / userShows.length : 0 : userShows.length > 0 ? totalRecebidoMusico / userShows.length : 0;
+                    return <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
                               <CardHeader>
                                 <CardTitle className="text-sm text-gray-900 flex items-center gap-2">
                                   💰 Resumo Financeiro {isArtist ? 'do Artista' : 'do Músico'}
@@ -825,8 +772,7 @@ export default function Admin() {
                               </CardHeader>
                               <CardContent>
                                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                                  {isArtist ? (
-                                    <>
+                                  {isArtist ? <>
                                       <div className="p-3 bg-white rounded-lg border border-green-200">
                                         <p className="text-xs text-gray-600 mb-1">Receita Total (Shows)</p>
                                         <p className="text-xl font-bold text-green-600">
@@ -858,9 +804,7 @@ export default function Admin() {
                                           Média/show: R$ {mediaShow.toFixed(2)}
                                         </p>
                                       </div>
-                                    </>
-                                  ) : (
-                                    <>
+                                    </> : <>
                                       <div className="p-3 bg-white rounded-lg border border-green-200">
                                         <p className="text-xs text-gray-600 mb-1">Total Recebido (Participações)</p>
                                         <p className="text-xl font-bold text-green-600">
@@ -890,31 +834,25 @@ export default function Admin() {
                                           Média/show: R$ {mediaShow.toFixed(2)}
                                         </p>
                                       </div>
-                                    </>
-                                  )}
+                                    </>}
                                 </div>
 
-                                {userExpenses.length > 0 && (
-                                  <div className="mt-4 pt-4 border-t border-green-200">
+                                {userExpenses.length > 0 && <div className="mt-4 pt-4 border-t border-green-200">
                                     <p className="text-xs font-medium text-gray-700 mb-2">
                                       Últimas Despesas de Locomoção ({userExpenses.length})
                                     </p>
                                     <div className="space-y-1 max-h-32 overflow-y-auto">
-                                      {userExpenses.slice(0, 5).map(exp => (
-                                        <div key={exp.id} className="flex justify-between text-xs">
+                                      {userExpenses.slice(0, 5).map(exp => <div key={exp.id} className="flex justify-between text-xs">
                                           <span className="text-gray-600">
                                             {exp.type.toUpperCase()} - {new Date(exp.created_at).toLocaleDateString('pt-BR')}
                                           </span>
                                           <span className="font-medium text-gray-900">R$ {Number(exp.cost).toFixed(2)}</span>
-                                        </div>
-                                      ))}
+                                        </div>)}
                                     </div>
-                                  </div>
-                                )}
+                                  </div>}
                               </CardContent>
-                            </Card>
-                          );
-                        })()}
+                            </Card>;
+                  })()}
 
                         {userShows.length > 0 && <Card className="bg-gray-50 border-gray-200">
                             <CardHeader>
@@ -925,18 +863,16 @@ export default function Admin() {
                             <CardContent>
                               <div className="space-y-2 max-h-60 overflow-y-auto">
                                 {userShows.map(show => {
-                                  const userId = searchedUser.id;
-                                  const isArtist = searchedUser.role === 'artist';
-                                  
-                                  // Para músicos, buscar quanto recebeu - usar musicianId
-                                  let myPayment = 0;
-                                  if (!isArtist && Array.isArray(show.expenses_team)) {
-                                    const expense = show.expenses_team.find((exp: any) => exp.musicianId === userId);
-                                    myPayment = Number(expense?.cost || 0);
-                                  }
-                                  
-                                  return (
-                                    <div key={show.id} className="p-3 bg-white rounded border border-gray-200">
+                          const userId = searchedUser.id;
+                          const isArtist = searchedUser.role === 'artist';
+
+                          // Para músicos, buscar quanto recebeu - usar musicianId
+                          let myPayment = 0;
+                          if (!isArtist && Array.isArray(show.expenses_team)) {
+                            const expense = show.expenses_team.find((exp: any) => exp.musicianId === userId);
+                            myPayment = Number(expense?.cost || 0);
+                          }
+                          return <div key={show.id} className="p-3 bg-white rounded border border-gray-200">
                                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                                         <div className="flex-1">
                                           <p className="font-medium text-gray-900 break-words">{show.venue_name}</p>
@@ -945,15 +881,11 @@ export default function Admin() {
                                           </p>
                                         </div>
                                         <Badge className="bg-green-100 text-green-800 self-start">
-                                          {isArtist 
-                                            ? `Cachê: R$ ${Number(show.fee).toFixed(2)}`
-                                            : `Recebido: R$ ${myPayment.toFixed(2)}`
-                                          }
+                                          {isArtist ? `Cachê: R$ ${Number(show.fee).toFixed(2)}` : `Recebido: R$ ${myPayment.toFixed(2)}`}
                                         </Badge>
                                       </div>
-                                    </div>
-                                  );
-                                })}
+                                    </div>;
+                        })}
                               </div>
                             </CardContent>
                           </Card>}
@@ -983,8 +915,7 @@ export default function Admin() {
                 </CardContent>
               </Card>}
 
-            {currentTab === 'financeiro' && (
-              <div className="space-y-6">
+            {currentTab === 'financeiro' && <div className="space-y-6">
                 {/* Configuração de Taxas */}
                 <Card className="bg-white border-gray-200">
                   <CardHeader>
@@ -995,37 +926,15 @@ export default function Admin() {
                       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                         <div className="space-y-2">
                           <Label htmlFor="google-tax" className="text-gray-900">Taxa Google Play (%)</Label>
-                          <Input
-                            id="google-tax"
-                            type="number"
-                            value={googleTax}
-                            onChange={(e) => setGoogleTax(Number(e.target.value))}
-                            className="bg-white text-gray-900 border-gray-200"
-                            min="0"
-                            max="100"
-                          />
+                          <Input id="google-tax" type="number" value={googleTax} onChange={e => setGoogleTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200" min="0" max="100" />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="apple-tax" className="text-gray-900">Taxa Apple Store (%)</Label>
-                          <Input
-                            id="apple-tax"
-                            type="number"
-                            value={appleTax}
-                            onChange={(e) => setAppleTax(Number(e.target.value))}
-                            className="bg-white text-gray-900 border-gray-200"
-                            min="0"
-                            max="100"
-                          />
+                          <Input id="apple-tax" type="number" value={appleTax} onChange={e => setAppleTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200" min="0" max="100" />
                         </div>
                       </div>
-                      <Button 
-                        onClick={handleSaveTax} 
-                        disabled={savingTax}
-                        className="w-full md:w-auto"
-                      >
-                        {savingTax ? (
-                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        ) : null}
+                      <Button onClick={handleSaveTax} disabled={savingTax} className="w-full md:w-auto">
+                        {savingTax ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                         Salvar Configuração
                       </Button>
                     </div>
@@ -1070,7 +979,7 @@ export default function Admin() {
                     <div className="mt-4 p-4 bg-white rounded-lg border-2 border-purple-300">
                       <p className="text-sm text-gray-600 mb-1">Receita Líquida Estimada</p>
                       <p className="text-3xl font-bold text-purple-600">
-                        R$ {(activeUsersCount * 29.90 * (1 - (appleTax / 100) - (googleTax / 100))).toFixed(2)}
+                        R$ {(activeUsersCount * 29.90 * (1 - appleTax / 100 - googleTax / 100)).toFixed(2)}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         Após taxas Apple e Google
@@ -1078,11 +987,9 @@ export default function Admin() {
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            )}
+              </div>}
 
-            {currentTab === 'notificacoes' && (
-              <div className="space-y-6">
+            {currentTab === 'notificacoes' && <div className="space-y-6">
                 {/* Formulário de Envio */}
                 <Card className="bg-white border-gray-200">
                   <CardHeader>
@@ -1092,42 +999,19 @@ export default function Admin() {
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="notif-title" className="text-gray-900">Título</Label>
-                        <Input
-                          id="notif-title"
-                          placeholder="Ex: Nova atualização disponível"
-                          value={notificationTitle}
-                          onChange={(e) => setNotificationTitle(e.target.value)}
-                          className="bg-white text-gray-900 border-gray-200"
-                        />
+                        <Input id="notif-title" placeholder="Ex: Nova atualização disponível" value={notificationTitle} onChange={e => setNotificationTitle(e.target.value)} className="bg-white text-gray-900 border-gray-200" />
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="notif-message" className="text-gray-900">Mensagem</Label>
-                        <Textarea
-                          id="notif-message"
-                          placeholder="Escreva sua mensagem aqui..."
-                          value={notificationMessage}
-                          onChange={(e) => setNotificationMessage(e.target.value)}
-                          className="bg-white text-gray-900 border-gray-200 min-h-[100px]"
-                        />
+                        <Textarea id="notif-message" placeholder="Escreva sua mensagem aqui..." value={notificationMessage} onChange={e => setNotificationMessage(e.target.value)} className="bg-white text-gray-900 border-gray-200 min-h-[100px]" />
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="notif-link" className="text-gray-900">Link (Opcional)</Label>
                         <div className="flex gap-2">
-                          <Input
-                            id="notif-link"
-                            placeholder="https://... ou /artist/dashboard"
-                            value={notificationLink}
-                            onChange={(e) => setNotificationLink(e.target.value)}
-                            className="bg-white text-gray-900 border-gray-200 flex-1"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setShowRouteSelector(true)}
-                            className="flex-shrink-0"
-                          >
+                          <Input id="notif-link" placeholder="https://... ou /artist/dashboard" value={notificationLink} onChange={e => setNotificationLink(e.target.value)} className="bg-white text-gray-900 border-gray-200 flex-1" />
+                          <Button type="button" variant="outline" onClick={() => setShowRouteSelector(true)} className="flex-shrink-0">
                             <LinkIcon className="w-4 h-4 mr-2" />
                             Páginas
                           </Button>
@@ -1151,16 +1035,8 @@ export default function Admin() {
                         </Select>
                       </div>
 
-                      <Button
-                        onClick={handleSendNotification}
-                        disabled={sendingNotification}
-                        className="w-full"
-                      >
-                        {sendingNotification ? (
-                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        ) : (
-                          <Send className="w-4 h-4 mr-2" />
-                        )}
+                      <Button onClick={handleSendNotification} disabled={sendingNotification} className="w-full text-slate-50">
+                        {sendingNotification ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
                         Enviar Notificação
                       </Button>
                     </div>
@@ -1174,52 +1050,32 @@ export default function Admin() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {notifications.length === 0 ? (
-                        <p className="text-gray-500 text-center py-4">Nenhuma notificação enviada ainda</p>
-                      ) : (
-                        notifications.map((notif) => (
-                          <div key={notif.id} className="p-4 border border-gray-200 rounded-lg">
+                      {notifications.length === 0 ? <p className="text-gray-500 text-center py-4">Nenhuma notificação enviada ainda</p> : notifications.map(notif => <div key={notif.id} className="p-4 border border-gray-200 rounded-lg">
                             <div className="flex justify-between items-start mb-2">
                               <h3 className="font-semibold text-gray-900">{notif.title}</h3>
                               <div className="flex items-center gap-2">
                                 <span className="text-xs text-gray-500">
                                   {new Date(notif.created_at).toLocaleDateString('pt-BR')}
                                 </span>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    setDeletingNotificationId(notif.id);
-                                    setShowDeleteDialog(true);
-                                  }}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
-                                >
+                                <Button variant="ghost" size="sm" onClick={() => {
+                          setDeletingNotificationId(notif.id);
+                          setShowDeleteDialog(true);
+                        }} className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0">
                                   <X className="h-4 w-4" />
                                 </Button>
                               </div>
                             </div>
                             <p className="text-sm text-gray-700 mb-2">{notif.message}</p>
-                            {notif.link && (
-                              <a
-                                href={notif.link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-purple-600 hover:underline"
-                              >
+                            {notif.link && <a href={notif.link} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-600 hover:underline">
                                 {notif.link}
-                              </a>
-                            )}
-                          </div>
-                        ))
-                      )}
+                              </a>}
+                          </div>)}
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            )}
+              </div>}
 
-            {currentTab === 'contatos' && (
-              <Card className="bg-white border-gray-200">
+            {currentTab === 'contatos' && <Card className="bg-white border-gray-200">
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <CardTitle className="text-gray-900">📱 Contatos WhatsApp</CardTitle>
@@ -1249,12 +1105,9 @@ export default function Admin() {
                     </div>
 
                     {/* Lista de Contatos */}
-                    {loadingContacts ? (
-                      <div className="flex justify-center py-8">
+                    {loadingContacts ? <div className="flex justify-center py-8">
                         <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-                      </div>
-                    ) : (
-                      <div className="rounded-md border overflow-x-auto border-gray-200">
+                      </div> : <div className="rounded-md border overflow-x-auto border-gray-200">
                         <table className="w-full bg-white">
                           <thead>
                             <tr className="border-b bg-gray-50 border-gray-200">
@@ -1265,31 +1118,19 @@ export default function Admin() {
                             </tr>
                           </thead>
                           <tbody>
-                            {contacts
-                              .filter((contact) => {
-                                if (contactFilter === 'todos') return true;
-                                if (contactFilter === 'ativos') return contact.status_plano === 'ativo';
-                                if (contactFilter === 'inativos') return contact.status_plano === 'inativo';
-                                if (contactFilter === 'artistas') return contact.role === 'artist';
-                                if (contactFilter === 'musicos') return contact.role === 'musician';
-                                return true;
-                              })
-                              .map((contact) => (
-                                <tr key={contact.id} className="border-b hover:bg-gray-50 border-gray-200">
+                            {contacts.filter(contact => {
+                        if (contactFilter === 'todos') return true;
+                        if (contactFilter === 'ativos') return contact.status_plano === 'ativo';
+                        if (contactFilter === 'inativos') return contact.status_plano === 'inativo';
+                        if (contactFilter === 'artistas') return contact.role === 'artist';
+                        if (contactFilter === 'musicos') return contact.role === 'musician';
+                        return true;
+                      }).map(contact => <tr key={contact.id} className="border-b hover:bg-gray-50 border-gray-200">
                                   <td className="p-3 text-gray-900">{contact.name}</td>
                                   <td className="p-3">
-                                    {contact.phone ? (
-                                      <a
-                                        href={`https://wa.me/55${contact.phone.replace(/\D/g, '')}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-green-600 hover:underline font-mono text-sm"
-                                      >
+                                    {contact.phone ? <a href={`https://wa.me/55${contact.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline font-mono text-sm">
                                         {contact.phone}
-                                      </a>
-                                    ) : (
-                                      <span className="text-gray-500 text-sm">Não informado</span>
-                                    )}
+                                      </a> : <span className="text-gray-500 text-sm">Não informado</span>}
                                   </td>
                                   <td className="p-3">
                                     <Badge className="bg-purple-100 text-purple-800">
@@ -1297,16 +1138,13 @@ export default function Admin() {
                                     </Badge>
                                   </td>
                                   <td className="p-3">{getStatusBadge(contact.status_plano)}</td>
-                                </tr>
-                              ))}
+                                </tr>)}
                           </tbody>
                         </table>
-                      </div>
-                    )}
+                      </div>}
                   </div>
                 </CardContent>
-              </Card>
-            )}
+              </Card>}
           </main>
         </SidebarInset>
       </div>
@@ -1375,29 +1213,19 @@ export default function Admin() {
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 mt-4">
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setShowDeleteDialog(false);
-                setDeletingNotificationId(null);
-              }}
-            >
+            <Button variant="outline" onClick={() => {
+            setShowDeleteDialog(false);
+            setDeletingNotificationId(null);
+          }}>
               Cancelar
             </Button>
-            <Button 
-              onClick={handleDeleteNotification}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
+            <Button onClick={handleDeleteNotification} className="bg-red-600 hover:bg-red-700 text-white">
               Remover
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      <RouteSelector
-        open={showRouteSelector}
-        onOpenChange={setShowRouteSelector}
-        onSelectRoute={(path) => setNotificationLink(path)}
-      />
+      <RouteSelector open={showRouteSelector} onOpenChange={setShowRouteSelector} onSelectRoute={path => setNotificationLink(path)} />
     </SidebarProvider>;
 }
