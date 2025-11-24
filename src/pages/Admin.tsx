@@ -1079,9 +1079,10 @@ export default function Admin() {
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <CardTitle className="text-gray-900">📱 Contatos WhatsApp</CardTitle>
-                    <Button onClick={handleExportContacts} variant="outline">
+                    <Button onClick={handleExportContacts} variant="outline" size="sm">
                       <Download className="h-4 w-4 mr-2" />
-                      Exportar XLSX
+                      <span className="hidden sm:inline">Exportar XLSX</span>
+                      <span className="sm:hidden">Exportar</span>
                     </Button>
                   </div>
                 </CardHeader>
@@ -1107,41 +1108,77 @@ export default function Admin() {
                     {/* Lista de Contatos */}
                     {loadingContacts ? <div className="flex justify-center py-8">
                         <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-                      </div> : <div className="rounded-md border overflow-x-auto border-gray-200">
-                        <table className="w-full bg-white">
-                          <thead>
-                            <tr className="border-b bg-gray-50 border-gray-200">
-                              <th className="p-3 text-left font-medium text-sm text-gray-900">Nome</th>
-                              <th className="p-3 text-left font-medium text-sm text-gray-900">Telefone</th>
-                              <th className="p-3 text-left font-medium text-sm text-gray-900">Role</th>
-                              <th className="p-3 text-left font-medium text-sm text-gray-900">Plano</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {contacts.filter(contact => {
-                        if (contactFilter === 'todos') return true;
-                        if (contactFilter === 'ativos') return contact.status_plano === 'ativo';
-                        if (contactFilter === 'inativos') return contact.status_plano === 'inativo';
-                        if (contactFilter === 'artistas') return contact.role === 'artist';
-                        if (contactFilter === 'musicos') return contact.role === 'musician';
-                        return true;
-                      }).map(contact => <tr key={contact.id} className="border-b hover:bg-gray-50 border-gray-200">
-                                  <td className="p-3 text-gray-900">{contact.name}</td>
-                                  <td className="p-3">
-                                    {contact.phone ? <a href={`https://wa.me/55${contact.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline font-mono text-sm">
+                      </div> : <>
+                        {/* Versão Mobile - Cards */}
+                        <div className="md:hidden space-y-3">
+                          {contacts.filter(contact => {
+                            if (contactFilter === 'todos') return true;
+                            if (contactFilter === 'ativos') return contact.status_plano === 'ativo';
+                            if (contactFilter === 'inativos') return contact.status_plano === 'inativo';
+                            if (contactFilter === 'artistas') return contact.role === 'artist';
+                            if (contactFilter === 'musicos') return contact.role === 'musician';
+                            return true;
+                          }).map(contact => <Card key={contact.id} className="bg-white border-gray-200">
+                              <CardContent className="p-4 space-y-3">
+                                <div className="flex justify-between items-start gap-2">
+                                  <h3 className="font-semibold text-gray-900 flex-1">{contact.name}</h3>
+                                  {getStatusBadge(contact.status_plano)}
+                                </div>
+                                <div className="space-y-2 text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-gray-500 min-w-[70px]">Telefone:</span>
+                                    {contact.phone ? <a href={`https://wa.me/55${contact.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline font-mono">
                                         {contact.phone}
-                                      </a> : <span className="text-gray-500 text-sm">Não informado</span>}
-                                  </td>
-                                  <td className="p-3">
+                                      </a> : <span className="text-gray-400">Não informado</span>}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-gray-500 min-w-[70px]">Tipo:</span>
                                     <Badge className="bg-purple-100 text-purple-800">
                                       {contact.role}
                                     </Badge>
-                                  </td>
-                                  <td className="p-3">{getStatusBadge(contact.status_plano)}</td>
-                                </tr>)}
-                          </tbody>
-                        </table>
-                      </div>}
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>)}
+                        </div>
+
+                        {/* Versão Desktop - Tabela */}
+                        <div className="hidden md:block rounded-md border overflow-x-auto border-gray-200">
+                          <table className="w-full bg-white">
+                            <thead>
+                              <tr className="border-b bg-gray-50 border-gray-200">
+                                <th className="p-3 text-left font-medium text-sm text-gray-900">Nome</th>
+                                <th className="p-3 text-left font-medium text-sm text-gray-900">Telefone</th>
+                                <th className="p-3 text-left font-medium text-sm text-gray-900">Role</th>
+                                <th className="p-3 text-left font-medium text-sm text-gray-900">Plano</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {contacts.filter(contact => {
+                                if (contactFilter === 'todos') return true;
+                                if (contactFilter === 'ativos') return contact.status_plano === 'ativo';
+                                if (contactFilter === 'inativos') return contact.status_plano === 'inativo';
+                                if (contactFilter === 'artistas') return contact.role === 'artist';
+                                if (contactFilter === 'musicos') return contact.role === 'musician';
+                                return true;
+                              }).map(contact => <tr key={contact.id} className="border-b hover:bg-gray-50 border-gray-200">
+                                    <td className="p-3 text-gray-900">{contact.name}</td>
+                                    <td className="p-3">
+                                      {contact.phone ? <a href={`https://wa.me/55${contact.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline font-mono text-sm">
+                                          {contact.phone}
+                                        </a> : <span className="text-gray-500 text-sm">Não informado</span>}
+                                    </td>
+                                    <td className="p-3">
+                                      <Badge className="bg-purple-100 text-purple-800">
+                                        {contact.role}
+                                      </Badge>
+                                    </td>
+                                    <td className="p-3">{getStatusBadge(contact.status_plano)}</td>
+                                  </tr>)}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>}
                   </div>
                 </CardContent>
               </Card>}
