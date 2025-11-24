@@ -1568,11 +1568,17 @@ export default function Admin() {
                               <div className="bg-white p-3 rounded border border-red-200">
                                 <p className="text-xs text-gray-600">Despesas Totais</p>
                                 <p className="text-2xl font-bold text-red-600">
-                                  R$ {importData.reduce((sum: number, show: any) => {
-                                    const despesasEquipe = (show.expenses?.team || []).reduce((s: number, exp: any) => s + (exp.cost || 0), 0);
-                                    const despesasOutras = (show.expenses?.other || []).reduce((s: number, exp: any) => s + (exp.amount || exp.cost || 0), 0);
-                                    return sum + despesasEquipe + despesasOutras;
-                                  }, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                  R$ {(() => {
+                                    try {
+                                      return importData.reduce((sum: number, show: any) => {
+                                        const despesasEquipe = (show.expenses?.team || []).reduce((s: number, exp: any) => s + (exp.cost || 0), 0);
+                                        const despesasOutras = (show.expenses?.other || []).reduce((s: number, exp: any) => s + (exp.amount || exp.cost || 0), 0);
+                                        return sum + despesasEquipe + despesasOutras;
+                                      }, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                                    } catch (e) {
+                                      return '0,00';
+                                    }
+                                  })()}
                                 </p>
                               </div>
                               <div className="bg-white p-3 rounded border border-purple-200">
