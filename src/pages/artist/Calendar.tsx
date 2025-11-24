@@ -117,7 +117,11 @@ const ArtistCalendar = () => {
             </div>
           </header>
 
-          <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
+          <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6 scrollbar-hide" style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}>
             <div className="max-w-6xl mx-auto">
               <Card className="bg-white mb-6">
                 <CardContent className="p-6">
@@ -247,7 +251,11 @@ const ArtistCalendar = () => {
 
             {/* Agenda Lateral */}
             <Sheet open={showAgenda} onOpenChange={setShowAgenda}>
-              <SheetContent side="right" className="w-full sm:w-[540px] sm:max-w-none overflow-y-auto bg-white">
+              <SheetContent side="right" className="w-full sm:w-[540px] sm:max-w-none overflow-y-auto bg-white scrollbar-hide" style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch'
+              }}>
                 <SheetHeader className="border-b pb-4 mb-6">
                   <div className="flex items-center justify-between">
                     <SheetTitle className="text-xl font-semibold text-gray-900">

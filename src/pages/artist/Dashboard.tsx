@@ -83,7 +83,11 @@ const ArtistDashboard = () => {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 overflow-auto pb-20 md:pb-6">
+          <main className="flex-1 overflow-auto pb-20 md:pb-6 scrollbar-hide" style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}>
             <div className="p-4 md:p-6">
               {/* Greeting Section */}
               <div className="mb-6 md:mb-8 text-center">

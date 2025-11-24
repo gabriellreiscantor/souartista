@@ -145,7 +145,11 @@ const MusicianArtists = () => {
             </div>
           </header>
 
-          <main className="flex-1 p-6 overflow-auto pb-20 md:pb-6">
+          <main className="flex-1 p-6 overflow-auto pb-20 md:pb-6 scrollbar-hide" style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}>
             <div className="max-w-4xl mx-auto">
               <div className="flex items-center justify-between mb-6">
                 <div>
