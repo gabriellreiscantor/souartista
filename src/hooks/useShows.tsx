@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
@@ -27,19 +27,11 @@ export interface Show {
 
 export function useShows() {
   const { user, userRole } = useAuth();
-  const [shows, setShows] = useState<Show[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchShows = async () => {
-    if (!user || !userRole) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
+  const { data: shows = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['shows', user?.id, userRole],
+    queryFn: async () => {
+      if (!user || !userRole) return [];
 
       let query = supabase
         .from('shows')
@@ -47,10 +39,8 @@ export function useShows() {
         .order('date_local', { ascending: true });
 
       if (userRole === 'artist') {
-        // Artist sees shows they created
         query = query.eq('uid', user.id);
       } else {
-        // Musician sees shows where they're in the team
         query = query.contains('team_musician_ids', [user.id]);
       }
 
@@ -58,34 +48,22 @@ export function useShows() {
 
       if (fetchError) {
         console.error('[useShows] Error fetching shows:', fetchError);
-        setError(fetchError.message);
-        setShows([]);
-      } else {
-        // Cast Json types to proper arrays
-        const typedShows = (data || []).map(show => ({
-          ...show,
-          expenses_team: (show.expenses_team as any) || [],
-          expenses_other: (show.expenses_other as any) || [],
-        })) as Show[];
-        setShows(typedShows);
+        throw fetchError;
       }
-    } catch (err) {
-      console.error('[useShows] Unexpected error:', err);
-      setError('Erro ao carregar shows');
-      setShows([]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  useEffect(() => {
-    fetchShows();
-  }, [user, userRole]);
+      return (data || []).map(show => ({
+        ...show,
+        expenses_team: (show.expenses_team as any) || [],
+        expenses_other: (show.expenses_other as any) || [],
+      })) as Show[];
+    },
+    enabled: !!user && !!userRole,
+  });
 
   return {
     shows,
-    loading,
-    error,
-    refetch: fetchShows,
+    loading: isLoading,
+    error: error?.message || null,
+    refetch,
   };
 }

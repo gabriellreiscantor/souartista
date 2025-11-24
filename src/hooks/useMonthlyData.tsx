@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { parseISO, format } from 'date-fns';
@@ -12,107 +12,91 @@ interface MonthlyDataPoint {
 
 export function useMonthlyData(year: string, userRole: 'artist' | 'musician' | null) {
   const { user } = useAuth();
-  const [data, setData] = useState<MonthlyDataPoint[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user || !userRole) return;
+  const { data = [], isLoading } = useQuery({
+    queryKey: ['monthly-data', user?.id, userRole, year],
+    queryFn: async () => {
+      if (!user || !userRole) return [];
 
-    const fetchMonthlyData = async () => {
-      try {
-        let query = supabase
-          .from('shows')
-          .select('*')
-          .gte('date_local', `${year}-01-01`)
-          .lte('date_local', `${year}-12-31`);
+      const months = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+      const monthlyMap: Record<string, { revenue: number; expenses: number }> = {};
 
-        if (userRole === 'artist') {
-          query = query.eq('uid', user.id);
-        } else {
-          query = query.contains('team_musician_ids', [user.id]);
-        }
+      months.forEach(month => {
+        monthlyMap[month] = { revenue: 0, expenses: 0 };
+      });
 
-        const { data: shows, error } = await query;
+      let showsQuery = supabase
+        .from('shows')
+        .select('*')
+        .gte('date_local', `${year}-01-01`)
+        .lte('date_local', `${year}-12-31`);
 
-        if (error) throw error;
+      if (userRole === 'artist') {
+        showsQuery = showsQuery.eq('uid', user.id);
+      } else {
+        showsQuery = showsQuery.contains('team_musician_ids', [user.id]);
+      }
 
-        // Fetch locomotion expenses
-        const { data: locomotionExpenses } = await supabase
+      const [{ data: shows, error: showsError }, { data: locomotionExpenses, error: expensesError }] = await Promise.all([
+        showsQuery,
+        supabase
           .from('locomotion_expenses')
           .select('cost, created_at')
           .eq('uid', user.id)
           .gte('created_at', `${year}-01-01`)
-          .lte('created_at', `${year}-12-31`);
+          .lte('created_at', `${year}-12-31`)
+      ]);
 
-        // Initialize monthly data
-        const monthlyMap: Record<string, { receita: number; despesa: number }> = {};
-        const months = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-        
-        months.forEach(month => {
-          monthlyMap[month] = { receita: 0, despesa: 0 };
-        });
+      if (showsError) throw showsError;
+      if (expensesError) throw expensesError;
 
-        // Process shows
-        (shows || []).forEach((show) => {
-          const date = parseISO(show.date_local);
-          const monthKey = format(date, 'MMM').toLowerCase();
-          const monthIndex = months.findIndex(m => m.startsWith(monthKey.substring(0, 3)));
-          const month = months[monthIndex];
+      (shows || []).forEach((show) => {
+        const date = parseISO(show.date_local);
+        const monthKey = format(date, 'MMM').toLowerCase();
+        const monthIndex = months.findIndex(m => m.startsWith(monthKey.substring(0, 3)));
+        const month = months[monthIndex];
 
+        if (month) {
           if (userRole === 'artist') {
-            monthlyMap[month].receita += Number(show.fee || 0);
-            
+            monthlyMap[month].revenue += Number(show.fee || 0);
             const expensesTeam = (show.expenses_team as any) || [];
             const expensesOther = (show.expenses_other as any) || [];
-            
             expensesTeam.forEach((exp: any) => {
-              monthlyMap[month].despesa += Number(exp.cost || 0);
+              monthlyMap[month].expenses += Number(exp.cost || 0);
             });
-            
             expensesOther.forEach((exp: any) => {
-              monthlyMap[month].despesa += Number(exp.cost || 0);
+              monthlyMap[month].expenses += Number(exp.cost || 0);
             });
           } else {
             const expensesTeam = (show.expenses_team as any) || [];
-            expensesTeam.forEach((exp: any) => {
-              if (exp.musicianId === user.id) {
-                monthlyMap[month].receita += Number(exp.cost || 0);
-              }
-            });
+            const myExpense = expensesTeam.find((exp: any) => exp.musicianId === user.id);
+            if (myExpense) {
+              monthlyMap[month].revenue += Number(myExpense.cost || 0);
+            }
           }
-        });
+        }
+      });
 
-        // Add locomotion expenses
-        (locomotionExpenses || []).forEach((exp) => {
-          const date = parseISO(exp.created_at);
-          const monthKey = format(date, 'MMM').toLowerCase();
-          const monthIndex = months.findIndex(m => m.startsWith(monthKey.substring(0, 3)));
-          const month = months[monthIndex];
-          
-          if (month) {
-            monthlyMap[month].despesa += Number(exp.cost || 0);
-          }
-        });
+      (locomotionExpenses || []).forEach((exp) => {
+        const date = parseISO(exp.created_at);
+        const monthKey = format(date, 'MMM').toLowerCase();
+        const monthIndex = months.findIndex(m => m.startsWith(monthKey.substring(0, 3)));
+        const month = months[monthIndex];
 
-        // Convert to array format
-        const monthlyData = months.map(month => ({
-          month,
-          receita: monthlyMap[month].receita,
-          despesa: monthlyMap[month].despesa,
-          lucro: monthlyMap[month].receita - monthlyMap[month].despesa,
-        }));
+        if (month) {
+          monthlyMap[month].expenses += Number(exp.cost || 0);
+        }
+      });
 
-        setData(monthlyData);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching monthly data:', error);
-        setData([]);
-        setLoading(false);
-      }
-    };
+      return months.map(month => ({
+        month,
+        revenue: monthlyMap[month].revenue,
+        expenses: monthlyMap[month].expenses,
+        profit: monthlyMap[month].revenue - monthlyMap[month].expenses,
+      }));
+    },
+    enabled: !!user && !!userRole,
+  });
 
-    fetchMonthlyData();
-  }, [user, userRole, year]);
-
-  return { data, loading };
+  return { data, loading: isLoading };
 }
