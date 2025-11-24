@@ -617,7 +617,10 @@ const MusicianShows = () => {
                 <TabsContent value="shows" className="mt-0 md:mt-6">
                   {/* Mobile header */}
                   <Card className="md:hidden bg-white border border-gray-200 p-4 space-y-3 mb-4">
-                    <h2 className="text-xl font-bold text-gray-900">Meus Freelas</h2>
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900">Meus Freelas</h2>
+                      <p className="text-sm text-gray-600 mt-1">Gerencie seus shows e cachês</p>
+                    </div>
                     
                     <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
                       <DialogTrigger asChild>
@@ -640,8 +643,11 @@ const MusicianShows = () => {
                   </Card>
 
                   {/* Desktop header */}
-                  <div className="hidden md:flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">Meus Freelas</h2>
+                  <div className="hidden md:flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div>
+                      <h2 className="text-xl md:text-2xl font-bold text-gray-900">Meus Freelas</h2>
+                      <p className="text-sm text-gray-600">Gerencie seus shows e cachês</p>
+                    </div>
                     
                     <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
                       <DialogTrigger asChild>
