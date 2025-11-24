@@ -1552,7 +1552,7 @@ export default function Admin() {
                             <h3 className="font-semibold text-blue-900 mb-3">
                               Preview dos Dados
                             </h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                               <div className="bg-white p-3 rounded border border-blue-200">
                                 <p className="text-xs text-gray-600">Total de Shows</p>
                                 <p className="text-2xl font-bold text-blue-600">
@@ -1563,6 +1563,16 @@ export default function Admin() {
                                 <p className="text-xs text-gray-600">Receita Bruta</p>
                                 <p className="text-2xl font-bold text-green-600">
                                   R$ {importData.reduce((sum: number, show: any) => sum + (show.fee || 0), 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                </p>
+                              </div>
+                              <div className="bg-white p-3 rounded border border-red-200">
+                                <p className="text-xs text-gray-600">Despesas Totais</p>
+                                <p className="text-2xl font-bold text-red-600">
+                                  R$ {importData.reduce((sum: number, show: any) => {
+                                    const despesasEquipe = (show.expenses?.team || []).reduce((s: number, exp: any) => s + (exp.cost || 0), 0);
+                                    const despesasOutras = (show.expenses?.other || []).reduce((s: number, exp: any) => s + (exp.amount || exp.cost || 0), 0);
+                                    return sum + despesasEquipe + despesasOutras;
+                                  }, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                 </p>
                               </div>
                               <div className="bg-white p-3 rounded border border-purple-200">
