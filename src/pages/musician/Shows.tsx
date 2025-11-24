@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { TimePicker } from '@/components/ui/time-picker';
-import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2, ChevronDown, ChevronUp, Users, TrendingDown, ArrowUpRight } from 'lucide-react';
+import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2, ChevronDown, ChevronUp, Users, TrendingDown, ArrowUpRight, Guitar } from 'lucide-react';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -1060,7 +1060,7 @@ const MusicianShows = () => {
                                       )}
                                       {myInstrument && (
                                         <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
-                                          <Music2 className="w-3 h-3" />
+                                          <Guitar className="w-3 h-3" />
                                           {myInstrument}
                                         </p>
                                       )}
