@@ -695,16 +695,18 @@ const MusicianShows = () => {
                                     <Button
                                       variant="outline"
                                       className={cn(
-                                        "w-full justify-start text-left font-normal bg-white border-gray-300 text-gray-900",
+                                        "w-full justify-start text-left font-normal bg-white border-gray-300 text-gray-900 h-10",
                                         !showFormData.date_local && "text-muted-foreground"
                                       )}
                                     >
-                                      <Calendar className="mr-2 h-4 w-4" />
-                                      {showFormData.date_local ? (
-                                        format(new Date(showFormData.date_local), "dd/MM/yyyy", { locale: ptBR })
-                                      ) : (
-                                        <span>Selecione a data</span>
-                                      )}
+                                      <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
+                                      <span className="truncate">
+                                        {showFormData.date_local ? (
+                                          format(new Date(showFormData.date_local), "dd/MM/yyyy", { locale: ptBR })
+                                        ) : (
+                                          "Selecione a data"
+                                        )}
+                                      </span>
                                     </Button>
                                   </PopoverTrigger>
                                   <PopoverContent className="w-auto p-0 bg-white z-[100]" align="start">
