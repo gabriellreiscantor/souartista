@@ -91,11 +91,11 @@ export function WeeklySchedule({
         </div>
       </Card>;
   }
-  return <Card className="p-4 sm:p-6 border-border bg-card">
+  return <Card className="p-4 sm:p-6 border-border bg-white">
       {/* Header */}
       <div className="mb-4">
-        <h3 className="text-lg font-semibold mb-2 text-foreground">Agenda da Semana</h3>
-        <p className="text-sm text-muted-foreground">
+        <h3 className="text-lg font-semibold mb-2 text-gray-900">Agenda da Semana</h3>
+        <p className="text-sm text-gray-600">
           De {format(weekStart, "d/MM", {
           locale: ptBR
         })} a {format(weekEnd, "d/MM", {
@@ -106,13 +106,13 @@ export function WeeklySchedule({
 
       {/* Navigation */}
       <div className="flex items-center gap-2 mb-4">
-        <Button variant="outline" size="icon" onClick={handlePreviousWeek} className="h-9 w-9">
+        <Button variant="outline" size="icon" onClick={handlePreviousWeek} className="h-9 w-9 bg-white hover:bg-gray-50">
           <ChevronLeft className="w-4 h-4" />
         </Button>
-        <Button variant="outline" onClick={handleToday} className="flex-1 justify-center">
+        <Button variant="outline" onClick={handleToday} className="flex-1 justify-center bg-white hover:bg-gray-50">
           Semana Atual
         </Button>
-        <Button variant="outline" size="icon" onClick={handleNextWeek} className="h-9 w-9">
+        <Button variant="outline" size="icon" onClick={handleNextWeek} className="h-9 w-9 bg-white hover:bg-gray-50">
           <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
@@ -122,7 +122,7 @@ export function WeeklySchedule({
         {weekDays.map(day => {
         const dayShows = getShowsForDay(day);
         if (dayShows.length === 0) return null;
-        return <div key={day.toISOString()} className="p-4 rounded-lg bg-primary/5 border border-border hover:border-primary/30 transition-colors">
+        return <div key={day.toISOString()} className="p-4 rounded-lg bg-gray-50 border border-gray-200 hover:border-primary/30 transition-colors">
               <div className="flex items-start gap-4">
                 {/* Date Badge */}
                 <div className="flex flex-col items-center min-w-[60px] bg-primary/10 rounded-lg p-2">
@@ -140,31 +140,31 @@ export function WeeklySchedule({
                 <div className="flex-1 space-y-2">
                   {dayShows.map(show => <div key={show.id} className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-primary" />
-                      <span className="text-sm font-medium text-foreground">{show.venue_name}</span>
+                      <span className="text-sm font-medium text-gray-900">{show.venue_name}</span>
                     </div>)}
                 </div>
               </div>
             </div>;
       })}
 
-        {shows.length === 0 && <div className="text-center py-8 text-muted-foreground">
+        {shows.length === 0 && <div className="text-center py-8 text-gray-500">
             <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
             <p className="text-sm">Nenhum show agendado nesta semana</p>
           </div>}
       </div>
 
       {/* Help Text */}
-      {shows.length > 0 && <div className="flex items-center gap-2 mb-4 text-xs text-muted-foreground">
-          <div className="w-4 h-4 rounded-full border border-muted-foreground/30 flex items-center justify-center">
+      {shows.length > 0 && <div className="flex items-center gap-2 mb-4 text-xs text-gray-600">
+          <div className="w-4 h-4 rounded-full border border-gray-300 flex items-center justify-center">
             <span className="text-[10px]">i</span>
           </div>
           <p>Clique em um dia com eventos para ver os detalhes.</p>
         </div>}
 
       {/* Weekly Stats */}
-      <div className="space-y-2 pt-4 border-t border-border">
+      <div className="space-y-2 pt-4 border-t border-gray-200">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Seu Cachê (Semana)</span>
+          <span className="text-sm text-gray-600">Seu Cachê (Semana)</span>
           <span className="text-lg font-bold text-success">
             R$ {weeklyStats.revenue.toLocaleString('pt-BR', {
             minimumFractionDigits: 2
@@ -172,15 +172,15 @@ export function WeeklySchedule({
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Suas Despesas (Semana)</span>
+          <span className="text-sm text-gray-600">Suas Despesas (Semana)</span>
           <span className="text-lg font-bold text-destructive">
             R$ {weeklyStats.expenses.toLocaleString('pt-BR', {
             minimumFractionDigits: 2
           })}
           </span>
         </div>
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <span className="text-sm font-semibold text-foreground">Seu Lucro (Semana)</span>
+        <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+          <span className="text-sm font-semibold text-gray-900">Seu Lucro (Semana)</span>
           <span className="text-xl font-bold text-info">
             R$ {profit.toLocaleString('pt-BR', {
             minimumFractionDigits: 2
