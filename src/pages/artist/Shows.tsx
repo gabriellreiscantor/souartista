@@ -76,6 +76,7 @@ const ArtistShows = () => {
   const [expandedShows, setExpandedShows] = useState<Set<string>>(new Set());
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [showFilter, setShowFilter] = useState<string>('upcoming');
   
   // Shows dialog
   const [showDialogOpen, setShowDialogOpen] = useState(false);
@@ -574,9 +575,66 @@ const ArtistShows = () => {
     setExpandedShows(newExpanded);
   };
 
+  const getFilteredShows = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    switch (showFilter) {
+      case 'upcoming':
+        // Apenas shows com data >= hoje
+        return shows.filter(show => new Date(show.date_local) >= today);
+      
+      case 'thisWeek':
+        // Shows desta semana
+        const endOfWeek = new Date(today);
+        endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
+        return shows.filter(show => {
+          const d = new Date(show.date_local);
+          return d >= today && d <= endOfWeek;
+        });
+      
+      case 'lastWeek':
+        // Shows da semana passada
+        const lastWeekStart = new Date(today);
+        lastWeekStart.setDate(today.getDate() - today.getDay() - 7);
+        const lastWeekEnd = new Date(lastWeekStart);
+        lastWeekEnd.setDate(lastWeekStart.getDate() + 6);
+        return shows.filter(show => {
+          const d = new Date(show.date_local);
+          return d >= lastWeekStart && d <= lastWeekEnd;
+        });
+      
+      case 'twoWeeksAgo':
+        // Shows de 2 semanas atrás
+        const twoWeeksAgoStart = new Date(today);
+        twoWeeksAgoStart.setDate(today.getDate() - today.getDay() - 14);
+        const twoWeeksAgoEnd = new Date(twoWeeksAgoStart);
+        twoWeeksAgoEnd.setDate(twoWeeksAgoStart.getDate() + 6);
+        return shows.filter(show => {
+          const d = new Date(show.date_local);
+          return d >= twoWeeksAgoStart && d <= twoWeeksAgoEnd;
+        });
+      
+      case 'thisMonth':
+        // Shows deste mês
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        return shows.filter(show => {
+          const d = new Date(show.date_local);
+          return d >= startOfMonth && d <= endOfMonth;
+        });
+      
+      case 'all':
+      default:
+        return shows;
+    }
+  };
+
+  const filteredShows = getFilteredShows();
+
   const calculateTotals = () => {
-    const totalRevenue = shows.reduce((sum, show) => sum + show.fee, 0);
-    const totalExpenses = shows.reduce((sum, show) => {
+    const totalRevenue = filteredShows.reduce((sum, show) => sum + show.fee, 0);
+    const totalExpenses = filteredShows.reduce((sum, show) => {
       const teamCosts = show.expenses_team.reduce((teamSum, member) => teamSum + member.cost, 0);
       const otherCosts = show.expenses_other.reduce((otherSum, expense) => otherSum + expense.cost, 0);
       return sum + teamCosts + otherCosts;
@@ -669,7 +727,7 @@ const ArtistShows = () => {
                         </p>
                       </div>
                       
-                      <Select defaultValue="upcoming">
+                      <Select value={showFilter} onValueChange={setShowFilter}>
                         <SelectTrigger className="w-full bg-white text-gray-900 border-gray-300">
                           <CalendarIcon className="w-4 h-4 mr-2 text-gray-900" />
                           <SelectValue />
@@ -994,7 +1052,7 @@ const ArtistShows = () => {
                         >
                           <Grid3x3 className="w-4 h-4" />
                         </Button>
-                        <Select defaultValue="upcoming">
+                        <Select value={showFilter} onValueChange={setShowFilter}>
                           <SelectTrigger className="w-[180px] bg-white text-gray-900">
                             <CalendarIcon className="w-4 h-4 mr-2 text-gray-900" />
                             <SelectValue />
@@ -1347,7 +1405,7 @@ const ArtistShows = () => {
                       <div className="text-center py-12">
                         <p className="text-gray-500">Carregando...</p>
                       </div>
-                    ) : shows.length === 0 ? (
+                    ) : filteredShows.length === 0 ? (
                       <Card className="p-8 text-center bg-white border border-gray-200">
                         <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                         <p className="text-gray-500">Nenhum show encontrado para o filtro selecionado.</p>
@@ -1363,7 +1421,7 @@ const ArtistShows = () => {
                               <div className="text-center">Lucro</div>
                               <div className="text-center">Ações</div>
                             </div>
-                            {shows.map((show) => {
+                            {filteredShows.map((show) => {
                               const expenses = calculateShowExpenses(show);
                               const profit = calculateShowProfit(show);
                               const isExpanded = expandedShows.has(show.id);
@@ -1434,7 +1492,7 @@ const ArtistShows = () => {
                           </div>
                         ) : (
                           <div className="grid gap-4 md:grid-cols-2">
-                            {shows.map((show) => {
+                            {filteredShows.map((show) => {
                               const expenses = calculateShowExpenses(show);
                               const profit = calculateShowProfit(show);
                               const isExpanded = expandedShows.has(show.id);
