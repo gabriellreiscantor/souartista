@@ -8,15 +8,31 @@ import { useReportVisibility } from '@/hooks/useReportVisibility';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Bell, FileText, Shield, MessageCircle, Rocket, BookOpen } from 'lucide-react';
+import { Bell, FileText, Shield, MessageCircle, Rocket, BookOpen, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
 
 const ArtistSettings = () => {
-  const { userData } = useAuth();
+  const { userData, signOut } = useAuth();
   const navigate = useNavigate();
   const { settings, updateSettings } = useReportVisibility();
   const { toast } = useToast();
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleSettingChange = (key: string, value: boolean) => {
     updateSettings({ [key]: value });
@@ -24,6 +40,43 @@ const ArtistSettings = () => {
       title: value ? "Configuração ativada" : "Configuração desativada",
       description: "Suas preferências foram salvas com sucesso.",
     });
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'excluir minha conta') {
+      toast({
+        title: "Erro",
+        description: "Digite 'excluir minha conta' para confirmar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.functions.invoke('delete-account');
+      
+      if (error) throw error;
+
+      toast({
+        title: "Conta excluída",
+        description: "Sua conta foi excluída com sucesso.",
+      });
+
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir sua conta. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+      setDeleteConfirmText('');
+    }
   };
 
   return (
@@ -178,6 +231,57 @@ const ArtistSettings = () => {
                     </div>
                   </button>
                 </div>
+              </Card>
+
+              {/* Excluir Conta */}
+              <Card className="p-6 bg-white border-red-200">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Zona de Perigo</h3>
+                <p className="text-gray-600 text-sm mb-6">
+                  A exclusão da conta é permanente e não pode ser desfeita.
+                </p>
+
+                <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="w-full">
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Excluir Conta
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Tem certeza absoluta?</AlertDialogTitle>
+                      <AlertDialogDescription className="space-y-4">
+                        <p>
+                          Esta ação não pode ser desfeita. Isso irá excluir permanentemente sua conta
+                          e remover todos os seus dados de nossos servidores.
+                        </p>
+                        <div className="space-y-2">
+                          <p className="font-semibold text-gray-900">
+                            Digite "excluir minha conta" para confirmar:
+                          </p>
+                          <Input
+                            value={deleteConfirmText}
+                            onChange={(e) => setDeleteConfirmText(e.target.value)}
+                            placeholder="excluir minha conta"
+                            className="w-full"
+                          />
+                        </div>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={() => setDeleteConfirmText('')}>
+                        Cancelar
+                      </AlertDialogCancel>
+                      <Button
+                        variant="destructive"
+                        onClick={handleDeleteAccount}
+                        disabled={deleteConfirmText !== 'excluir minha conta' || isDeleting}
+                      >
+                        {isDeleting ? 'Excluindo...' : 'Excluir Permanentemente'}
+                      </Button>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </Card>
             </div>
           </main>
