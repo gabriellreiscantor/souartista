@@ -109,7 +109,6 @@ const MusicianShows = () => {
     address: ''
   });
   const [connectionTest, setConnectionTest] = useState<'testing' | 'ok' | 'error'>('testing');
-
   useEffect(() => {
     const testConnection = async () => {
       try {
@@ -118,8 +117,9 @@ const MusicianShows = () => {
         console.log('User Email:', user?.email);
         console.log('User Data:', userData);
         console.log('User Role:', userRole);
-        
-        const { error } = await supabase.from('musician_venues').select('id').limit(1);
+        const {
+          error
+        } = await supabase.from('musician_venues').select('id').limit(1);
         if (error) {
           console.error('Erro no teste de conexão:', error);
           setConnectionTest('error');
@@ -132,7 +132,6 @@ const MusicianShows = () => {
         setConnectionTest('error');
       }
     };
-    
     if (user) {
       testConnection();
     } else {
@@ -205,23 +204,20 @@ const MusicianShows = () => {
     if (!user) return;
     try {
       console.log('Buscando locais para usuário:', user.id);
-      
-      const { data, error } = await supabase
-        .from('musician_venues')
-        .select('*')
-        .eq('owner_uid', user.id)
-        .order('name', { ascending: true });
-        
+      const {
+        data,
+        error
+      } = await supabase.from('musician_venues').select('*').eq('owner_uid', user.id).order('name', {
+        ascending: true
+      });
       if (error) {
         console.error('Erro ao buscar locais:', error);
         throw error;
       }
-      
       console.log('Locais carregados:', data?.length || 0);
       setVenues(data || []);
     } catch (error: any) {
       console.error('Error fetching venues:', error);
-      
       if (error?.message?.includes('Failed to fetch')) {
         // Tentar reconectar após um delay
         setTimeout(() => {
@@ -239,11 +235,7 @@ const MusicianShows = () => {
     try {
       const selectedArtist = artists.find(a => a.id === showFormData.artist_id);
       const selectedInstrument = instruments.find(i => i.id === showFormData.instrument_id);
-      
-      const venueName = showFormData.is_private_event 
-        ? showFormData.custom_venue 
-        : venues.find(v => v.id === showFormData.venue_id)?.name || showFormData.custom_venue;
-
+      const venueName = showFormData.is_private_event ? showFormData.custom_venue : venues.find(v => v.id === showFormData.venue_id)?.name || showFormData.custom_venue;
       if (!selectedArtist) {
         toast.error('Selecione um artista');
         return;
@@ -364,49 +356,40 @@ const MusicianShows = () => {
       toast.error('Usuário não autenticado');
       return;
     }
-    
     if (!artistFormData.name || artistFormData.name.trim() === '') {
       toast.error('Nome do artista é obrigatório');
       return;
     }
-    
     try {
       const artistData = {
         name: artistFormData.name.trim(),
         owner_uid: user.id
       };
-      
       console.log('Salvando artista:', artistData);
-      
       if (editingArtist) {
-        const { error } = await supabase
-          .from('artists')
-          .update(artistData)
-          .eq('id', editingArtist.id);
-          
+        const {
+          error
+        } = await supabase.from('artists').update(artistData).eq('id', editingArtist.id);
         if (error) {
           console.error('Erro do Supabase:', error);
           throw error;
         }
         toast.success('Artista atualizado!');
       } else {
-        const { error } = await supabase
-          .from('artists')
-          .insert(artistData);
-          
+        const {
+          error
+        } = await supabase.from('artists').insert(artistData);
         if (error) {
           console.error('Erro do Supabase:', error);
           throw error;
         }
         toast.success('Artista cadastrado!');
       }
-      
       setArtistDialogOpen(false);
       resetArtistForm();
       await fetchArtists();
     } catch (error: any) {
       console.error('Erro ao salvar:', error);
-      
       if (error?.message?.includes('Failed to fetch')) {
         toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
       } else {
@@ -414,7 +397,6 @@ const MusicianShows = () => {
       }
     }
   };
-  
   const handleArtistEdit = (artist: Artist) => {
     setEditingArtist(artist);
     setArtistFormData({
@@ -450,59 +432,47 @@ const MusicianShows = () => {
       toast.error('Usuário não autenticado');
       return;
     }
-    
     if (!instrumentFormData.name || instrumentFormData.name.trim() === '') {
       toast.error('Nome do instrumento é obrigatório');
       return;
     }
-    
+
     // Se for "Outro", usar o customInstrument
-    const finalInstrumentName = instrumentFormData.name === 'Outro' 
-      ? instrumentFormData.customInstrument.trim()
-      : instrumentFormData.name.trim();
-    
+    const finalInstrumentName = instrumentFormData.name === 'Outro' ? instrumentFormData.customInstrument.trim() : instrumentFormData.name.trim();
     if (!finalInstrumentName) {
       toast.error('Por favor, especifique o nome do instrumento');
       return;
     }
-    
     try {
       const instrumentData = {
         name: finalInstrumentName,
         owner_uid: user.id
       };
-      
       console.log('Salvando instrumento:', instrumentData);
-      
       if (editingInstrument) {
-        const { error } = await supabase
-          .from('musician_instruments')
-          .update(instrumentData)
-          .eq('id', editingInstrument.id);
-          
+        const {
+          error
+        } = await supabase.from('musician_instruments').update(instrumentData).eq('id', editingInstrument.id);
         if (error) {
           console.error('Erro do Supabase:', error);
           throw error;
         }
         toast.success('Instrumento atualizado!');
       } else {
-        const { error } = await supabase
-          .from('musician_instruments')
-          .insert(instrumentData);
-          
+        const {
+          error
+        } = await supabase.from('musician_instruments').insert(instrumentData);
         if (error) {
           console.error('Erro do Supabase:', error);
           throw error;
         }
         toast.success('Instrumento cadastrado!');
       }
-      
       setInstrumentDialogOpen(false);
       resetInstrumentForm();
       await fetchInstruments();
     } catch (error: any) {
       console.error('Erro ao salvar:', error);
-      
       if (error?.message?.includes('Failed to fetch')) {
         toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
       } else {
@@ -543,74 +513,69 @@ const MusicianShows = () => {
   // Venue handlers
   const handleVenueSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     console.log('=== INÍCIO SUBMIT ===');
     console.log('User no submit:', user);
     console.log('User ID:', user?.id);
     console.log('User Email:', user?.email);
     console.log('Form data:', venueFormData);
-    
     if (!venueFormData.name || venueFormData.name.trim() === '') {
       console.error('Nome vazio');
       toast.error('Nome do local é obrigatório');
       return;
     }
-    
+
     // Pegar o ID do usuário diretamente da sessão
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: {
+        session
+      }
+    } = await supabase.auth.getSession();
     const userId = session?.user?.id || user?.id;
-    
     console.log('Session User ID:', session?.user?.id);
     console.log('User ID final:', userId);
-    
     if (!userId) {
       console.error('Sem ID de usuário');
       toast.error('Erro de autenticação. Tente fazer login novamente.');
       return;
     }
-    
     try {
       const venueData = {
         name: venueFormData.name.trim(),
         address: venueFormData.address ? venueFormData.address.trim() : null,
         owner_uid: userId
       };
-      
       console.log('Dados a salvar:', venueData);
       console.log('Editando?', !!editingVenue);
-      
       if (editingVenue) {
         console.log('Fazendo UPDATE...');
-        const { data, error } = await supabase
-          .from('musician_venues')
-          .update(venueData)
-          .eq('id', editingVenue.id)
-          .select();
-          
-        console.log('Resultado UPDATE:', { data, error });
-          
+        const {
+          data,
+          error
+        } = await supabase.from('musician_venues').update(venueData).eq('id', editingVenue.id).select();
+        console.log('Resultado UPDATE:', {
+          data,
+          error
+        });
         if (error) throw error;
         toast.success('Local atualizado!');
       } else {
         console.log('Fazendo INSERT...');
-        const { data, error } = await supabase
-          .from('musician_venues')
-          .insert(venueData)
-          .select();
-          
-        console.log('Resultado INSERT:', { data, error });
-          
+        const {
+          data,
+          error
+        } = await supabase.from('musician_venues').insert(venueData).select();
+        console.log('Resultado INSERT:', {
+          data,
+          error
+        });
         if (error) throw error;
         toast.success('Local cadastrado!');
       }
-      
       console.log('Fechando dialog...');
       setVenueDialogOpen(false);
       resetVenueForm();
-      
       console.log('Recarregando lista...');
       await fetchVenues();
-      
       console.log('=== FIM SUBMIT ===');
     } catch (error: any) {
       console.error('=== ERRO NO SUBMIT ===');
@@ -618,7 +583,6 @@ const MusicianShows = () => {
       console.error('Message:', error?.message);
       console.error('Code:', error?.code);
       console.error('Details:', error?.details);
-      
       toast.error(error?.message || 'Erro ao salvar local');
     }
   };
@@ -672,9 +636,7 @@ const MusicianShows = () => {
     const myEntry = show.expenses_team.find(e => e.musicianId === user?.id);
     return myEntry?.cost || show.fee;
   };
-  
-  return (
-    <SidebarProvider>
+  return <SidebarProvider>
       <div className="min-h-screen flex w-full bg-[#fafafa]">
         <MusicianSidebar />
         
@@ -694,17 +656,15 @@ const MusicianShows = () => {
           </header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6 scrollbar-hide" style={{
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            WebkitOverflowScrolling: 'touch'
-          }}>
-            {connectionTest === 'error' && (
-              <Card className="mb-4 p-4 bg-red-50 border-red-200">
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch'
+        }}>
+            {connectionTest === 'error' && <Card className="mb-4 p-4 bg-red-50 border-red-200">
                 <p className="text-red-800 text-sm">
                   ⚠️ Problema de conexão detectado. Tente recarregar a página ou verifique sua conexão.
                 </p>
-              </Card>
-            )}
+              </Card>}
             
             <div className="max-w-4xl mx-auto">
               <Tabs defaultValue="shows" className="w-full">
@@ -800,20 +760,16 @@ const MusicianShows = () => {
                           </DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleShowSubmit} className="space-y-4">
-                          <div className="max-h-[65vh] overflow-y-auto px-1 space-y-6 scrollbar-hide"
-                            style={{
-                              scrollbarWidth: 'none',
-                              msOverflowStyle: 'none',
-                              WebkitOverflowScrolling: 'touch'
-                            }}
-                          >
+                          <div className="max-h-[65vh] overflow-y-auto px-1 space-y-6 scrollbar-hide" style={{
+                          scrollbarWidth: 'none',
+                          msOverflowStyle: 'none',
+                          WebkitOverflowScrolling: 'touch'
+                        }}>
                           <div className="space-y-4">
-                            <Button
-                              type="button"
-                              variant={showFormData.is_private_event ? "default" : "outline"}
-                              onClick={() => setShowFormData({ ...showFormData, is_private_event: !showFormData.is_private_event })}
-                              className={showFormData.is_private_event ? "bg-primary hover:bg-primary/90 text-white w-full" : "bg-white hover:bg-gray-50 text-gray-900 border-gray-300 w-full"}
-                            >
+                            <Button type="button" variant={showFormData.is_private_event ? "default" : "outline"} onClick={() => setShowFormData({
+                              ...showFormData,
+                              is_private_event: !showFormData.is_private_event
+                            })} className={showFormData.is_private_event ? "bg-primary hover:bg-primary/90 text-white w-full" : "bg-white hover:bg-gray-50 text-gray-900 border-gray-300 w-full"}>
                               Evento Particular
                             </Button>
 
@@ -822,9 +778,9 @@ const MusicianShows = () => {
                             <div>
                               <Label htmlFor="artist_id" className="text-gray-900 font-medium">Artista *</Label>
                               <Select value={showFormData.artist_id} onValueChange={value => setShowFormData({
-                              ...showFormData,
-                              artist_id: value
-                            })} required>
+                                ...showFormData,
+                                artist_id: value
+                              })} required>
                                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                                   <SelectValue placeholder="Selecione o artista" />
                                 </SelectTrigger>
@@ -839,20 +795,13 @@ const MusicianShows = () => {
                               </Select>
                             </div>
 
-                            {showFormData.is_private_event ? (
-                              <div>
+                            {showFormData.is_private_event ? <div>
                                 <Label htmlFor="custom_venue" className="text-gray-900 font-medium">Nome do local *</Label>
-                                <Input
-                                  id="custom_venue"
-                                  value={showFormData.custom_venue}
-                                  onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
-                                  className="bg-white border-gray-300 text-gray-900"
-                                  placeholder="Digite o nome do local"
-                                  required
-                                />
-                              </div>
-                            ) : (
-                              <div>
+                                <Input id="custom_venue" value={showFormData.custom_venue} onChange={e => setShowFormData({
+                                ...showFormData,
+                                custom_venue: e.target.value
+                              })} className="bg-white border-gray-300 text-gray-900" placeholder="Digite o nome do local" required />
+                              </div> : <div>
                                 <Label htmlFor="venue_id" className="text-gray-900 font-medium">Local do Show *</Label>
                                 <Select value={showFormData.venue_id} onValueChange={value => setShowFormData({
                                 ...showFormData,
@@ -870,67 +819,49 @@ const MusicianShows = () => {
                                       </SelectItem>)}
                                   </SelectContent>
                                 </Select>
-                              </div>
-                            )}
+                              </div>}
 
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="date_local" className="text-gray-900 font-medium">Data *</Label>
                                 <Popover>
                                   <PopoverTrigger asChild>
-                                    <Button
-                                      variant="outline"
-                                      className={cn(
-                                        "w-full justify-start text-left font-normal bg-white border-gray-300 text-gray-900 h-10",
-                                        !showFormData.date_local && "text-muted-foreground"
-                                      )}
-                                    >
+                                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal bg-white border-gray-300 text-gray-900 h-10", !showFormData.date_local && "text-muted-foreground")}>
                                       <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
                                       <span className="truncate">
-                                        {showFormData.date_local ? (
-                                          format(new Date(showFormData.date_local), "dd/MM/yyyy", { locale: ptBR })
-                                        ) : (
-                                          "Selecione a data"
-                                        )}
+                                        {showFormData.date_local ? format(new Date(showFormData.date_local), "dd/MM/yyyy", {
+                                          locale: ptBR
+                                        }) : "Selecione a data"}
                                       </span>
                                     </Button>
                                   </PopoverTrigger>
                                   <PopoverContent className="w-auto p-0 bg-white z-[100]" align="start">
-                                    <CalendarComponent
-                                      mode="single"
-                                      selected={showFormData.date_local ? new Date(showFormData.date_local) : undefined}
-                                      onSelect={(date) => {
-                                        if (date) {
-                                          setShowFormData({
-                                            ...showFormData,
-                                            date_local: format(date, "yyyy-MM-dd")
-                                          });
-                                        }
-                                      }}
-                                      initialFocus
-                                      className="pointer-events-auto"
-                                    />
+                                    <CalendarComponent mode="single" selected={showFormData.date_local ? new Date(showFormData.date_local) : undefined} onSelect={date => {
+                                      if (date) {
+                                        setShowFormData({
+                                          ...showFormData,
+                                          date_local: format(date, "yyyy-MM-dd")
+                                        });
+                                      }
+                                    }} initialFocus className="pointer-events-auto" />
                                   </PopoverContent>
                                 </Popover>
                               </div>
                               <div>
                                 <Label htmlFor="time_local" className="text-gray-900 font-medium">Horário *</Label>
                                 <TimePicker value={showFormData.time_local} onChange={time => setShowFormData({
-                                ...showFormData,
-                                time_local: time
-                              })} />
+                                  ...showFormData,
+                                  time_local: time
+                                })} />
                               </div>
                             </div>
 
                             <div>
                               <Label htmlFor="duration" className="text-gray-900 font-medium">Duração do Show</Label>
-                              <Select 
-                                value={showFormData.duration} 
-                                onValueChange={value => setShowFormData({
-                                  ...showFormData,
-                                  duration: value
-                                })}
-                              >
+                              <Select value={showFormData.duration} onValueChange={value => setShowFormData({
+                                ...showFormData,
+                                duration: value
+                              })}>
                                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                                   <SelectValue placeholder="Horas..." className="text-gray-900" />
                                 </SelectTrigger>
@@ -962,17 +893,17 @@ const MusicianShows = () => {
                             <div>
                               <Label htmlFor="fee" className="text-gray-900 font-medium">Seu Cachê Individual *</Label>
                               <CurrencyInput id="fee" value={showFormData.fee} onChange={value => setShowFormData({
-                              ...showFormData,
-                              fee: value
-                            })} className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" required />
+                                ...showFormData,
+                                fee: value
+                              })} className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" required />
                             </div>
 
                             <div>
                               <Label htmlFor="instrument_id" className="text-gray-900 font-medium">Função/Instrumento *</Label>
                               <Select value={showFormData.instrument_id} onValueChange={value => setShowFormData({
-                              ...showFormData,
-                              instrument_id: value
-                            })} required>
+                                ...showFormData,
+                                instrument_id: value
+                              })} required>
                                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                                   <SelectValue placeholder="Selecione um instrumento" />
                                 </SelectTrigger>
@@ -1124,7 +1055,7 @@ const MusicianShows = () => {
                             <Button type="button" variant="outline" onClick={() => setArtistDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
                               Cancelar
                             </Button>
-                            <Button type="submit" className="flex-1">
+                            <Button type="submit" className="flex-1 text-slate-50">
                               {editingArtist ? 'Atualizar' : 'Cadastrar'}
                             </Button>
                           </div>
@@ -1187,11 +1118,11 @@ const MusicianShows = () => {
                         <form onSubmit={handleInstrumentSubmit} className="space-y-4">
                           <div>
                             <Label htmlFor="instrument_name" className="text-gray-900 font-medium">Nome do Instrumento *</Label>
-                            <Select value={instrumentFormData.name} onValueChange={(value) => setInstrumentFormData({
-                              ...instrumentFormData,
-                              name: value,
-                              customInstrument: value === 'Outro' ? instrumentFormData.customInstrument : ''
-                            })} required>
+                            <Select value={instrumentFormData.name} onValueChange={value => setInstrumentFormData({
+                            ...instrumentFormData,
+                            name: value,
+                            customInstrument: value === 'Outro' ? instrumentFormData.customInstrument : ''
+                          })} required>
                               <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                                 <SelectValue placeholder="Selecione um instrumento" />
                               </SelectTrigger>
@@ -1217,22 +1148,13 @@ const MusicianShows = () => {
                               </SelectContent>
                             </Select>
                           </div>
-                          {instrumentFormData.name === 'Outro' && (
-                            <div>
+                          {instrumentFormData.name === 'Outro' && <div>
                               <Label htmlFor="custom_instrument" className="text-gray-900 font-medium">Especifique o Instrumento *</Label>
-                              <Input 
-                                id="custom_instrument" 
-                                value={instrumentFormData.customInstrument} 
-                                onChange={e => setInstrumentFormData({
-                                  ...instrumentFormData,
-                                  customInstrument: e.target.value
-                                })} 
-                                placeholder="Digite o nome do instrumento" 
-                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" 
-                                required 
-                              />
-                            </div>
-                          )}
+                              <Input id="custom_instrument" value={instrumentFormData.customInstrument} onChange={e => setInstrumentFormData({
+                            ...instrumentFormData,
+                            customInstrument: e.target.value
+                          })} placeholder="Digite o nome do instrumento" className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" required />
+                            </div>}
                           <div className="flex gap-3">
                             <Button type="button" variant="outline" onClick={() => setInstrumentDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
                               Cancelar
@@ -1325,18 +1247,14 @@ const MusicianShows = () => {
                     </Dialog>
                   </div>
 
-                  {venues.length === 0 ? (
-                    <Card className="p-8 text-center bg-white border border-gray-200">
+                  {venues.length === 0 ? <Card className="p-8 text-center bg-white border border-gray-200">
                       <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-500 mb-4">Nenhum local cadastrado</p>
                       <p className="text-sm text-gray-400">
                         Adicione os locais onde você trabalha
                       </p>
-                    </Card>
-                  ) : (
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {venues.map(venue => (
-                        <Card key={venue.id} className="p-4 bg-white border border-gray-200">
+                    </Card> : <div className="grid gap-4 md:grid-cols-2">
+                      {venues.map(venue => <Card key={venue.id} className="p-4 bg-white border border-gray-200">
                           <div className="flex items-start justify-between">
                             <div className="flex items-start gap-4 flex-1">
                               <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
@@ -1356,10 +1274,8 @@ const MusicianShows = () => {
                               </Button>
                             </div>
                           </div>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
+                        </Card>)}
+                    </div>}
               </TabsContent>
             </Tabs>
           </div>
@@ -1368,8 +1284,6 @@ const MusicianShows = () => {
       
       <MobileBottomNav role="musician" />
     </div>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 };
-
 export default MusicianShows;
