@@ -96,6 +96,8 @@ export default function Admin() {
   const [notificationFilter, setNotificationFilter] = useState('todos');
   const [notifications, setNotifications] = useState<any[]>([]);
   const [sendingNotification, setSendingNotification] = useState(false);
+  const [deletingNotificationId, setDeletingNotificationId] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
   // Estados para Contatos WhatsApp
   const [contacts, setContacts] = useState<any[]>([]);
@@ -408,6 +410,27 @@ export default function Admin() {
       toast.error('Erro ao enviar notificação');
     } finally {
       setSendingNotification(false);
+    }
+  };
+
+  const handleDeleteNotification = async () => {
+    if (!deletingNotificationId) return;
+
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', deletingNotificationId);
+
+      if (error) throw error;
+
+      toast.success('Notificação removida com sucesso!');
+      setShowDeleteDialog(false);
+      setDeletingNotificationId(null);
+      fetchNotifications();
+    } catch (error) {
+      console.error('Erro ao remover notificação:', error);
+      toast.error('Erro ao remover notificação');
     }
   };
 
@@ -1142,9 +1165,22 @@ export default function Admin() {
                           <div key={notif.id} className="p-4 border border-gray-200 rounded-lg">
                             <div className="flex justify-between items-start mb-2">
                               <h3 className="font-semibold text-gray-900">{notif.title}</h3>
-                              <span className="text-xs text-gray-500">
-                                {new Date(notif.created_at).toLocaleDateString('pt-BR')}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500">
+                                  {new Date(notif.created_at).toLocaleDateString('pt-BR')}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setDeletingNotificationId(notif.id);
+                                    setShowDeleteDialog(true);
+                                  }}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                             <p className="text-sm text-gray-700 mb-2">{notif.message}</p>
                             {notif.link && (
@@ -1309,6 +1345,35 @@ export default function Admin() {
               Cancelar
             </Button>
             <Button onClick={handleUpdateStatus} className="text-gray-50">Salvar</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Notification Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="bg-white text-gray-900">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">Remover Notificação</DialogTitle>
+            <DialogDescription className="text-gray-600">
+              Tem certeza que deseja remover esta notificação? Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowDeleteDialog(false);
+                setDeletingNotificationId(null);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleDeleteNotification}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Remover
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
