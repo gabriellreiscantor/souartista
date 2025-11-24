@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns';
@@ -13,108 +13,83 @@ interface ArtistStats {
 
 export function useArtistStats(period: string) {
   const { user } = useAuth();
-  const [stats, setStats] = useState<ArtistStats>({
+
+  const { data: stats = {
     totalShows: 0,
     grossRevenue: 0,
     totalCosts: 0,
     netProfit: 0,
-    loading: true,
+    loading: false,
+  }, isLoading } = useQuery({
+    queryKey: ['artist-stats', user?.id, period],
+    queryFn: async () => {
+      if (!user) throw new Error('User not authenticated');
+
+      let showsQuery = supabase
+        .from('shows')
+        .select('*')
+        .eq('uid', user.id)
+        .order('date_local', { ascending: true });
+
+      if (period !== 'all') {
+        const [year, month] = period.split('-');
+        const startDate = `${year}-${month}-01`;
+        const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate();
+        const endDate = `${year}-${month}-${lastDay}`;
+        showsQuery = showsQuery.gte('date_local', startDate).lte('date_local', endDate);
+      }
+
+      const [{ data: shows, error: showsError }, { data: locomotionExpenses, error: expensesError }] = await Promise.all([
+        showsQuery,
+        period !== 'all'
+          ? supabase
+              .from('locomotion_expenses')
+              .select('cost')
+              .eq('uid', user.id)
+              .gte('created_at', `${period}-01`)
+              .lte('created_at', `${period}-31`)
+          : supabase.from('locomotion_expenses').select('cost').eq('uid', user.id)
+      ]);
+
+      if (showsError) throw showsError;
+      if (expensesError) throw expensesError;
+
+      let totalShows = 0;
+      let grossRevenue = 0;
+      let totalCosts = 0;
+
+      (shows || []).forEach((show) => {
+        totalShows++;
+        grossRevenue += Number(show.fee || 0);
+
+        const expensesTeam = (show.expenses_team as any) || [];
+        const expensesOther = (show.expenses_other as any) || [];
+
+        expensesTeam.forEach((exp: any) => {
+          totalCosts += Number(exp.cost || 0);
+        });
+
+        expensesOther.forEach((exp: any) => {
+          totalCosts += Number(exp.cost || 0);
+        });
+      });
+
+      (locomotionExpenses || []).forEach((exp) => {
+        totalCosts += Number(exp.cost || 0);
+      });
+
+      const netProfit = grossRevenue - totalCosts;
+
+      return {
+        totalShows,
+        grossRevenue,
+        totalCosts,
+        netProfit,
+        loading: false,
+      };
+    },
+    enabled: !!user,
   });
 
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchStats = async () => {
-      try {
-        let query = supabase
-          .from('shows')
-          .select('*')
-          .eq('uid', user.id);
-
-        // Apply period filter
-        if (period !== 'all') {
-          const [year, month] = period.split('-');
-          const date = new Date(parseInt(year), parseInt(month) - 1);
-          const start = startOfMonth(date);
-          const end = endOfMonth(date);
-          
-          query = query
-            .gte('date_local', start.toISOString().split('T')[0])
-            .lte('date_local', end.toISOString().split('T')[0]);
-        }
-
-        const { data: shows, error } = await query;
-
-        if (error) throw error;
-
-        // Fetch locomotion expenses
-        const { data: locomotionExpenses } = await supabase
-          .from('locomotion_expenses')
-          .select('cost, created_at')
-          .eq('uid', user.id);
-
-        const filteredShows = shows || [];
-        let totalShows = filteredShows.length;
-        let grossRevenue = 0;
-        let totalCosts = 0;
-
-        filteredShows.forEach((show) => {
-          grossRevenue += Number(show.fee || 0);
-          
-          const expensesTeam = (show.expenses_team as any) || [];
-          const expensesOther = (show.expenses_other as any) || [];
-          
-          expensesTeam.forEach((exp: any) => {
-            totalCosts += Number(exp.cost || 0);
-          });
-          
-          expensesOther.forEach((exp: any) => {
-            totalCosts += Number(exp.cost || 0);
-          });
-        });
-
-        // Add locomotion expenses for the period
-        if (locomotionExpenses) {
-          locomotionExpenses.forEach((exp) => {
-            if (period === 'all') {
-              totalCosts += Number(exp.cost || 0);
-            } else {
-              const [year, month] = period.split('-');
-              const date = new Date(parseInt(year), parseInt(month) - 1);
-              const start = startOfMonth(date);
-              const end = endOfMonth(date);
-              const expDate = parseISO(exp.created_at);
-              
-              if (isWithinInterval(expDate, { start, end })) {
-                totalCosts += Number(exp.cost || 0);
-              }
-            }
-          });
-        }
-
-        const netProfit = grossRevenue - totalCosts;
-
-        setStats({
-          totalShows,
-          grossRevenue,
-          totalCosts,
-          netProfit,
-          loading: false,
-        });
-      } catch (error) {
-        console.error('Error fetching artist stats:', error);
-        setStats({
-          totalShows: 0,
-          grossRevenue: 0,
-          totalCosts: 0,
-          netProfit: 0,
-          loading: false,
-        });
-      }
-    };
-
-    fetchStats();
-  }, [user, period]);
-
-  return stats;
+  return { ...stats, loading: isLoading };
 }

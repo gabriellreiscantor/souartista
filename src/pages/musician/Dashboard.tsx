@@ -4,9 +4,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMusicianStats } from '@/hooks/useMusicianStats';
 import { useMonthlyData } from '@/hooks/useMonthlyData';
 import { useUpcomingShows } from '@/hooks/useUpcomingShows';
+import { WeeklySchedule } from '@/components/WeeklySchedule';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Music, Loader2, Bell, ChevronLeft, ChevronRight, DollarSign, TrendingDown, Users, Calendar as CalendarIcon } from 'lucide-react';
+import { Music, Loader2, Bell, DollarSign, TrendingDown, Users } from 'lucide-react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { MusicianSidebar } from '@/components/MusicianSidebar';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
@@ -23,7 +24,6 @@ const MusicianDashboard = () => {
   const navigate = useNavigate();
   const [selectedPeriod, setSelectedPeriod] = useState<string>("all");
   const [selectedYear, setSelectedYear] = useState("2025");
-  const [selectedWeek, setSelectedWeek] = useState("Semana Atual");
 
   const stats = useMusicianStats(selectedPeriod);
   const { data: monthlyData } = useMonthlyData(selectedYear, userRole);
@@ -227,81 +227,9 @@ const MusicianDashboard = () => {
               </Card>
             </div>
 
-            <Card className="p-4 md:p-6 bg-white border border-gray-200 mb-4 md:mb-6">
-              <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Agenda da Semana</h3>
-                  <p className="text-sm text-gray-600">De 02/11 a 08/11</p>
-                </div>
-                <div className="hidden md:flex items-center gap-2">
-                  <Button size="icon" className="h-8 w-8 bg-primary text-white hover:bg-primary/90">
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
-                  <Select value={selectedWeek} onValueChange={setSelectedWeek}>
-                    <SelectTrigger className="w-[150px] bg-white border-gray-300 text-gray-900">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border-gray-300 text-gray-900">
-                      <SelectItem value="Semana Atual">Semana Atual</SelectItem>
-                      <SelectItem value="Próxima Semana">Próxima Semana</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button size="icon" className="h-8 w-8 bg-primary text-white hover:bg-primary/90">
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-
-              {/* Mobile: Vertical event cards */}
-              <div className="md:hidden text-center py-8 text-gray-500">
-                <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>Nenhum evento agendado</p>
-                <p className="text-xs mt-2">Adicione shows para visualizar sua agenda</p>
-              </div>
-
-              {/* Desktop: Grid calendar */}
-              <div className="hidden md:grid grid-cols-7 gap-2 mb-4">
-                {[
-                  { day: 'DOM', date: '02/11' },
-                  { day: 'SEG', date: '03/11' },
-                  { day: 'TER', date: '04/11' },
-                  { day: 'QUA', date: '05/11' },
-                  { day: 'QUI', date: '06/11' },
-                  { day: 'SEX', date: '07/11' },
-                  { day: 'SAB', date: '08/11' },
-                ].map((item) => (
-                  <div
-                    key={item.day}
-                    className="p-3 rounded-lg border text-center min-h-[100px] bg-gray-50 border-gray-200"
-                  >
-                    <div className="text-xs font-medium mb-1 text-gray-600">
-                      {item.day}
-                    </div>
-                    <div className="text-xs text-gray-500">{item.date}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="hidden md:flex items-center justify-center text-sm text-gray-500 mb-4">
-                <CalendarIcon className="w-4 h-4 mr-2 opacity-30" />
-                Nenhum evento agendado para esta semana.
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <div className="text-center">
-                  <p className="text-xs md:text-sm text-gray-600 mb-1">Receita Bruta (Semanal)</p>
-                  <p className="text-xl md:text-2xl font-bold text-green-600">R$ 0,00</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs md:text-sm text-gray-600 mb-1">Despesas (Semanal)</p>
-                  <p className="text-xl md:text-2xl font-bold text-red-600">R$ 0,00</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs md:text-sm text-gray-600 mb-1">Lucro (Semanal)</p>
-                  <p className="text-xl md:text-2xl font-bold text-blue-600">R$ 0,00</p>
-                </div>
-              </div>
-            </Card>
+            <div className="mb-4 md:mb-6">
+              <WeeklySchedule userRole="musician" />
+            </div>
 
             <Card className="rounded-2xl p-6 md:p-8 border border-gray-200 bg-gradient-to-br from-purple-50 to-purple-100">
               <div className="text-center max-w-2xl mx-auto space-y-4">
