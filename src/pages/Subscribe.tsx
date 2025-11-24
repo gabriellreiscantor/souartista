@@ -1,15 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Music, Check } from 'lucide-react';
 import logo from '@/assets/logo.png';
+import { supabase } from '@/integrations/supabase/client';
 
 const Subscribe = () => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
-  const { updateUserData } = useAuth();
+  const { updateUserData, user } = useAuth();
   const navigate = useNavigate();
+
+  // Redireciona usuários com plano ativo para o dashboard correto
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      if (!user) return;
+
+      // Buscar status do plano
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('status_plano')
+        .eq('id', user.id)
+        .single();
+
+      if (profile?.status_plano === 'ativo') {
+        // Buscar role do usuário
+        const userRole = localStorage.getItem('userRole');
+        
+        if (userRole === 'artist') {
+          navigate('/artist/dashboard', { replace: true });
+        } else if (userRole === 'musician') {
+          navigate('/musician/dashboard', { replace: true });
+        }
+      }
+    };
+
+    checkUserStatus();
+  }, [user, navigate]);
 
   // Simulação - em produção, integraria com Monetizze
   const handleSubscribe = async (plan: string) => {
