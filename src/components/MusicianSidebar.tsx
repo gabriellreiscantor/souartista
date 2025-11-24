@@ -17,13 +17,13 @@ import {
 const mainItems = [
   { title: 'Dashboard', url: '/musician/dashboard', icon: LayoutDashboard },
   { title: 'Shows', url: '/musician/shows', icon: Music },
+  { title: 'Artistas', url: '/musician/artists', icon: Mic2 },
   { title: 'Calendário', url: '/musician/calendar', icon: Calendar },
   { title: 'Relatórios', url: '/musician/reports', icon: BarChart3 },
   { title: 'Locomoção', url: '/musician/transportation', icon: Car },
 ];
 
 const settingsItems = [
-  { title: 'Artistas', url: '/musician/artists', icon: Mic2 },
   { title: 'Suporte', url: '/musician/support', icon: HelpCircle },
   { title: 'Perfil', url: '/musician/profile', icon: User },
   { title: 'Ajustes', url: '/musician/settings', icon: Settings },
