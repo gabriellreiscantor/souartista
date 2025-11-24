@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
@@ -42,9 +42,17 @@ const formatPhone = (value: string) => {
 const Register = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
+  const { signUp, user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Redireciona automaticamente se já estiver logado
+  useEffect(() => {
+    if (!authLoading && user && session) {
+      console.log('[Register] User already authenticated, redirecting to /app');
+      navigate('/app');
+    }
+  }, [user, session, authLoading, navigate]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -140,6 +148,18 @@ const Register = () => {
       navigate('/app');
     }
   };
+
+  // Mostra loading enquanto verifica autenticação
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Verificando autenticação...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-gradient-to-br from-background via-background to-primary/5">
