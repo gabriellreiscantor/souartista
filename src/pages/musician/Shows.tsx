@@ -125,18 +125,15 @@ const MusicianShows = () => {
         console.log('=== AGUARDANDO AUTENTICAÇÃO ===');
         return;
       }
-
       try {
         console.log('=== TESTE DE CONEXÃO ===');
         console.log('User ID:', user?.id);
         console.log('User Email:', user?.email);
         console.log('User Data:', userData);
         console.log('User Role:', userRole);
-        
         const {
           error
         } = await supabase.from('musician_venues').select('id').limit(1);
-        
         if (error) {
           console.error('Erro no teste de conexão:', error);
           setConnectionTest('error');
@@ -150,7 +147,6 @@ const MusicianShows = () => {
         setConnectionTest('error');
       }
     };
-    
     testConnection();
   }, [user, userData, userRole]);
   useEffect(() => {
@@ -762,7 +758,7 @@ const MusicianShows = () => {
                     
                     <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button onClick={resetShowForm} className="bg-primary hover:bg-primary/90">
+                        <Button onClick={resetShowForm} className="bg-primary hover:bg-primary/90 text-slate-50">
                           <Plus className="w-4 h-4 mr-2" />
                           Adicionar
                         </Button>
@@ -1132,17 +1128,10 @@ const MusicianShows = () => {
                         <form onSubmit={handleInstrumentSubmit} className="space-y-4">
                           <div>
                             <Label htmlFor="instrument_name" className="text-gray-900 font-medium">Nome do Instrumento *</Label>
-                            <Input 
-                              id="instrument_name" 
-                              value={instrumentFormData.name} 
-                              onChange={e => setInstrumentFormData({
-                                ...instrumentFormData,
-                                name: e.target.value
-                              })} 
-                              placeholder="Digite o nome do instrumento" 
-                              className="bg-white border-gray-300 text-gray-900"
-                              required
-                            />
+                            <Input id="instrument_name" value={instrumentFormData.name} onChange={e => setInstrumentFormData({
+                            ...instrumentFormData,
+                            name: e.target.value
+                          })} placeholder="Digite o nome do instrumento" className="bg-white border-gray-300 text-gray-900" required />
                           </div>
                           {false && <div>
                               <Label htmlFor="custom_instrument" className="text-gray-900 font-medium">Especifique o Instrumento *</Label>
