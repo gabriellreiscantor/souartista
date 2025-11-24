@@ -126,10 +126,10 @@ const ArtistTutorial = () => {
 
               <div className="grid gap-6 md:grid-cols-2">
                 {tutorials.map((tutorial, index) => (
-                  <Card key={index} className="p-6">
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className="p-3 bg-primary/10 rounded-lg">
-                        <tutorial.icon className="w-6 h-6 text-primary" />
+                  <Card key={index} className="p-6 hover:shadow-lg transition-shadow border-2 border-purple-100">
+                    <div className="flex items-start gap-4 mb-6">
+                      <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-md">
+                        <tutorial.icon className="w-6 h-6 text-white" />
                       </div>
                       <div>
                         <h3 className="text-lg font-bold text-gray-900 mb-1">
@@ -140,16 +140,16 @@ const ArtistTutorial = () => {
                         </p>
                       </div>
                     </div>
-                    <ol className="space-y-2 ml-4">
+                    <div className="space-y-3">
                       {tutorial.steps.map((step, stepIndex) => (
-                        <li key={stepIndex} className="flex items-start gap-3">
-                          <span className="flex-shrink-0 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-xs font-semibold">
+                        <div key={stepIndex} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                          <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-sm">
                             {stepIndex + 1}
                           </span>
-                          <span className="text-sm text-gray-700 pt-0.5">{step}</span>
-                        </li>
+                          <span className="text-sm text-gray-900 pt-0.5 leading-relaxed">{step}</span>
+                        </div>
                       ))}
-                    </ol>
+                    </div>
                   </Card>
                 ))}
               </div>

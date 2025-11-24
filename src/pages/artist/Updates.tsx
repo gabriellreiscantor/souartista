@@ -62,13 +62,13 @@ const ArtistUpdates = () => {
   const getBadgeColor = (type: string) => {
     switch (type) {
       case 'feature':
-        return 'bg-purple-100 text-purple-700';
+        return 'bg-white text-purple-700 border-2 border-purple-600';
       case 'improvement':
-        return 'bg-blue-100 text-blue-700';
+        return 'bg-white text-blue-700 border-2 border-blue-600';
       case 'bugfix':
-        return 'bg-green-100 text-green-700';
+        return 'bg-white text-green-700 border-2 border-green-600';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-white text-gray-700 border-2 border-gray-600';
     }
   };
 

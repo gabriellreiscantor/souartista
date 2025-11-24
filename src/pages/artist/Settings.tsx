@@ -8,15 +8,23 @@ import { useReportVisibility } from '@/hooks/useReportVisibility';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Bell, Sun, Moon, FileText, Shield, MessageCircle, Rocket, BookOpen } from 'lucide-react';
+import { Bell, FileText, Shield, MessageCircle, Rocket, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 const ArtistSettings = () => {
   const { userData } = useAuth();
   const navigate = useNavigate();
   const { settings, updateSettings } = useReportVisibility();
-  
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const { toast } = useToast();
+
+  const handleSettingChange = (key: string, value: boolean) => {
+    updateSettings({ [key]: value });
+    toast({
+      title: value ? "Configuração ativada" : "Configuração desativada",
+      description: "Suas preferências foram salvas com sucesso.",
+    });
+  };
 
   return (
     <SidebarProvider>
@@ -60,7 +68,7 @@ const ArtistSettings = () => {
                     </div>
                     <Switch 
                       checked={settings.showGrossRevenue} 
-                      onCheckedChange={(checked) => updateSettings({ showGrossRevenue: checked })} 
+                      onCheckedChange={(checked) => handleSettingChange('showGrossRevenue', checked)} 
                     />
                   </div>
 
@@ -73,7 +81,7 @@ const ArtistSettings = () => {
                     </div>
                     <Switch 
                       checked={settings.showShowCosts} 
-                      onCheckedChange={(checked) => updateSettings({ showShowCosts: checked })} 
+                      onCheckedChange={(checked) => handleSettingChange('showShowCosts', checked)} 
                     />
                   </div>
 
@@ -86,7 +94,7 @@ const ArtistSettings = () => {
                     </div>
                     <Switch 
                       checked={settings.showNetProfit} 
-                      onCheckedChange={(checked) => updateSettings({ showNetProfit: checked })} 
+                      onCheckedChange={(checked) => handleSettingChange('showNetProfit', checked)} 
                     />
                   </div>
 
@@ -99,43 +107,9 @@ const ArtistSettings = () => {
                     </div>
                     <Switch 
                       checked={settings.showLocomotion} 
-                      onCheckedChange={(checked) => updateSettings({ showLocomotion: checked })} 
+                      onCheckedChange={(checked) => handleSettingChange('showLocomotion', checked)} 
                     />
                   </div>
-                </div>
-              </Card>
-
-              {/* Aparência */}
-              <Card className="p-6 bg-white">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Aparência</h3>
-                <p className="text-gray-900 text-sm mb-6">
-                  Customize a aparência do aplicativo.
-                </p>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    onClick={() => setTheme('light')}
-                    className={`p-6 rounded-lg border-2 transition-all ${
-                      theme === 'light'
-                        ? 'bg-primary text-white border-primary'
-                        : 'bg-white text-gray-900 border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <Sun className="w-6 h-6 mx-auto mb-2" />
-                    <p className="font-semibold">Claro</p>
-                  </button>
-
-                  <button
-                    onClick={() => setTheme('dark')}
-                    className={`p-6 rounded-lg border-2 transition-all ${
-                      theme === 'dark'
-                        ? 'bg-primary text-white border-primary'
-                        : 'bg-white text-gray-900 border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <Moon className="w-6 h-6 mx-auto mb-2" />
-                    <p className="font-semibold">Escuro</p>
-                  </button>
                 </div>
               </Card>
 

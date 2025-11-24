@@ -34,54 +34,54 @@ const ArtistTerms = () => {
           </header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
-            <div className="max-w-3xl mx-auto prose prose-slate">
-              <h1>Termos de Uso</h1>
+            <div className="max-w-3xl mx-auto prose prose-slate prose-headings:text-gray-900 prose-p:text-gray-900 prose-li:text-gray-900">
+              <h1 className="text-gray-900">Termos de Uso</h1>
               <p className="text-gray-600">Última atualização: {new Date().toLocaleDateString('pt-BR')}</p>
 
-              <h2>1. Aceitação dos Termos</h2>
-              <p>
+              <h2 className="text-gray-900">1. Aceitação dos Termos</h2>
+              <p className="text-gray-900">
                 Ao acessar e usar esta plataforma, você aceita e concorda em estar vinculado aos termos e 
                 condições aqui estabelecidos.
               </p>
 
-              <h2>2. Uso da Plataforma</h2>
-              <p>
+              <h2 className="text-gray-900">2. Uso da Plataforma</h2>
+              <p className="text-gray-900">
                 Esta plataforma destina-se a ajudar artistas e músicos a gerenciar seus shows, equipes e 
                 finanças de forma organizada e eficiente.
               </p>
 
-              <h2>3. Conta de Usuário</h2>
-              <p>
+              <h2 className="text-gray-900">3. Conta de Usuário</h2>
+              <p className="text-gray-900">
                 Você é responsável por manter a confidencialidade de sua conta e senha. Notifique-nos 
                 imediatamente sobre qualquer uso não autorizado de sua conta.
               </p>
 
-              <h2>4. Propriedade Intelectual</h2>
-              <p>
+              <h2 className="text-gray-900">4. Propriedade Intelectual</h2>
+              <p className="text-gray-900">
                 Todo o conteúdo da plataforma, incluindo textos, gráficos, logos e software, é propriedade 
                 da empresa e protegido por leis de direitos autorais.
               </p>
 
-              <h2>5. Dados e Privacidade</h2>
-              <p>
+              <h2 className="text-gray-900">5. Dados e Privacidade</h2>
+              <p className="text-gray-900">
                 Seus dados são tratados de acordo com nossa Política de Privacidade. Não compartilhamos 
                 suas informações pessoais com terceiros sem seu consentimento.
               </p>
 
-              <h2>6. Limitação de Responsabilidade</h2>
-              <p>
+              <h2 className="text-gray-900">6. Limitação de Responsabilidade</h2>
+              <p className="text-gray-900">
                 A plataforma é fornecida "como está". Não garantimos que o serviço será ininterrupto ou 
                 livre de erros.
               </p>
 
-              <h2>7. Modificações nos Termos</h2>
-              <p>
+              <h2 className="text-gray-900">7. Modificações nos Termos</h2>
+              <p className="text-gray-900">
                 Reservamo-nos o direito de modificar estes termos a qualquer momento. Alterações entrarão 
                 em vigor imediatamente após a publicação.
               </p>
 
-              <h2>8. Contato</h2>
-              <p>
+              <h2 className="text-gray-900">8. Contato</h2>
+              <p className="text-gray-900">
                 Para dúvidas sobre estes termos, entre em contato através da seção "Fale Conosco".
               </p>
             </div>
