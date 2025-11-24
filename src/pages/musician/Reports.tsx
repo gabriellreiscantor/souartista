@@ -21,6 +21,7 @@ interface Show {
   fee: number;
   expenses_team: any;
   expenses_other: any;
+  uid: string;
 }
 
 const MusicianReports = () => {
@@ -30,6 +31,7 @@ const MusicianReports = () => {
   const [shows, setShows] = useState<Show[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleShows, setVisibleShows] = useState(5);
+  const [locomotionExpenses, setLocomotionExpenses] = useState<any[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -75,7 +77,18 @@ const MusicianReports = () => {
 
       if (showsError) throw showsError;
 
+      // Fetch locomotion expenses for the musician
+      const { data: expensesData, error: expensesError } = await supabase
+        .from('locomotion_expenses')
+        .select('*, shows(venue_name, date_local)')
+        .eq('uid', user?.id)
+        .gte('created_at', format(start, 'yyyy-MM-dd'))
+        .lte('created_at', format(end, 'yyyy-MM-dd'));
+
+      if (expensesError) throw expensesError;
+
       setShows(showsData || []);
+      setLocomotionExpenses(expensesData || []);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -120,13 +133,15 @@ const MusicianReports = () => {
   const averageTicket = totalShows > 0 ? totalProfit / totalShows : 0;
 
   // Top 5 calculations
-  const venuesByProfit = showsWithFees
+  // Top 5 Artists by Profit
+  const artistsByProfit = showsWithFees
     .reduce((acc: any[], show) => {
-      const existing = acc.find(v => v.name === show.venue_name);
+      const artistId = show.uid;
+      const existing = acc.find((a: any) => a.id === artistId);
       if (existing) {
         existing.profit += show.profit;
       } else {
-        acc.push({ name: show.venue_name, profit: show.profit });
+        acc.push({ id: artistId, name: `Artista ${artistId.substring(0, 8)}`, profit: show.profit });
       }
       return acc;
     }, [])
@@ -145,6 +160,17 @@ const MusicianReports = () => {
     }, [])
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
+
+  // Top 5 Locomotion Costs
+  const topLocomotionCosts = locomotionExpenses
+    .sort((a, b) => b.cost - a.cost)
+    .slice(0, 5)
+    .map((exp: any) => ({
+      venue: exp.shows?.venue_name || 'N/A',
+      cost: exp.cost,
+      type: exp.type,
+      date: exp.shows?.date_local
+    }));
 
   const formatCurrency = (value: number) => {
     return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -357,25 +383,25 @@ const MusicianReports = () => {
               </Card>
 
               {/* Top 5 Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Top 5 Venues by Profit */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Top 5 Artists by Profit */}
                 <Card className="bg-white border-gray-200">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-2 mb-4">
-                      <Building2 className="w-5 h-5 text-gray-900" />
-                      <h3 className="font-bold text-gray-900">Top 5 Locais por Lucro</h3>
+                      <Music2 className="w-5 h-5 text-gray-900" />
+                      <h3 className="font-bold text-gray-900">Top 5 Artistas por Lucro</h3>
                     </div>
                     
                     <div className="space-y-3">
-                      {venuesByProfit.map((venue, index) => (
+                      {artistsByProfit.map((artist, index) => (
                         <div key={index} className="flex items-center justify-between">
-                          <span className="text-sm text-gray-900">{index + 1}. {venue.name}</span>
+                          <span className="text-sm text-gray-900">{index + 1}. {artist.name}</span>
                           <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-purple-600 text-white text-xs font-semibold">
-                            R$ {formatCurrency(venue.profit)}
+                            R$ {formatCurrency(artist.profit)}
                           </span>
                         </div>
                       ))}
-                      {venuesByProfit.length === 0 && (
+                      {artistsByProfit.length === 0 && (
                         <p className="text-sm text-gray-500">Dados insuficientes para análise.</p>
                       )}
                     </div>
@@ -400,6 +426,30 @@ const MusicianReports = () => {
                         </div>
                       ))}
                       {venuesByShowCount.length === 0 && (
+                        <p className="text-sm text-gray-500">Dados insuficientes para análise.</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Top 5 Locomotion Costs */}
+                <Card className="bg-white border-gray-200">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Car className="w-5 h-5 text-gray-900" />
+                      <h3 className="font-bold text-gray-900">Top 5 Custos de Locomoção</h3>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {topLocomotionCosts.map((exp, index) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <span className="text-sm text-gray-900">{index + 1}. {exp.venue}</span>
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-purple-600 text-white text-xs font-semibold">
+                            R$ {formatCurrency(exp.cost)}
+                          </span>
+                        </div>
+                      ))}
+                      {topLocomotionCosts.length === 0 && (
                         <p className="text-sm text-gray-500">Dados insuficientes para análise.</p>
                       )}
                     </div>
