@@ -1,17 +1,16 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Calendar as CalendarIcon, Music, Loader2, Bell, ChevronLeft, ChevronRight, DollarSign, TrendingDown, Users } from 'lucide-react';
+import { Music, Loader2, Bell, ChevronLeft, ChevronRight, DollarSign, TrendingDown, Users, Calendar as CalendarIcon } from 'lucide-react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { MusicianSidebar } from '@/components/MusicianSidebar';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { UserMenu } from '@/components/UserMenu';
+import { PeriodFilter } from '@/components/PeriodFilter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 const MusicianDashboard = () => {
@@ -20,29 +19,6 @@ const MusicianDashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>("all");
   const [selectedYear, setSelectedYear] = useState("2025");
   const [selectedWeek, setSelectedWeek] = useState("Semana Atual");
-
-  // Gera lista de períodos desde o cadastro do usuário até hoje
-  const periodOptions = useMemo(() => {
-    const options = [{ value: "all", label: "Todo o Período" }];
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
-    
-    // Assumindo que o cadastro foi feito em 2025 (pode ser ajustado com userData.created_at)
-    const startYear = 2025;
-    
-    for (let year = currentYear; year >= startYear; year--) {
-      const endMonth = year === currentYear ? currentMonth : 11;
-      for (let month = endMonth; month >= 0; month--) {
-        const date = new Date(year, month, 1);
-        const label = format(date, "MMMM 'de' yyyy", { locale: ptBR });
-        const value = `${year}-${String(month + 1).padStart(2, '0')}`;
-        options.push({ value, label });
-      }
-    }
-    
-    return options;
-  }, []);
 
   useEffect(() => {
     if (loading) return;
@@ -109,19 +85,11 @@ const MusicianDashboard = () => {
                   Gerencie seus freelas e cachês em um só lugar
                 </p>
               
-                <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                  <SelectTrigger className="w-[280px] mx-auto bg-white border-gray-300 text-gray-900">
-                    <CalendarIcon className="mr-2 h-4 w-4 text-gray-900" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-gray-300 text-gray-900">
-                    {periodOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <PeriodFilter 
+                  value={selectedPeriod} 
+                  onChange={setSelectedPeriod}
+                  className="mx-auto"
+                />
               </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
