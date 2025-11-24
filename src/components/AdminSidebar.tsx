@@ -19,6 +19,7 @@ import {
 const mainItems = [
   { title: 'Usuários', url: '/admin?tab=usuarios', icon: Users },
   { title: 'Buscar por ID', url: '/admin?tab=buscar', icon: Search },
+  { title: 'Administradores', url: '/admin?tab=administradores', icon: Shield },
   { title: 'Financeiro Global', url: '/admin?tab=financeiro', icon: DollarSign },
   { title: 'Notificações', url: '/admin?tab=notificacoes', icon: Bell },
   { title: 'Contatos WhatsApp', url: '/admin?tab=contatos', icon: MessageCircle },

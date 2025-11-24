@@ -30,6 +30,7 @@ interface UserProfile {
   plan_purchased_at: string | null;
   last_seen_at: string | null;
   role?: string;
+  isAdmin?: boolean;
 }
 interface Show {
   id: string;
@@ -115,6 +116,11 @@ export default function Admin() {
   const [loadingTechnicalLogs, setLoadingTechnicalLogs] = useState(false);
   const [technicalLogFilter, setTechnicalLogFilter] = useState('all');
   const [systemAlerts, setSystemAlerts] = useState<any[]>([]);
+  
+  // Estados para Administradores
+  const [adminUsers, setAdminUsers] = useState<UserProfile[]>([]);
+  const [loadingAdmins, setLoadingAdmins] = useState(false);
+  
   const usersPerPage = 50;
   useEffect(() => {
     if (!adminLoading && !isAdmin && user) {
@@ -154,6 +160,8 @@ export default function Admin() {
       } else if (currentTab === 'logs') {
         fetchSystemLogs();
         fetchTechnicalLogs();
+      } else if (currentTab === 'administradores') {
+        fetchAdminUsers();
       }
     }
   }, [isAdmin, currentTab]);
@@ -550,6 +558,80 @@ export default function Admin() {
       toast.error('Erro ao carregar logs do sistema');
     } finally {
       setLoadingLogs(false);
+    }
+  };
+
+  // Funções para Administradores
+  const fetchAdminUsers = async () => {
+    try {
+      setLoadingAdmins(true);
+      
+      // Buscar todos os usuários
+      const { data: allUsers, error: usersError } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('name', { ascending: true });
+      
+      if (usersError) throw usersError;
+      
+      // Buscar quem são os admins
+      const { data: admins, error: adminsError } = await supabase
+        .from('admin_users')
+        .select('user_id');
+      
+      if (adminsError) throw adminsError;
+      
+      const adminIds = new Set(admins?.map(a => a.user_id) || []);
+      
+      // Adicionar flag de admin aos usuários
+      const usersWithAdminStatus = allUsers?.map(user => ({
+        ...user,
+        isAdmin: adminIds.has(user.id)
+      })) || [];
+      
+      setAdminUsers(usersWithAdminStatus);
+    } catch (error) {
+      console.error('Erro ao buscar administradores:', error);
+      toast.error('Erro ao carregar administradores');
+    } finally {
+      setLoadingAdmins(false);
+    }
+  };
+
+  const handlePromoteToAdmin = async (userId: string, userName: string) => {
+    try {
+      const { error } = await supabase
+        .from('admin_users')
+        .insert({ user_id: userId });
+      
+      if (error) throw error;
+      
+      toast.success(`${userName} foi promovido a administrador!`);
+      fetchAdminUsers();
+    } catch (error: any) {
+      console.error('Erro ao promover a admin:', error);
+      if (error.code === '23505') {
+        toast.error('Este usuário já é administrador');
+      } else {
+        toast.error('Erro ao promover a administrador');
+      }
+    }
+  };
+
+  const handleRevokeAdmin = async (userId: string, userName: string) => {
+    try {
+      const { error } = await supabase
+        .from('admin_users')
+        .delete()
+        .eq('user_id', userId);
+      
+      if (error) throw error;
+      
+      toast.success(`${userName} não é mais administrador`);
+      fetchAdminUsers();
+    } catch (error) {
+      console.error('Erro ao remover admin:', error);
+      toast.error('Erro ao remover administrador');
     }
   };
 
@@ -1107,6 +1189,94 @@ export default function Admin() {
                   </div>
                 </CardContent>
               </Card>}
+
+            {currentTab === 'administradores' && (
+              <Card className="bg-white border-gray-200">
+                <CardHeader>
+                  <CardTitle className="text-gray-900">🛡️ Gerenciar Administradores</CardTitle>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Adicione ou remova permissões de administrador para usuários do sistema
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  {loadingAdmins ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-4">
+                        {/* Admins atuais */}
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                            Administradores Atuais ({adminUsers.filter((u: any) => u.isAdmin).length})
+                          </h3>
+                          <div className="space-y-2">
+                            {adminUsers.filter((u: any) => u.isAdmin).map((user: any) => (
+                              <div
+                                key={user.id}
+                                className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200"
+                              >
+                                <div className="flex-1">
+                                  <p className="font-medium text-gray-900">{user.name}</p>
+                                  <p className="text-xs text-gray-600">{user.email}</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Badge className="bg-purple-100 text-purple-800">
+                                    👑 Admin
+                                  </Badge>
+                                  {user.id !== 'ghabriellreis@gmail.com' && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleRevokeAdmin(user.id, user.name)}
+                                      className="text-red-600 hover:text-red-700"
+                                    >
+                                      Remover
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Usuários que podem ser promovidos */}
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                            Usuários do Sistema ({adminUsers.filter((u: any) => !u.isAdmin).length})
+                          </h3>
+                          <div className="space-y-2 max-h-96 overflow-y-auto">
+                            {adminUsers.filter((u: any) => !u.isAdmin).map((user: any) => (
+                              <div
+                                key={user.id}
+                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                              >
+                                <div className="flex-1">
+                                  <p className="font-medium text-gray-900">{user.name}</p>
+                                  <p className="text-xs text-gray-600">{user.email}</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {getStatusBadge(user.status_plano)}
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePromoteToAdmin(user.id, user.name)}
+                                    className="text-purple-600 hover:text-purple-700"
+                                  >
+                                    Promover a Admin
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {currentTab === 'financeiro' && <div className="space-y-6">
                 {/* Configuração de Taxas */}
