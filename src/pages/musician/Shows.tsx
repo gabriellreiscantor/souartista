@@ -875,7 +875,7 @@ const MusicianShows = () => {
                     
                     <Dialog open={instrumentDialogOpen} onOpenChange={setInstrumentDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button onClick={resetInstrumentForm} className="w-full md:w-auto">
+                        <Button onClick={resetInstrumentForm} className="w-full md:w-auto text-slate-50">
                           <Plus className="w-4 h-4 mr-2" />
                           Adicionar Instrumento
                         </Button>
