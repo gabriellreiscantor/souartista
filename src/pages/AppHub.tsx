@@ -56,7 +56,7 @@ const AppHub = () => {
     return (
       <div className="fixed inset-0 bg-gradient-to-br from-[#1E082B] to-[#2A0C3A] flex flex-col items-center justify-center z-50">
         {/* Logo com glow effect */}
-        <div className="relative animate-fade-in mb-12">
+        <div className="relative mb-12">
           <div className="absolute inset-0 blur-3xl opacity-20 bg-[#A66CFF] scale-110"></div>
           <img 
             src={logo} 
