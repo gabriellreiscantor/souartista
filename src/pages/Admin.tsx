@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft } from 'lucide-react';
+import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard } from 'lucide-react';
 interface UserProfile {
   id: string;
   name: string;
@@ -68,6 +68,7 @@ export default function Admin() {
   const [searching, setSearching] = useState(false);
   const [searchedUser, setSearchedUser] = useState<UserProfile | null>(null);
   const [userShows, setUserShows] = useState<Show[]>([]);
+  const [pasteInputRef, setPasteInputRef] = useState<HTMLTextAreaElement | null>(null);
   const usersPerPage = 50;
   useEffect(() => {
     if (!adminLoading && !isAdmin && user) {
@@ -222,6 +223,32 @@ export default function Admin() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('ID copiado!');
+  };
+
+  const handlePasteClick = () => {
+    // Foca no input oculto para capturar o paste
+    if (pasteInputRef) {
+      pasteInputRef.value = '';
+      pasteInputRef.focus();
+      pasteInputRef.select();
+      
+      // Tenta executar paste (funciona em alguns navegadores)
+      try {
+        document.execCommand('paste');
+      } catch (e) {
+        // Se falhar, instrui o usuário
+        toast.info('Cole o ID (Ctrl+V ou toque longo)');
+      }
+    }
+  };
+
+  const handlePasteCapture = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text');
+    if (text) {
+      setSearchId(text);
+      toast.success('ID colado!');
+    }
   };
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -418,8 +445,20 @@ export default function Admin() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
+                    {/* Input oculto para capturar paste */}
+                    <textarea
+                      ref={setPasteInputRef}
+                      onPaste={handlePasteCapture}
+                      className="absolute opacity-0 pointer-events-none"
+                      style={{ position: 'absolute', left: '-9999px' }}
+                    />
+                    
                     <div className="flex flex-col sm:flex-row gap-2">
-                      <Input placeholder="Cole o ID do usuário aqui (Ctrl+V)..." value={searchId} onChange={e => setSearchId(e.target.value)} className="bg-white text-gray-900 border-gray-200 flex-1" />
+                      <Input placeholder="Cole o ID do usuário aqui..." value={searchId} onChange={e => setSearchId(e.target.value)} className="bg-white text-gray-900 border-gray-200 flex-1" />
+                      <Button variant="outline" onClick={handlePasteClick} className="w-full sm:w-auto">
+                        <Clipboard className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Colar</span>
+                      </Button>
                       <Button onClick={handleSearchUser} disabled={searching} className="w-full sm:w-auto">
                         {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Buscar'}
                       </Button>
