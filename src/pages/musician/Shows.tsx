@@ -1126,25 +1126,25 @@ const MusicianShows = () => {
                               <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                                 <SelectValue placeholder="Selecione um instrumento" />
                               </SelectTrigger>
-                              <SelectContent className="bg-white z-50">
-                                <SelectItem value="Guitarra">Guitarra</SelectItem>
-                                <SelectItem value="Violão">Violão</SelectItem>
-                                <SelectItem value="Bateria">Bateria</SelectItem>
-                                <SelectItem value="Baixo">Baixo</SelectItem>
-                                <SelectItem value="Teclado">Teclado</SelectItem>
-                                <SelectItem value="Piano">Piano</SelectItem>
-                                <SelectItem value="Saxofone">Saxofone</SelectItem>
-                                <SelectItem value="Trompete">Trompete</SelectItem>
-                                <SelectItem value="Trombone">Trombone</SelectItem>
-                                <SelectItem value="Flauta">Flauta</SelectItem>
-                                <SelectItem value="Clarinete">Clarinete</SelectItem>
-                                <SelectItem value="Violino">Violino</SelectItem>
-                                <SelectItem value="Violoncelo">Violoncelo</SelectItem>
-                                <SelectItem value="Contrabaixo Acústico">Contrabaixo Acústico</SelectItem>
-                                <SelectItem value="Percussão">Percussão</SelectItem>
-                                <SelectItem value="Voz">Voz</SelectItem>
-                                <SelectItem value="DJ">DJ</SelectItem>
-                                <SelectItem value="Outro">Outro</SelectItem>
+                              <SelectContent className="bg-white z-50" style={{ color: '#000' }}>
+                                <SelectItem value="Guitarra" style={{ color: '#000' }}>Guitarra</SelectItem>
+                                <SelectItem value="Violão" style={{ color: '#000' }}>Violão</SelectItem>
+                                <SelectItem value="Bateria" style={{ color: '#000' }}>Bateria</SelectItem>
+                                <SelectItem value="Baixo" style={{ color: '#000' }}>Baixo</SelectItem>
+                                <SelectItem value="Teclado" style={{ color: '#000' }}>Teclado</SelectItem>
+                                <SelectItem value="Piano" style={{ color: '#000' }}>Piano</SelectItem>
+                                <SelectItem value="Saxofone" style={{ color: '#000' }}>Saxofone</SelectItem>
+                                <SelectItem value="Trompete" style={{ color: '#000' }}>Trompete</SelectItem>
+                                <SelectItem value="Trombone" style={{ color: '#000' }}>Trombone</SelectItem>
+                                <SelectItem value="Flauta" style={{ color: '#000' }}>Flauta</SelectItem>
+                                <SelectItem value="Clarinete" style={{ color: '#000' }}>Clarinete</SelectItem>
+                                <SelectItem value="Violino" style={{ color: '#000' }}>Violino</SelectItem>
+                                <SelectItem value="Violoncelo" style={{ color: '#000' }}>Violoncelo</SelectItem>
+                                <SelectItem value="Contrabaixo Acústico" style={{ color: '#000' }}>Contrabaixo Acústico</SelectItem>
+                                <SelectItem value="Percussão" style={{ color: '#000' }}>Percussão</SelectItem>
+                                <SelectItem value="Voz" style={{ color: '#000' }}>Voz</SelectItem>
+                                <SelectItem value="DJ" style={{ color: '#000' }}>DJ</SelectItem>
+                                <SelectItem value="Outro" style={{ color: '#000' }}>Outro</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
