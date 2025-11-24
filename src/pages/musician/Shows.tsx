@@ -1118,37 +1118,19 @@ const MusicianShows = () => {
                         <form onSubmit={handleInstrumentSubmit} className="space-y-4">
                           <div>
                             <Label htmlFor="instrument_name" className="text-gray-900 font-medium">Nome do Instrumento *</Label>
-                            <Select value={instrumentFormData.name} onValueChange={value => setInstrumentFormData({
-                            ...instrumentFormData,
-                            name: value,
-                            customInstrument: value === 'Outro' ? instrumentFormData.customInstrument : ''
-                          })} required>
-                              <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                                <SelectValue placeholder="Selecione um instrumento" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-white z-50" style={{ color: '#000' }}>
-                                <SelectItem value="Guitarra" style={{ color: '#000' }}>Guitarra</SelectItem>
-                                <SelectItem value="Violão" style={{ color: '#000' }}>Violão</SelectItem>
-                                <SelectItem value="Bateria" style={{ color: '#000' }}>Bateria</SelectItem>
-                                <SelectItem value="Baixo" style={{ color: '#000' }}>Baixo</SelectItem>
-                                <SelectItem value="Teclado" style={{ color: '#000' }}>Teclado</SelectItem>
-                                <SelectItem value="Piano" style={{ color: '#000' }}>Piano</SelectItem>
-                                <SelectItem value="Saxofone" style={{ color: '#000' }}>Saxofone</SelectItem>
-                                <SelectItem value="Trompete" style={{ color: '#000' }}>Trompete</SelectItem>
-                                <SelectItem value="Trombone" style={{ color: '#000' }}>Trombone</SelectItem>
-                                <SelectItem value="Flauta" style={{ color: '#000' }}>Flauta</SelectItem>
-                                <SelectItem value="Clarinete" style={{ color: '#000' }}>Clarinete</SelectItem>
-                                <SelectItem value="Violino" style={{ color: '#000' }}>Violino</SelectItem>
-                                <SelectItem value="Violoncelo" style={{ color: '#000' }}>Violoncelo</SelectItem>
-                                <SelectItem value="Contrabaixo Acústico" style={{ color: '#000' }}>Contrabaixo Acústico</SelectItem>
-                                <SelectItem value="Percussão" style={{ color: '#000' }}>Percussão</SelectItem>
-                                <SelectItem value="Voz" style={{ color: '#000' }}>Voz</SelectItem>
-                                <SelectItem value="DJ" style={{ color: '#000' }}>DJ</SelectItem>
-                                <SelectItem value="Outro" style={{ color: '#000' }}>Outro</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <Input 
+                              id="instrument_name" 
+                              value={instrumentFormData.name} 
+                              onChange={e => setInstrumentFormData({
+                                ...instrumentFormData,
+                                name: e.target.value
+                              })} 
+                              placeholder="Digite o nome do instrumento" 
+                              className="bg-white border-gray-300 text-gray-900"
+                              required
+                            />
                           </div>
-                          {instrumentFormData.name === 'Outro' && <div>
+                          {false && <div>
                               <Label htmlFor="custom_instrument" className="text-gray-900 font-medium">Especifique o Instrumento *</Label>
                               <Input id="custom_instrument" value={instrumentFormData.customInstrument} onChange={e => setInstrumentFormData({
                             ...instrumentFormData,
