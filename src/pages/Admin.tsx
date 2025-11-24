@@ -1891,8 +1891,8 @@ export default function Admin() {
                           };
 
                           return (
-                            <Card key={ticket.id} className="border-gray-200">
-                              <CardContent className="p-4">
+                            <Card key={ticket.id} className="bg-white border-gray-200">
+                              <CardContent className="p-4 bg-white">
                                 <div className="space-y-3">
                                   <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
                                     <div className="flex-1">
@@ -1905,7 +1905,7 @@ export default function Admin() {
                                       <Badge className={getStatusColor(ticket.status)}>
                                         {getStatusLabel(ticket.status)}
                                       </Badge>
-                                      <Badge variant="outline" className={getPriorityColor(ticket.priority)}>
+                                      <Badge variant="outline" className={`bg-white border-gray-300 ${getPriorityColor(ticket.priority)}`}>
                                         {getPriorityLabel(ticket.priority)}
                                       </Badge>
                                     </div>
@@ -1928,6 +1928,7 @@ export default function Admin() {
                                     <Button 
                                       variant="outline" 
                                       size="sm"
+                                      className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
                                       onClick={() => window.open(ticket.attachment_url, '_blank')}
                                     >
                                       Ver Anexo
