@@ -154,10 +154,7 @@ export function WeeklySchedule({
                   {dayShows.map(show => <div key={show.id} className="space-y-1">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-primary" />
-                        <span className="text-sm font-bold text-gray-900">
-                          {show.venue_name}
-                          {show.time_local && <span className="text-gray-600 font-normal"> às {show.time_local}</span>}
-                        </span>
+                        <span className="text-sm font-bold text-gray-900">{show.venue_name}</span>
                       </div>
                       {userRole === 'musician' && (
                         <div className="ml-6 space-y-0.5">
