@@ -220,51 +220,51 @@ export default function Admin() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full bg-white">
         <AdminSidebar />
-        <SidebarInset className="flex-1">
-          <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+        <SidebarInset className="flex-1 bg-white">
+          <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white border-gray-200 px-4 md:px-6">
             <SidebarTrigger />
-            <h1 className="text-lg md:text-2xl font-bold">🛡️ Admin</h1>
+            <h1 className="text-lg md:text-2xl font-bold text-gray-900">🛡️ Admin</h1>
           </header>
 
-          <main className="p-4 md:p-6 pb-20 md:pb-6">
+          <main className="p-4 md:p-6 pb-20 md:pb-6 bg-gray-50">
             {/* Stats Cards */}
             <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-6">
-              <Card>
+              <Card className="bg-white border-gray-200">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-gray-700">Total de Usuários</CardTitle>
+                  <Users className="h-4 w-4 text-gray-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalUsers}</div>
+                  <div className="text-2xl font-bold text-gray-900">{stats.totalUsers}</div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="bg-white border-gray-200">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total de Artistas</CardTitle>
-                  <Music className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-gray-700">Total de Artistas</CardTitle>
+                  <Music className="h-4 w-4 text-gray-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalArtists}</div>
+                  <div className="text-2xl font-bold text-gray-900">{stats.totalArtists}</div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="bg-white border-gray-200">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total de Músicos</CardTitle>
-                  <Mic2 className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-gray-700">Total de Músicos</CardTitle>
+                  <Mic2 className="h-4 w-4 text-gray-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalMusicians}</div>
+                  <div className="text-2xl font-bold text-gray-900">{stats.totalMusicians}</div>
                 </CardContent>
               </Card>
             </div>
 
             {/* Content based on tab */}
             {currentTab === 'usuarios' && (
-              <Card>
+              <Card className="bg-white border-gray-200">
                 <CardHeader>
-                  <CardTitle>Usuários Cadastrados</CardTitle>
+                  <CardTitle className="text-gray-900">Usuários Cadastrados</CardTitle>
                   <div className="flex gap-2 mt-4 text-sm">
                     <Badge className="bg-yellow-100 text-yellow-800">⏳ Pendente</Badge>
                     <Badge className="bg-green-100 text-green-800">✓ Ativo</Badge>
@@ -279,31 +279,31 @@ export default function Admin() {
                     </div>
                   ) : (
                     <>
-                      <div className="rounded-md border overflow-x-auto">
-                        <table className="w-full">
+                      <div className="rounded-md border overflow-x-auto border-gray-200">
+                        <table className="w-full bg-white">
                           <thead>
-                            <tr className="border-b bg-muted/50">
-                              <th className="p-2 md:p-3 text-left font-medium text-sm">Nome</th>
-                              <th className="p-2 md:p-3 text-left font-medium text-sm hidden md:table-cell">Email</th>
-                              <th className="p-2 md:p-3 text-left font-medium text-sm">Plano</th>
-                              <th className="p-2 md:p-3 text-left font-medium text-sm hidden lg:table-cell">ID</th>
-                              <th className="p-2 md:p-3 text-left font-medium text-sm">Ações</th>
+                            <tr className="border-b bg-gray-50 border-gray-200">
+                              <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900">Nome</th>
+                              <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900 hidden md:table-cell">Email</th>
+                              <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900">Plano</th>
+                              <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900 hidden lg:table-cell">ID</th>
+                              <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900">Ações</th>
                             </tr>
                           </thead>
                           <tbody>
                             {paginatedUsers.map((user) => (
-                              <tr key={user.id} className="border-b hover:bg-muted/50">
+                              <tr key={user.id} className="border-b hover:bg-gray-50 border-gray-200">
                                 <td className="p-2 md:p-3">
                                   <div>
-                                    <p className="font-medium text-sm">{user.name}</p>
-                                    <p className="text-xs text-muted-foreground md:hidden">{user.email}</p>
+                                    <p className="font-medium text-sm text-gray-900">{user.name}</p>
+                                    <p className="text-xs text-gray-600 md:hidden">{user.email}</p>
                                   </div>
                                 </td>
-                                <td className="p-2 md:p-3 hidden md:table-cell">{user.email}</td>
+                                <td className="p-2 md:p-3 hidden md:table-cell text-gray-700">{user.email}</td>
                                 <td className="p-2 md:p-3">{getStatusBadge(user.status_plano)}</td>
                                 <td className="p-2 md:p-3 hidden lg:table-cell">
                                   <div className="flex items-center gap-2">
-                                    <span className="text-xs text-muted-foreground font-mono">
+                                    <span className="text-xs text-gray-600 font-mono">
                                       {user.id.slice(0, 8)}...
                                     </span>
                                     <Button
@@ -311,7 +311,7 @@ export default function Admin() {
                                       size="sm"
                                       onClick={() => copyToClipboard(user.id)}
                                     >
-                                      <Copy className="h-3 w-3" />
+                                      <Copy className="h-3 w-3 text-gray-600" />
                                     </Button>
                                   </div>
                                 </td>
@@ -354,7 +354,7 @@ export default function Admin() {
 
                       {/* Pagination */}
                       <div className="flex flex-col md:flex-row items-center justify-between mt-4 gap-4">
-                        <p className="text-xs md:text-sm text-muted-foreground">
+                        <p className="text-xs md:text-sm text-gray-600">
                           Mostrando {(currentPage - 1) * usersPerPage + 1} a{' '}
                           {Math.min(currentPage * usersPerPage, users.length)} de {users.length}{' '}
                           usuários
@@ -385,45 +385,45 @@ export default function Admin() {
             )}
 
             {currentTab === 'buscar' && (
-              <Card>
+              <Card className="bg-white border-gray-200">
                 <CardHeader>
-                  <CardTitle>Buscar por ID</CardTitle>
+                  <CardTitle className="text-gray-900">Buscar por ID</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">Em desenvolvimento...</p>
+                  <p className="text-gray-600">Em desenvolvimento...</p>
                 </CardContent>
               </Card>
             )}
 
             {currentTab === 'financeiro' && (
-              <Card>
+              <Card className="bg-white border-gray-200">
                 <CardHeader>
-                  <CardTitle>Financeiro Global</CardTitle>
+                  <CardTitle className="text-gray-900">Financeiro Global</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">Em desenvolvimento...</p>
+                  <p className="text-gray-600">Em desenvolvimento...</p>
                 </CardContent>
               </Card>
             )}
 
             {currentTab === 'notificacoes' && (
-              <Card>
+              <Card className="bg-white border-gray-200">
                 <CardHeader>
-                  <CardTitle>Notificações</CardTitle>
+                  <CardTitle className="text-gray-900">Notificações</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">Em desenvolvimento...</p>
+                  <p className="text-gray-600">Em desenvolvimento...</p>
                 </CardContent>
               </Card>
             )}
 
             {currentTab === 'contatos' && (
-              <Card>
+              <Card className="bg-white border-gray-200">
                 <CardHeader>
-                  <CardTitle>Contatos WhatsApp</CardTitle>
+                  <CardTitle className="text-gray-900">Contatos WhatsApp</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">Em desenvolvimento...</p>
+                  <p className="text-gray-600">Em desenvolvimento...</p>
                 </CardContent>
               </Card>
             )}
