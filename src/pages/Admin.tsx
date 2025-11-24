@@ -31,6 +31,7 @@ interface UserProfile {
   last_seen_at: string | null;
   role?: string;
   isAdmin?: boolean;
+  isSupport?: boolean;
 }
 interface Show {
   id: string;
@@ -562,7 +563,7 @@ export default function Admin() {
     }
   };
 
-  // Funções para Administradores
+  // Funções para Administradores e Suporte
   const fetchAdminUsers = async () => {
     try {
       setLoadingAdmins(true);
@@ -582,18 +583,28 @@ export default function Admin() {
       
       if (adminsError) throw adminsError;
       
-      const adminIds = new Set(admins?.map(a => a.user_id) || []);
+      // Buscar quem tem role de support
+      const { data: supports, error: supportsError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'support');
       
-      // Adicionar flag de admin aos usuários
-      const usersWithAdminStatus = allUsers?.map(user => ({
+      if (supportsError) throw supportsError;
+      
+      const adminIds = new Set(admins?.map(a => a.user_id) || []);
+      const supportIds = new Set(supports?.map(s => s.user_id) || []);
+      
+      // Adicionar flags de admin e support aos usuários
+      const usersWithPermissions = allUsers?.map(user => ({
         ...user,
-        isAdmin: adminIds.has(user.id)
+        isAdmin: adminIds.has(user.id),
+        isSupport: supportIds.has(user.id)
       })) || [];
       
-      setAdminUsers(usersWithAdminStatus);
+      setAdminUsers(usersWithPermissions);
     } catch (error) {
-      console.error('Erro ao buscar administradores:', error);
-      toast.error('Erro ao carregar administradores');
+      console.error('Erro ao buscar permissões:', error);
+      toast.error('Erro ao carregar permissões');
     } finally {
       setLoadingAdmins(false);
     }
@@ -633,6 +644,44 @@ export default function Admin() {
     } catch (error) {
       console.error('Erro ao remover admin:', error);
       toast.error('Erro ao remover administrador');
+    }
+  };
+
+  const handlePromoteToSupport = async (userId: string, userName: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .insert({ user_id: userId, role: 'support' });
+      
+      if (error) throw error;
+      
+      toast.success(`${userName} foi promovido a Suporte!`);
+      fetchAdminUsers();
+    } catch (error: any) {
+      console.error('Erro ao promover a suporte:', error);
+      if (error.code === '23505') {
+        toast.error('Este usuário já é suporte');
+      } else {
+        toast.error('Erro ao promover a suporte');
+      }
+    }
+  };
+
+  const handleRevokeSupport = async (userId: string, userName: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId)
+        .eq('role', 'support');
+      
+      if (error) throw error;
+      
+      toast.success(`${userName} não é mais suporte`);
+      fetchAdminUsers();
+    } catch (error) {
+      console.error('Erro ao remover suporte:', error);
+      toast.error('Erro ao remover suporte');
     }
   };
 
@@ -1194,9 +1243,9 @@ export default function Admin() {
             {currentTab === 'administradores' && (
               <Card className="bg-white border-gray-200">
                 <CardHeader>
-                  <CardTitle className="text-gray-900">🛡️ Gerenciar Administradores</CardTitle>
+                  <CardTitle className="text-gray-900">🛡️ Gerenciar Permissões</CardTitle>
                   <p className="text-sm text-gray-600 mt-2">
-                    Adicione ou remova permissões de administrador para usuários do sistema
+                    Adicione ou remova permissões de Administrador e Suporte para usuários do sistema
                   </p>
                 </CardHeader>
                 <CardContent>
@@ -1217,11 +1266,11 @@ export default function Admin() {
                       </div>
 
                       <div className="space-y-4">
-                        {/* Admins atuais */}
+                        {/* Usuários com permissões especiais */}
                         <div>
                           <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                            Administradores Atuais ({adminUsers.filter((u: any) => {
-                              if (!u.isAdmin) return false;
+                            Usuários com Permissões Especiais ({adminUsers.filter((u: any) => {
+                              if (!u.isAdmin && !u.isSupport) return false;
                               if (!adminSearchQuery) return true;
                               const query = adminSearchQuery.toLowerCase();
                               return (
@@ -1235,7 +1284,7 @@ export default function Admin() {
                           </h3>
                           <div className="space-y-2">
                             {adminUsers.filter((u: any) => {
-                              if (!u.isAdmin) return false;
+                              if (!u.isAdmin && !u.isSupport) return false;
                               if (!adminSearchQuery) return true;
                               const query = adminSearchQuery.toLowerCase();
                               return (
@@ -1254,20 +1303,39 @@ export default function Admin() {
                                   <p className="font-medium text-gray-900">{user.name}</p>
                                   <p className="text-xs text-gray-600">{user.email}</p>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <Badge className="bg-purple-100 text-purple-800">
-                                    👑 Admin
-                                  </Badge>
-                                  {user.id !== 'ghabriellreis@gmail.com' && (
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handleRevokeAdmin(user.id, user.name)}
-                                      className="text-red-600 hover:text-red-700"
-                                    >
-                                      Remover
-                                    </Button>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {user.isAdmin && (
+                                    <Badge className="bg-purple-100 text-purple-800">
+                                      👑 Admin
+                                    </Badge>
                                   )}
+                                  {user.isSupport && (
+                                    <Badge className="bg-blue-100 text-blue-800">
+                                      🎧 Suporte
+                                    </Badge>
+                                  )}
+                                  <div className="flex gap-1">
+                                    {user.isAdmin && user.email !== 'ghabriellreis@gmail.com' && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleRevokeAdmin(user.id, user.name)}
+                                        className="text-red-600 hover:text-red-700 text-xs"
+                                      >
+                                        Remover Admin
+                                      </Button>
+                                    )}
+                                    {user.isSupport && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleRevokeSupport(user.id, user.name)}
+                                        className="text-red-600 hover:text-red-700 text-xs"
+                                      >
+                                        Remover Suporte
+                                      </Button>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             ))}
@@ -1278,7 +1346,7 @@ export default function Admin() {
                         <div>
                           <h3 className="text-sm font-semibold text-gray-900 mb-3">
                             Usuários do Sistema ({adminUsers.filter((u: any) => {
-                              if (u.isAdmin) return false;
+                              if (u.isAdmin && u.isSupport) return false;
                               if (!adminSearchQuery) return true;
                               const query = adminSearchQuery.toLowerCase();
                               return (
@@ -1292,7 +1360,7 @@ export default function Admin() {
                           </h3>
                           <div className="space-y-2 max-h-96 overflow-y-auto">
                             {adminUsers.filter((u: any) => {
-                              if (u.isAdmin) return false;
+                              if (u.isAdmin && u.isSupport) return false;
                               if (!adminSearchQuery) return true;
                               const query = adminSearchQuery.toLowerCase();
                               return (
@@ -1311,16 +1379,30 @@ export default function Admin() {
                                   <p className="font-medium text-gray-900">{user.name}</p>
                                   <p className="text-xs text-gray-600">{user.email}</p>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-wrap">
                                   {getStatusBadge(user.status_plano)}
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handlePromoteToAdmin(user.id, user.name)}
-                                    className="text-purple-600 hover:text-purple-700"
-                                  >
-                                    Promover a Admin
-                                  </Button>
+                                  <div className="flex gap-1">
+                                    {!user.isAdmin && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handlePromoteToAdmin(user.id, user.name)}
+                                        className="text-purple-600 hover:text-purple-700 text-xs"
+                                      >
+                                        👑 Admin
+                                      </Button>
+                                    )}
+                                    {!user.isSupport && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handlePromoteToSupport(user.id, user.name)}
+                                        className="text-blue-600 hover:text-blue-700 text-xs"
+                                      >
+                                        🎧 Suporte
+                                      </Button>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             ))}
