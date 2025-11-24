@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { MusicianSidebar } from '@/components/MusicianSidebar';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
@@ -625,11 +625,18 @@ const MusicianShows = () => {
     });
     setEditingVenue(null);
   };
+  const expensesSectionRef = useRef<HTMLDivElement>(null);
+
   const addExpense = () => {
     setPersonalExpenses([...personalExpenses, {
       description: '',
       cost: 0
     }]);
+    
+    // Auto-scroll para a seção de despesas
+    setTimeout(() => {
+      expensesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
   };
   const removeExpense = (index: number) => {
     setPersonalExpenses(personalExpenses.filter((_, i) => i !== index));
@@ -929,7 +936,7 @@ const MusicianShows = () => {
                             </div>
                           </div>
 
-                          <div className="space-y-4">
+                          <div className="space-y-4" ref={expensesSectionRef}>
                             <div className="flex items-center justify-between">
                               <h3 className="font-semibold text-gray-900">Despesas Pessoais</h3>
                               <Button type="button" variant="outline" size="sm" onClick={addExpense} className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ArtistSidebar } from '@/components/ArtistSidebar';
 import { UserMenu } from '@/components/UserMenu';
@@ -537,8 +537,15 @@ const ArtistShows = () => {
     setTeamMembers(updated);
   };
 
+  const expensesSectionRef = useRef<HTMLDivElement>(null);
+
   const addExpense = () => {
     setAdditionalExpenses([...additionalExpenses, { type: '', description: '', cost: 0 }]);
+    
+    // Auto-scroll para a seção de despesas
+    setTimeout(() => {
+      expensesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
   };
 
   const addAdditionalExpense = addExpense;
@@ -1241,7 +1248,7 @@ const ArtistShows = () => {
                                       ))}
                                     </div>
 
-                                    <div className="space-y-4">
+                                    <div className="space-y-4" ref={expensesSectionRef}>
                                       <div className="flex items-center justify-between">
                                         <div>
                                           <h3 className="font-semibold text-gray-900">Despesas Adicionais</h3>
