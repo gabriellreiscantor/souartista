@@ -254,6 +254,7 @@ export type Database = {
         Row: {
           created_at: string
           date_local: string
+          duration_hours: number | null
           expenses_other: Json | null
           expenses_team: Json | null
           fee: number
@@ -268,6 +269,7 @@ export type Database = {
         Insert: {
           created_at?: string
           date_local: string
+          duration_hours?: number | null
           expenses_other?: Json | null
           expenses_team?: Json | null
           fee?: number
@@ -282,6 +284,7 @@ export type Database = {
         Update: {
           created_at?: string
           date_local?: string
+          duration_hours?: number | null
           expenses_other?: Json | null
           expenses_team?: Json | null
           fee?: number
