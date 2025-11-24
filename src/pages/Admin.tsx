@@ -1331,10 +1331,16 @@ export default function Admin() {
                             return (
                               <Card key={idx} className={`border ${getSeverityColor(log.severity)}`}>
                                 <CardContent className="p-3">
-                                  <div className="flex justify-between items-start gap-2">
-                                    <p className="text-sm font-medium flex-1">{log.message}</p>
-                                    <span className="text-xs text-gray-600 whitespace-nowrap">
-                                      {new Date(log.timestamp).toLocaleString('pt-BR')}
+                                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-2">
+                                    <p className="text-sm font-medium flex-1 break-words">{log.message}</p>
+                                    <span className="text-xs text-gray-600 sm:whitespace-nowrap">
+                                      {new Date(log.timestamp).toLocaleString('pt-BR', {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: '2-digit',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
                                     </span>
                                   </div>
                                 </CardContent>
