@@ -406,39 +406,39 @@ export default function Admin() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    <div className="flex gap-2">
-                      <Input placeholder="Cole o ID do usuário aqui..." value={searchId} onChange={e => setSearchId(e.target.value)} className="bg-white text-gray-900 border-gray-200" />
-                      <Button onClick={handleSearchUser} disabled={searching}>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Input placeholder="Cole o ID do usuário aqui..." value={searchId} onChange={e => setSearchId(e.target.value)} className="bg-white text-gray-900 border-gray-200 flex-1" />
+                      <Button onClick={handleSearchUser} disabled={searching} className="w-full sm:w-auto">
                         {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Buscar'}
                       </Button>
                     </div>
 
                     {searchedUser && <div className="space-y-4 pt-4 border-t border-gray-200">
-                        <div className="grid gap-4 md:grid-cols-2">
+                        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
                           <Card className="bg-gray-50 border-gray-200">
                             <CardHeader>
                               <CardTitle className="text-sm text-gray-700">Informações Pessoais</CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-2 text-sm">
-                              <div>
-                                <span className="font-medium text-gray-900">Nome:</span>
-                                <span className="ml-2 text-gray-700">{searchedUser.name}</span>
+                            <CardContent className="space-y-3 text-sm">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                                <span className="font-medium text-gray-900 min-w-[140px]">Nome:</span>
+                                <span className="text-gray-700 break-words">{searchedUser.name}</span>
                               </div>
-                              <div>
-                                <span className="font-medium text-gray-900">Email:</span>
-                                <span className="ml-2 text-gray-700">{searchedUser.email}</span>
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                                <span className="font-medium text-gray-900 min-w-[140px]">Email:</span>
+                                <span className="text-gray-700 break-all">{searchedUser.email}</span>
                               </div>
-                              <div>
-                                <span className="font-medium text-gray-900">CPF:</span>
-                                <span className="ml-2 text-gray-700">{searchedUser.cpf || 'Não informado'}</span>
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                                <span className="font-medium text-gray-900 min-w-[140px]">CPF:</span>
+                                <span className="text-gray-700">{searchedUser.cpf || 'Não informado'}</span>
                               </div>
-                              <div>
-                                <span className="font-medium text-gray-900">Telefone:</span>
-                                <span className="ml-2 text-gray-700">{searchedUser.phone || 'Não informado'}</span>
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                                <span className="font-medium text-gray-900 min-w-[140px]">Telefone:</span>
+                                <span className="text-gray-700">{searchedUser.phone || 'Não informado'}</span>
                               </div>
-                              <div>
-                                <span className="font-medium text-gray-900">Data de Nascimento:</span>
-                                <span className="ml-2 text-gray-700">{searchedUser.birth_date || 'Não informado'}</span>
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                                <span className="font-medium text-gray-900 min-w-[140px]">Data de Nascimento:</span>
+                                <span className="text-gray-700">{searchedUser.birth_date || 'Não informado'}</span>
                               </div>
                             </CardContent>
                           </Card>
@@ -447,28 +447,28 @@ export default function Admin() {
                             <CardHeader>
                               <CardTitle className="text-sm text-gray-700">Status e Role</CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-2 text-sm">
-                              <div>
-                                <span className="font-medium text-gray-900">Status do Plano:</span>
-                                <span className="ml-2">{getStatusBadge(searchedUser.status_plano)}</span>
+                            <CardContent className="space-y-3 text-sm">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                                <span className="font-medium text-gray-900 min-w-[140px]">Status do Plano:</span>
+                                <span>{getStatusBadge(searchedUser.status_plano)}</span>
                               </div>
-                              <div>
-                                <span className="font-medium text-gray-900">Role:</span>
-                                <span className="ml-2">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                                <span className="font-medium text-gray-900 min-w-[140px]">Role:</span>
+                                <span>
                                   <Badge className="bg-purple-100 text-purple-800">
                                     {searchedUser.role || 'Não definido'}
                                   </Badge>
                                 </span>
                               </div>
-                              <div>
-                                <span className="font-medium text-gray-900">Cadastrado em:</span>
-                                <span className="ml-2 text-gray-700">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                                <span className="font-medium text-gray-900 min-w-[140px]">Cadastrado em:</span>
+                                <span className="text-gray-700">
                                   {new Date(searchedUser.created_at).toLocaleDateString('pt-BR')}
                                 </span>
                               </div>
-                              <div>
-                                <span className="font-medium text-gray-900">Último acesso:</span>
-                                <span className="ml-2 text-gray-700">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                                <span className="font-medium text-gray-900 min-w-[140px]">Último acesso:</span>
+                                <span className="text-gray-700">
                                   {searchedUser.last_seen_at ? new Date(searchedUser.last_seen_at).toLocaleDateString('pt-BR') : 'Nunca'}
                                 </span>
                               </div>
@@ -483,14 +483,14 @@ export default function Admin() {
                             <CardContent>
                               <div className="space-y-2 max-h-60 overflow-y-auto">
                                 {userShows.map(show => <div key={show.id} className="p-3 bg-white rounded border border-gray-200">
-                                    <div className="flex justify-between items-start">
-                                      <div>
-                                        <p className="font-medium text-gray-900">{show.venue_name}</p>
+                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                                      <div className="flex-1">
+                                        <p className="font-medium text-gray-900 break-words">{show.venue_name}</p>
                                         <p className="text-xs text-gray-600">
                                           {new Date(show.date_local).toLocaleDateString('pt-BR')} às {show.time_local}
                                         </p>
                                       </div>
-                                      <Badge className="bg-green-100 text-green-800">
+                                      <Badge className="bg-green-100 text-green-800 self-start">
                                         R$ {Number(show.fee).toFixed(2)}
                                       </Badge>
                                     </div>
@@ -499,22 +499,22 @@ export default function Admin() {
                             </CardContent>
                           </Card>}
 
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <Button variant="outline" onClick={() => {
                       setEditingUser(searchedUser);
                       setEditName(searchedUser.name);
                       setShowEditDialog(true);
-                    }}>
+                    }} className="w-full sm:w-auto">
                             Editar Nome
                           </Button>
                           <Button variant="outline" onClick={() => {
                       setEditingUser(searchedUser);
                       setEditStatus(searchedUser.status_plano);
                       setShowStatusDialog(true);
-                    }}>
+                    }} className="w-full sm:w-auto">
                             Alterar Status
                           </Button>
-                          <Button variant="outline" onClick={() => copyToClipboard(searchedUser.id)}>
+                          <Button variant="outline" onClick={() => copyToClipboard(searchedUser.id)} className="w-full sm:w-auto">
                             <Copy className="h-4 w-4 mr-2" />
                             Copiar ID
                           </Button>
