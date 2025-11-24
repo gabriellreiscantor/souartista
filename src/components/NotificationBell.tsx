@@ -22,6 +22,7 @@ export function NotificationBell() {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(new Set());
+  const [hiddenNotificationIds, setHiddenNotificationIds] = useState<Set<string>>(new Set());
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
 
@@ -59,12 +60,26 @@ export function NotificationBell() {
 
       if (readsError) throw readsError;
 
+      // Buscar quais foram ocultas pelo usuário
+      const { data: hiddenData, error: hiddenError } = await supabase
+        .from('notification_hidden')
+        .select('notification_id')
+        .eq('user_id', user.id);
+
+      if (hiddenError) throw hiddenError;
+
       const readIds = new Set(readsData?.map(r => r.notification_id) || []);
-      setReadNotificationIds(readIds);
-      setNotifications(notifData || []);
+      const hiddenIds = new Set(hiddenData?.map(h => h.notification_id) || []);
       
-      // Contar não lidas
-      const unread = (notifData || []).filter(n => !readIds.has(n.id)).length;
+      setReadNotificationIds(readIds);
+      setHiddenNotificationIds(hiddenIds);
+      
+      // Filtrar notificações ocultas
+      const visibleNotifications = (notifData || []).filter(n => !hiddenIds.has(n.id));
+      setNotifications(visibleNotifications);
+      
+      // Contar não lidas (apenas das visíveis)
+      const unread = visibleNotifications.filter(n => !readIds.has(n.id)).length;
       setUnreadCount(unread);
     } catch (error) {
       console.error('Erro ao buscar notificações:', error);
@@ -102,33 +117,23 @@ export function NotificationBell() {
   };
 
   const handleClearAll = async () => {
-    if (!user) return;
+    if (!user || notifications.length === 0) return;
 
     try {
-      // Marcar todas as notificações como lidas ao invés de deletar
-      const unreadNotifs = notifications.filter(n => !readNotificationIds.has(n.id));
-      
-      if (unreadNotifs.length === 0) {
-        // Se já estão todas lidas, fechar o dropdown
-        setOpen(false);
-        return;
-      }
-
-      const reads = unreadNotifs.map(n => ({
+      // Marcar todas as notificações visíveis como ocultas
+      const toHide = notifications.map(n => ({
         user_id: user.id,
         notification_id: n.id
       }));
 
       const { error } = await supabase
-        .from('notification_reads')
-        .insert(reads);
+        .from('notification_hidden')
+        .insert(toHide);
 
       if (error) throw error;
 
-      // Atualizar estado local
-      const newReadIds = new Set(readNotificationIds);
-      unreadNotifs.forEach(n => newReadIds.add(n.id));
-      setReadNotificationIds(newReadIds);
+      // Limpar estado local - todas ocultas
+      setNotifications([]);
       setUnreadCount(0);
       setOpen(false);
     } catch (error) {
