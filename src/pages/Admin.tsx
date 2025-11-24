@@ -118,6 +118,11 @@ export default function Admin() {
   const [technicalLogFilter, setTechnicalLogFilter] = useState('all');
   const [systemAlerts, setSystemAlerts] = useState<any[]>([]);
   
+  // Estados para Suporte
+  const [supportTickets, setSupportTickets] = useState<any[]>([]);
+  const [loadingSupportTickets, setLoadingSupportTickets] = useState(false);
+  const [supportFilter, setSupportFilter] = useState('all');
+  
   // Estados para Administradores
   const [adminUsers, setAdminUsers] = useState<UserProfile[]>([]);
   const [loadingAdmins, setLoadingAdmins] = useState(false);
@@ -165,6 +170,8 @@ export default function Admin() {
         fetchTechnicalLogs();
       } else if (currentTab === 'administradores') {
         fetchAdminUsers();
+      } else if (currentTab === 'suporte') {
+        fetchSupportTickets();
       }
     }
   }, [isAdmin, currentTab]);
@@ -607,6 +614,33 @@ export default function Admin() {
       toast.error('Erro ao carregar logs do sistema');
     } finally {
       setLoadingLogs(false);
+    }
+  };
+
+  // Função para Suporte
+  const fetchSupportTickets = async () => {
+    try {
+      setLoadingSupportTickets(true);
+      
+      const { data: tickets, error } = await supabase
+        .from('support_tickets')
+        .select(`
+          *,
+          profiles:user_id (
+            name,
+            email
+          )
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      setSupportTickets(tickets || []);
+    } catch (error) {
+      console.error('Erro ao buscar tickets:', error);
+      toast.error('Erro ao carregar tickets de suporte');
+    } finally {
+      setLoadingSupportTickets(false);
     }
   };
 
@@ -1764,6 +1798,138 @@ export default function Admin() {
                         </div>
                       </>}
                   </div>
+                </CardContent>
+              </Card>}
+
+            {/* Suporte */}
+            {currentTab === 'suporte' && <Card className="bg-white border-gray-200">
+                <CardHeader>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                      <CardTitle className="text-gray-900">🎧 Tickets de Suporte</CardTitle>
+                      <p className="text-sm text-gray-500 mt-1">Gerencie solicitações de suporte dos usuários</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Select value={supportFilter} onValueChange={setSupportFilter}>
+                        <SelectTrigger className="bg-white text-gray-900 border-gray-200 w-[150px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white text-gray-900 border border-gray-200">
+                          <SelectItem value="all">Todos</SelectItem>
+                          <SelectItem value="open">Abertos</SelectItem>
+                          <SelectItem value="in_progress">Em Andamento</SelectItem>
+                          <SelectItem value="closed">Fechados</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button onClick={fetchSupportTickets} variant="outline" size="sm" disabled={loadingSupportTickets}>
+                        {loadingSupportTickets ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        Atualizar
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {loadingSupportTickets ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {supportTickets
+                        .filter(ticket => supportFilter === 'all' || ticket.status === supportFilter)
+                        .map((ticket) => {
+                          const getStatusColor = (status: string) => {
+                            switch (status) {
+                              case 'open': return 'bg-green-100 text-green-800 border-green-200';
+                              case 'in_progress': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                              case 'closed': return 'bg-gray-100 text-gray-800 border-gray-200';
+                              default: return 'bg-blue-100 text-blue-800 border-blue-200';
+                            }
+                          };
+
+                          const getStatusLabel = (status: string) => {
+                            switch (status) {
+                              case 'open': return 'Aberto';
+                              case 'in_progress': return 'Em Andamento';
+                              case 'closed': return 'Fechado';
+                              default: return status;
+                            }
+                          };
+
+                          const getPriorityColor = (priority: string) => {
+                            switch (priority) {
+                              case 'high': return 'text-red-600';
+                              case 'medium': return 'text-yellow-600';
+                              case 'low': return 'text-green-600';
+                              default: return 'text-gray-600';
+                            }
+                          };
+
+                          const getPriorityLabel = (priority: string) => {
+                            switch (priority) {
+                              case 'high': return 'Alta';
+                              case 'medium': return 'Média';
+                              case 'low': return 'Baixa';
+                              default: return priority;
+                            }
+                          };
+
+                          return (
+                            <Card key={ticket.id} className="border-gray-200">
+                              <CardContent className="p-4">
+                                <div className="space-y-3">
+                                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
+                                    <div className="flex-1">
+                                      <h3 className="font-semibold text-gray-900">{ticket.subject}</h3>
+                                      <p className="text-sm text-gray-600 mt-1">
+                                        {ticket.profiles?.name} ({ticket.profiles?.email})
+                                      </p>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <Badge className={getStatusColor(ticket.status)}>
+                                        {getStatusLabel(ticket.status)}
+                                      </Badge>
+                                      <Badge variant="outline" className={getPriorityColor(ticket.priority)}>
+                                        {getPriorityLabel(ticket.priority)}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  
+                                  <p className="text-sm text-gray-700 line-clamp-2">{ticket.message}</p>
+                                  
+                                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs text-gray-500">
+                                    <span>
+                                      Criado em: {new Date(ticket.created_at).toLocaleString('pt-BR')}
+                                    </span>
+                                    {ticket.updated_at !== ticket.created_at && (
+                                      <span>
+                                        Atualizado: {new Date(ticket.updated_at).toLocaleString('pt-BR')}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {ticket.attachment_url && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => window.open(ticket.attachment_url, '_blank')}
+                                    >
+                                      Ver Anexo
+                                    </Button>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      
+                      {supportTickets.filter(ticket => supportFilter === 'all' || ticket.status === supportFilter).length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          Nenhum ticket encontrado
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>}
 
