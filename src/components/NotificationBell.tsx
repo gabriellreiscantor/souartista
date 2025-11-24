@@ -105,17 +105,31 @@ export function NotificationBell() {
     if (!user) return;
 
     try {
-      // Deletar todos os registros de leitura do usuário
+      // Marcar todas as notificações como lidas ao invés de deletar
+      const unreadNotifs = notifications.filter(n => !readNotificationIds.has(n.id));
+      
+      if (unreadNotifs.length === 0) {
+        // Se já estão todas lidas, fechar o dropdown
+        setOpen(false);
+        return;
+      }
+
+      const reads = unreadNotifs.map(n => ({
+        user_id: user.id,
+        notification_id: n.id
+      }));
+
       const { error } = await supabase
         .from('notification_reads')
-        .delete()
-        .eq('user_id', user.id);
+        .insert(reads);
 
       if (error) throw error;
 
-      // Limpar estado local
-      setReadNotificationIds(new Set());
-      setUnreadCount(notifications.length);
+      // Atualizar estado local
+      const newReadIds = new Set(readNotificationIds);
+      unreadNotifs.forEach(n => newReadIds.add(n.id));
+      setReadNotificationIds(newReadIds);
+      setUnreadCount(0);
       setOpen(false);
     } catch (error) {
       console.error('Erro ao limpar notificações:', error);
