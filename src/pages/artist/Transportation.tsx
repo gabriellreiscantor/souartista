@@ -324,6 +324,7 @@ const ArtistTransportation = () => {
                               <Input
                                 id="distance"
                                 type="number"
+                                inputMode="numeric"
                                 placeholder="Ex: 150"
                                 value={kmData.distance}
                                 onChange={(e) => setKmData({ ...kmData, distance: e.target.value })}
@@ -338,6 +339,7 @@ const ArtistTransportation = () => {
                               <Input
                                 id="consumption"
                                 type="number"
+                                inputMode="numeric"
                                 placeholder="Ex: 12"
                                 value={kmData.consumption}
                                 onChange={(e) => setKmData({ ...kmData, consumption: e.target.value })}
