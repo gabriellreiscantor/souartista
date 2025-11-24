@@ -1108,7 +1108,6 @@ export default function Admin() {
                             <SelectItem value="todos">Todos os usuários</SelectItem>
                             <SelectItem value="artistas">Apenas Artistas</SelectItem>
                             <SelectItem value="musicos">Apenas Músicos</SelectItem>
-                            <SelectItem value="ativos">Apenas Planos Ativos</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
