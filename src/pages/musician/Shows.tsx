@@ -1127,13 +1127,28 @@ const MusicianShows = () => {
                         </DialogHeader>
                         <form onSubmit={handleInstrumentSubmit} className="space-y-4">
                           <div>
-                            <Label htmlFor="instrument_name" className="text-gray-900 font-medium">Nome do Instrumento *</Label>
-                            <Input id="instrument_name" value={instrumentFormData.name} onChange={e => setInstrumentFormData({
-                            ...instrumentFormData,
-                            name: e.target.value
-                          })} placeholder="Digite o nome do instrumento" className="bg-white border-gray-300 text-gray-900" required />
+                            <Label htmlFor="instrument_name" className="text-gray-900 font-medium">Instrumento *</Label>
+                            <Select value={instrumentFormData.name} onValueChange={value => setInstrumentFormData({
+                              ...instrumentFormData,
+                              name: value,
+                              customInstrument: value === 'Outro' ? instrumentFormData.customInstrument : ''
+                            })}>
+                              <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                                <SelectValue placeholder="Selecione o instrumento" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-white z-50">
+                                <SelectItem value="Bateria" className="text-gray-900">Bateria</SelectItem>
+                                <SelectItem value="Violão" className="text-gray-900">Violão</SelectItem>
+                                <SelectItem value="Baixo" className="text-gray-900">Baixo</SelectItem>
+                                <SelectItem value="Guitarra" className="text-gray-900">Guitarra</SelectItem>
+                                <SelectItem value="Saxofone" className="text-gray-900">Saxofone</SelectItem>
+                                <SelectItem value="Teclado" className="text-gray-900">Teclado</SelectItem>
+                                <SelectItem value="Vocal" className="text-gray-900">Vocal</SelectItem>
+                                <SelectItem value="Outro" className="text-gray-900">Outro</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
-                          {false && <div>
+                          {instrumentFormData.name === 'Outro' && <div>
                               <Label htmlFor="custom_instrument" className="text-gray-900 font-medium">Especifique o Instrumento *</Label>
                               <Input id="custom_instrument" value={instrumentFormData.customInstrument} onChange={e => setInstrumentFormData({
                             ...instrumentFormData,
