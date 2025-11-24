@@ -669,15 +669,18 @@ const ArtistShows = () => {
                         </p>
                       </div>
                       
-                      <Select defaultValue="week">
+                      <Select defaultValue="upcoming">
                         <SelectTrigger className="w-full bg-white text-gray-900 border-gray-300">
                           <CalendarIcon className="w-4 h-4 mr-2 text-gray-900" />
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-white">
-                          <SelectItem value="week" className="text-gray-900">Próximos Shows</SelectItem>
-                          <SelectItem value="month" className="text-gray-900">Este Mês</SelectItem>
-                          <SelectItem value="all" className="text-gray-900">Todos</SelectItem>
+                          <SelectItem value="upcoming" className="text-gray-900">Próximos Shows</SelectItem>
+                          <SelectItem value="thisWeek" className="text-gray-900">Esta Semana</SelectItem>
+                          <SelectItem value="lastWeek" className="text-gray-900">Semana Passada</SelectItem>
+                          <SelectItem value="twoWeeksAgo" className="text-gray-900">Semana Retrasada</SelectItem>
+                          <SelectItem value="thisMonth" className="text-gray-900">Este Mês</SelectItem>
+                          <SelectItem value="all" className="text-gray-900">Todos os Shows</SelectItem>
                         </SelectContent>
                       </Select>
 
@@ -991,15 +994,18 @@ const ArtistShows = () => {
                         >
                           <Grid3x3 className="w-4 h-4" />
                         </Button>
-                        <Select defaultValue="week">
-                          <SelectTrigger className="w-[160px] bg-white text-gray-900">
+                        <Select defaultValue="upcoming">
+                          <SelectTrigger className="w-[180px] bg-white text-gray-900">
                             <CalendarIcon className="w-4 h-4 mr-2 text-gray-900" />
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="bg-white">
-                            <SelectItem value="week" className="text-gray-900">Esta Semana</SelectItem>
-                            <SelectItem value="month" className="text-gray-900">Este Mês</SelectItem>
-                            <SelectItem value="all" className="text-gray-900">Todos</SelectItem>
+                            <SelectItem value="upcoming" className="text-gray-900">Próximos Shows</SelectItem>
+                            <SelectItem value="thisWeek" className="text-gray-900">Esta Semana</SelectItem>
+                            <SelectItem value="lastWeek" className="text-gray-900">Semana Passada</SelectItem>
+                            <SelectItem value="twoWeeksAgo" className="text-gray-900">Semana Retrasada</SelectItem>
+                            <SelectItem value="thisMonth" className="text-gray-900">Este Mês</SelectItem>
+                            <SelectItem value="all" className="text-gray-900">Todos os Shows</SelectItem>
                           </SelectContent>
                         </Select>
                         {isMobile ? (
