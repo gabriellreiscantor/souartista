@@ -14,7 +14,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, X } from 'lucide-react';
+import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, X, Send, Download, Filter } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import * as XLSX from 'xlsx';
 interface UserProfile {
   id: string;
   name: string;
@@ -80,6 +82,24 @@ export default function Admin() {
   const [userShows, setUserShows] = useState<Show[]>([]);
   const [userExpenses, setUserExpenses] = useState<LocomotionExpense[]>([]);
   const [searchInputRef, setSearchInputRef] = useState<HTMLInputElement | null>(null);
+  
+  // Estados para Financeiro Global
+  const [googleTax, setGoogleTax] = useState(30);
+  const [activeUsersCount, setActiveUsersCount] = useState(0);
+  
+  // Estados para Notificações
+  const [notificationTitle, setNotificationTitle] = useState('');
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationLink, setNotificationLink] = useState('');
+  const [notificationFilter, setNotificationFilter] = useState('todos');
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [sendingNotification, setSendingNotification] = useState(false);
+  
+  // Estados para Contatos WhatsApp
+  const [contacts, setContacts] = useState<any[]>([]);
+  const [contactFilter, setContactFilter] = useState('todos');
+  const [loadingContacts, setLoadingContacts] = useState(false);
+  
   const usersPerPage = 50;
   useEffect(() => {
     if (!adminLoading && !isAdmin && user) {
@@ -108,6 +128,15 @@ export default function Admin() {
       setUserShows([]);
       setUserExpenses([]);
       setSearchId('');
+      
+      // Carrega dados específicos por tab
+      if (currentTab === 'financeiro') {
+        fetchFinancialData();
+      } else if (currentTab === 'notificacoes') {
+        fetchNotifications();
+      } else if (currentTab === 'contatos') {
+        fetchContacts();
+      }
     }
   }, [isAdmin, currentTab]);
   const fetchStats = async () => {
@@ -290,6 +319,133 @@ export default function Admin() {
     setUserShows([]);
     setUserExpenses([]);
     toast.info('Busca limpa');
+  };
+
+  // Funções para Financeiro Global
+  const fetchFinancialData = async () => {
+    try {
+      const { count } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('status_plano', 'ativo');
+      
+      setActiveUsersCount(count || 0);
+    } catch (error) {
+      console.error('Erro ao buscar dados financeiros:', error);
+    }
+  };
+
+  // Funções para Notificações
+  const fetchNotifications = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setNotifications(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar notificações:', error);
+      toast.error('Erro ao carregar notificações');
+    }
+  };
+
+  const handleSendNotification = async () => {
+    if (!notificationTitle.trim() || !notificationMessage.trim()) {
+      toast.error('Preencha título e mensagem');
+      return;
+    }
+
+    try {
+      setSendingNotification(true);
+      
+      const { error } = await supabase
+        .from('notifications')
+        .insert({
+          title: notificationTitle,
+          message: notificationMessage,
+          link: notificationLink || null,
+          created_by: user?.id
+        });
+
+      if (error) throw error;
+
+      toast.success('Notificação enviada com sucesso!');
+      setNotificationTitle('');
+      setNotificationMessage('');
+      setNotificationLink('');
+      fetchNotifications();
+    } catch (error) {
+      console.error('Erro ao enviar notificação:', error);
+      toast.error('Erro ao enviar notificação');
+    } finally {
+      setSendingNotification(false);
+    }
+  };
+
+  // Funções para Contatos WhatsApp
+  const fetchContacts = async () => {
+    try {
+      setLoadingContacts(true);
+      
+      // Buscar todos os perfis com roles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, name, email, phone, status_plano');
+      
+      if (profilesError) throw profilesError;
+
+      // Buscar roles de cada usuário
+      const profilesWithRoles = await Promise.all(
+        (profiles || []).map(async (profile) => {
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', profile.id)
+            .single();
+          
+          return {
+            ...profile,
+            role: roleData?.role || 'Não definido'
+          };
+        })
+      );
+
+      setContacts(profilesWithRoles);
+    } catch (error) {
+      console.error('Erro ao buscar contatos:', error);
+      toast.error('Erro ao carregar contatos');
+    } finally {
+      setLoadingContacts(false);
+    }
+  };
+
+  const handleExportContacts = () => {
+    const filteredContacts = contactFilter === 'todos' 
+      ? contacts 
+      : contacts.filter(c => {
+          if (contactFilter === 'ativos') return c.status_plano === 'ativo';
+          if (contactFilter === 'inativos') return c.status_plano === 'inativo';
+          if (contactFilter === 'artistas') return c.role === 'artist';
+          if (contactFilter === 'musicos') return c.role === 'musician';
+          return true;
+        });
+
+    const exportData = filteredContacts.map(contact => ({
+      Nome: contact.name,
+      Email: contact.email,
+      Telefone: contact.phone || 'Não informado',
+      Role: contact.role,
+      Plano: contact.status_plano
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Contatos');
+    XLSX.writeFile(wb, `contatos-whatsapp-${new Date().toISOString().split('T')[0]}.xlsx`);
+    
+    toast.success('Planilha exportada com sucesso!');
   };
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -775,32 +931,288 @@ export default function Admin() {
                 </CardContent>
               </Card>}
 
-            {currentTab === 'financeiro' && <Card className="bg-white border-gray-200">
-                <CardHeader>
-                  <CardTitle className="text-gray-900">Financeiro Global</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">Em desenvolvimento...</p>
-                </CardContent>
-              </Card>}
+            {currentTab === 'financeiro' && (
+              <div className="space-y-6">
+                {/* Configuração de Taxas */}
+                <Card className="bg-white border-gray-200">
+                  <CardHeader>
+                    <CardTitle className="text-gray-900">Configuração de Taxas</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="google-tax" className="text-gray-900">Taxa Google Play (%)</Label>
+                        <Input
+                          id="google-tax"
+                          type="number"
+                          value={googleTax}
+                          onChange={(e) => setGoogleTax(Number(e.target.value))}
+                          className="bg-white text-gray-900 border-gray-200"
+                          min="0"
+                          max="100"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-gray-900">Taxa Apple Store (%)</Label>
+                        <Input
+                          value="15"
+                          disabled
+                          className="bg-gray-100 text-gray-600 border-gray-200"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            {currentTab === 'notificacoes' && <Card className="bg-white border-gray-200">
-                <CardHeader>
-                  <CardTitle className="text-gray-900">Notificações</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">Em desenvolvimento...</p>
-                </CardContent>
-              </Card>}
+                {/* Resumo Financeiro */}
+                <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
+                  <CardHeader>
+                    <CardTitle className="text-gray-900">💰 Resumo de Receita Mensal</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                      <div className="p-4 bg-white rounded-lg border border-gray-200">
+                        <p className="text-xs text-gray-600 mb-1">Usuários Ativos</p>
+                        <p className="text-2xl font-bold text-purple-600">{activeUsersCount}</p>
+                      </div>
 
-            {currentTab === 'contatos' && <Card className="bg-white border-gray-200">
+                      <div className="p-4 bg-white rounded-lg border border-gray-200">
+                        <p className="text-xs text-gray-600 mb-1">Receita Bruta</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          R$ {(activeUsersCount * 29.90).toFixed(2)}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">R$ 29,90 × {activeUsersCount}</p>
+                      </div>
+
+                      <div className="p-4 bg-white rounded-lg border border-gray-200">
+                        <p className="text-xs text-gray-600 mb-1">Taxa Apple (15%)</p>
+                        <p className="text-2xl font-bold text-red-600">
+                          - R$ {(activeUsersCount * 29.90 * 0.15).toFixed(2)}
+                        </p>
+                      </div>
+
+                      <div className="p-4 bg-white rounded-lg border border-gray-200">
+                        <p className="text-xs text-gray-600 mb-1">Taxa Google ({googleTax}%)</p>
+                        <p className="text-2xl font-bold text-red-600">
+                          - R$ {(activeUsersCount * 29.90 * (googleTax / 100)).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 p-4 bg-white rounded-lg border-2 border-purple-300">
+                      <p className="text-sm text-gray-600 mb-1">Receita Líquida Estimada</p>
+                      <p className="text-3xl font-bold text-purple-600">
+                        R$ {(activeUsersCount * 29.90 * (1 - 0.15 - (googleTax / 100))).toFixed(2)}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Após taxas Apple e Google
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {currentTab === 'notificacoes' && (
+              <div className="space-y-6">
+                {/* Formulário de Envio */}
+                <Card className="bg-white border-gray-200">
+                  <CardHeader>
+                    <CardTitle className="text-gray-900">📢 Enviar Notificação</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="notif-title" className="text-gray-900">Título</Label>
+                        <Input
+                          id="notif-title"
+                          placeholder="Ex: Nova atualização disponível"
+                          value={notificationTitle}
+                          onChange={(e) => setNotificationTitle(e.target.value)}
+                          className="bg-white text-gray-900 border-gray-200"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="notif-message" className="text-gray-900">Mensagem</Label>
+                        <Textarea
+                          id="notif-message"
+                          placeholder="Escreva sua mensagem aqui..."
+                          value={notificationMessage}
+                          onChange={(e) => setNotificationMessage(e.target.value)}
+                          className="bg-white text-gray-900 border-gray-200 min-h-[100px]"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="notif-link" className="text-gray-900">Link (Opcional)</Label>
+                        <Input
+                          id="notif-link"
+                          placeholder="https://..."
+                          value={notificationLink}
+                          onChange={(e) => setNotificationLink(e.target.value)}
+                          className="bg-white text-gray-900 border-gray-200"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="notif-filter" className="text-gray-900">Destinatários</Label>
+                        <Select value={notificationFilter} onValueChange={setNotificationFilter}>
+                          <SelectTrigger className="bg-white text-gray-900 border-gray-200">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white text-gray-900 border border-gray-200">
+                            <SelectItem value="todos">Todos os usuários</SelectItem>
+                            <SelectItem value="artistas">Apenas Artistas</SelectItem>
+                            <SelectItem value="musicos">Apenas Músicos</SelectItem>
+                            <SelectItem value="ativos">Apenas Planos Ativos</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <Button
+                        onClick={handleSendNotification}
+                        disabled={sendingNotification}
+                        className="w-full"
+                      >
+                        {sendingNotification ? (
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        ) : (
+                          <Send className="w-4 h-4 mr-2" />
+                        )}
+                        Enviar Notificação
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Histórico */}
+                <Card className="bg-white border-gray-200">
+                  <CardHeader>
+                    <CardTitle className="text-gray-900">Histórico de Notificações</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {notifications.length === 0 ? (
+                        <p className="text-gray-500 text-center py-4">Nenhuma notificação enviada ainda</p>
+                      ) : (
+                        notifications.map((notif) => (
+                          <div key={notif.id} className="p-4 border border-gray-200 rounded-lg">
+                            <div className="flex justify-between items-start mb-2">
+                              <h3 className="font-semibold text-gray-900">{notif.title}</h3>
+                              <span className="text-xs text-gray-500">
+                                {new Date(notif.created_at).toLocaleDateString('pt-BR')}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-700 mb-2">{notif.message}</p>
+                            {notif.link && (
+                              <a
+                                href={notif.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-purple-600 hover:underline"
+                              >
+                                {notif.link}
+                              </a>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {currentTab === 'contatos' && (
+              <Card className="bg-white border-gray-200">
                 <CardHeader>
-                  <CardTitle className="text-gray-900">Contatos WhatsApp</CardTitle>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <CardTitle className="text-gray-900">📱 Contatos WhatsApp</CardTitle>
+                    <Button onClick={handleExportContacts} variant="outline">
+                      <Download className="h-4 w-4 mr-2" />
+                      Exportar XLSX
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600">Em desenvolvimento...</p>
+                  <div className="space-y-4">
+                    {/* Filtros */}
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Select value={contactFilter} onValueChange={setContactFilter}>
+                        <SelectTrigger className="bg-white text-gray-900 border-gray-200 w-full sm:w-[200px]">
+                          <Filter className="h-4 w-4 mr-2" />
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white text-gray-900 border border-gray-200">
+                          <SelectItem value="todos">Todos</SelectItem>
+                          <SelectItem value="ativos">Planos Ativos</SelectItem>
+                          <SelectItem value="inativos">Planos Inativos</SelectItem>
+                          <SelectItem value="artistas">Artistas</SelectItem>
+                          <SelectItem value="musicos">Músicos</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Lista de Contatos */}
+                    {loadingContacts ? (
+                      <div className="flex justify-center py-8">
+                        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                      </div>
+                    ) : (
+                      <div className="rounded-md border overflow-x-auto border-gray-200">
+                        <table className="w-full bg-white">
+                          <thead>
+                            <tr className="border-b bg-gray-50 border-gray-200">
+                              <th className="p-3 text-left font-medium text-sm text-gray-900">Nome</th>
+                              <th className="p-3 text-left font-medium text-sm text-gray-900">Telefone</th>
+                              <th className="p-3 text-left font-medium text-sm text-gray-900">Role</th>
+                              <th className="p-3 text-left font-medium text-sm text-gray-900">Plano</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {contacts
+                              .filter((contact) => {
+                                if (contactFilter === 'todos') return true;
+                                if (contactFilter === 'ativos') return contact.status_plano === 'ativo';
+                                if (contactFilter === 'inativos') return contact.status_plano === 'inativo';
+                                if (contactFilter === 'artistas') return contact.role === 'artist';
+                                if (contactFilter === 'musicos') return contact.role === 'musician';
+                                return true;
+                              })
+                              .map((contact) => (
+                                <tr key={contact.id} className="border-b hover:bg-gray-50 border-gray-200">
+                                  <td className="p-3 text-gray-900">{contact.name}</td>
+                                  <td className="p-3">
+                                    {contact.phone ? (
+                                      <a
+                                        href={`https://wa.me/55${contact.phone.replace(/\D/g, '')}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-green-600 hover:underline font-mono text-sm"
+                                      >
+                                        {contact.phone}
+                                      </a>
+                                    ) : (
+                                      <span className="text-gray-500 text-sm">Não informado</span>
+                                    )}
+                                  </td>
+                                  <td className="p-3">
+                                    <Badge className="bg-purple-100 text-purple-800">
+                                      {contact.role}
+                                    </Badge>
+                                  </td>
+                                  <td className="p-3">{getStatusBadge(contact.status_plano)}</td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
-              </Card>}
+              </Card>
+            )}
           </main>
         </SidebarInset>
       </div>
