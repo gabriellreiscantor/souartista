@@ -10,29 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Users, Music, Mic2, Copy, MoreVertical, Loader2 } from 'lucide-react';
-
 interface UserProfile {
   id: string;
   name: string;
@@ -45,22 +27,28 @@ interface UserProfile {
   plan_purchased_at: string | null;
   last_seen_at: string | null;
 }
-
 interface Stats {
   totalUsers: number;
   totalArtists: number;
   totalMusicians: number;
 }
-
 export default function Admin() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { isAdmin, loading: adminLoading } = useAdmin();
+  const {
+    user
+  } = useAuth();
+  const {
+    isAdmin,
+    loading: adminLoading
+  } = useAdmin();
   const [searchParams] = useSearchParams();
   const currentTab = searchParams.get('tab') || 'usuarios';
-
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<Stats>({ totalUsers: 0, totalArtists: 0, totalMusicians: 0 });
+  const [stats, setStats] = useState<Stats>({
+    totalUsers: 0,
+    totalArtists: 0,
+    totalMusicians: 0
+  });
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
@@ -68,9 +56,7 @@ export default function Admin() {
   const [editStatus, setEditStatus] = useState('');
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
-
   const usersPerPage = 50;
-
   useEffect(() => {
     if (!adminLoading && !isAdmin && user) {
       const userRole = localStorage.getItem('userRole');
@@ -80,55 +66,59 @@ export default function Admin() {
         navigate('/musician/dashboard');
       }
     }
-    
+
     // Saudação especial para admin (apenas uma vez por sessão)
     if (!adminLoading && isAdmin && !sessionStorage.getItem('admin_greeted')) {
       toast.success('👑 Olá Chefe! Bem-vindo ao Painel Admin', {
-        duration: 3000,
+        duration: 3000
       });
       sessionStorage.setItem('admin_greeted', 'true');
     }
   }, [isAdmin, adminLoading, user, navigate]);
-
   useEffect(() => {
     if (isAdmin) {
       fetchStats();
       fetchUsers();
     }
   }, [isAdmin]);
-
   const fetchStats = async () => {
     try {
-      const { count: usersCount } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
-
-      const { count: artistsCount } = await supabase
-        .from('artists')
-        .select('*', { count: 'exact', head: true });
-
-      const { count: musiciansCount } = await supabase
-        .from('musicians')
-        .select('*', { count: 'exact', head: true });
-
+      const {
+        count: usersCount
+      } = await supabase.from('profiles').select('*', {
+        count: 'exact',
+        head: true
+      });
+      const {
+        count: artistsCount
+      } = await supabase.from('artists').select('*', {
+        count: 'exact',
+        head: true
+      });
+      const {
+        count: musiciansCount
+      } = await supabase.from('musicians').select('*', {
+        count: 'exact',
+        head: true
+      });
       setStats({
         totalUsers: usersCount || 0,
         totalArtists: artistsCount || 0,
-        totalMusicians: musiciansCount || 0,
+        totalMusicians: musiciansCount || 0
       });
     } catch (error) {
       console.error('Erro ao buscar estatísticas:', error);
     }
   };
-
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-
+      const {
+        data,
+        error
+      } = await supabase.from('profiles').select('*').order('created_at', {
+        ascending: false
+      });
       if (error) throw error;
       setUsers(data || []);
     } catch (error) {
@@ -138,18 +128,15 @@ export default function Admin() {
       setLoading(false);
     }
   };
-
   const handleUpdateName = async () => {
     if (!editingUser) return;
-
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ name: editName })
-        .eq('id', editingUser.id);
-
+      const {
+        error
+      } = await supabase.from('profiles').update({
+        name: editName
+      }).eq('id', editingUser.id);
       if (error) throw error;
-
       toast.success('Nome atualizado com sucesso!');
       setShowEditDialog(false);
       fetchUsers();
@@ -158,18 +145,15 @@ export default function Admin() {
       toast.error('Erro ao atualizar nome');
     }
   };
-
   const handleUpdateStatus = async () => {
     if (!editingUser) return;
-
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ status_plano: editStatus })
-        .eq('id', editingUser.id);
-
+      const {
+        error
+      } = await supabase.from('profiles').update({
+        status_plano: editStatus
+      }).eq('id', editingUser.id);
       if (error) throw error;
-
       toast.success('Status atualizado com sucesso!');
       setShowStatusDialog(false);
       fetchUsers();
@@ -178,48 +162,48 @@ export default function Admin() {
       toast.error('Erro ao atualizar status');
     }
   };
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('ID copiado!');
   };
-
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pendente: { label: 'Pendente', icon: '⏳', className: 'bg-yellow-100 text-yellow-800' },
-      ativo: { label: 'Ativo', icon: '✓', className: 'bg-green-100 text-green-800' },
-      inativo: { label: 'Inativo', icon: '○', className: 'bg-gray-100 text-gray-800' },
-      cancelado: { label: 'Cancelado', icon: '✕', className: 'bg-red-100 text-red-800' },
+      pendente: {
+        label: 'Pendente',
+        icon: '⏳',
+        className: 'bg-yellow-100 text-yellow-800'
+      },
+      ativo: {
+        label: 'Ativo',
+        icon: '✓',
+        className: 'bg-green-100 text-green-800'
+      },
+      inativo: {
+        label: 'Inativo',
+        icon: '○',
+        className: 'bg-gray-100 text-gray-800'
+      },
+      cancelado: {
+        label: 'Cancelado',
+        icon: '✕',
+        className: 'bg-red-100 text-red-800'
+      }
     };
-
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.inativo;
-
-    return (
-      <Badge className={config.className}>
+    return <Badge className={config.className}>
         <span className="mr-1">{config.icon}</span>
         {config.label}
-      </Badge>
-    );
+      </Badge>;
   };
-
-  const paginatedUsers = users.slice(
-    (currentPage - 1) * usersPerPage,
-    currentPage * usersPerPage
-  );
+  const paginatedUsers = users.slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage);
   const totalPages = Math.ceil(users.length / usersPerPage);
-
   if (adminLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
+    return <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-      </div>
-    );
+      </div>;
   }
-
   if (!isAdmin) return null;
-
-  return (
-    <SidebarProvider>
+  return <SidebarProvider>
       <div className="flex min-h-screen w-full bg-white">
         <AdminSidebar />
         <SidebarInset className="flex-1 bg-white">
@@ -261,8 +245,7 @@ export default function Admin() {
             </div>
 
             {/* Content based on tab */}
-            {currentTab === 'usuarios' && (
-              <Card className="bg-white border-gray-200">
+            {currentTab === 'usuarios' && <Card className="bg-white border-gray-200">
                 <CardHeader>
                   <CardTitle className="text-gray-900">Usuários Cadastrados</CardTitle>
                   <div className="flex gap-2 mt-4 text-sm">
@@ -273,12 +256,9 @@ export default function Admin() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {loading ? (
-                    <div className="flex justify-center py-8">
+                  {loading ? <div className="flex justify-center py-8">
                       <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-                    </div>
-                  ) : (
-                    <>
+                    </div> : <>
                       <div className="rounded-md border overflow-x-auto border-gray-200">
                         <table className="w-full bg-white">
                           <thead>
@@ -291,8 +271,7 @@ export default function Admin() {
                             </tr>
                           </thead>
                           <tbody>
-                            {paginatedUsers.map((user) => (
-                              <tr key={user.id} className="border-b hover:bg-gray-50 border-gray-200">
+                            {paginatedUsers.map(user => <tr key={user.id} className="border-b hover:bg-gray-50 border-gray-200">
                                 <td className="p-2 md:p-3">
                                   <div>
                                     <p className="font-medium text-sm text-gray-900">{user.name}</p>
@@ -306,11 +285,7 @@ export default function Admin() {
                                     <span className="text-xs text-gray-600 font-mono">
                                       {user.id.slice(0, 8)}...
                                     </span>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => copyToClipboard(user.id)}
-                                    >
+                                    <Button variant="ghost" size="sm" onClick={() => copyToClipboard(user.id)}>
                                       <Copy className="h-3 w-3 text-gray-600" />
                                     </Button>
                                   </div>
@@ -323,31 +298,24 @@ export default function Admin() {
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="bg-white text-gray-900 border border-gray-200">
-                                      <DropdownMenuItem
-                                        className="hover:bg-gray-100"
-                                        onClick={() => {
-                                          setEditingUser(user);
-                                          setEditName(user.name);
-                                          setShowEditDialog(true);
-                                        }}
-                                      >
+                                      <DropdownMenuItem className="hover:bg-gray-100" onClick={() => {
+                                setEditingUser(user);
+                                setEditName(user.name);
+                                setShowEditDialog(true);
+                              }}>
                                         Editar Nome
                                       </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        className="hover:bg-gray-100"
-                                        onClick={() => {
-                                          setEditingUser(user);
-                                          setEditStatus(user.status_plano);
-                                          setShowStatusDialog(true);
-                                        }}
-                                      >
+                                      <DropdownMenuItem className="hover:bg-gray-100" onClick={() => {
+                                setEditingUser(user);
+                                setEditStatus(user.status_plano);
+                                setShowStatusDialog(true);
+                              }}>
                                         Alterar Status do Plano
                                       </DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 </td>
-                              </tr>
-                            ))}
+                              </tr>)}
                           </tbody>
                         </table>
                       </div>
@@ -360,73 +328,53 @@ export default function Admin() {
                           usuários
                         </p>
                         <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                            disabled={currentPage === 1}
-                          >
+                          <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
                             Anterior
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                            disabled={currentPage === totalPages}
-                          >
+                          <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
                             Próxima
                           </Button>
                         </div>
                       </div>
-                    </>
-                  )}
+                    </>}
                 </CardContent>
-              </Card>
-            )}
+              </Card>}
 
-            {currentTab === 'buscar' && (
-              <Card className="bg-white border-gray-200">
+            {currentTab === 'buscar' && <Card className="bg-white border-gray-200">
                 <CardHeader>
                   <CardTitle className="text-gray-900">Buscar por ID</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600">Em desenvolvimento...</p>
                 </CardContent>
-              </Card>
-            )}
+              </Card>}
 
-            {currentTab === 'financeiro' && (
-              <Card className="bg-white border-gray-200">
+            {currentTab === 'financeiro' && <Card className="bg-white border-gray-200">
                 <CardHeader>
                   <CardTitle className="text-gray-900">Financeiro Global</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600">Em desenvolvimento...</p>
                 </CardContent>
-              </Card>
-            )}
+              </Card>}
 
-            {currentTab === 'notificacoes' && (
-              <Card className="bg-white border-gray-200">
+            {currentTab === 'notificacoes' && <Card className="bg-white border-gray-200">
                 <CardHeader>
                   <CardTitle className="text-gray-900">Notificações</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600">Em desenvolvimento...</p>
                 </CardContent>
-              </Card>
-            )}
+              </Card>}
 
-            {currentTab === 'contatos' && (
-              <Card className="bg-white border-gray-200">
+            {currentTab === 'contatos' && <Card className="bg-white border-gray-200">
                 <CardHeader>
                   <CardTitle className="text-gray-900">Contatos WhatsApp</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600">Em desenvolvimento...</p>
                 </CardContent>
-              </Card>
-            )}
+              </Card>}
           </main>
         </SidebarInset>
       </div>
@@ -441,19 +389,14 @@ export default function Admin() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-gray-900">Nome</Label>
-              <Input
-                id="name"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                className="bg-white text-gray-900 border-gray-200"
-              />
+              <Input id="name" value={editName} onChange={e => setEditName(e.target.value)} className="bg-white text-gray-900 border-gray-200" />
             </div>
           </div>
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)} className="bg-[#9b5af2] text-red-50">
               Cancelar
             </Button>
-            <Button onClick={handleUpdateName}>Salvar</Button>
+            <Button onClick={handleUpdateName} className="text-red-50">Salvar</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -489,6 +432,5 @@ export default function Admin() {
           </div>
         </DialogContent>
       </Dialog>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 }
