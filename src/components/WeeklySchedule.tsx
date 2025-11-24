@@ -87,9 +87,15 @@ export function WeeklySchedule({
   const weeklyStats = {
     revenue: shows.reduce((sum, show) => sum + (show.fee || 0), 0),
     expenses: shows.reduce((sum, show) => {
-      const teamCost = (show.expenses_team || []).reduce((s, e) => s + (e.cost || 0), 0);
-      const otherCost = (show.expenses_other || []).reduce((s, e) => s + (e.cost || 0), 0);
-      return sum + teamCost + otherCost;
+      if (userRole === 'musician') {
+        // Musicians only see their own expenses, not the artist's expenses
+        return sum;
+      } else {
+        // Artists see all expenses
+        const teamCost = (show.expenses_team || []).reduce((s, e) => s + (e.cost || 0), 0);
+        const otherCost = (show.expenses_other || []).reduce((s, e) => s + (e.cost || 0), 0);
+        return sum + teamCost + otherCost;
+      }
     }, 0)
   };
   const profit = weeklyStats.revenue - weeklyStats.expenses;
@@ -193,7 +199,7 @@ export function WeeklySchedule({
       </div>
 
       {/* Help Text */}
-      {shows.length > 0 && <div className="flex items-center gap-2 mb-4 text-xs text-gray-600">
+      {shows.length > 0 && userRole === 'artist' && <div className="flex items-center gap-2 mb-4 text-xs text-gray-600">
           <div className="w-4 h-4 rounded-full border border-gray-300 flex items-center justify-center">
             <span className="text-[10px]">i</span>
           </div>
