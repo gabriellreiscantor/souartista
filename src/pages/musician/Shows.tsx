@@ -14,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { TimePicker } from '@/components/ui/time-picker';
 import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2 } from 'lucide-react';
 import { CurrencyInput } from '@/components/ui/currency-input';
-import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -74,11 +73,12 @@ const MusicianShows = () => {
   const [showFormData, setShowFormData] = useState({
     artist_id: '',
     venue_id: '',
+    custom_venue: '',
     date_local: '',
     time_local: '',
     fee: '',
     instrument_id: '',
-    duration: '',
+    duration: '4h',
     is_private_event: false
   });
   const [personalExpenses, setPersonalExpenses] = useState<AdditionalExpense[]>([]);
@@ -188,7 +188,11 @@ const MusicianShows = () => {
     try {
       const selectedArtist = artists.find(a => a.id === showFormData.artist_id);
       const selectedInstrument = instruments.find(i => i.id === showFormData.instrument_id);
-      const selectedVenue = venues.find(v => v.id === showFormData.venue_id);
+      
+      const venueName = showFormData.is_private_event 
+        ? showFormData.custom_venue 
+        : venues.find(v => v.id === showFormData.venue_id)?.name || showFormData.custom_venue;
+
       if (!selectedArtist) {
         toast.error('Selecione um artista');
         return;
@@ -197,8 +201,8 @@ const MusicianShows = () => {
         toast.error('Selecione um instrumento');
         return;
       }
-      if (!selectedVenue) {
-        toast.error('Selecione um local');
+      if (!venueName) {
+        toast.error('Selecione ou digite o nome do local');
         return;
       }
       const musicianEntry = {
@@ -208,7 +212,7 @@ const MusicianShows = () => {
         cost: parseFloat(showFormData.fee)
       };
       const showData = {
-        venue_name: selectedVenue.name,
+        venue_name: venueName,
         date_local: showFormData.date_local,
         time_local: showFormData.time_local,
         fee: parseFloat(showFormData.fee),
@@ -275,11 +279,12 @@ const MusicianShows = () => {
     setShowFormData({
       artist_id: '',
       venue_id: matchingVenue?.id || '',
+      custom_venue: show.venue_name,
       date_local: show.date_local,
       time_local: show.time_local,
       fee: myEntry?.cost.toString() || show.fee.toString(),
       instrument_id: matchingInstrument?.id || '',
-      duration: '',
+      duration: '4h',
       is_private_event: show.is_private_event || false
     });
     setPersonalExpenses(show.expenses_other || []);
@@ -289,11 +294,12 @@ const MusicianShows = () => {
     setShowFormData({
       artist_id: '',
       venue_id: '',
+      custom_venue: '',
       date_local: '',
       time_local: '',
       fee: '',
       instrument_id: '',
-      duration: '',
+      duration: '4h',
       is_private_event: false
     });
     setPersonalExpenses([]);
@@ -612,6 +618,15 @@ const MusicianShows = () => {
                         </DialogHeader>
                         <form onSubmit={handleShowSubmit} className="space-y-6">
                           <div className="space-y-4">
+                            <Button
+                              type="button"
+                              variant={showFormData.is_private_event ? "default" : "outline"}
+                              onClick={() => setShowFormData({ ...showFormData, is_private_event: !showFormData.is_private_event })}
+                              className={showFormData.is_private_event ? "bg-primary hover:bg-primary/90 text-white w-full" : "bg-white hover:bg-gray-50 text-gray-900 border-gray-300 w-full"}
+                            >
+                              Evento Particular
+                            </Button>
+
                             <h3 className="font-semibold text-gray-900">Informações do Show</h3>
                             
                             <div>
@@ -634,25 +649,39 @@ const MusicianShows = () => {
                               </Select>
                             </div>
 
-                            <div>
-                              <Label htmlFor="venue_id" className="text-gray-900 font-medium">Local do Show *</Label>
-                              <Select value={showFormData.venue_id} onValueChange={value => setShowFormData({
-                              ...showFormData,
-                              venue_id: value
-                            })} required>
-                                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                                  <SelectValue placeholder="Selecione o local" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-white z-50">
-                                  {venues.length === 0 ? <div className="p-3 text-center">
-                                      <p className="text-sm text-gray-500 break-words">Nenhum local cadastrado</p>
-                                      <p className="text-xs text-gray-400 mt-1">Adicione em Locais</p>
-                                    </div> : venues.map(venue => <SelectItem key={venue.id} value={venue.id} className="text-gray-900">
-                                      {venue.name}
-                                    </SelectItem>)}
-                                </SelectContent>
-                              </Select>
-                            </div>
+                            {showFormData.is_private_event ? (
+                              <div>
+                                <Label htmlFor="custom_venue" className="text-gray-900 font-medium">Nome do local *</Label>
+                                <Input
+                                  id="custom_venue"
+                                  value={showFormData.custom_venue}
+                                  onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
+                                  className="bg-white border-gray-300 text-gray-900"
+                                  placeholder="Digite o nome do local"
+                                  required
+                                />
+                              </div>
+                            ) : (
+                              <div>
+                                <Label htmlFor="venue_id" className="text-gray-900 font-medium">Local do Show *</Label>
+                                <Select value={showFormData.venue_id} onValueChange={value => setShowFormData({
+                                ...showFormData,
+                                venue_id: value
+                              })} required>
+                                  <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                                    <SelectValue placeholder="Selecione o local" />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-white z-50">
+                                    {venues.length === 0 ? <div className="p-3 text-center">
+                                        <p className="text-sm text-gray-500 break-words">Nenhum local cadastrado</p>
+                                        <p className="text-xs text-gray-400 mt-1">Adicione em Locais</p>
+                                      </div> : venues.map(venue => <SelectItem key={venue.id} value={venue.id} className="text-gray-900">
+                                        {venue.name}
+                                      </SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
 
                             <div className="grid grid-cols-2 gap-4">
                               <div>
@@ -673,34 +702,27 @@ const MusicianShows = () => {
 
                             <div>
                               <Label htmlFor="duration" className="text-gray-900 font-medium">Duração do Show</Label>
-                              <Input 
-                                id="duration" 
-                                type="text" 
-                                placeholder="Ex: 2 horas, 3h30min" 
+                              <Select 
                                 value={showFormData.duration} 
-                                onChange={e => setShowFormData({
+                                onValueChange={value => setShowFormData({
                                   ...showFormData,
-                                  duration: e.target.value
-                                })} 
-                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" 
-                              />
-                            </div>
-
-                            <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 bg-gray-50">
-                              <div>
-                                <Label htmlFor="is_private_event" className="text-gray-900 font-medium cursor-pointer">
-                                  Evento Particular
-                                </Label>
-                                <p className="text-sm text-gray-500 mt-1">Marque se for um evento privado</p>
-                              </div>
-                              <Switch
-                                id="is_private_event"
-                                checked={showFormData.is_private_event}
-                                onCheckedChange={(checked) => setShowFormData({
-                                  ...showFormData,
-                                  is_private_event: checked
+                                  duration: value
                                 })}
-                              />
+                              >
+                                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                                  <SelectValue placeholder="Horas..." />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white z-50">
+                                  <SelectItem value="1h">1 hora</SelectItem>
+                                  <SelectItem value="2h">2 horas</SelectItem>
+                                  <SelectItem value="3h">3 horas</SelectItem>
+                                  <SelectItem value="4h">4 horas</SelectItem>
+                                  <SelectItem value="5h">5 horas</SelectItem>
+                                  <SelectItem value="6h">6 horas</SelectItem>
+                                  <SelectItem value="7h">7 horas</SelectItem>
+                                  <SelectItem value="8h">8 horas</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
                           </div>
 
