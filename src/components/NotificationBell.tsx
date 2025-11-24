@@ -9,6 +9,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { NotificationItem } from '@/components/NotificationItem';
 
 interface Notification {
   id: string;
@@ -147,6 +148,37 @@ export function NotificationBell() {
     }
   };
 
+  const handleHideNotification = async (notificationId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('notification_hidden')
+        .insert({
+          user_id: user.id,
+          notification_id: notificationId
+        });
+
+      if (error) throw error;
+
+      // Atualizar estado local
+      const newHiddenIds = new Set(hiddenNotificationIds);
+      newHiddenIds.add(notificationId);
+      setHiddenNotificationIds(newHiddenIds);
+      
+      // Remover das notificações visíveis
+      const updatedNotifications = notifications.filter(n => n.id !== notificationId);
+      setNotifications(updatedNotifications);
+      
+      // Atualizar contagem de não lidas
+      if (!readNotificationIds.has(notificationId)) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error('Erro ao ocultar notificação:', error);
+    }
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -191,7 +223,7 @@ export function NotificationBell() {
           )}
         </div>
         
-        <div className="max-h-[400px] overflow-y-auto">
+        <div className="max-h-[400px] overflow-y-auto overflow-x-hidden">
           {notifications.length === 0 ? (
             <div className="p-8 text-center">
               <Bell className="w-12 h-12 mx-auto mb-3 text-gray-300" />
@@ -199,41 +231,15 @@ export function NotificationBell() {
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
-              {notifications.map((notif) => {
-                const isRead = readNotificationIds.has(notif.id);
-                return (
-                  <button
-                    key={notif.id}
-                    onClick={() => handleNotificationClick(notif.link)}
-                    className={cn(
-                      "w-full p-4 text-left transition-colors",
-                      isRead ? "bg-white hover:bg-gray-50" : "bg-purple-50 hover:bg-purple-100"
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      {!isRead && (
-                        <div className="w-2 h-2 rounded-full bg-purple-600 mt-2 flex-shrink-0" />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm text-gray-900 mb-1">
-                          {notif.title}
-                        </h4>
-                        <p className="text-xs text-gray-600 line-clamp-2 mb-1">
-                          {notif.message}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(notif.created_at).toLocaleDateString('pt-BR', {
-                            day: '2-digit',
-                            month: 'short',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+              {notifications.map((notif) => (
+                <NotificationItem
+                  key={notif.id}
+                  notification={notif}
+                  isRead={readNotificationIds.has(notif.id)}
+                  onNotificationClick={handleNotificationClick}
+                  onDelete={() => handleHideNotification(notif.id)}
+                />
+              ))}
             </div>
           )}
         </div>
