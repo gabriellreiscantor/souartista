@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
-import useEmblaCarousel from 'embla-carousel-react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Carousel, CarouselContent, CarouselItem, CarouselApi } from '@/components/ui/carousel';
 import { Calendar, DollarSign, Users, TrendingUp, Music } from 'lucide-react';
 import logo from '@/assets/logo.png';
 
@@ -43,26 +43,19 @@ interface OnboardingProps {
 }
 
 const Onboarding = ({ onComplete }: OnboardingProps) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
 
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setSelectedIndex(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
-
+  // Update current slide when carousel changes
   useEffect(() => {
-    if (!emblaApi) return;
-    onSelect();
-    emblaApi.on('select', onSelect);
-    return () => {
-      emblaApi.off('select', onSelect);
-    };
-  }, [emblaApi, onSelect]);
+    if (!api) return;
 
-  const scrollNext = useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext();
-  }, [emblaApi]);
+    setCurrent(api.selectedScrollSnap());
+
+    api.on('select', () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+  }, [api]);
 
   const handleComplete = () => {
     localStorage.setItem('hasCompletedOnboarding', 'true');
@@ -73,7 +66,13 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
     handleComplete();
   };
 
-  const isLastSlide = selectedIndex === slides.length - 1;
+  const isLastSlide = current === slides.length - 1;
+
+  const handleNext = () => {
+    if (api) {
+      api.scrollNext();
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col">
@@ -91,22 +90,26 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
       </button>
 
       {/* Carousel */}
-      <div className="flex-1 overflow-hidden" ref={emblaRef}>
-        <div className="flex h-full">
-          {slides.map((slide, index) => (
-            <div key={index} className="flex-[0_0_100%] min-w-0 flex flex-col items-center justify-center px-8 text-center">
-              <div className="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center mb-8 text-primary animate-scale-in">
-                {slide.icon}
-              </div>
-              <h2 className="text-3xl font-heading font-bold text-foreground mb-4 max-w-md animate-fade-in">
-                {slide.title}
-              </h2>
-              <p className="text-lg text-muted-foreground max-w-sm animate-fade-in">
-                {slide.description}
-              </p>
-            </div>
-          ))}
-        </div>
+      <div className="flex-1 flex items-center">
+        <Carousel className="w-full" setApi={setApi}>
+          <CarouselContent>
+            {slides.map((slide, index) => (
+              <CarouselItem key={index}>
+                <div className="flex flex-col items-center justify-center px-8 text-center py-8">
+                  <div className="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center mb-8 text-primary animate-scale-in">
+                    {slide.icon}
+                  </div>
+                  <h2 className="text-3xl font-heading font-bold text-foreground mb-4 max-w-md animate-fade-in">
+                    {slide.title}
+                  </h2>
+                  <p className="text-lg text-muted-foreground max-w-sm animate-fade-in">
+                    {slide.description}
+                  </p>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
       </div>
 
       {/* Progress dots */}
@@ -114,9 +117,9 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
         {slides.map((_, index) => (
           <button
             key={index}
-            onClick={() => emblaApi?.scrollTo(index)}
+            onClick={() => api?.scrollTo(index)}
             className={`h-2 rounded-full transition-all ${
-              index === selectedIndex 
+              index === current 
                 ? 'w-8 bg-primary' 
                 : 'w-2 bg-primary/30'
             }`}
@@ -128,7 +131,7 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
       {/* Action button */}
       <div className="px-8 pb-8">
         <Button
-          onClick={isLastSlide ? handleComplete : scrollNext}
+          onClick={isLastSlide ? handleComplete : handleNext}
           size="lg"
           className="w-full rounded-full text-lg font-medium shadow-primary"
         >
