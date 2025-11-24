@@ -15,6 +15,7 @@ interface Show {
   venue_name: string;
   date_local: string;
   time_local: string;
+  duration_hours: number;
   fee: number;
   expenses_team: Array<{
     cost: number;
@@ -165,6 +166,11 @@ export function WeeklySchedule({
                           {show.time_local && (
                             <p className="text-xs text-gray-600">
                               <span className="font-medium">Horário:</span> {show.time_local}
+                            </p>
+                          )}
+                          {show.duration_hours && (
+                            <p className="text-xs text-gray-600">
+                              <span className="font-medium">Duração:</span> {show.duration_hours}h
                             </p>
                           )}
                           {show.musician_instrument && (
