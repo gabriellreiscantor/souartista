@@ -1238,7 +1238,7 @@ const MusicianShows = () => {
                             <Button type="button" variant="outline" onClick={() => setVenueDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
                               Cancelar
                             </Button>
-                            <Button type="submit" className="flex-1">
+                            <Button type="submit" className="flex-1 text-slate-50">
                               {editingVenue ? 'Atualizar' : 'Cadastrar'}
                             </Button>
                           </div>
