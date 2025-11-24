@@ -4,10 +4,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMusicianStats } from '@/hooks/useMusicianStats';
 import { useMonthlyData } from '@/hooks/useMonthlyData';
 import { useUpcomingShows } from '@/hooks/useUpcomingShows';
+import { useLocomotionData } from '@/hooks/useLocomotionData';
 import { WeeklySchedule } from '@/components/WeeklySchedule';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Music, Loader2, Bell, DollarSign, TrendingDown, Users } from 'lucide-react';
+import { Music, Loader2, Bell, Car, DollarSign, TrendingDown, Users } from 'lucide-react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { MusicianSidebar } from '@/components/MusicianSidebar';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
@@ -28,6 +29,7 @@ const MusicianDashboard = () => {
   const stats = useMusicianStats(selectedPeriod);
   const { data: monthlyData } = useMonthlyData(selectedYear, userRole);
   const { shows: upcomingShows } = useUpcomingShows(userRole, 5);
+  const { data: locomotionData, totalCost: locomotionTotal } = useLocomotionData(selectedYear);
 
   useEffect(() => {
     if (loading) return;
@@ -239,6 +241,49 @@ const MusicianDashboard = () => {
 
             <div className="mb-4 md:mb-6">
               <WeeklySchedule userRole="musician" />
+            </div>
+
+            {/* Transportation Expenses */}
+            <div className="mb-4 md:mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Resumo de Despesas com Locomoção</h3>
+              <div className="grid lg:grid-cols-3 gap-6">
+                <Card className="p-6 bg-white border border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm text-gray-600">Despesas com Locomoção</h4>
+                    <Car className="w-5 h-5 text-yellow-500" />
+                  </div>
+                  <p className="text-3xl font-bold text-gray-900">{formatCurrency(locomotionTotal)}</p>
+                </Card>
+
+                <Card className="lg:col-span-2 p-6 bg-white border border-gray-200">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Locomoção por Mês</h4>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={locomotionData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="month" stroke="#666" />
+                      <YAxis stroke="#666" />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: '#fff', 
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          padding: '12px'
+                        }}
+                        formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`}
+                        labelFormatter={(label) => `Mês: ${label}`}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="value" 
+                        stroke="#eab308" 
+                        strokeWidth={3}
+                        dot={false}
+                        activeDot={{ r: 7, fill: '#eab308', stroke: '#fff', strokeWidth: 2 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </Card>
+              </div>
             </div>
 
             <Card className="rounded-2xl p-6 md:p-8 border border-gray-200 bg-gradient-to-br from-purple-50 to-purple-100">
