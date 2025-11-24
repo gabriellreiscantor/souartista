@@ -208,6 +208,35 @@ export type Database = {
           },
         ]
       }
+      notification_hidden: {
+        Row: {
+          hidden_at: string
+          id: string
+          notification_id: string
+          user_id: string
+        }
+        Insert: {
+          hidden_at?: string
+          id?: string
+          notification_id: string
+          user_id: string
+        }
+        Update: {
+          hidden_at?: string
+          id?: string
+          notification_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_hidden_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_reads: {
         Row: {
           id: string
