@@ -128,6 +128,34 @@ const MusicianDashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-4 md:mb-6">
+              <Card className="p-4 md:p-6 bg-white border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Próximos Shows</h3>
+                <p className="text-sm text-gray-600 mb-4">Seus próximos eventos agendados.</p>
+                
+                {upcomingShows.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    <Music className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                    <p>Nenhum show agendado</p>
+                    <p className="text-xs mt-2">Adicione seus shows para começar</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {upcomingShows.map((show) => (
+                      <div key={show.id} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <p className="font-semibold text-gray-900">{show.venue_name}</p>
+                        <p className="text-sm text-gray-600">
+                          {format(parseISO(show.date_local), "dd/MM/yyyy", { locale: ptBR })}
+                          {show.time_local && ` - ${show.time_local}`}
+                        </p>
+                        <p className="text-sm font-medium text-green-600 mt-1">
+                          {formatCurrency(show.fee)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+
               <Card className="lg:col-span-2 p-4 md:p-6 bg-white border border-gray-200">
                 <div className="flex items-center justify-between mb-4">
                   <div>
@@ -205,34 +233,6 @@ const MusicianDashboard = () => {
                       />
                     </LineChart>
                   </ResponsiveContainer>
-                )}
-              </Card>
-
-              <Card className="p-4 md:p-6 bg-white border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Próximos Shows</h3>
-                <p className="text-sm text-gray-600 mb-4">Seus próximos eventos agendados.</p>
-                
-                {upcomingShows.length === 0 ? (
-                  <div className="text-center py-12 text-gray-500">
-                    <Music className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p>Nenhum show agendado</p>
-                    <p className="text-xs mt-2">Adicione seus shows para começar</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {upcomingShows.map((show) => (
-                      <div key={show.id} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <p className="font-semibold text-gray-900">{show.venue_name}</p>
-                        <p className="text-sm text-gray-600">
-                          {format(parseISO(show.date_local), "dd/MM/yyyy", { locale: ptBR })}
-                          {show.time_local && ` - ${show.time_local}`}
-                        </p>
-                        <p className="text-sm font-medium text-green-600 mt-1">
-                          {formatCurrency(show.fee)}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
                 )}
               </Card>
             </div>
