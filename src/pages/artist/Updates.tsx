@@ -8,44 +8,27 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Bell, ArrowLeft, Sparkles, Bug, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
 const ArtistUpdates = () => {
-  const { userData } = useAuth();
+  const {
+    userData
+  } = useAuth();
   const navigate = useNavigate();
-
-  const updates = [
-    {
-      version: '1.2.0',
-      date: '15 de Janeiro, 2025',
-      type: 'feature',
-      items: [
-        'Nova página de Ajustes com controles de visibilidade',
-        'Seleção de tema claro/escuro',
-        'Editor de fotos de perfil com zoom e corte'
-      ]
-    },
-    {
-      version: '1.1.0',
-      date: '10 de Janeiro, 2025',
-      type: 'improvement',
-      items: [
-        'Melhorias na performance do dashboard',
-        'Interface redesenhada para melhor usabilidade',
-        'Novos gráficos de relatórios financeiros'
-      ]
-    },
-    {
-      version: '1.0.5',
-      date: '05 de Janeiro, 2025',
-      type: 'bugfix',
-      items: [
-        'Correção de erro ao salvar shows',
-        'Ajuste no cálculo de despesas de locomoção',
-        'Melhorias na navegação mobile'
-      ]
-    }
-  ];
-
+  const updates = [{
+    version: '1.2.0',
+    date: '15 de Janeiro, 2025',
+    type: 'feature',
+    items: ['Nova página de Ajustes com controles de visibilidade', 'Seleção de tema claro/escuro', 'Editor de fotos de perfil com zoom e corte']
+  }, {
+    version: '1.1.0',
+    date: '10 de Janeiro, 2025',
+    type: 'improvement',
+    items: ['Melhorias na performance do dashboard', 'Interface redesenhada para melhor usabilidade', 'Novos gráficos de relatórios financeiros']
+  }, {
+    version: '1.0.5',
+    date: '05 de Janeiro, 2025',
+    type: 'bugfix',
+    items: ['Correção de erro ao salvar shows', 'Ajuste no cálculo de despesas de locomoção', 'Melhorias na navegação mobile']
+  }];
   const getIcon = (type: string) => {
     switch (type) {
       case 'feature':
@@ -58,7 +41,6 @@ const ArtistUpdates = () => {
         return <Sparkles className="w-5 h-5" />;
     }
   };
-
   const getBadgeColor = (type: string) => {
     switch (type) {
       case 'feature':
@@ -71,7 +53,6 @@ const ArtistUpdates = () => {
         return 'bg-white text-gray-700 border-2 border-gray-600';
     }
   };
-
   const getTypeName = (type: string) => {
     switch (type) {
       case 'feature':
@@ -84,9 +65,7 @@ const ArtistUpdates = () => {
         return 'Atualização';
     }
   };
-
-  return (
-    <SidebarProvider>
+  return <SidebarProvider>
       <div className="flex min-h-screen w-full bg-white">
         <ArtistSidebar />
         
@@ -115,32 +94,28 @@ const ArtistUpdates = () => {
               </div>
 
               <div className="space-y-6">
-                {updates.map((update, index) => (
-                  <Card key={index} className="p-6">
+                {updates.map((update, index) => <Card key={index} className="p-6">
                     <div className="flex items-start gap-4">
                       <div className="mt-1">{getIcon(update.type)}</div>
-                      <div className="flex-1">
+                      <div className="flex-1 text-slate-50">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-xl font-bold text-gray-900">
+                          <h3 className="text-xl font-bold text-slate-50">
                             Versão {update.version}
                           </h3>
                           <Badge className={getBadgeColor(update.type)}>
                             {getTypeName(update.type)}
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-600 mb-4">{update.date}</p>
+                        <p className="text-sm mb-4 text-slate-50">{update.date}</p>
                         <ul className="space-y-2">
-                          {update.items.map((item, itemIndex) => (
-                            <li key={itemIndex} className="flex items-start gap-2">
+                          {update.items.map((item, itemIndex) => <li key={itemIndex} className="flex items-start gap-2">
                               <span className="text-primary mt-1">•</span>
-                              <span className="text-gray-700">{item}</span>
-                            </li>
-                          ))}
+                              <span className="text-slate-50">{item}</span>
+                            </li>)}
                         </ul>
                       </div>
                     </div>
-                  </Card>
-                ))}
+                  </Card>)}
               </div>
             </div>
           </main>
@@ -148,8 +123,6 @@ const ArtistUpdates = () => {
           <MobileBottomNav role="artist" />
         </div>
       </div>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 };
-
 export default ArtistUpdates;
