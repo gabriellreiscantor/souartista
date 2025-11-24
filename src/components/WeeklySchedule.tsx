@@ -91,7 +91,7 @@ export function WeeklySchedule({
         </div>
       </Card>;
   }
-  return <Card className="p-4 sm:p-6 border-border bg-white">
+  return <Card className="p-4 sm:p-6 border-gray-200 bg-white">
       {/* Header */}
       <div className="mb-4">
         <h3 className="text-lg font-semibold mb-2 text-gray-900">Agenda da Semana</h3>
