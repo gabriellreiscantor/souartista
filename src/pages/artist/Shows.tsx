@@ -1011,6 +1011,7 @@ const ArtistShows = () => {
                                 Preencha as informações abaixo para gerenciar o show.
                               </p>
                             </DialogHeader>
+                            <form onSubmit={handleShowSubmit} id="desktop-show-form" className="space-y-4">
                             <div className="max-h-[70vh] overflow-y-auto scrollbar-hide px-1" style={{
                               scrollbarWidth: 'none',
                               msOverflowStyle: 'none',
@@ -1288,17 +1289,18 @@ const ArtistShows = () => {
                                   </div>
                                 ))}
                               </div>
-                            </form>
+                              </div>
                             </div>
 
                               <div className="flex gap-3 pt-2 border-t mt-2">
                                 <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white border-gray-300 text-gray-900 hover:bg-gray-50">
                                   Cancelar
                                 </Button>
-                                <Button type="submit" form="desktop-show-form" className="flex-1 bg-primary hover:bg-primary/90 text-white">
+                                <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-white">
                                   Salvar Show
                                 </Button>
                               </div>
+                            </form>
                             </DialogContent>
                         </Dialog>
                         )}
