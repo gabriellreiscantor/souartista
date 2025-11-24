@@ -120,16 +120,16 @@ export default function Admin() {
       });
       const {
         count: artistsCount
-      } = await supabase.from('artists').select('*', {
+      } = await supabase.from('user_roles').select('*', {
         count: 'exact',
         head: true
-      });
+      }).eq('role', 'artist');
       const {
         count: musiciansCount
-      } = await supabase.from('musicians').select('*', {
+      } = await supabase.from('user_roles').select('*', {
         count: 'exact',
         head: true
-      });
+      }).eq('role', 'musician');
       setStats({
         totalUsers: usersCount || 0,
         totalArtists: artistsCount || 0,
