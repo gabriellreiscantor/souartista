@@ -626,16 +626,18 @@ const MusicianShows = () => {
     setEditingVenue(null);
   };
   const expensesSectionRef = useRef<HTMLDivElement>(null);
-
   const addExpense = () => {
     setPersonalExpenses([...personalExpenses, {
       description: '',
       cost: 0
     }]);
-    
+
     // Auto-scroll para a seção de despesas
     setTimeout(() => {
-      expensesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      expensesSectionRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest'
+      });
     }, 100);
   };
   const removeExpense = (index: number) => {
@@ -848,32 +850,28 @@ const MusicianShows = () => {
                                       <span className="truncate">
                                         {showFormData.date_local ? (() => {
                                           const [year, month, day] = showFormData.date_local.split('-').map(Number);
-                                          return format(new Date(year, month - 1, day), "dd/MM/yyyy", { locale: ptBR });
+                                          return format(new Date(year, month - 1, day), "dd/MM/yyyy", {
+                                            locale: ptBR
+                                          });
                                         })() : "Selecione a data"}
                                       </span>
                                     </Button>
                                   </PopoverTrigger>
                                    <PopoverContent className="w-auto p-0 bg-white z-[100]" align="start">
-                                    <CalendarComponent 
-                                      mode="single" 
-                                      selected={showFormData.date_local ? (() => {
-                                        const [year, month, day] = showFormData.date_local.split('-').map(Number);
-                                        return new Date(year, month - 1, day);
-                                      })() : undefined} 
-                                      onSelect={date => {
-                                        if (date) {
-                                          const year = date.getFullYear();
-                                          const month = String(date.getMonth() + 1).padStart(2, '0');
-                                          const day = String(date.getDate()).padStart(2, '0');
-                                          setShowFormData({
-                                            ...showFormData,
-                                            date_local: `${year}-${month}-${day}`
-                                          });
-                                        }
-                                      }} 
-                                      initialFocus 
-                                      className="pointer-events-auto" 
-                                    />
+                                    <CalendarComponent mode="single" selected={showFormData.date_local ? (() => {
+                                      const [year, month, day] = showFormData.date_local.split('-').map(Number);
+                                      return new Date(year, month - 1, day);
+                                    })() : undefined} onSelect={date => {
+                                      if (date) {
+                                        const year = date.getFullYear();
+                                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                                        const day = String(date.getDate()).padStart(2, '0');
+                                        setShowFormData({
+                                          ...showFormData,
+                                          date_local: `${year}-${month}-${day}`
+                                        });
+                                      }
+                                    }} initialFocus className="pointer-events-auto" />
                                   </PopoverContent>
                                 </Popover>
                               </div>
@@ -963,7 +961,7 @@ const MusicianShows = () => {
                                   <div className="flex items-center justify-between">
                                     <Label className="text-gray-900 font-medium">Despesa {index + 1}</Label>
                                     <Button type="button" variant="ghost" size="sm" onClick={() => removeExpense(index)}>
-                                      <X className="w-4 h-4" />
+                                      <X className="w-4 h-4 text-zinc-950 bg-[#ad5af2]" />
                                     </Button>
                                   </div>
 
@@ -1149,10 +1147,10 @@ const MusicianShows = () => {
                           <div>
                             <Label htmlFor="instrument_name" className="text-gray-900 font-medium">Instrumento *</Label>
                             <Select value={instrumentFormData.name} onValueChange={value => setInstrumentFormData({
-                              ...instrumentFormData,
-                              name: value,
-                              customInstrument: value === 'Outro' ? instrumentFormData.customInstrument : ''
-                            })}>
+                            ...instrumentFormData,
+                            name: value,
+                            customInstrument: value === 'Outro' ? instrumentFormData.customInstrument : ''
+                          })}>
                               <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                                 <SelectValue placeholder="Selecione o instrumento" />
                               </SelectTrigger>
