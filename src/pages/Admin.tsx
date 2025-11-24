@@ -322,8 +322,9 @@ export default function Admin() {
                                         <MoreVertical className="h-4 w-4" />
                                       </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
+                                    <DropdownMenuContent className="bg-white text-gray-900 border border-gray-200">
                                       <DropdownMenuItem
+                                        className="hover:bg-gray-100"
                                         onClick={() => {
                                           setEditingUser(user);
                                           setEditName(user.name);
@@ -333,6 +334,7 @@ export default function Admin() {
                                         Editar Nome
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
+                                        className="hover:bg-gray-100"
                                         onClick={() => {
                                           setEditingUser(user);
                                           setEditStatus(user.status_plano);
@@ -431,18 +433,19 @@ export default function Admin() {
 
       {/* Edit Name Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent>
+        <DialogContent className="bg-white text-gray-900">
           <DialogHeader>
-            <DialogTitle>Editar Nome do Usuário</DialogTitle>
-            <DialogDescription>Altere o nome do usuário abaixo.</DialogDescription>
+            <DialogTitle className="text-gray-900">Editar Nome do Usuário</DialogTitle>
+            <DialogDescription className="text-gray-600">Altere o nome do usuário abaixo.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nome</Label>
+              <Label htmlFor="name" className="text-gray-900">Nome</Label>
               <Input
                 id="name"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
+                className="bg-white text-gray-900 border-gray-200"
               />
             </div>
           </div>
@@ -457,23 +460,23 @@ export default function Admin() {
 
       {/* Edit Status Dialog */}
       <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
-        <DialogContent>
+        <DialogContent className="bg-white text-gray-900">
           <DialogHeader>
-            <DialogTitle>Alterar Status do Plano</DialogTitle>
-            <DialogDescription>Selecione o novo status do plano.</DialogDescription>
+            <DialogTitle className="text-gray-900">Alterar Status do Plano</DialogTitle>
+            <DialogDescription className="text-gray-600">Selecione o novo status do plano.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status" className="text-gray-900">Status</Label>
               <Select value={editStatus} onValueChange={setEditStatus}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-white text-gray-900 border-gray-200">
                   <SelectValue placeholder="Selecione o status" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pendente">Pendente</SelectItem>
-                  <SelectItem value="ativo">Ativo</SelectItem>
-                  <SelectItem value="inativo">Inativo</SelectItem>
-                  <SelectItem value="cancelado">Cancelado</SelectItem>
+                <SelectContent className="bg-white text-gray-900 border border-gray-200">
+                  <SelectItem value="pendente" className="hover:bg-gray-100">Pendente</SelectItem>
+                  <SelectItem value="ativo" className="hover:bg-gray-100">Ativo</SelectItem>
+                  <SelectItem value="inativo" className="hover:bg-gray-100">Inativo</SelectItem>
+                  <SelectItem value="cancelado" className="hover:bg-gray-100">Cancelado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
