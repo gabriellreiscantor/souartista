@@ -211,6 +211,8 @@ export default function Admin() {
         data: roleData
       } = await supabase.from('user_roles').select('role').eq('user_id', searchId.trim()).single();
 
+      console.log('User role:', roleData?.role);
+
       // Buscar shows se for artista
       let shows: Show[] = [];
       if (roleData?.role === 'artist') {
@@ -220,21 +222,20 @@ export default function Admin() {
           ascending: false
         });
         shows = showsData || [];
+        console.log('Shows do artista:', shows.length);
       }
 
-      // Buscar participações em shows se for músico - buscar TODOS os shows e filtrar por musician_id
+      // Buscar participações em shows se for músico - usar team_musician_ids
       if (roleData?.role === 'musician') {
         const {
-          data: allShows
-        } = await supabase.from('shows').select('id, venue_name, date_local, time_local, fee, expenses_team, expenses_other, uid');
+          data: showsData,
+          error: showsError
+        } = await supabase.from('shows').select('id, venue_name, date_local, time_local, fee, expenses_team, expenses_other, uid').contains('team_musician_ids', [searchId.trim()]).order('date_local', {
+          ascending: false
+        });
         
-        // Filtrar shows onde o músico está na equipe
-        if (allShows) {
-          shows = allShows.filter(show => {
-            if (!Array.isArray(show.expenses_team)) return false;
-            return show.expenses_team.some((exp: any) => exp.musician_id === searchId.trim());
-          });
-        }
+        console.log('Shows do músico:', showsData?.length, 'Error:', showsError);
+        shows = showsData || [];
       }
 
       // Buscar despesas de locomoção
@@ -243,6 +244,8 @@ export default function Admin() {
       } = await supabase.from('locomotion_expenses').select('id, cost, type, created_at').eq('uid', searchId.trim()).order('created_at', {
         ascending: false
       });
+
+      console.log('Despesas:', expensesData?.length);
 
       setSearchedUser({
         ...profile,
@@ -580,13 +583,13 @@ export default function Admin() {
                           // Cálculos para Músico - quanto recebeu de participações
                           const totalRecebidoMusico = !isArtist ? userShows.reduce((sum, show) => {
                             const expenses = Array.isArray(show.expenses_team) ? show.expenses_team : [];
-                            const myPayment = expenses.find((exp: any) => exp.musician_id === userId);
-                            return sum + Number(myPayment?.amount || 0);
+                            const myPayment = expenses.find((exp: any) => exp.musicianId === userId);
+                            return sum + Number(myPayment?.cost || 0);
                           }, 0) : 0;
 
                           const totalDespesasEquipe = isArtist ? userShows.reduce((sum, show) => {
                             const expenses = Array.isArray(show.expenses_team) ? show.expenses_team : [];
-                            return sum + expenses.reduce((expSum: number, exp: any) => expSum + Number(exp.amount || 0), 0);
+                            return sum + expenses.reduce((expSum: number, exp: any) => expSum + Number(exp.cost || 0), 0);
                           }, 0) : 0;
                           
                           const totalDespesasOutras = isArtist ? userShows.reduce((sum, show) => {
@@ -717,11 +720,11 @@ export default function Admin() {
                                   const userId = searchedUser.id;
                                   const isArtist = searchedUser.role === 'artist';
                                   
-                                  // Para músicos, buscar quanto recebeu
+                                  // Para músicos, buscar quanto recebeu - usar musicianId
                                   let myPayment = 0;
                                   if (!isArtist && Array.isArray(show.expenses_team)) {
-                                    const expense = show.expenses_team.find((exp: any) => exp.musician_id === userId);
-                                    myPayment = Number(expense?.amount || 0);
+                                    const expense = show.expenses_team.find((exp: any) => exp.musicianId === userId);
+                                    myPayment = Number(expense?.cost || 0);
                                   }
                                   
                                   return (
