@@ -541,15 +541,21 @@ const ArtistShows = () => {
     setAdditionalExpenses([...additionalExpenses, { type: '', description: '', cost: 0 }]);
   };
 
+  const addAdditionalExpense = addExpense;
+
   const removeExpense = (index: number) => {
     setAdditionalExpenses(additionalExpenses.filter((_, i) => i !== index));
   };
+
+  const removeAdditionalExpense = removeExpense;
 
   const updateExpense = (index: number, field: keyof AdditionalExpense, value: any) => {
     const updated = [...additionalExpenses];
     updated[index] = { ...updated[index], [field]: value };
     setAdditionalExpenses(updated);
   };
+
+  const updateAdditionalExpense = updateExpense;
 
   const toggleShowExpanded = (showId: string) => {
     const newExpanded = new Set(expandedShows);
@@ -1003,304 +1009,315 @@ const ArtistShows = () => {
                               </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-2xl bg-white">
-                            <DialogHeader>
-                              <DialogTitle className="text-gray-900">
-                                {editingShow ? 'Editar Show' : 'Adicionar Novo Show'}
-                              </DialogTitle>
-                              <p className="text-sm text-muted-foreground">
-                                Preencha as informações abaixo para gerenciar o show.
-                              </p>
-                            </DialogHeader>
-                            <form onSubmit={handleShowSubmit} id="desktop-show-form" className="space-y-4">
-                            <div className="max-h-[70vh] overflow-y-auto scrollbar-hide px-1" style={{
-                              scrollbarWidth: 'none',
-                              msOverflowStyle: 'none',
-                              WebkitOverflowScrolling: 'touch'
-                            }}>
-                            <form onSubmit={handleShowSubmit} id="desktop-show-form" className="space-y-6">
-                              <div className="space-y-4">
-                                <Button
-                                  type="button"
-                                  variant={showFormData.is_private_event ? "default" : "outline"}
-                                  onClick={() => setShowFormData({ ...showFormData, is_private_event: !showFormData.is_private_event })}
-                                  className={showFormData.is_private_event ? "bg-primary hover:bg-primary/90 text-white" : "bg-white hover:bg-gray-50 text-gray-900"}
-                                >
-                                  Evento Particular
-                                </Button>
+                              <DialogHeader>
+                                <DialogTitle className="text-gray-900">
+                                  {editingShow ? 'Editar Show' : 'Adicionar Novo Show'}
+                                </DialogTitle>
+                                <p className="text-sm text-muted-foreground">
+                                  Preencha as informações abaixo para gerenciar o show.
+                                </p>
+                              </DialogHeader>
+                              
+                              <form onSubmit={handleShowSubmit} className="space-y-4">
+                                <div className="max-h-[70vh] overflow-y-auto scrollbar-hide px-1" style={{
+                                  scrollbarWidth: 'none',
+                                  msOverflowStyle: 'none',
+                                  WebkitOverflowScrolling: 'touch'
+                                }}>
+                                  <div className="space-y-6">
+                                    <div className="space-y-4">
+                                      <Button
+                                        type="button"
+                                        variant={showFormData.is_private_event ? "default" : "outline"}
+                                        onClick={() => setShowFormData({ ...showFormData, is_private_event: !showFormData.is_private_event })}
+                                        className={showFormData.is_private_event ? "bg-primary hover:bg-primary/90 text-white" : "bg-white hover:bg-gray-50 text-gray-900"}
+                                      >
+                                        Evento Particular
+                                      </Button>
 
-                                {showFormData.is_private_event ? (
-                                  <div>
-                                    <Label htmlFor="custom_venue" className="text-gray-900">Nome do local</Label>
-                                    <Input
-                                      id="custom_venue"
-                                      value={showFormData.custom_venue}
-                                      onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
-                                      placeholder="Ex: Casamento Ana e Pedro"
-                                      className="bg-white text-gray-900"
-                                      required
-                                    />
-                                  </div>
-                                ) : (
-                                  <div>
-                                    <Label htmlFor="venue_id" className="text-gray-900">Nome do local</Label>
-                                    <Select value={showFormData.venue_id} onValueChange={(value) => setShowFormData({ ...showFormData, venue_id: value })}>
-                                      <SelectTrigger className="bg-white text-gray-900">
-                                        <SelectValue placeholder="Selecione um local" />
-                                      </SelectTrigger>
-                                      <SelectContent className="bg-white">
-                                        {venues.length === 0 ? (
-                                          <div className="p-3 text-center">
-                                            <p className="text-sm text-gray-500 break-words">Nenhum local cadastrado</p>
-                                            <p className="text-xs text-gray-400 mt-1">Adicione em Locais</p>
-                                          </div>
-                                        ) : (
-                                          <>
-                                            {venues.map((venue) => (
-                                              <SelectItem key={venue.id} value={venue.id}>
-                                                {venue.name}
-                                              </SelectItem>
-                                            ))}
-                                            <SelectItem value="custom">Outro local...</SelectItem>
-                                          </>
-                                        )}
-                                      </SelectContent>
-                                    </Select>
-                                    {showFormData.venue_id === 'custom' && (
-                                      <Input
-                                        className="mt-2 bg-white text-gray-900"
-                                        value={showFormData.custom_venue}
-                                        onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
-                                        placeholder="Digite o nome do local"
-                                        required
-                                      />
-                                    )}
-                                  </div>
-                                )}
-
-                                <div className="grid grid-cols-3 gap-4">
-                                  <div>
-                                    <Label htmlFor="date_local" className="text-gray-900">Data do show</Label>
-                                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-                                      <PopoverTrigger asChild>
-                                        <Button
-                                          variant="outline"
-                                          className={cn(
-                                            "w-full justify-start text-left font-normal bg-white text-gray-900",
-                                            !showFormData.date_local && "text-gray-500"
+                                      {showFormData.is_private_event ? (
+                                        <div>
+                                          <Label htmlFor="custom_venue" className="text-gray-900">Nome do local</Label>
+                                          <Input
+                                            id="custom_venue"
+                                            value={showFormData.custom_venue}
+                                            onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
+                                            placeholder="Ex: Casamento Ana e Pedro"
+                                            className="bg-white text-gray-900"
+                                            required
+                                          />
+                                        </div>
+                                      ) : (
+                                        <div>
+                                          <Label htmlFor="venue_id" className="text-gray-900">Nome do local</Label>
+                                          <Select value={showFormData.venue_id} onValueChange={(value) => setShowFormData({ ...showFormData, venue_id: value })}>
+                                            <SelectTrigger className="bg-white text-gray-900">
+                                              <SelectValue placeholder="Selecione um local" />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-white">
+                                              {venues.length === 0 ? (
+                                                <div className="p-3 text-center">
+                                                  <p className="text-sm text-gray-500 break-words">Nenhum local cadastrado</p>
+                                                  <p className="text-xs text-gray-400 mt-1">Adicione em Locais</p>
+                                                </div>
+                                              ) : (
+                                                <>
+                                                  {venues.map((venue) => (
+                                                    <SelectItem key={venue.id} value={venue.id}>
+                                                      {venue.name}
+                                                    </SelectItem>
+                                                  ))}
+                                                  <SelectItem value="custom">Outro local...</SelectItem>
+                                                </>
+                                              )}
+                                            </SelectContent>
+                                          </Select>
+                                          {showFormData.venue_id === 'custom' && (
+                                            <Input
+                                              className="mt-2 bg-white text-gray-900"
+                                              value={showFormData.custom_venue}
+                                              onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
+                                              placeholder="Digite o nome do local"
+                                              required
+                                            />
                                           )}
-                                        >
-                                          <CalendarIcon className="mr-2 h-4 w-4" />
-                                          {showFormData.date_local ? format(new Date(showFormData.date_local), "dd/MM/yyyy", { locale: ptBR }) : "Selecione a data"}
-                                        </Button>
-                                      </PopoverTrigger>
-                                       <PopoverContent className="w-auto p-0 bg-primary border-0" align="start">
-                                        <Calendar
-                                          mode="single"
-                                          selected={showFormData.date_local ? new Date(showFormData.date_local + 'T12:00:00') : undefined}
-                                          onSelect={(date) => {
-                                            if (date) {
-                                              // Format to yyyy-MM-dd in local timezone to avoid date shifting
-                                              const year = date.getFullYear();
-                                              const month = String(date.getMonth() + 1).padStart(2, '0');
-                                              const day = String(date.getDate()).padStart(2, '0');
-                                              setShowFormData({ ...showFormData, date_local: `${year}-${month}-${day}` });
-                                              setCalendarOpen(false);
-                                            }
-                                          }}
-                                          initialFocus
-                                          className="bg-primary text-white pointer-events-auto"
+                                        </div>
+                                      )}
+
+                                      <div className="grid grid-cols-3 gap-4">
+                                        <div>
+                                          <Label htmlFor="date_local" className="text-gray-900">Data do show</Label>
+                                          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                                            <PopoverTrigger asChild>
+                                              <Button
+                                                variant="outline"
+                                                className={cn(
+                                                  "w-full justify-start text-left font-normal bg-white text-gray-900",
+                                                  !showFormData.date_local && "text-gray-500"
+                                                )}
+                                              >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {showFormData.date_local ? format(new Date(showFormData.date_local), "dd/MM/yyyy", { locale: ptBR }) : "Selecione a data"}
+                                              </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0 bg-primary border-0" align="start">
+                                              <Calendar
+                                                mode="single"
+                                                selected={showFormData.date_local ? new Date(showFormData.date_local + 'T12:00:00') : undefined}
+                                                onSelect={(date) => {
+                                                  if (date) {
+                                                    const year = date.getFullYear();
+                                                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                                                    const day = String(date.getDate()).padStart(2, '0');
+                                                    setShowFormData({ ...showFormData, date_local: `${year}-${month}-${day}` });
+                                                    setCalendarOpen(false);
+                                                  }
+                                                }}
+                                                initialFocus
+                                                className="bg-primary text-white pointer-events-auto"
+                                              />
+                                            </PopoverContent>
+                                          </Popover>
+                                        </div>
+                                        <div>
+                                          <Label htmlFor="time_local" className="text-gray-900">Horário</Label>
+                                          <TimePicker
+                                            value={showFormData.time_local}
+                                            onChange={(time) => setShowFormData({ ...showFormData, time_local: time })}
+                                          />
+                                        </div>
+                                        <div>
+                                          <Label htmlFor="duration" className="text-gray-900">Duração de show</Label>
+                                          <Select defaultValue="4h">
+                                            <SelectTrigger className="bg-white text-gray-900">
+                                              <SelectValue placeholder="Horas..." />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-white">
+                                              <SelectItem value="1h" className="text-gray-900">1 hora</SelectItem>
+                                              <SelectItem value="1.5h" className="text-gray-900">1 hora e meia</SelectItem>
+                                              <SelectItem value="2h" className="text-gray-900">2 horas</SelectItem>
+                                              <SelectItem value="2.5h" className="text-gray-900">2 horas e meia</SelectItem>
+                                              <SelectItem value="3h" className="text-gray-900">3 horas</SelectItem>
+                                              <SelectItem value="3.5h" className="text-gray-900">3 horas e meia</SelectItem>
+                                              <SelectItem value="4h" className="text-gray-900">4 horas</SelectItem>
+                                              <SelectItem value="4.5h" className="text-gray-900">4 horas e meia</SelectItem>
+                                              <SelectItem value="5h" className="text-gray-900">5 horas</SelectItem>
+                                              <SelectItem value="5.5h" className="text-gray-900">5 horas e meia</SelectItem>
+                                              <SelectItem value="6h" className="text-gray-900">6 horas</SelectItem>
+                                              <SelectItem value="6.5h" className="text-gray-900">6 horas e meia</SelectItem>
+                                              <SelectItem value="7h" className="text-gray-900">7 horas</SelectItem>
+                                              <SelectItem value="7.5h" className="text-gray-900">7 horas e meia</SelectItem>
+                                              <SelectItem value="8h" className="text-gray-900">8 horas</SelectItem>
+                                              <SelectItem value="8.5h" className="text-gray-900">8 horas e meia</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                      </div>
+
+                                      <div>
+                                        <Label htmlFor="fee" className="text-gray-900">Cachê (R$)</Label>
+                                        <Input
+                                          id="fee"
+                                          type="text"
+                                          value={showFormData.fee}
+                                          onChange={(e) => setShowFormData({ ...showFormData, fee: e.target.value })}
+                                          placeholder="R$ 0,00"
+                                          className="bg-white text-gray-900 placeholder:text-gray-500"
+                                          required
                                         />
-                                       </PopoverContent>
-                                    </Popover>
-                                  </div>
-                                  <div>
-                                    <Label htmlFor="time_local" className="text-gray-900">Horário</Label>
-                                    <TimePicker
-                                      value={showFormData.time_local}
-                                      onChange={(time) => setShowFormData({ ...showFormData, time_local: time })}
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label htmlFor="duration" className="text-gray-900">Duração de show</Label>
-                                    <Select defaultValue="4h">
-                                      <SelectTrigger className="bg-white text-gray-900">
-                                        <SelectValue placeholder="Horas..." />
-                                      </SelectTrigger>
-                                      <SelectContent className="bg-white">
-                                        <SelectItem value="1h" className="text-gray-900">1 hora</SelectItem>
-                                        <SelectItem value="1.5h" className="text-gray-900">1 hora e meia</SelectItem>
-                                        <SelectItem value="2h" className="text-gray-900">2 horas</SelectItem>
-                                        <SelectItem value="2.5h" className="text-gray-900">2 horas e meia</SelectItem>
-                                        <SelectItem value="3h" className="text-gray-900">3 horas</SelectItem>
-                                        <SelectItem value="3.5h" className="text-gray-900">3 horas e meia</SelectItem>
-                                        <SelectItem value="4h" className="text-gray-900">4 horas</SelectItem>
-                                        <SelectItem value="4.5h" className="text-gray-900">4 horas e meia</SelectItem>
-                                        <SelectItem value="5h" className="text-gray-900">5 horas</SelectItem>
-                                        <SelectItem value="5.5h" className="text-gray-900">5 horas e meia</SelectItem>
-                                        <SelectItem value="6h" className="text-gray-900">6 horas</SelectItem>
-                                        <SelectItem value="6.5h" className="text-gray-900">6 horas e meia</SelectItem>
-                                        <SelectItem value="7h" className="text-gray-900">7 horas</SelectItem>
-                                        <SelectItem value="7.5h" className="text-gray-900">7 horas e meia</SelectItem>
-                                        <SelectItem value="8h" className="text-gray-900">8 horas</SelectItem>
-                                        <SelectItem value="8.5h" className="text-gray-900">8 horas e meia</SelectItem>
-                                      </SelectContent>
-                                    </Select>
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                      <div className="flex items-center justify-between">
+                                        <div>
+                                          <h3 className="font-semibold text-gray-900">Equipe/Músicos</h3>
+                                          <p className="text-xs text-gray-900">Custo total: R$ {teamMembers.reduce((sum, m) => sum + m.cost, 0).toFixed(2)}</p>
+                                        </div>
+                                        <Button type="button" variant="outline" onClick={addTeamMember} className="bg-white hover:bg-gray-50 text-gray-900">
+                                          <Plus className="w-4 h-4 mr-2" />
+                                          Adicionar
+                                        </Button>
+                                      </div>
+
+                                      {teamMembers.map((member, index) => (
+                                        <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+                                          <div className="flex items-center justify-between">
+                                            <Label className="text-gray-900">Membro</Label>
+                                            <Button
+                                              type="button"
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => removeTeamMember(index)}
+                                              className="text-destructive hover:text-destructive"
+                                            >
+                                              <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                          </div>
+
+                                          <div className="grid grid-cols-2 gap-3">
+                                            <Select
+                                              value={member.musicianId || ''}
+                                              onValueChange={(value) => {
+                                                if (value === 'freelancer') {
+                                                  updateTeamMember(index, 'musicianId', undefined);
+                                                } else {
+                                                  updateTeamMember(index, 'musicianId', value);
+                                                }
+                                              }}
+                                            >
+                                              <SelectTrigger className="bg-white text-gray-900">
+                                                <SelectValue placeholder="Selecione um músico" />
+                                              </SelectTrigger>
+                                              <SelectContent className="bg-white">
+                                                {musicians.length === 0 ? (
+                                                  <div className="p-3 text-center">
+                                                    <p className="text-sm text-gray-500 break-words">Nenhum músico cadastrado</p>
+                                                    <p className="text-xs text-gray-400 mt-1">Adicione em Músicos</p>
+                                                  </div>
+                                                ) : (
+                                                  <>
+                                                    {musicians.map((m) => (
+                                                      <SelectItem key={m.id} value={m.id} className="text-gray-900">
+                                                        {m.name} - {m.instrument}
+                                                      </SelectItem>
+                                                    ))}
+                                                    <SelectItem value="freelancer" className="text-gray-900">Freelancer</SelectItem>
+                                                  </>
+                                                )}
+                                              </SelectContent>
+                                            </Select>
+
+                                            <Input
+                                              type="text"
+                                              placeholder="Custo (R$)"
+                                              value={member.cost || ''}
+                                              onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
+                                              className="bg-white text-gray-900 placeholder:text-gray-500"
+                                              required
+                                            />
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+
+                                    <div className="space-y-4">
+                                      <div className="flex items-center justify-between">
+                                        <div>
+                                          <h3 className="font-semibold text-gray-900">Despesas Adicionais</h3>
+                                          <p className="text-xs text-gray-900">Custo total: R$ {additionalExpenses.reduce((sum, e) => sum + e.cost, 0).toFixed(2)}</p>
+                                        </div>
+                                        <Button type="button" variant="outline" onClick={addAdditionalExpense} className="bg-white hover:bg-gray-50 text-gray-900">
+                                          <Plus className="w-4 h-4 mr-2" />
+                                          Adicionar
+                                        </Button>
+                                      </div>
+
+                                      {additionalExpenses.map((expense, index) => (
+                                        <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+                                          <div className="flex items-center justify-between">
+                                            <Label className="text-gray-900">Despesa</Label>
+                                            <Button
+                                              type="button"
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => removeAdditionalExpense(index)}
+                                              className="text-destructive hover:text-destructive"
+                                            >
+                                              <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                          </div>
+
+                                          <div className="grid grid-cols-3 gap-3">
+                                            <Select
+                                              value={expense.type}
+                                              onValueChange={(value) => updateAdditionalExpense(index, 'type', value)}
+                                            >
+                                              <SelectTrigger className="bg-white text-gray-900">
+                                                <SelectValue placeholder="Tipo" />
+                                              </SelectTrigger>
+                                              <SelectContent className="bg-white">
+                                                <SelectItem value="transporte" className="text-gray-900">Transporte</SelectItem>
+                                                <SelectItem value="alimentacao" className="text-gray-900">Alimentação</SelectItem>
+                                                <SelectItem value="hospedagem" className="text-gray-900">Hospedagem</SelectItem>
+                                                <SelectItem value="equipamento" className="text-gray-900">Equipamento</SelectItem>
+                                                <SelectItem value="outro" className="text-gray-900">Outro</SelectItem>
+                                              </SelectContent>
+                                            </Select>
+
+                                            <Input
+                                              type="text"
+                                              placeholder="Descrição"
+                                              value={expense.description}
+                                              onChange={(e) => updateAdditionalExpense(index, 'description', e.target.value)}
+                                              className="bg-white text-gray-900 placeholder:text-gray-500"
+                                              required
+                                            />
+
+                                            <Input
+                                              type="text"
+                                              placeholder="Custo (R$)"
+                                              value={expense.cost || ''}
+                                              onChange={(e) => updateAdditionalExpense(index, 'cost', parseFloat(e.target.value) || 0)}
+                                              className="bg-white text-gray-900 placeholder:text-gray-500"
+                                              required
+                                            />
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
                                   </div>
                                 </div>
 
-                                <div>
-                                  <Label htmlFor="fee" className="text-gray-900">Cachê (R$)</Label>
-                                  <Input
-                                    id="fee"
-                                    type="text"
-                                    value={showFormData.fee}
-                                    onChange={(e) => setShowFormData({ ...showFormData, fee: e.target.value })}
-                                    placeholder="R$ 0,00"
-                                    className="bg-white text-gray-900 placeholder:text-gray-500"
-                                    required
-                                  />
-                                </div>
-                              </div>
-
-                              <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <h3 className="font-semibold text-gray-900">Equipe/Músicos</h3>
-                                    <p className="text-xs text-gray-900">Custo total: R$ {teamMembers.reduce((sum, m) => sum + m.cost, 0).toFixed(2)}</p>
-                                  </div>
-                                  <Button type="button" variant="outline" onClick={addTeamMember} className="bg-white hover:bg-gray-50 text-gray-900">
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Adicionar
+                                <div className="flex gap-3 pt-2 border-t mt-2">
+                                  <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white border-gray-300 text-gray-900 hover:bg-gray-50">
+                                    Cancelar
+                                  </Button>
+                                  <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-white">
+                                    Salvar Show
                                   </Button>
                                 </div>
-
-                                {teamMembers.map((member, index) => (
-                                  <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
-                                    <div className="flex items-center justify-between">
-                                      <Label className="text-gray-900">Membro</Label>
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => removeTeamMember(index)}
-                                        className="text-destructive hover:text-destructive"
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                      </Button>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3">
-                                      <Select
-                                        value={member.musicianId || ''}
-                                        onValueChange={(value) => {
-                                          if (value === 'freelancer') {
-                                            updateTeamMember(index, 'musicianId', undefined);
-                                          } else {
-                                            updateTeamMember(index, 'musicianId', value);
-                                          }
-                                        }}
-                                      >
-                                        <SelectTrigger className="bg-white text-gray-900">
-                                          <SelectValue placeholder="Selecione um músico" />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-white">
-                                          {musicians.length === 0 ? (
-                                            <div className="p-3 text-center">
-                                              <p className="text-sm text-gray-500 break-words">Nenhum músico cadastrado</p>
-                                              <p className="text-xs text-gray-400 mt-1">Adicione em Músicos</p>
-                                            </div>
-                                          ) : (
-                                            <>
-                                              {musicians.map((m) => (
-                                                <SelectItem key={m.id} value={m.id} className="text-gray-900">
-                                                  {m.name} - {m.instrument}
-                                                </SelectItem>
-                                              ))}
-                                              <SelectItem value="freelancer" className="text-gray-900">Freelancer</SelectItem>
-                                            </>
-                                          )}
-                                        </SelectContent>
-                                      </Select>
-
-                                      <Input
-                                        type="text"
-                                        placeholder="Custo (R$)"
-                                        value={member.cost || ''}
-                                        onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
-                                        className="bg-white text-gray-900 placeholder:text-gray-500"
-                                        required
-                                      />
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-
-                              <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <h3 className="font-semibold text-gray-900">Despesas Adicionais (Optional)</h3>
-                                    <p className="text-xs text-gray-900">Custo total: R$ {additionalExpenses.reduce((sum, e) => sum + e.cost, 0).toFixed(2)}</p>
-                                  </div>
-                                  <Button type="button" variant="outline" onClick={addExpense} className="bg-white hover:bg-gray-50 text-gray-900">
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Adicionar Despesa
-                                  </Button>
-                                </div>
-
-                                {additionalExpenses.map((expense, index) => (
-                                  <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
-                                    <div className="flex items-center justify-between">
-                                      <Label className="text-gray-900">Despesa</Label>
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => removeExpense(index)}
-                                        className="text-destructive hover:text-destructive"
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                      </Button>
-                                    </div>
-
-                                    <div className="grid grid-cols-3 gap-3">
-                                      <Input
-                                        placeholder="Tipo"
-                                        value={expense.type}
-                                        onChange={(e) => updateExpense(index, 'type', e.target.value)}
-                                        className="bg-white text-gray-900 placeholder:text-gray-500"
-                                        required
-                                      />
-                                      <Input
-                                        placeholder="Descrição"
-                                        value={expense.description}
-                                        onChange={(e) => updateExpense(index, 'description', e.target.value)}
-                                        className="bg-white text-gray-900 placeholder:text-gray-500"
-                                        required
-                                      />
-                                      <Input
-                                        type="text"
-                                        placeholder="Valor (R$)"
-                                        value={expense.cost || ''}
-                                        onChange={(e) => updateExpense(index, 'cost', parseFloat(e.target.value) || 0)}
-                                        className="bg-white text-gray-900 placeholder:text-gray-500"
-                                        required
-                                      />
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                              </div>
-                            </div>
-
-                              <div className="flex gap-3 pt-2 border-t mt-2">
-                                <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white border-gray-300 text-gray-900 hover:bg-gray-50">
-                                  Cancelar
-                                </Button>
-                                <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-white">
-                                  Salvar Show
-                                </Button>
-                              </div>
-                            </form>
+                              </form>
                             </DialogContent>
                         </Dialog>
                         )}
