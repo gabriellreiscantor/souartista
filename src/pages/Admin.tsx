@@ -222,14 +222,19 @@ export default function Admin() {
         shows = showsData || [];
       }
 
-      // Buscar participações em shows se for músico
+      // Buscar participações em shows se for músico - buscar TODOS os shows e filtrar por musician_id
       if (roleData?.role === 'musician') {
         const {
-          data: showsData
-        } = await supabase.from('shows').select('id, venue_name, date_local, time_local, fee, expenses_team, expenses_other, uid').contains('team_musician_ids', [searchId.trim()]).order('date_local', {
-          ascending: false
-        });
-        shows = showsData || [];
+          data: allShows
+        } = await supabase.from('shows').select('id, venue_name, date_local, time_local, fee, expenses_team, expenses_other, uid');
+        
+        // Filtrar shows onde o músico está na equipe
+        if (allShows) {
+          shows = allShows.filter(show => {
+            if (!Array.isArray(show.expenses_team)) return false;
+            return show.expenses_team.some((exp: any) => exp.musician_id === searchId.trim());
+          });
+        }
       }
 
       // Buscar despesas de locomoção
