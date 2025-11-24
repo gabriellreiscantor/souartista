@@ -26,6 +26,15 @@ interface UserProfile {
   created_at: string;
   plan_purchased_at: string | null;
   last_seen_at: string | null;
+  role?: string;
+}
+
+interface Show {
+  id: string;
+  venue_name: string;
+  date_local: string;
+  time_local: string;
+  fee: number;
 }
 interface Stats {
   totalUsers: number;
@@ -56,6 +65,10 @@ export default function Admin() {
   const [editStatus, setEditStatus] = useState('');
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
+  const [searchId, setSearchId] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [searchedUser, setSearchedUser] = useState<UserProfile | null>(null);
+  const [userShows, setUserShows] = useState<Show[]>([]);
   const usersPerPage = 50;
   useEffect(() => {
     if (!adminLoading && !isAdmin && user) {
@@ -162,6 +175,56 @@ export default function Admin() {
       toast.error('Erro ao atualizar status');
     }
   };
+  const handleSearchUser = async () => {
+    if (!searchId.trim()) {
+      toast.error('Digite um ID para buscar');
+      return;
+    }
+
+    try {
+      setSearching(true);
+      
+      // Buscar profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', searchId.trim())
+        .single();
+
+      if (profileError) throw new Error('Usuário não encontrado');
+
+      // Buscar role
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', searchId.trim())
+        .single();
+
+      // Buscar shows se for artista
+      let shows: Show[] = [];
+      if (roleData?.role === 'artist') {
+        const { data: showsData } = await supabase
+          .from('shows')
+          .select('id, venue_name, date_local, time_local, fee')
+          .eq('uid', searchId.trim())
+          .order('date_local', { ascending: false });
+        
+        shows = showsData || [];
+      }
+
+      setSearchedUser({ ...profile, role: roleData?.role });
+      setUserShows(shows);
+      toast.success('Usuário encontrado!');
+    } catch (error) {
+      console.error('Erro ao buscar usuário:', error);
+      toast.error('Usuário não encontrado');
+      setSearchedUser(null);
+      setUserShows([]);
+    } finally {
+      setSearching(false);
+    }
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('ID copiado!');
@@ -345,7 +408,144 @@ export default function Admin() {
                   <CardTitle className="text-gray-900">Buscar por ID</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600">Em desenvolvimento...</p>
+                  <div className="space-y-6">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Cole o ID do usuário aqui..."
+                        value={searchId}
+                        onChange={(e) => setSearchId(e.target.value)}
+                        className="bg-white text-gray-900 border-gray-200"
+                      />
+                      <Button onClick={handleSearchUser} disabled={searching}>
+                        {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Buscar'}
+                      </Button>
+                    </div>
+
+                    {searchedUser && (
+                      <div className="space-y-4 pt-4 border-t border-gray-200">
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <Card className="bg-gray-50 border-gray-200">
+                            <CardHeader>
+                              <CardTitle className="text-sm text-gray-700">Informações Pessoais</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2 text-sm">
+                              <div>
+                                <span className="font-medium text-gray-900">Nome:</span>
+                                <span className="ml-2 text-gray-700">{searchedUser.name}</span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-900">Email:</span>
+                                <span className="ml-2 text-gray-700">{searchedUser.email}</span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-900">CPF:</span>
+                                <span className="ml-2 text-gray-700">{searchedUser.cpf || 'Não informado'}</span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-900">Telefone:</span>
+                                <span className="ml-2 text-gray-700">{searchedUser.phone || 'Não informado'}</span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-900">Data de Nascimento:</span>
+                                <span className="ml-2 text-gray-700">{searchedUser.birth_date || 'Não informado'}</span>
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          <Card className="bg-gray-50 border-gray-200">
+                            <CardHeader>
+                              <CardTitle className="text-sm text-gray-700">Status e Role</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2 text-sm">
+                              <div>
+                                <span className="font-medium text-gray-900">Status do Plano:</span>
+                                <span className="ml-2">{getStatusBadge(searchedUser.status_plano)}</span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-900">Role:</span>
+                                <span className="ml-2">
+                                  <Badge className="bg-purple-100 text-purple-800">
+                                    {searchedUser.role || 'Não definido'}
+                                  </Badge>
+                                </span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-900">Cadastrado em:</span>
+                                <span className="ml-2 text-gray-700">
+                                  {new Date(searchedUser.created_at).toLocaleDateString('pt-BR')}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-900">Último acesso:</span>
+                                <span className="ml-2 text-gray-700">
+                                  {searchedUser.last_seen_at 
+                                    ? new Date(searchedUser.last_seen_at).toLocaleDateString('pt-BR')
+                                    : 'Nunca'}
+                                </span>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+
+                        {searchedUser.role === 'artist' && userShows.length > 0 && (
+                          <Card className="bg-gray-50 border-gray-200">
+                            <CardHeader>
+                              <CardTitle className="text-sm text-gray-700">Shows ({userShows.length})</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-2 max-h-60 overflow-y-auto">
+                                {userShows.map(show => (
+                                  <div key={show.id} className="p-3 bg-white rounded border border-gray-200">
+                                    <div className="flex justify-between items-start">
+                                      <div>
+                                        <p className="font-medium text-gray-900">{show.venue_name}</p>
+                                        <p className="text-xs text-gray-600">
+                                          {new Date(show.date_local).toLocaleDateString('pt-BR')} às {show.time_local}
+                                        </p>
+                                      </div>
+                                      <Badge className="bg-green-100 text-green-800">
+                                        R$ {Number(show.fee).toFixed(2)}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => {
+                              setEditingUser(searchedUser);
+                              setEditName(searchedUser.name);
+                              setShowEditDialog(true);
+                            }}
+                          >
+                            Editar Nome
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            onClick={() => {
+                              setEditingUser(searchedUser);
+                              setEditStatus(searchedUser.status_plano);
+                              setShowStatusDialog(true);
+                            }}
+                          >
+                            Alterar Status
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            onClick={() => copyToClipboard(searchedUser.id)}
+                          >
+                            <Copy className="h-4 w-4 mr-2" />
+                            Copiar ID
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>}
 
