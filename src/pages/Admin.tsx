@@ -369,6 +369,9 @@ export default function Admin() {
                               }}>
                                         Alterar Status do Plano
                                       </DropdownMenuItem>
+                                      <DropdownMenuItem className="hover:bg-gray-100" onClick={() => copyToClipboard(user.id)}>
+                                        Copiar ID
+                                      </DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 </td>
