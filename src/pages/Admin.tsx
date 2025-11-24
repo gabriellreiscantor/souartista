@@ -167,6 +167,43 @@ export default function Admin() {
       }
     }
   }, [isAdmin, currentTab]);
+
+  // Realtime updates para a aba de administradores
+  useEffect(() => {
+    if (!isAdmin || currentTab !== 'administradores') return;
+
+    const adminChannel = supabase
+      .channel('admin-permissions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'admin_users'
+        },
+        () => {
+          console.log('Admin users changed, reloading...');
+          fetchAdminUsers();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_roles'
+        },
+        () => {
+          console.log('User roles changed, reloading...');
+          fetchAdminUsers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(adminChannel);
+    };
+  }, [isAdmin, currentTab]);
   const fetchStats = async () => {
     try {
       const {
