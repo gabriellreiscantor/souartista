@@ -14,8 +14,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, X, Send, Download, Filter } from 'lucide-react';
+import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, X, Send, Download, Filter, Link as LinkIcon } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { RouteSelector } from '@/components/RouteSelector';
 import * as XLSX from 'xlsx';
 interface UserProfile {
   id: string;
@@ -98,6 +99,7 @@ export default function Admin() {
   const [sendingNotification, setSendingNotification] = useState(false);
   const [deletingNotificationId, setDeletingNotificationId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showRouteSelector, setShowRouteSelector] = useState(false);
   
   // Estados para Contatos WhatsApp
   const [contacts, setContacts] = useState<any[]>([]);
@@ -1112,13 +1114,27 @@ export default function Admin() {
 
                       <div className="space-y-2">
                         <Label htmlFor="notif-link" className="text-gray-900">Link (Opcional)</Label>
-                        <Input
-                          id="notif-link"
-                          placeholder="https://..."
-                          value={notificationLink}
-                          onChange={(e) => setNotificationLink(e.target.value)}
-                          className="bg-white text-gray-900 border-gray-200"
-                        />
+                        <div className="flex gap-2">
+                          <Input
+                            id="notif-link"
+                            placeholder="https://... ou /artist/dashboard"
+                            value={notificationLink}
+                            onChange={(e) => setNotificationLink(e.target.value)}
+                            className="bg-white text-gray-900 border-gray-200 flex-1"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setShowRouteSelector(true)}
+                            className="flex-shrink-0"
+                          >
+                            <LinkIcon className="w-4 h-4 mr-2" />
+                            Páginas
+                          </Button>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          Clique em "Páginas" para selecionar uma página do app ou digite um link externo
+                        </p>
                       </div>
 
                       <div className="space-y-2">
@@ -1377,5 +1393,11 @@ export default function Admin() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <RouteSelector
+        open={showRouteSelector}
+        onOpenChange={setShowRouteSelector}
+        onSelectRoute={(path) => setNotificationLink(path)}
+      />
     </SidebarProvider>;
 }
