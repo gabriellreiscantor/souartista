@@ -22,6 +22,7 @@ interface Show {
   expenses_other: Array<{
     cost: number;
   }>;
+  artist_name?: string;
 }
 export function WeeklySchedule({
   userRole
@@ -47,7 +48,7 @@ export function WeeklySchedule({
     queryKey: ['weekly-shows', user?.id, userRole, format(weekStart, 'yyyy-MM-dd'), format(weekEnd, 'yyyy-MM-dd')],
     queryFn: async () => {
       if (!user) return [];
-      let query = supabase.from('shows').select('*').gte('date_local', format(weekStart, 'yyyy-MM-dd')).lte('date_local', format(weekEnd, 'yyyy-MM-dd')).order('date_local', {
+      let query = supabase.from('shows').select('*, profiles!shows_uid_fkey(name)').gte('date_local', format(weekStart, 'yyyy-MM-dd')).lte('date_local', format(weekEnd, 'yyyy-MM-dd')).order('date_local', {
         ascending: true
       });
       if (userRole === 'artist') {
@@ -63,7 +64,8 @@ export function WeeklySchedule({
       return (data || []).map(show => ({
         ...show,
         expenses_team: show.expenses_team as any || [],
-        expenses_other: show.expenses_other as any || []
+        expenses_other: show.expenses_other as any || [],
+        artist_name: (show.profiles as any)?.name
       })) as Show[];
     },
     enabled: !!user
@@ -138,9 +140,25 @@ export function WeeklySchedule({
 
                 {/* Shows List */}
                 <div className="flex-1 space-y-2">
-                  {dayShows.map(show => <div key={show.id} className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-primary" />
-                      <span className="text-sm font-medium text-gray-900">{show.venue_name}</span>
+                  {dayShows.map(show => <div key={show.id} className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-bold text-gray-900">{show.venue_name}</span>
+                      </div>
+                      {userRole === 'musician' && (
+                        <div className="ml-6 space-y-0.5">
+                          {show.artist_name && (
+                            <p className="text-xs text-gray-600">
+                              <span className="font-medium">Artista:</span> {show.artist_name}
+                            </p>
+                          )}
+                          {show.time_local && (
+                            <p className="text-xs text-gray-600">
+                              <span className="font-medium">Horário:</span> {show.time_local}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>)}
                 </div>
               </div>
