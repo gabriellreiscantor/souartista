@@ -34,6 +34,15 @@ interface Show {
   date_local: string;
   time_local: string;
   fee: number;
+  expenses_team: any;
+  expenses_other: any;
+}
+
+interface LocomotionExpense {
+  id: string;
+  cost: number;
+  type: string;
+  created_at: string;
 }
 interface Stats {
   totalUsers: number;
@@ -68,6 +77,7 @@ export default function Admin() {
   const [searching, setSearching] = useState(false);
   const [searchedUser, setSearchedUser] = useState<UserProfile | null>(null);
   const [userShows, setUserShows] = useState<Show[]>([]);
+  const [userExpenses, setUserExpenses] = useState<LocomotionExpense[]>([]);
   const [searchInputRef, setSearchInputRef] = useState<HTMLInputElement | null>(null);
   const usersPerPage = 50;
   useEffect(() => {
@@ -200,22 +210,32 @@ export default function Admin() {
       if (roleData?.role === 'artist') {
         const {
           data: showsData
-        } = await supabase.from('shows').select('id, venue_name, date_local, time_local, fee').eq('uid', searchId.trim()).order('date_local', {
+        } = await supabase.from('shows').select('id, venue_name, date_local, time_local, fee, expenses_team, expenses_other').eq('uid', searchId.trim()).order('date_local', {
           ascending: false
         });
         shows = showsData || [];
       }
+
+      // Buscar despesas de locomoção
+      const {
+        data: expensesData
+      } = await supabase.from('locomotion_expenses').select('id, cost, type, created_at').eq('uid', searchId.trim()).order('created_at', {
+        ascending: false
+      });
+
       setSearchedUser({
         ...profile,
         role: roleData?.role
       });
       setUserShows(shows);
+      setUserExpenses(expensesData || []);
       toast.success('Usuário encontrado!');
     } catch (error) {
       console.error('Erro ao buscar usuário:', error);
       toast.error('Usuário não encontrado');
       setSearchedUser(null);
       setUserShows([]);
+      setUserExpenses([]);
     } finally {
       setSearching(false);
     }
@@ -513,6 +533,86 @@ export default function Admin() {
                             </CardContent>
                           </Card>
                         </div>
+
+                        {/* Resumo Financeiro */}
+                        {searchedUser.role === 'artist' && (userShows.length > 0 || userExpenses.length > 0) && (() => {
+                          const totalReceita = userShows.reduce((sum, show) => sum + Number(show.fee), 0);
+                          const totalDespesasEquipe = userShows.reduce((sum, show) => {
+                            const expenses = Array.isArray(show.expenses_team) ? show.expenses_team : [];
+                            return sum + expenses.reduce((expSum: number, exp: any) => expSum + Number(exp.amount || 0), 0);
+                          }, 0);
+                          const totalDespesasOutras = userShows.reduce((sum, show) => {
+                            const expenses = Array.isArray(show.expenses_other) ? show.expenses_other : [];
+                            return sum + expenses.reduce((expSum: number, exp: any) => expSum + Number(exp.amount || 0), 0);
+                          }, 0);
+                          const totalDespesasLocomocao = userExpenses.reduce((sum, exp) => sum + Number(exp.cost), 0);
+                          const totalDespesas = totalDespesasEquipe + totalDespesasOutras + totalDespesasLocomocao;
+                          const lucroLiquido = totalReceita - totalDespesas;
+                          const mediaCacheShow = userShows.length > 0 ? totalReceita / userShows.length : 0;
+
+                          return (
+                            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+                              <CardHeader>
+                                <CardTitle className="text-sm text-gray-900 flex items-center gap-2">
+                                  💰 Resumo Financeiro Completo
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                                  <div className="p-3 bg-white rounded-lg border border-green-200">
+                                    <p className="text-xs text-gray-600 mb-1">Receita Total (Shows)</p>
+                                    <p className="text-xl font-bold text-green-600">
+                                      R$ {totalReceita.toFixed(2)}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      {userShows.length} show{userShows.length !== 1 ? 's' : ''}
+                                    </p>
+                                  </div>
+
+                                  <div className="p-3 bg-white rounded-lg border border-red-200">
+                                    <p className="text-xs text-gray-600 mb-1">Despesas Totais</p>
+                                    <p className="text-xl font-bold text-red-600">
+                                      R$ {totalDespesas.toFixed(2)}
+                                    </p>
+                                    <div className="text-xs text-gray-500 mt-1 space-y-1">
+                                      <div>Equipe: R$ {totalDespesasEquipe.toFixed(2)}</div>
+                                      <div>Locomoção: R$ {totalDespesasLocomocao.toFixed(2)}</div>
+                                      <div>Outras: R$ {totalDespesasOutras.toFixed(2)}</div>
+                                    </div>
+                                  </div>
+
+                                  <div className="p-3 bg-white rounded-lg border border-blue-200 sm:col-span-2 lg:col-span-1">
+                                    <p className="text-xs text-gray-600 mb-1">Lucro Líquido</p>
+                                    <p className={`text-xl font-bold ${lucroLiquido >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                                      R$ {lucroLiquido.toFixed(2)}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      Média/show: R$ {mediaCacheShow.toFixed(2)}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {userExpenses.length > 0 && (
+                                  <div className="mt-4 pt-4 border-t border-green-200">
+                                    <p className="text-xs font-medium text-gray-700 mb-2">
+                                      Últimas Despesas de Locomoção ({userExpenses.length})
+                                    </p>
+                                    <div className="space-y-1 max-h-32 overflow-y-auto">
+                                      {userExpenses.slice(0, 5).map(exp => (
+                                        <div key={exp.id} className="flex justify-between text-xs">
+                                          <span className="text-gray-600">
+                                            {exp.type.toUpperCase()} - {new Date(exp.created_at).toLocaleDateString('pt-BR')}
+                                          </span>
+                                          <span className="font-medium text-gray-900">R$ {Number(exp.cost).toFixed(2)}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          );
+                        })()}
 
                         {searchedUser.role === 'artist' && userShows.length > 0 && <Card className="bg-gray-50 border-gray-200">
                             <CardHeader>
