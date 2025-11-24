@@ -38,7 +38,7 @@ const MusicianPrivacy = () => {
           WebkitOverflowScrolling: 'touch'
         }}>
             <div className="max-w-3xl mx-auto prose prose-slate">
-              <h1>Política de Privacidade</h1>
+              <h1 className="text-stone-950">Política de Privacidade</h1>
               <p className="text-gray-600">Última atualização: {new Date().toLocaleDateString('pt-BR')}</p>
 
               <h2 className="text-stone-950">1. Informações que Coletamos</h2>
