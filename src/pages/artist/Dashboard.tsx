@@ -1,15 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Calendar as CalendarIcon, Music, Loader2, Bell, ChevronLeft, ChevronRight, Car } from 'lucide-react';
+import { Calendar as CalendarIcon, Music, Loader2, Bell, ChevronLeft, ChevronRight, Car, DollarSign, TrendingDown, TrendingUp } from 'lucide-react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ArtistSidebar } from '@/components/ArtistSidebar';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { UserMenu } from '@/components/UserMenu';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -19,9 +17,32 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 const ArtistDashboard = () => {
   const { userData, userRole, loading } = useAuth();
   const navigate = useNavigate();
-  const [date, setDate] = useState<Date>();
+  const [selectedPeriod, setSelectedPeriod] = useState<string>("all");
   const [selectedYear, setSelectedYear] = useState("2025");
   const [selectedWeek, setSelectedWeek] = useState("Semana Atual");
+
+  // Gera lista de períodos desde o cadastro do usuário até hoje
+  const periodOptions = useMemo(() => {
+    const options = [{ value: "all", label: "Todo o Período" }];
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    
+    // Assumindo que o cadastro foi feito em 2025 (pode ser ajustado com userData.created_at)
+    const startYear = 2025;
+    
+    for (let year = currentYear; year >= startYear; year--) {
+      const endMonth = year === currentYear ? currentMonth : 11;
+      for (let month = endMonth; month >= 0; month--) {
+        const date = new Date(year, month, 1);
+        const label = format(date, "MMMM 'de' yyyy", { locale: ptBR });
+        const value = `${year}-${String(month + 1).padStart(2, '0')}`;
+        options.push({ value, label });
+      }
+    }
+    
+    return options;
+  }, []);
 
   useEffect(() => {
     if (loading) return;
@@ -98,30 +119,19 @@ const ArtistDashboard = () => {
                   Aqui está um resumo rápido do seu progresso.
                 </p>
               
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-[280px] justify-start text-left font-normal bg-white text-gray-900 border-gray-300",
-                        !date && "text-gray-500"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4 text-gray-900" />
-                      {date ? format(date, "MMMM 'de' yyyy", { locale: ptBR }) : "novembro de 2025"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-white border-gray-300" align="center">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      initialFocus
-                      variant="light"
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                  <SelectTrigger className="w-[280px] mx-auto bg-white border-gray-300 text-gray-900">
+                    <CalendarIcon className="mr-2 h-4 w-4 text-gray-900" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-gray-300 text-gray-900">
+                    {periodOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
             {/* Stats Cards */}
@@ -134,18 +144,27 @@ const ArtistDashboard = () => {
                 iconColor="text-purple-600"
               />
               <StatCard
+                icon={<DollarSign className="w-6 h-6" />}
                 title="Receita Bruta (Total)"
                 value="R$ 0,00"
+                iconBg="bg-green-100"
+                iconColor="text-green-600"
                 valueColor="text-green-600"
               />
               <StatCard
+                icon={<TrendingDown className="w-6 h-6" />}
                 title="Custos Totais"
                 value="R$ 0,00"
+                iconBg="bg-red-100"
+                iconColor="text-red-600"
                 valueColor="text-red-600"
               />
               <StatCard
+                icon={<TrendingUp className="w-6 h-6" />}
                 title="Lucro Líquido (Total)"
                 value="R$ 0,00"
+                iconBg="bg-blue-100"
+                iconColor="text-blue-600"
                 valueColor="text-blue-600"
               />
             </div>
