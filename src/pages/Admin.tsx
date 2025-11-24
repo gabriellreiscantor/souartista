@@ -1275,28 +1275,6 @@ export default function Admin() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {/* Estatísticas Rápidas */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                        <CardContent className="p-4">
-                          <div className="text-2xl font-bold text-blue-900">{stats.totalUsers}</div>
-                          <div className="text-sm text-blue-700">Total de Usuários</div>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                        <CardContent className="p-4">
-                          <div className="text-2xl font-bold text-green-900">{stats.totalArtists}</div>
-                          <div className="text-sm text-green-700">Artistas Ativos</div>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-                        <CardContent className="p-4">
-                          <div className="text-2xl font-bold text-purple-900">{stats.totalMusicians}</div>
-                          <div className="text-sm text-purple-700">Músicos Ativos</div>
-                        </CardContent>
-                      </Card>
-                    </div>
-
                     {/* Filtro de Logs */}
                     <div className="flex gap-2">
                       <Select value={logFilter} onValueChange={setLogFilter}>
