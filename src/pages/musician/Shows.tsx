@@ -616,16 +616,12 @@ const MusicianShows = () => {
                                   <SelectValue placeholder="Selecione o artista" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-white z-50">
-                                  {artists.length === 0 ? (
-                                    <div className="p-3 text-center">
+                                  {artists.length === 0 ? <div className="p-3 text-center">
                                       <p className="text-sm text-gray-500 break-words">Nenhum artista cadastrado</p>
                                       <p className="text-xs text-gray-400 mt-1">Adicione em Artistas</p>
-                                    </div>
-                                  ) : (
-                                    artists.map(artist => <SelectItem key={artist.id} value={artist.id} className="text-gray-900">
+                                    </div> : artists.map(artist => <SelectItem key={artist.id} value={artist.id} className="text-gray-900">
                                       {artist.name}
-                                    </SelectItem>)
-                                  )}
+                                    </SelectItem>)}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -640,16 +636,12 @@ const MusicianShows = () => {
                                   <SelectValue placeholder="Selecione o local" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-white z-50">
-                                  {venues.length === 0 ? (
-                                    <div className="p-3 text-center">
+                                  {venues.length === 0 ? <div className="p-3 text-center">
                                       <p className="text-sm text-gray-500 break-words">Nenhum local cadastrado</p>
                                       <p className="text-xs text-gray-400 mt-1">Adicione em Locais</p>
-                                    </div>
-                                  ) : (
-                                    venues.map(venue => <SelectItem key={venue.id} value={venue.id} className="text-gray-900">
+                                    </div> : venues.map(venue => <SelectItem key={venue.id} value={venue.id} className="text-gray-900">
                                       {venue.name}
-                                    </SelectItem>)
-                                  )}
+                                    </SelectItem>)}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -693,16 +685,12 @@ const MusicianShows = () => {
                                   <SelectValue placeholder="Selecione um instrumento" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-white z-50">
-                                  {instruments.length === 0 ? (
-                                    <div className="p-3 text-center">
+                                  {instruments.length === 0 ? <div className="p-3 text-center">
                                       <p className="text-sm text-gray-500 break-words">Nenhum instrumento cadastrado</p>
                                       <p className="text-xs text-gray-400 mt-1">Adicione em Instrumentos</p>
-                                    </div>
-                                  ) : (
-                                    instruments.map(instrument => <SelectItem key={instrument.id} value={instrument.id} className="text-gray-900">
+                                    </div> : instruments.map(instrument => <SelectItem key={instrument.id} value={instrument.id} className="text-gray-900">
                                       {instrument.name}
-                                    </SelectItem>)
-                                  )}
+                                    </SelectItem>)}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -736,7 +724,7 @@ const MusicianShows = () => {
                             <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
                               Cancelar
                             </Button>
-                            <Button type="submit" className="flex-1">
+                            <Button type="submit" className="flex-1 text-slate-50">
                               {editingShow ? 'Atualizar Show' : 'Cadastrar Show'}
                             </Button>
                           </div>
