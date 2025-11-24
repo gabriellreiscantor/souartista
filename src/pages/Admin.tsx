@@ -667,13 +667,13 @@ export default function Admin() {
       if (error) throw error;
       
       toast.success(`${userName} foi promovido a administrador!`);
-      fetchAdminUsers();
+      await fetchAdminUsers();
     } catch (error: any) {
       console.error('Erro ao promover a admin:', error);
       if (error.code === '23505') {
         toast.info('Este usuário já é administrador');
         // Mesmo que já seja admin, atualiza a UI para refletir o estado real
-        fetchAdminUsers();
+        await fetchAdminUsers();
       } else {
         toast.error('Erro ao promover a administrador');
       }
@@ -690,7 +690,7 @@ export default function Admin() {
       if (error) throw error;
       
       toast.success(`${userName} não é mais administrador`);
-      fetchAdminUsers();
+      await fetchAdminUsers();
     } catch (error) {
       console.error('Erro ao remover admin:', error);
       toast.error('Erro ao remover administrador');
@@ -706,13 +706,13 @@ export default function Admin() {
       if (error) throw error;
       
       toast.success(`${userName} foi promovido a Suporte!`);
-      fetchAdminUsers();
+      await fetchAdminUsers();
     } catch (error: any) {
       console.error('Erro ao promover a suporte:', error);
       if (error.code === '23505') {
         toast.info('Este usuário já é suporte');
         // Mesmo que já seja suporte, atualiza a UI para refletir o estado real
-        fetchAdminUsers();
+        await fetchAdminUsers();
       } else {
         toast.error('Erro ao promover a suporte');
       }
@@ -730,7 +730,7 @@ export default function Admin() {
       if (error) throw error;
       
       toast.success(`${userName} não é mais suporte`);
-      fetchAdminUsers();
+      await fetchAdminUsers();
     } catch (error) {
       console.error('Erro ao remover suporte:', error);
       toast.error('Erro ao remover suporte');
