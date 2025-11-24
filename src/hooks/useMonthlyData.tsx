@@ -59,20 +59,27 @@ export function useMonthlyData(year: string, userRole: 'artist' | 'musician' | n
 
         if (month) {
           if (userRole === 'artist') {
-            monthlyMap[month].revenue += Number(show.fee || 0);
+            const fee = Number(show.fee || 0);
+            monthlyMap[month].revenue += fee;
+            
             const expensesTeam = (show.expenses_team as any) || [];
             const expensesOther = (show.expenses_other as any) || [];
+            
             expensesTeam.forEach((exp: any) => {
               monthlyMap[month].expenses += Number(exp.cost || 0);
             });
             expensesOther.forEach((exp: any) => {
               monthlyMap[month].expenses += Number(exp.cost || 0);
             });
+            
+            console.log(`[Artist] Show em ${month}: Fee R$${fee}, Total expenses: R$${monthlyMap[month].expenses}`);
           } else {
             const expensesTeam = (show.expenses_team as any) || [];
             const myExpense = expensesTeam.find((exp: any) => exp.musicianId === user.id);
             if (myExpense) {
-              monthlyMap[month].revenue += Number(myExpense.cost || 0);
+              const cacheFee = Number(myExpense.cost || 0);
+              monthlyMap[month].revenue += cacheFee;
+              console.log(`[Musician] Show em ${month}: Cachê R$${cacheFee}`);
             }
           }
         }
@@ -85,16 +92,24 @@ export function useMonthlyData(year: string, userRole: 'artist' | 'musician' | n
         const month = months[monthIndex];
 
         if (month) {
-          monthlyMap[month].expenses += Number(exp.cost || 0);
+          const cost = Number(exp.cost || 0);
+          monthlyMap[month].expenses += cost;
+          console.log(`[Locomoção] ${month}: R$${cost}`);
         }
       });
 
-      return months.map(month => ({
+      const result = months.map(month => ({
         month,
         receita: monthlyMap[month].revenue,
         despesa: monthlyMap[month].expenses,
         lucro: monthlyMap[month].revenue - monthlyMap[month].expenses,
       }));
+
+      console.log('[useMonthlyData] Dados finais:', result);
+      console.log(`[useMonthlyData] Total receita: R$${result.reduce((sum, m) => sum + m.receita, 0)}`);
+      console.log(`[useMonthlyData] Total despesa: R$${result.reduce((sum, m) => sum + m.despesa, 0)}`);
+      
+      return result;
     },
     enabled: !!user && !!userRole,
   });
