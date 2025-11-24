@@ -277,12 +277,17 @@ const ArtistDashboard = () => {
                           borderRadius: '8px',
                           padding: '12px'
                         }}
-                        formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`}
+                        formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR')}`, 'Despesas']}
                         labelFormatter={(label) => `Mês: ${label}`}
+                      />
+                      <Legend 
+                        iconType="circle"
+                        formatter={() => 'Despesas'}
                       />
                       <Line 
                         type="monotone" 
                         dataKey="value" 
+                        name="Despesas"
                         stroke="#eab308" 
                         strokeWidth={3}
                         dot={false}
@@ -290,6 +295,16 @@ const ArtistDashboard = () => {
                       />
                     </LineChart>
                   </ResponsiveContainer>
+                  <p className="text-xs text-gray-500 mt-3 text-center">
+                    Para ver mais detalhes das despesas, acesse a página de{' '}
+                    <Button 
+                      variant="link" 
+                      className="text-xs p-0 h-auto text-primary underline"
+                      onClick={() => navigate('/artist/transportation')}
+                    >
+                      Locomoção
+                    </Button>
+                  </p>
                 </Card>
               </div>
             </div>
