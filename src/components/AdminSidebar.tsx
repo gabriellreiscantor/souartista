@@ -12,6 +12,7 @@ import {
   SidebarMenuItem,
   useSidebar,
   SidebarFooter,
+  SidebarHeader,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -72,7 +73,6 @@ export function AdminSidebar() {
   };
 
   const handleSidebarClick = (e: React.MouseEvent) => {
-    // Fecha o sidebar no mobile quando clicar no conteúdo (exceto nos links)
     if (isMobile && e.target === e.currentTarget) {
       setOpenMobile(false);
     }
@@ -80,60 +80,65 @@ export function AdminSidebar() {
 
   return (
     <Sidebar 
-      className="border-r border-border/40" 
+      className={`${isCollapsed ? 'w-14' : 'w-48 md:w-60'} border-r-0`}
       collapsible="icon"
       onClick={handleSidebarClick}
     >
-      <SidebarContent className="bg-gradient-to-b from-purple-600 to-purple-800">
-        <div className="px-4 py-6">
+      <SidebarHeader className="h-16 md:h-auto bg-gradient-to-b from-purple-600 to-purple-700">
+        <div className="flex items-center justify-center py-4 md:py-6 px-2 md:px-4">
           <img
             src={logo}
             alt="Logo"
             className={`transition-all duration-300 ${
-              isCollapsed ? 'w-8 h-8' : 'w-32 h-32'
-            } mx-auto`}
+              isCollapsed ? 'w-8 h-8' : 'w-24 h-24 md:w-32 md:h-32'
+            }`}
           />
         </div>
+      </SidebarHeader>
 
+      <SidebarContent className="bg-gradient-to-b from-purple-700 to-purple-800">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-purple-100/70 px-4">
+          <SidebarGroupLabel className="text-purple-100/80 px-3 md:px-4 text-xs font-semibold uppercase tracking-wider">
             <Shield className="w-4 h-4 mr-2 inline" />
             {!isCollapsed && 'Administração'}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    className={`text-white/90 hover:text-white hover:bg-white/10 ${
-                      isActive(item.url) ? 'bg-white/20 text-white font-semibold' : ''
-                    }`}
-                  >
-                    <NavLink 
-                      to={item.url}
-                      onClick={() => isMobile && setOpenMobile(false)}
+              {mainItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      className={`text-white/90 hover:text-white hover:bg-white/10 transition-all mx-2 rounded-lg ${
+                        isActive(item.url) ? 'bg-white/20 text-white font-semibold shadow-lg' : ''
+                      }`}
                     >
-                      <item.icon className="w-5 h-5" />
-                      {!isCollapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                      <NavLink 
+                        to={item.url}
+                        onClick={() => isMobile && setOpenMobile(false)}
+                      >
+                        <Icon className="w-5 h-5" />
+                        {!isCollapsed && <span className="text-sm">{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="bg-gradient-to-b from-purple-600 to-purple-800 mt-auto">
+      <SidebarFooter className="bg-gradient-to-b from-purple-800 to-purple-900 border-t border-purple-600/30 mt-auto p-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={handleSignOut}
-              className="text-white/90 hover:text-white hover:bg-white/10"
+              className="text-white/90 hover:text-white hover:bg-white/10 transition-all mx-2 rounded-lg"
             >
               <LogOut className="w-5 h-5" />
-              {!isCollapsed && <span>Sair</span>}
+              {!isCollapsed && <span className="text-sm">Sair</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

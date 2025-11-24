@@ -73,13 +73,20 @@ export default function Admin() {
 
   useEffect(() => {
     if (!adminLoading && !isAdmin && user) {
-      toast.error('Acesso negado');
       const userRole = localStorage.getItem('userRole');
       if (userRole === 'artist') {
         navigate('/artist/dashboard');
       } else {
         navigate('/musician/dashboard');
       }
+    }
+    
+    // Saudação especial para admin (apenas uma vez por sessão)
+    if (!adminLoading && isAdmin && !sessionStorage.getItem('admin_greeted')) {
+      toast.success('👑 Olá Chefe! Bem-vindo ao Painel Admin', {
+        duration: 3000,
+      });
+      sessionStorage.setItem('admin_greeted', 'true');
     }
   }, [isAdmin, adminLoading, user, navigate]);
 
