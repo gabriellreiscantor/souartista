@@ -1,14 +1,31 @@
 import { createRoot } from "react-dom/client";
-import { Suspense } from "react";
+import { useState, useEffect } from "react";
 import App from "./App.tsx";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import "./index.css";
 
-createRoot(document.getElementById("root")!).render(
-  <Suspense fallback={<LoadingScreen />}>
+function AppWithLoading() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simula loading mínimo de 1.5s para mostrar a splash screen
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  return (
     <QueryProvider>
       <App />
     </QueryProvider>
-  </Suspense>
-);
+  );
+}
+
+createRoot(document.getElementById("root")!).render(<AppWithLoading />);
