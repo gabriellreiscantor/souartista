@@ -1,1 +1,4 @@
 project_id = "wjutvzmnvemrplpwbkyf"
+
+[functions.import-firebase-shows]
+verify_jwt = true

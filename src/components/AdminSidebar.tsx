@@ -1,4 +1,4 @@
-import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones } from 'lucide-react';
+import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones, Download } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -20,6 +20,7 @@ const mainItems = [
   { title: 'Usuários', url: '/admin?tab=usuarios', icon: Users },
   { title: 'Buscar por ID', url: '/admin?tab=buscar', icon: Search },
   { title: 'Gerenciar Permissões', url: '/admin?tab=administradores', icon: Shield },
+  { title: 'Importação Firebase', url: '/admin?tab=importacao', icon: Download },
   { title: 'Financeiro Global', url: '/admin?tab=financeiro', icon: DollarSign },
   { title: 'Suporte', url: '/admin?tab=suporte', icon: Headphones },
   { title: 'Notificações', url: '/admin?tab=notificacoes', icon: Bell },
