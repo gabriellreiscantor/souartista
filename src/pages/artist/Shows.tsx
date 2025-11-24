@@ -1795,6 +1795,7 @@ const ArtistShows = () => {
                             <Input
                               id="musician_fee"
                               type="number"
+                              inputMode="numeric"
                               step="0.01"
                               value={musicianFormData.default_fee}
                               onChange={(e) => setMusicianFormData({ ...musicianFormData, default_fee: e.target.value })}
