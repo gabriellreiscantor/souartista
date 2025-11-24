@@ -33,7 +33,11 @@ const MusicianTerms = () => {
             </div>
           </header>
 
-          <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
+          <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6 scrollbar-hide" style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}>
             <div className="max-w-3xl mx-auto prose prose-slate">
               <h1>Termos de Uso</h1>
               <p className="text-gray-600">Última atualização: {new Date().toLocaleDateString('pt-BR')}</p>

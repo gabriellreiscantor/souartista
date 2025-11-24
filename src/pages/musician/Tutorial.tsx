@@ -105,7 +105,11 @@ const MusicianTutorial = () => {
             </div>
           </header>
 
-          <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
+          <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6 scrollbar-hide" style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}>
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">Tutorial</h2>

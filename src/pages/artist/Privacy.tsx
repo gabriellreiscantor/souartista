@@ -33,7 +33,11 @@ const ArtistPrivacy = () => {
             </div>
           </header>
 
-          <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
+          <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6 scrollbar-hide" style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}>
             <div className="max-w-3xl mx-auto prose prose-slate prose-headings:text-gray-900 prose-p:text-gray-900 prose-li:text-gray-900">
               <h1 className="text-gray-900">Política de Privacidade</h1>
               <p className="text-gray-600">Última atualização: {new Date().toLocaleDateString('pt-BR')}</p>
