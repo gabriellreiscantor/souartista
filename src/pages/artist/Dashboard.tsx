@@ -88,7 +88,7 @@ const ArtistDashboard = () => {
               {/* Greeting Section */}
               <div className="mb-6 md:mb-8 text-center">
                 <h2 className="text-2xl md:text-3xl font-bold mb-2 text-gray-900">
-                  Olá, Artista!
+                  Olá, meu artista {userData?.name}! 👋
                 </h2>
                 <p className="text-sm md:text-base text-gray-600 mb-4">
                   Aqui está um resumo rápido do seu progresso.
