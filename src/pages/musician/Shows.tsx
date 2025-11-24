@@ -171,16 +171,31 @@ const MusicianShows = () => {
   const fetchVenues = async () => {
     if (!user) return;
     try {
-      const {
-        data,
-        error
-      } = await supabase.from('musician_venues').select('*').eq('owner_uid', user.id).order('name', {
-        ascending: true
-      });
-      if (error) throw error;
+      console.log('Buscando locais para usuário:', user.id);
+      
+      const { data, error } = await supabase
+        .from('musician_venues')
+        .select('*')
+        .eq('owner_uid', user.id)
+        .order('name', { ascending: true });
+        
+      if (error) {
+        console.error('Erro ao buscar locais:', error);
+        throw error;
+      }
+      
+      console.log('Locais carregados:', data?.length || 0);
       setVenues(data || []);
     } catch (error: any) {
       console.error('Error fetching venues:', error);
+      
+      if (error?.message?.includes('Failed to fetch')) {
+        // Tentar reconectar após um delay
+        setTimeout(() => {
+          console.log('Tentando reconectar...');
+          fetchVenues();
+        }, 2000);
+      }
     }
   };
 
@@ -317,48 +332,53 @@ const MusicianShows = () => {
       return;
     }
     
+    if (!artistFormData.name || artistFormData.name.trim() === '') {
+      toast.error('Nome do artista é obrigatório');
+      return;
+    }
+    
     try {
       const artistData = {
-        name: artistFormData.name,
+        name: artistFormData.name.trim(),
         owner_uid: user.id
       };
       
-      console.log('Tentando salvar artista:', artistData);
+      console.log('Salvando artista:', artistData);
       
       if (editingArtist) {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('artists')
           .update(artistData)
-          .eq('id', editingArtist.id)
-          .select();
+          .eq('id', editingArtist.id);
           
         if (error) {
-          console.error('Erro do Supabase ao atualizar:', error);
+          console.error('Erro do Supabase:', error);
           throw error;
         }
-        console.log('Artista atualizado:', data);
-        toast.success('Artista atualizado com sucesso!');
+        toast.success('Artista atualizado!');
       } else {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('artists')
-          .insert(artistData)
-          .select();
+          .insert(artistData);
           
         if (error) {
-          console.error('Erro do Supabase ao inserir:', error);
+          console.error('Erro do Supabase:', error);
           throw error;
         }
-        console.log('Artista cadastrado:', data);
-        toast.success('Artista cadastrado com sucesso!');
+        toast.success('Artista cadastrado!');
       }
       
       setArtistDialogOpen(false);
       resetArtistForm();
       await fetchArtists();
     } catch (error: any) {
-      console.error('Erro completo:', error);
-      const errorMessage = error?.message || 'Erro desconhecido ao salvar artista';
-      toast.error(errorMessage);
+      console.error('Erro ao salvar:', error);
+      
+      if (error?.message?.includes('Failed to fetch')) {
+        toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
+      } else {
+        toast.error(error?.message || 'Erro ao salvar artista');
+      }
     }
   };
   
@@ -398,38 +418,39 @@ const MusicianShows = () => {
       return;
     }
     
+    if (!instrumentFormData.name || instrumentFormData.name.trim() === '') {
+      toast.error('Nome do instrumento é obrigatório');
+      return;
+    }
+    
     try {
       const instrumentData = {
-        name: instrumentFormData.name,
+        name: instrumentFormData.name.trim(),
         owner_uid: user.id
       };
       
-      console.log('Tentando salvar instrumento:', instrumentData);
+      console.log('Salvando instrumento:', instrumentData);
       
       if (editingInstrument) {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('musician_instruments')
           .update(instrumentData)
-          .eq('id', editingInstrument.id)
-          .select();
+          .eq('id', editingInstrument.id);
           
         if (error) {
-          console.error('Erro do Supabase ao atualizar:', error);
+          console.error('Erro do Supabase:', error);
           throw error;
         }
-        console.log('Instrumento atualizado:', data);
         toast.success('Instrumento atualizado!');
       } else {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('musician_instruments')
-          .insert(instrumentData)
-          .select();
+          .insert(instrumentData);
           
         if (error) {
-          console.error('Erro do Supabase ao inserir:', error);
+          console.error('Erro do Supabase:', error);
           throw error;
         }
-        console.log('Instrumento cadastrado:', data);
         toast.success('Instrumento cadastrado!');
       }
       
@@ -437,9 +458,13 @@ const MusicianShows = () => {
       resetInstrumentForm();
       await fetchInstruments();
     } catch (error: any) {
-      console.error('Erro completo:', error);
-      const errorMessage = error?.message || 'Erro desconhecido ao salvar instrumento';
-      toast.error(errorMessage);
+      console.error('Erro ao salvar:', error);
+      
+      if (error?.message?.includes('Failed to fetch')) {
+        toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
+      } else {
+        toast.error(error?.message || 'Erro ao salvar instrumento');
+      }
     }
   };
   const handleInstrumentEdit = (instrument: Instrument) => {
@@ -478,39 +503,50 @@ const MusicianShows = () => {
       return;
     }
     
+    if (!venueFormData.name || venueFormData.name.trim() === '') {
+      toast.error('Nome do local é obrigatório');
+      return;
+    }
+    
     try {
+      // Refresh session to ensure valid token
+      const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !currentSession) {
+        console.error('Erro na sessão:', sessionError);
+        toast.error('Sessão expirada. Faça login novamente.');
+        return;
+      }
+      
       const venueData = {
-        name: venueFormData.name,
-        address: venueFormData.address || null,
+        name: venueFormData.name.trim(),
+        address: venueFormData.address ? venueFormData.address.trim() : null,
         owner_uid: user.id
       };
       
-      console.log('Tentando salvar local:', venueData);
+      console.log('Salvando local:', venueData);
+      console.log('Sessão válida:', currentSession.user.id);
       
       if (editingVenue) {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('musician_venues')
           .update(venueData)
-          .eq('id', editingVenue.id)
-          .select();
+          .eq('id', editingVenue.id);
           
         if (error) {
-          console.error('Erro do Supabase ao atualizar:', error);
+          console.error('Erro do Supabase:', error);
           throw error;
         }
-        console.log('Local atualizado:', data);
         toast.success('Local atualizado!');
       } else {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('musician_venues')
-          .insert(venueData)
-          .select();
+          .insert(venueData);
           
         if (error) {
-          console.error('Erro do Supabase ao inserir:', error);
+          console.error('Erro do Supabase:', error);
           throw error;
         }
-        console.log('Local cadastrado:', data);
         toast.success('Local cadastrado!');
       }
       
@@ -518,9 +554,15 @@ const MusicianShows = () => {
       resetVenueForm();
       await fetchVenues();
     } catch (error: any) {
-      console.error('Erro completo:', error);
-      const errorMessage = error?.message || 'Erro desconhecido ao salvar local';
-      toast.error(errorMessage);
+      console.error('Erro ao salvar:', error);
+      
+      if (error?.message?.includes('Failed to fetch')) {
+        toast.error('Erro de conexão. Tente recarregar a página.');
+      } else if (error?.message) {
+        toast.error(error.message);
+      } else {
+        toast.error('Erro ao salvar local');
+      }
     }
   };
   const handleVenueEdit = (venue: Venue) => {
