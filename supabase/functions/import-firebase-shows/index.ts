@@ -8,7 +8,8 @@ const corsHeaders = {
 interface FirebaseShow {
   id: string;
   venueName: string;
-  dateLocal: string;
+  dateLocal?: string;
+  date?: string;
   timeLocal?: string;
   time?: string;
   fee: number;
@@ -173,9 +174,10 @@ Deno.serve(async (req) => {
     // 3. TRANSFORMAR E INSERIR SHOWS
     console.log('🎪 Transformando shows...');
     
-    // Filtrar shows sem data
+    // Filtrar shows sem data (nem dateLocal nem date)
     const validShows = firebaseShows.filter((fbShow: FirebaseShow) => {
-      if (!fbShow.dateLocal) {
+      const hasDate = fbShow.dateLocal || fbShow.date;
+      if (!hasDate) {
         console.warn(`⚠️ Show sem data será ignorado: ${fbShow.id} - ${fbShow.venueName}`);
         return false;
       }
@@ -185,6 +187,11 @@ Deno.serve(async (req) => {
     console.log(`📊 ${validShows.length} shows válidos de ${firebaseShows.length} totais`);
     
     const transformedShows = validShows.map((fbShow: FirebaseShow) => {
+      // Extrair data: usar dateLocal se existir, senão extrair de date (ISO string)
+      const dateLocal = fbShow.dateLocal || fbShow.date?.split('T')[0];
+      
+      // Extrair hora: usar timeLocal se existir, senão usar time, senão usar padrão
+      const timeLocal = fbShow.timeLocal || fbShow.time || '20:00';
       // Transformar expenses.team - mapear IDs
       const expensesTeam = (fbShow.expenses?.team || []).map((exp) => ({
         name: exp.name,
@@ -210,8 +217,8 @@ Deno.serve(async (req) => {
       return {
         uid: user.id,
         venue_name: consolidateVenueName(fbShow.venueName),
-        date_local: fbShow.dateLocal,
-        time_local: fbShow.timeLocal || fbShow.time || '20:00',
+        date_local: dateLocal,
+        time_local: timeLocal,
         fee: fbShow.fee || 0,
         duration_hours: durationHours,
         is_private_event: fbShow.isPrivateEvent || false,
