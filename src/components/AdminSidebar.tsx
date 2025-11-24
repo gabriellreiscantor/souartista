@@ -1,6 +1,6 @@
-import { Shield, Users, Search, DollarSign, Bell, MessageCircle } from 'lucide-react';
+import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
@@ -11,7 +11,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import logo from '@/assets/logo.png';
 
 const mainItems = [
@@ -43,8 +47,9 @@ const mainItems = [
 ];
 
 export function AdminSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const currentTab = searchParams.get('tab') || 'usuarios';
 
@@ -55,8 +60,30 @@ export function AdminSidebar() {
     return tabParam === currentTab;
   };
 
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success('Logout realizado com sucesso!');
+      navigate('/login');
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+      toast.error('Erro ao fazer logout');
+    }
+  };
+
+  const handleSidebarClick = (e: React.MouseEvent) => {
+    // Fecha o sidebar no mobile quando clicar no conteúdo (exceto nos links)
+    if (isMobile && e.target === e.currentTarget) {
+      setOpenMobile(false);
+    }
+  };
+
   return (
-    <Sidebar className="border-r border-border/40" collapsible="icon">
+    <Sidebar 
+      className="border-r border-border/40" 
+      collapsible="icon"
+      onClick={handleSidebarClick}
+    >
       <SidebarContent className="bg-gradient-to-b from-purple-600 to-purple-800">
         <div className="px-4 py-6">
           <img
@@ -83,7 +110,10 @@ export function AdminSidebar() {
                       isActive(item.url) ? 'bg-white/20 text-white font-semibold' : ''
                     }`}
                   >
-                    <NavLink to={item.url}>
+                    <NavLink 
+                      to={item.url}
+                      onClick={() => isMobile && setOpenMobile(false)}
+                    >
                       <item.icon className="w-5 h-5" />
                       {!isCollapsed && <span>{item.title}</span>}
                     </NavLink>
@@ -94,6 +124,20 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="bg-gradient-to-b from-purple-600 to-purple-800 mt-auto">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={handleSignOut}
+              className="text-white/90 hover:text-white hover:bg-white/10"
+            >
+              <LogOut className="w-5 h-5" />
+              {!isCollapsed && <span>Sair</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }
