@@ -244,6 +244,7 @@ const Register = () => {
                           date > new Date() || date < new Date("1900-01-01")
                         }
                         initialFocus
+                        variant="light"
                         className="pointer-events-auto"
                       />
                     </PopoverContent>

@@ -1104,13 +1104,19 @@ const ArtistShows = () => {
                                                 )}
                                               >
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {showFormData.date_local ? format(new Date(showFormData.date_local), "dd/MM/yyyy", { locale: ptBR }) : "Selecione a data"}
+                                                {showFormData.date_local ? (() => {
+                                                  const [year, month, day] = showFormData.date_local.split('-').map(Number);
+                                                  return format(new Date(year, month - 1, day), "dd/MM/yyyy", { locale: ptBR });
+                                                })() : "Selecione a data"}
                                               </Button>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-auto p-0 bg-primary border-0" align="start">
                                               <Calendar
                                                 mode="single"
-                                                selected={showFormData.date_local ? new Date(showFormData.date_local + 'T12:00:00') : undefined}
+                                                selected={showFormData.date_local ? (() => {
+                                                  const [year, month, day] = showFormData.date_local.split('-').map(Number);
+                                                  return new Date(year, month - 1, day);
+                                                })() : undefined}
                                                 onSelect={(date) => {
                                                   if (date) {
                                                     const year = date.getFullYear();
