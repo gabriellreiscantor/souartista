@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bell, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +22,7 @@ interface Notification {
 
 export function NotificationBell() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(new Set());
   const [hiddenNotificationIds, setHiddenNotificationIds] = useState<Set<string>>(new Set());
@@ -143,9 +145,21 @@ export function NotificationBell() {
   };
 
   const handleNotificationClick = (link: string | null) => {
-    if (link) {
+    if (!link) return;
+    
+    // Detectar se é link interno ou externo
+    const isInternalLink = link.startsWith('/');
+    
+    if (isInternalLink) {
+      // Link interno: navega dentro do app (mesma janela)
+      navigate(link);
+    } else {
+      // Link externo: abre em nova aba
       window.open(link, '_blank');
     }
+    
+    // Fecha o dropdown
+    setOpen(false);
   };
 
   const handleHideNotification = async (notificationId: string) => {
