@@ -620,7 +620,13 @@ const MusicianShows = () => {
                           </DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleShowSubmit} className="space-y-4">
-                          <div className="max-h-[65vh] overflow-y-auto px-1 space-y-6">
+                          <div className="max-h-[65vh] overflow-y-auto px-1 space-y-6 scrollbar-hide"
+                            style={{
+                              scrollbarWidth: 'none',
+                              msOverflowStyle: 'none',
+                              WebkitOverflowScrolling: 'touch'
+                            }}
+                          >
                           <div className="space-y-4">
                             <Button
                               type="button"
