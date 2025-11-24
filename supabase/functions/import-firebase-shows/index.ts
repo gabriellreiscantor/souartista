@@ -173,7 +173,18 @@ Deno.serve(async (req) => {
     // 3. TRANSFORMAR E INSERIR SHOWS
     console.log('🎪 Transformando shows...');
     
-    const transformedShows = firebaseShows.map((fbShow: FirebaseShow) => {
+    // Filtrar shows sem data
+    const validShows = firebaseShows.filter((fbShow: FirebaseShow) => {
+      if (!fbShow.dateLocal) {
+        console.warn(`⚠️ Show sem data será ignorado: ${fbShow.id} - ${fbShow.venueName}`);
+        return false;
+      }
+      return true;
+    });
+
+    console.log(`📊 ${validShows.length} shows válidos de ${firebaseShows.length} totais`);
+    
+    const transformedShows = validShows.map((fbShow: FirebaseShow) => {
       // Transformar expenses.team - mapear IDs
       const expensesTeam = (fbShow.expenses?.team || []).map((exp) => ({
         name: exp.name,
@@ -248,6 +259,7 @@ Deno.serve(async (req) => {
       musicians_created: createdMusicians.length,
       venues_created: createdVenues.length,
       shows_imported: totalShows,
+      shows_skipped: firebaseShows.length - totalShows,
       receita_bruta: receitaBruta,
       despesas_totais: despesasTotais,
       lucro_liquido: receitaBruta - despesasTotais,
