@@ -852,15 +852,24 @@ const MusicianShows = () => {
                                       </span>
                                     </Button>
                                   </PopoverTrigger>
-                                  <PopoverContent className="w-auto p-0 bg-white z-[100]" align="start">
-                                    <CalendarComponent mode="single" selected={showFormData.date_local ? new Date(showFormData.date_local) : undefined} onSelect={date => {
-                                      if (date) {
-                                        setShowFormData({
-                                          ...showFormData,
-                                          date_local: format(date, "yyyy-MM-dd")
-                                        });
-                                      }
-                                    }} initialFocus className="pointer-events-auto" />
+                                   <PopoverContent className="w-auto p-0 bg-white z-[100]" align="start">
+                                    <CalendarComponent 
+                                      mode="single" 
+                                      selected={showFormData.date_local ? new Date(showFormData.date_local + 'T12:00:00') : undefined} 
+                                      onSelect={date => {
+                                        if (date) {
+                                          const year = date.getFullYear();
+                                          const month = String(date.getMonth() + 1).padStart(2, '0');
+                                          const day = String(date.getDate()).padStart(2, '0');
+                                          setShowFormData({
+                                            ...showFormData,
+                                            date_local: `${year}-${month}-${day}`
+                                          });
+                                        }
+                                      }} 
+                                      initialFocus 
+                                      className="pointer-events-auto" 
+                                    />
                                   </PopoverContent>
                                 </Popover>
                               </div>
