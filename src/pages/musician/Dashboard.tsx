@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useMusicianStats } from '@/hooks/useMusicianStats';
+import { useMonthlyData } from '@/hooks/useMonthlyData';
+import { useUpcomingShows } from '@/hooks/useUpcomingShows';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Music, Loader2, Bell, ChevronLeft, ChevronRight, DollarSign, TrendingDown, Users, Calendar as CalendarIcon } from 'lucide-react';
@@ -12,6 +15,8 @@ import { PeriodFilter } from '@/components/PeriodFilter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { cn } from '@/lib/utils';
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const MusicianDashboard = () => {
   const { userData, userRole, loading } = useAuth();
@@ -19,6 +24,10 @@ const MusicianDashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>("all");
   const [selectedYear, setSelectedYear] = useState("2025");
   const [selectedWeek, setSelectedWeek] = useState("Semana Atual");
+
+  const stats = useMusicianStats(selectedPeriod);
+  const { data: monthlyData } = useMonthlyData(selectedYear, userRole);
+  const { shows: upcomingShows } = useUpcomingShows(userRole, 5);
 
   useEffect(() => {
     if (loading) return;
@@ -28,28 +37,20 @@ const MusicianDashboard = () => {
     }
   }, [userRole, loading, navigate]);
 
-  const monthlyData = [
-    { month: 'jan', receita: 0, despesa: 0, lucro: 0 },
-    { month: 'fev', receita: 0, despesa: 0, lucro: 0 },
-    { month: 'mar', receita: 0, despesa: 0, lucro: 0 },
-    { month: 'abr', receita: 0, despesa: 0, lucro: 0 },
-    { month: 'mai', receita: 0, despesa: 0, lucro: 0 },
-    { month: 'jun', receita: 0, despesa: 0, lucro: 0 },
-    { month: 'jul', receita: 0, despesa: 0, lucro: 0 },
-    { month: 'ago', receita: 0, despesa: 0, lucro: 0 },
-    { month: 'set', receita: 0, despesa: 0, lucro: 0 },
-    { month: 'out', receita: 0, despesa: 0, lucro: 0 },
-    { month: 'nov', receita: 0, despesa: 0, lucro: 0 },
-    { month: 'dez', receita: 0, despesa: 0, lucro: 0 },
-  ];
-
-  if (loading) {
+  if (loading || stats.loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
+  };
 
   return (
     <SidebarProvider>
@@ -96,14 +97,14 @@ const MusicianDashboard = () => {
               <StatCard
                 icon={<Music className="w-6 h-6" />}
                 title="Total de Shows"
-                value="0"
+                value={stats.totalShows.toString()}
                 iconBg="bg-purple-100"
                 iconColor="text-purple-600"
               />
               <StatCard
                 icon={<DollarSign className="w-6 h-6" />}
                 title="Cachê Total"
-                value="R$ 0,00"
+                value={formatCurrency(stats.totalEarnings)}
                 iconBg="bg-green-100"
                 iconColor="text-green-600"
                 valueColor="text-green-600"
@@ -111,7 +112,7 @@ const MusicianDashboard = () => {
               <StatCard
                 icon={<Users className="w-6 h-6" />}
                 title="Artistas"
-                value="0"
+                value={stats.totalArtists.toString()}
                 iconBg="bg-blue-100"
                 iconColor="text-blue-600"
                 valueColor="text-blue-600"
@@ -119,7 +120,7 @@ const MusicianDashboard = () => {
               <StatCard
                 icon={<TrendingDown className="w-6 h-6" />}
                 title="Despesas"
-                value="R$ 0,00"
+                value={formatCurrency(stats.totalExpenses)}
                 iconBg="bg-red-100"
                 iconColor="text-red-600"
                 valueColor="text-red-600"
@@ -201,9 +202,28 @@ const MusicianDashboard = () => {
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Próximos Shows</h3>
                 <p className="text-sm text-gray-600 mb-4">Seus próximos eventos agendados.</p>
                 
-                <div className="text-center py-12 text-gray-500">
-                  <p>Nenhum show agendado</p>
-                </div>
+                {upcomingShows.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    <Music className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                    <p>Nenhum show agendado</p>
+                    <p className="text-xs mt-2">Adicione seus shows para começar</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {upcomingShows.map((show) => (
+                      <div key={show.id} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <p className="font-semibold text-gray-900">{show.venue_name}</p>
+                        <p className="text-sm text-gray-600">
+                          {format(parseISO(show.date_local), "dd/MM/yyyy", { locale: ptBR })}
+                          {show.time_local && ` - ${show.time_local}`}
+                        </p>
+                        <p className="text-sm font-medium text-green-600 mt-1">
+                          {formatCurrency(show.fee)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </Card>
             </div>
 
