@@ -41,25 +41,25 @@ const MusicianPrivacy = () => {
               <h1>Política de Privacidade</h1>
               <p className="text-gray-600">Última atualização: {new Date().toLocaleDateString('pt-BR')}</p>
 
-              <h2>1. Informações que Coletamos</h2>
-              <p>
+              <h2 className="text-stone-950">1. Informações que Coletamos</h2>
+              <p className="text-stone-950">
                 Coletamos informações que você nos fornece diretamente, incluindo:
               </p>
               <ul>
-                <li>Nome, email e telefone</li>
-                <li>Informações sobre shows e eventos</li>
-                <li>Dados financeiros relacionados a cachês e despesas</li>
-                <li>Informações sobre músicos e equipes</li>
+                <li className="text-stone-950">Nome, email e telefone</li>
+                <li className="text-stone-950">Informações sobre shows e eventos</li>
+                <li className="text-stone-950">Dados financeiros relacionados a cachês e despesas</li>
+                <li className="text-stone-950">Informações sobre músicos e equipes</li>
               </ul>
 
-              <h2>2. Como Usamos Suas Informações</h2>
-              <p>
+              <h2 className="text-stone-950">2. Como Usamos Suas Informações</h2>
+              <p className="text-stone-950">
                 Utilizamos suas informações para:
               </p>
               <ul>
-                <li>Fornecer, manter e melhorar nossos serviços</li>
-                <li>Processar transações e enviar notificações relacionadas</li>
-                <li className="text-stone-600">Enviar comunicações técnicas e atualizações</li>
+                <li className="text-stone-950">Fornecer, manter e melhorar nossos serviços</li>
+                <li className="text-stone-950">Processar transações e enviar notificações relacionadas</li>
+                <li className="text-stone-950">Enviar comunicações técnicas e atualizações</li>
                 <li className="text-stone-950">Responder a seus comentários e perguntas</li>
               </ul>
 
