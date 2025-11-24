@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { TimePicker } from '@/components/ui/time-picker';
 import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2 } from 'lucide-react';
 import { CurrencyInput } from '@/components/ui/currency-input';
+import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -45,6 +46,7 @@ interface Show {
   date_local: string;
   time_local: string;
   fee: number;
+  is_private_event: boolean;
   expenses_team: Array<{
     musicianId?: string;
     name: string;
@@ -75,7 +77,9 @@ const MusicianShows = () => {
     date_local: '',
     time_local: '',
     fee: '',
-    instrument_id: ''
+    instrument_id: '',
+    duration: '',
+    is_private_event: false
   });
   const [personalExpenses, setPersonalExpenses] = useState<AdditionalExpense[]>([]);
 
@@ -208,7 +212,7 @@ const MusicianShows = () => {
         date_local: showFormData.date_local,
         time_local: showFormData.time_local,
         fee: parseFloat(showFormData.fee),
-        is_private_event: false,
+        is_private_event: showFormData.is_private_event,
         expenses_team: [musicianEntry],
         expenses_other: personalExpenses,
         team_musician_ids: [user.id],
@@ -274,7 +278,9 @@ const MusicianShows = () => {
       date_local: show.date_local,
       time_local: show.time_local,
       fee: myEntry?.cost.toString() || show.fee.toString(),
-      instrument_id: matchingInstrument?.id || ''
+      instrument_id: matchingInstrument?.id || '',
+      duration: '',
+      is_private_event: show.is_private_event || false
     });
     setPersonalExpenses(show.expenses_other || []);
     setShowDialogOpen(true);
@@ -286,7 +292,9 @@ const MusicianShows = () => {
       date_local: '',
       time_local: '',
       fee: '',
-      instrument_id: ''
+      instrument_id: '',
+      duration: '',
+      is_private_event: false
     });
     setPersonalExpenses([]);
     setEditingShow(null);
@@ -661,6 +669,38 @@ const MusicianShows = () => {
                                 time_local: time
                               })} />
                               </div>
+                            </div>
+
+                            <div>
+                              <Label htmlFor="duration" className="text-gray-900 font-medium">Duração do Show</Label>
+                              <Input 
+                                id="duration" 
+                                type="text" 
+                                placeholder="Ex: 2 horas, 3h30min" 
+                                value={showFormData.duration} 
+                                onChange={e => setShowFormData({
+                                  ...showFormData,
+                                  duration: e.target.value
+                                })} 
+                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" 
+                              />
+                            </div>
+
+                            <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 bg-gray-50">
+                              <div>
+                                <Label htmlFor="is_private_event" className="text-gray-900 font-medium cursor-pointer">
+                                  Evento Particular
+                                </Label>
+                                <p className="text-sm text-gray-500 mt-1">Marque se for um evento privado</p>
+                              </div>
+                              <Switch
+                                id="is_private_event"
+                                checked={showFormData.is_private_event}
+                                onCheckedChange={(checked) => setShowFormData({
+                                  ...showFormData,
+                                  is_private_event: checked
+                                })}
+                              />
                             </div>
                           </div>
 
