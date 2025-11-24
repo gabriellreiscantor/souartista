@@ -181,7 +181,7 @@ export function WeeklySchedule({
         </div>
         <div className="flex items-center justify-between pt-2 border-t border-gray-200">
           <span className="text-sm font-semibold text-gray-900">Seu Lucro (Semana)</span>
-          <span className="text-xl font-bold text-info">
+          <span className="text-xl font-bold text-[#ad5af2]">
             R$ {profit.toLocaleString('pt-BR', {
             minimumFractionDigits: 2
           })}
