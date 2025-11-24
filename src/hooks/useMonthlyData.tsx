@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { parseISO, format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface MonthlyDataPoint {
   month: string;
@@ -52,7 +53,7 @@ export function useMonthlyData(year: string, userRole: 'artist' | 'musician' | n
 
       (shows || []).forEach((show) => {
         const date = parseISO(show.date_local);
-        const monthKey = format(date, 'MMM').toLowerCase();
+        const monthKey = format(date, 'MMM', { locale: ptBR }).toLowerCase();
         const monthIndex = months.findIndex(m => m.startsWith(monthKey.substring(0, 3)));
         const month = months[monthIndex];
 
@@ -79,7 +80,7 @@ export function useMonthlyData(year: string, userRole: 'artist' | 'musician' | n
 
       (locomotionExpenses || []).forEach((exp) => {
         const date = parseISO(exp.created_at);
-        const monthKey = format(date, 'MMM').toLowerCase();
+        const monthKey = format(date, 'MMM', { locale: ptBR }).toLowerCase();
         const monthIndex = months.findIndex(m => m.startsWith(monthKey.substring(0, 3)));
         const month = months[monthIndex];
 
@@ -90,9 +91,9 @@ export function useMonthlyData(year: string, userRole: 'artist' | 'musician' | n
 
       return months.map(month => ({
         month,
-        revenue: monthlyMap[month].revenue,
-        expenses: monthlyMap[month].expenses,
-        profit: monthlyMap[month].revenue - monthlyMap[month].expenses,
+        receita: monthlyMap[month].revenue,
+        despesa: monthlyMap[month].expenses,
+        lucro: monthlyMap[month].revenue - monthlyMap[month].expenses,
       }));
     },
     enabled: !!user && !!userRole,
