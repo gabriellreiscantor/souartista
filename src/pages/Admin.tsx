@@ -1911,9 +1911,43 @@ export default function Admin() {
                                     </div>
                                   </div>
                                   
-                                  <p className="text-sm text-gray-700 line-clamp-2">{ticket.message}</p>
+                                  <p className="text-sm text-gray-700">{ticket.message}</p>
                                   
-                                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs text-gray-500">
+                                  {ticket.attachment_url && (
+                                    <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                                      <div className="flex items-center justify-between mb-2">
+                                        <span className="text-xs font-medium text-gray-700">📎 Anexo:</span>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="sm"
+                                          className="h-7 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                          onClick={() => window.open(ticket.attachment_url, '_blank')}
+                                        >
+                                          Abrir em nova aba
+                                        </Button>
+                                      </div>
+                                      <img 
+                                        src={ticket.attachment_url} 
+                                        alt="Anexo do ticket" 
+                                        className="w-full max-h-64 object-contain rounded bg-white border border-gray-200"
+                                        onError={(e) => {
+                                          // Se falhar ao carregar a imagem, mostra apenas o link
+                                          e.currentTarget.style.display = 'none';
+                                          const parent = e.currentTarget.parentElement;
+                                          if (parent && !parent.querySelector('.fallback-link')) {
+                                            const link = document.createElement('a');
+                                            link.href = ticket.attachment_url;
+                                            link.target = '_blank';
+                                            link.className = 'text-sm text-blue-600 hover:underline fallback-link';
+                                            link.textContent = 'Clique para ver o arquivo';
+                                            parent.appendChild(link);
+                                          }
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+                                  
+                                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs text-gray-500 pt-2 border-t border-gray-200">
                                     <span>
                                       Criado em: {new Date(ticket.created_at).toLocaleString('pt-BR')}
                                     </span>
@@ -1923,17 +1957,6 @@ export default function Admin() {
                                       </span>
                                     )}
                                   </div>
-
-                                  {ticket.attachment_url && (
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm"
-                                      className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
-                                      onClick={() => window.open(ticket.attachment_url, '_blank')}
-                                    >
-                                      Ver Anexo
-                                    </Button>
-                                  )}
                                 </div>
                               </CardContent>
                             </Card>
