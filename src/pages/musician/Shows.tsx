@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { TimePicker } from '@/components/ui/time-picker';
 import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2 } from 'lucide-react';
 import { CurrencyInput } from '@/components/ui/currency-input';
@@ -19,6 +21,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 interface Artist {
   id: string;
   name: string;
@@ -687,17 +690,40 @@ const MusicianShows = () => {
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="date_local" className="text-gray-900 font-medium">Data *</Label>
-                                <Input 
-                                  id="date_local" 
-                                  type="date" 
-                                  value={showFormData.date_local} 
-                                  onChange={e => setShowFormData({
-                                    ...showFormData,
-                                    date_local: e.target.value
-                                  })} 
-                                  className="bg-white border-gray-300 text-gray-900 pr-3" 
-                                  required 
-                                />
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      className={cn(
+                                        "w-full justify-start text-left font-normal bg-white border-gray-300 text-gray-900",
+                                        !showFormData.date_local && "text-muted-foreground"
+                                      )}
+                                    >
+                                      <Calendar className="mr-2 h-4 w-4" />
+                                      {showFormData.date_local ? (
+                                        format(new Date(showFormData.date_local), "dd/MM/yyyy", { locale: ptBR })
+                                      ) : (
+                                        <span>Selecione a data</span>
+                                      )}
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0 bg-white z-[100]" align="start">
+                                    <CalendarComponent
+                                      mode="single"
+                                      selected={showFormData.date_local ? new Date(showFormData.date_local) : undefined}
+                                      onSelect={(date) => {
+                                        if (date) {
+                                          setShowFormData({
+                                            ...showFormData,
+                                            date_local: format(date, "yyyy-MM-dd")
+                                          });
+                                        }
+                                      }}
+                                      initialFocus
+                                      className="pointer-events-auto"
+                                    />
+                                  </PopoverContent>
+                                </Popover>
                               </div>
                               <div>
                                 <Label htmlFor="time_local" className="text-gray-900 font-medium">Horário *</Label>
