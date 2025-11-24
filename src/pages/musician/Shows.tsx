@@ -960,7 +960,7 @@ const MusicianShows = () => {
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
                                     <Label className="text-gray-900 font-medium">Despesa {index + 1}</Label>
-                                    <Button type="button" variant="ghost" size="sm" onClick={() => removeExpense(index)}>
+                                    <Button type="button" variant="ghost" size="sm" onClick={() => removeExpense(index)} className="text-stone-950 bg-slate-50">
                                       <X className="w-4 h-4 text-zinc-950 bg-[#ad5af2]" />
                                     </Button>
                                   </div>
