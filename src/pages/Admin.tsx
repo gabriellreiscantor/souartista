@@ -28,7 +28,6 @@ interface UserProfile {
   last_seen_at: string | null;
   role?: string;
 }
-
 interface Show {
   id: string;
   venue_name: string;
@@ -180,39 +179,35 @@ export default function Admin() {
       toast.error('Digite um ID para buscar');
       return;
     }
-
     try {
       setSearching(true);
-      
-      // Buscar profile
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', searchId.trim())
-        .single();
 
+      // Buscar profile
+      const {
+        data: profile,
+        error: profileError
+      } = await supabase.from('profiles').select('*').eq('id', searchId.trim()).single();
       if (profileError) throw new Error('Usuário não encontrado');
 
       // Buscar role
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', searchId.trim())
-        .single();
+      const {
+        data: roleData
+      } = await supabase.from('user_roles').select('role').eq('user_id', searchId.trim()).single();
 
       // Buscar shows se for artista
       let shows: Show[] = [];
       if (roleData?.role === 'artist') {
-        const { data: showsData } = await supabase
-          .from('shows')
-          .select('id, venue_name, date_local, time_local, fee')
-          .eq('uid', searchId.trim())
-          .order('date_local', { ascending: false });
-        
+        const {
+          data: showsData
+        } = await supabase.from('shows').select('id, venue_name, date_local, time_local, fee').eq('uid', searchId.trim()).order('date_local', {
+          ascending: false
+        });
         shows = showsData || [];
       }
-
-      setSearchedUser({ ...profile, role: roleData?.role });
+      setSearchedUser({
+        ...profile,
+        role: roleData?.role
+      });
       setUserShows(shows);
       toast.success('Usuário encontrado!');
     } catch (error) {
@@ -224,7 +219,6 @@ export default function Admin() {
       setSearching(false);
     }
   };
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('ID copiado!');
@@ -357,7 +351,7 @@ export default function Admin() {
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                       <Button variant="ghost" size="sm">
-                                        <MoreVertical className="h-4 w-4" />
+                                        <MoreVertical className="h-4 w-4 text-stone-950" />
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="bg-white text-gray-900 border border-gray-200">
@@ -410,19 +404,13 @@ export default function Admin() {
                 <CardContent>
                   <div className="space-y-6">
                     <div className="flex gap-2">
-                      <Input
-                        placeholder="Cole o ID do usuário aqui..."
-                        value={searchId}
-                        onChange={(e) => setSearchId(e.target.value)}
-                        className="bg-white text-gray-900 border-gray-200"
-                      />
+                      <Input placeholder="Cole o ID do usuário aqui..." value={searchId} onChange={e => setSearchId(e.target.value)} className="bg-white text-gray-900 border-gray-200" />
                       <Button onClick={handleSearchUser} disabled={searching}>
                         {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Buscar'}
                       </Button>
                     </div>
 
-                    {searchedUser && (
-                      <div className="space-y-4 pt-4 border-t border-gray-200">
+                    {searchedUser && <div className="space-y-4 pt-4 border-t border-gray-200">
                         <div className="grid gap-4 md:grid-cols-2">
                           <Card className="bg-gray-50 border-gray-200">
                             <CardHeader>
@@ -478,24 +466,20 @@ export default function Admin() {
                               <div>
                                 <span className="font-medium text-gray-900">Último acesso:</span>
                                 <span className="ml-2 text-gray-700">
-                                  {searchedUser.last_seen_at 
-                                    ? new Date(searchedUser.last_seen_at).toLocaleDateString('pt-BR')
-                                    : 'Nunca'}
+                                  {searchedUser.last_seen_at ? new Date(searchedUser.last_seen_at).toLocaleDateString('pt-BR') : 'Nunca'}
                                 </span>
                               </div>
                             </CardContent>
                           </Card>
                         </div>
 
-                        {searchedUser.role === 'artist' && userShows.length > 0 && (
-                          <Card className="bg-gray-50 border-gray-200">
+                        {searchedUser.role === 'artist' && userShows.length > 0 && <Card className="bg-gray-50 border-gray-200">
                             <CardHeader>
                               <CardTitle className="text-sm text-gray-700">Shows ({userShows.length})</CardTitle>
                             </CardHeader>
                             <CardContent>
                               <div className="space-y-2 max-h-60 overflow-y-auto">
-                                {userShows.map(show => (
-                                  <div key={show.id} className="p-3 bg-white rounded border border-gray-200">
+                                {userShows.map(show => <div key={show.id} className="p-3 bg-white rounded border border-gray-200">
                                     <div className="flex justify-between items-start">
                                       <div>
                                         <p className="font-medium text-gray-900">{show.venue_name}</p>
@@ -507,44 +491,32 @@ export default function Admin() {
                                         R$ {Number(show.fee).toFixed(2)}
                                       </Badge>
                                     </div>
-                                  </div>
-                                ))}
+                                  </div>)}
                               </div>
                             </CardContent>
-                          </Card>
-                        )}
+                          </Card>}
 
                         <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
-                            onClick={() => {
-                              setEditingUser(searchedUser);
-                              setEditName(searchedUser.name);
-                              setShowEditDialog(true);
-                            }}
-                          >
+                          <Button variant="outline" onClick={() => {
+                      setEditingUser(searchedUser);
+                      setEditName(searchedUser.name);
+                      setShowEditDialog(true);
+                    }}>
                             Editar Nome
                           </Button>
-                          <Button 
-                            variant="outline"
-                            onClick={() => {
-                              setEditingUser(searchedUser);
-                              setEditStatus(searchedUser.status_plano);
-                              setShowStatusDialog(true);
-                            }}
-                          >
+                          <Button variant="outline" onClick={() => {
+                      setEditingUser(searchedUser);
+                      setEditStatus(searchedUser.status_plano);
+                      setShowStatusDialog(true);
+                    }}>
                             Alterar Status
                           </Button>
-                          <Button 
-                            variant="outline"
-                            onClick={() => copyToClipboard(searchedUser.id)}
-                          >
+                          <Button variant="outline" onClick={() => copyToClipboard(searchedUser.id)}>
                             <Copy className="h-4 w-4 mr-2" />
                             Copiar ID
                           </Button>
                         </div>
-                      </div>
-                    )}
+                      </div>}
                   </div>
                 </CardContent>
               </Card>}
