@@ -157,7 +157,6 @@ const MusicianShows = () => {
       fetchAll();
     }
   }, [user]);
-
   const fetchAll = async () => {
     await Promise.all([fetchShows(), fetchArtists(), fetchInstruments(), fetchVenues()]);
     setLastUpdated(new Date());
@@ -660,12 +659,10 @@ const MusicianShows = () => {
     const myEntry = show.expenses_team.find(e => e.musicianId === user?.id);
     return myEntry?.cost || show.fee;
   };
-
   const getMyInstrument = (show: Show) => {
     const myEntry = show.expenses_team.find(e => e.musicianId === user?.id);
     return myEntry?.instrument || '';
   };
-
   const toggleShowExpanded = (showId: string) => {
     setExpandedShows(prev => {
       const newSet = new Set(prev);
@@ -677,7 +674,6 @@ const MusicianShows = () => {
       return newSet;
     });
   };
-
   const calculateTotals = () => {
     const totalRevenue = shows.reduce((sum, show) => sum + getMyFee(show), 0);
     const totalExpenses = shows.reduce((sum, show) => {
@@ -685,7 +681,11 @@ const MusicianShows = () => {
       return sum + showExpenses;
     }, 0);
     const netProfit = totalRevenue - totalExpenses;
-    return { totalRevenue, totalExpenses, netProfit };
+    return {
+      totalRevenue,
+      totalExpenses,
+      netProfit
+    };
   };
   return <SidebarProvider>
       <div className="min-h-screen flex w-full bg-[#fafafa]">
@@ -847,15 +847,15 @@ const MusicianShows = () => {
                         </DialogHeader>
                         <form onSubmit={handleShowSubmit} className="space-y-4">
                           <div className="max-h-[65vh] overflow-y-auto px-1 space-y-6 scrollbar-hide" style={{
-                          scrollbarWidth: 'none',
-                          msOverflowStyle: 'none',
-                          WebkitOverflowScrolling: 'touch'
-                        }}>
+                            scrollbarWidth: 'none',
+                            msOverflowStyle: 'none',
+                            WebkitOverflowScrolling: 'touch'
+                          }}>
                           <div className="space-y-4">
                             <Button type="button" variant={showFormData.is_private_event ? "default" : "outline"} onClick={() => setShowFormData({
-                              ...showFormData,
-                              is_private_event: !showFormData.is_private_event
-                            })} className={showFormData.is_private_event ? "bg-primary hover:bg-primary/90 text-white w-full" : "bg-white hover:bg-gray-50 text-gray-900 border-gray-300 w-full"}>
+                                ...showFormData,
+                                is_private_event: !showFormData.is_private_event
+                              })} className={showFormData.is_private_event ? "bg-primary hover:bg-primary/90 text-white w-full" : "bg-white hover:bg-gray-50 text-gray-900 border-gray-300 w-full"}>
                               Evento Particular
                             </Button>
 
@@ -864,9 +864,9 @@ const MusicianShows = () => {
                             <div>
                               <Label htmlFor="artist_id" className="text-gray-900 font-medium">Artista *</Label>
                               <Select value={showFormData.artist_id} onValueChange={value => setShowFormData({
-                                ...showFormData,
-                                artist_id: value
-                              })} required>
+                                  ...showFormData,
+                                  artist_id: value
+                                })} required>
                                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                                   <SelectValue placeholder="Selecione o artista" />
                                 </SelectTrigger>
@@ -884,15 +884,15 @@ const MusicianShows = () => {
                             {showFormData.is_private_event ? <div>
                                 <Label htmlFor="custom_venue" className="text-gray-900 font-medium">Nome do local *</Label>
                                 <Input id="custom_venue" value={showFormData.custom_venue} onChange={e => setShowFormData({
-                                ...showFormData,
-                                custom_venue: e.target.value
-                              })} className="bg-white border-gray-300 text-gray-900" placeholder="Digite o nome do local" required />
+                                  ...showFormData,
+                                  custom_venue: e.target.value
+                                })} className="bg-white border-gray-300 text-gray-900" placeholder="Digite o nome do local" required />
                               </div> : <div>
                                 <Label htmlFor="venue_id" className="text-gray-900 font-medium">Local do Show *</Label>
                                 <Select value={showFormData.venue_id} onValueChange={value => setShowFormData({
-                                ...showFormData,
-                                venue_id: value
-                              })} required>
+                                  ...showFormData,
+                                  venue_id: value
+                                })} required>
                                   <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                                     <SelectValue placeholder="Selecione o local" />
                                   </SelectTrigger>
@@ -916,47 +916,47 @@ const MusicianShows = () => {
                                       <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
                                       <span className="truncate">
                                         {showFormData.date_local ? (() => {
-                                          const [year, month, day] = showFormData.date_local.split('-').map(Number);
-                                          return format(new Date(year, month - 1, day), "dd/MM/yyyy", {
-                                            locale: ptBR
-                                          });
-                                        })() : "Selecione a data"}
+                                            const [year, month, day] = showFormData.date_local.split('-').map(Number);
+                                            return format(new Date(year, month - 1, day), "dd/MM/yyyy", {
+                                              locale: ptBR
+                                            });
+                                          })() : "Selecione a data"}
                                       </span>
                                     </Button>
                                   </PopoverTrigger>
                                    <PopoverContent className="w-auto p-0 bg-white z-[100]" align="start">
                                     <CalendarComponent mode="single" selected={showFormData.date_local ? (() => {
-                                      const [year, month, day] = showFormData.date_local.split('-').map(Number);
-                                      return new Date(year, month - 1, day);
-                                    })() : undefined} onSelect={date => {
-                                      if (date) {
-                                        const year = date.getFullYear();
-                                        const month = String(date.getMonth() + 1).padStart(2, '0');
-                                        const day = String(date.getDate()).padStart(2, '0');
-                                        setShowFormData({
-                                          ...showFormData,
-                                          date_local: `${year}-${month}-${day}`
-                                        });
-                                      }
-                                    }} initialFocus className="pointer-events-auto" />
+                                        const [year, month, day] = showFormData.date_local.split('-').map(Number);
+                                        return new Date(year, month - 1, day);
+                                      })() : undefined} onSelect={date => {
+                                        if (date) {
+                                          const year = date.getFullYear();
+                                          const month = String(date.getMonth() + 1).padStart(2, '0');
+                                          const day = String(date.getDate()).padStart(2, '0');
+                                          setShowFormData({
+                                            ...showFormData,
+                                            date_local: `${year}-${month}-${day}`
+                                          });
+                                        }
+                                      }} initialFocus className="pointer-events-auto" />
                                   </PopoverContent>
                                 </Popover>
                               </div>
                               <div>
                                 <Label htmlFor="time_local" className="text-gray-900 font-medium">Horário *</Label>
                                 <TimePicker value={showFormData.time_local} onChange={time => setShowFormData({
-                                  ...showFormData,
-                                  time_local: time
-                                })} />
+                                    ...showFormData,
+                                    time_local: time
+                                  })} />
                               </div>
                             </div>
 
                             <div>
                               <Label htmlFor="duration" className="text-gray-900 font-medium">Duração do Show</Label>
                               <Select value={showFormData.duration} onValueChange={value => setShowFormData({
-                                ...showFormData,
-                                duration: value
-                              })}>
+                                  ...showFormData,
+                                  duration: value
+                                })}>
                                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                                   <SelectValue placeholder="Horas..." className="text-gray-900" />
                                 </SelectTrigger>
@@ -988,17 +988,17 @@ const MusicianShows = () => {
                             <div>
                               <Label htmlFor="fee" className="text-gray-900 font-medium">Seu Cachê Individual *</Label>
                               <CurrencyInput id="fee" value={showFormData.fee} onChange={value => setShowFormData({
-                                ...showFormData,
-                                fee: value
-                              })} className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" required />
+                                  ...showFormData,
+                                  fee: value
+                                })} className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" required />
                             </div>
 
                             <div>
                               <Label htmlFor="instrument_id" className="text-gray-900 font-medium">Função/Instrumento *</Label>
                               <Select value={showFormData.instrument_id} onValueChange={value => setShowFormData({
-                                ...showFormData,
-                                instrument_id: value
-                              })} required>
+                                  ...showFormData,
+                                  instrument_id: value
+                                })} required>
                                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                                   <SelectValue placeholder="Selecione um instrumento" />
                                 </SelectTrigger>
@@ -1058,26 +1058,25 @@ const MusicianShows = () => {
                     </div> : shows.length === 0 ? <Card className="p-8 text-center bg-white border border-gray-200">
                       <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-500">Nenhum show encontrado para o filtro selecionado.</p>
-                    </Card> : (
-                      <>
+                    </Card> : <>
                         <div className="grid gap-4">
                           {shows.map(show => {
-                            const showDate = new Date(show.date_local);
-                            const myFee = getMyFee(show);
-                            const myInstrument = getMyInstrument(show);
-                            const totalExpenses = show.expenses_other.reduce((sum, e) => sum + e.cost, 0);
-                            const isExpanded = expandedShows.has(show.id);
-                            
-                            // Encontrar o artista pelo uid do show
-                            const artist = artists.find(a => a.owner_uid === show.uid);
-                            
-                            return (
-                              <Card key={show.id} className="bg-white border border-gray-200 overflow-hidden">
+                      const showDate = new Date(show.date_local);
+                      const myFee = getMyFee(show);
+                      const myInstrument = getMyInstrument(show);
+                      const totalExpenses = show.expenses_other.reduce((sum, e) => sum + e.cost, 0);
+                      const isExpanded = expandedShows.has(show.id);
+
+                      // Encontrar o artista pelo uid do show
+                      const artist = artists.find(a => a.owner_uid === show.uid);
+                      return <Card key={show.id} className="bg-white border border-gray-200 overflow-hidden">
                                 <div className="p-4 md:p-6">
                                   <div className="flex items-start gap-3 mb-3">
                                     <div className="flex-shrink-0 w-16 text-center bg-[#F5F0FA] rounded-lg p-2 border-2 border-purple-200">
                                       <div className="text-xs text-primary font-bold uppercase">
-                                        {format(showDate, 'MMM', { locale: ptBR })}
+                                        {format(showDate, 'MMM', {
+                                  locale: ptBR
+                                })}
                                       </div>
                                       <div className="text-3xl font-bold text-gray-900">
                                         {format(showDate, 'dd')}
@@ -1087,29 +1086,27 @@ const MusicianShows = () => {
                                     <div className="flex-1 min-w-0">
                                       <h3 className="text-base md:text-lg font-bold text-gray-900 truncate">{show.venue_name}</h3>
                                       <p className="text-sm text-gray-600 flex items-center gap-1">
-                                        {format(showDate, "EEEE", { locale: ptBR })} • 
+                                        {format(showDate, "EEEE", {
+                                  locale: ptBR
+                                })} • 
                                         <Clock className="w-3 h-3" />
                                         {show.time_local}
                                       </p>
-                                      {artist && (
-                                        <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                                      {artist && <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
                                           <Mic2 className="w-3 h-3" />
                                           {artist.name}
-                                        </p>
-                                      )}
-                                      {myInstrument && (
-                                        <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                                        </p>}
+                                      {myInstrument && <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
                                           <Guitar className="w-3 h-3" />
                                           {myInstrument}
-                                        </p>
-                                      )}
+                                        </p>}
                                     </div>
                                     
                                     <div className="flex gap-1 flex-shrink-0">
-                                      <Button variant="outline" size="icon" onClick={() => handleShowEdit(show)} className="h-8 w-8 md:h-10 md:w-10">
+                                      <Button variant="outline" size="icon" onClick={() => handleShowEdit(show)} className="h-8 w-8 md:h-10 md:w-10 bg-slate-50 text-stone-950 border-zinc-50">
                                         <Edit className="w-4 h-4" />
                                       </Button>
-                                      <Button variant="outline" size="icon" onClick={() => handleShowDelete(show.id)} className="h-8 w-8 md:h-10 md:w-10">
+                                      <Button variant="outline" size="icon" onClick={() => handleShowDelete(show.id)} className="h-8 w-8 md:h-10 md:w-10 text-slate-50">
                                         <Trash2 className="w-4 h-4 text-red-600" />
                                       </Button>
                                     </div>
@@ -1149,25 +1146,18 @@ const MusicianShows = () => {
                                           <DollarSign className="w-4 h-4" />
                                           Despesas Pessoais
                                         </div>
-                                        {show.expenses_other.length > 0 ? (
-                                          show.expenses_other.map((expense, idx) => (
-                                            <div key={idx} className="flex justify-between text-sm text-gray-600 mb-1">
+                                        {show.expenses_other.length > 0 ? show.expenses_other.map((expense, idx) => <div key={idx} className="flex justify-between text-sm text-gray-600 mb-1">
                                               <span className="text-gray-500">{expense.description}</span>
                                               <span className="font-medium">R$ {expense.cost.toFixed(2).replace('.', ',')}</span>
-                                            </div>
-                                          ))
-                                        ) : (
-                                          <div className="text-sm text-gray-500 text-center py-2">
+                                            </div>) : <div className="text-sm text-gray-500 text-center py-2">
                                             Nenhuma despesa cadastrada
-                                          </div>
-                                        )}
+                                          </div>}
                                       </div>
                                     </CollapsibleContent>
                                   </Collapsible>
                                 </div>
-                              </Card>
-                            );
-                          })}
+                              </Card>;
+                    })}
                         </div>
                         
                         {/* Financial summary */}
@@ -1208,8 +1198,7 @@ const MusicianShows = () => {
                             </div>
                           </div>
                         </Card>
-                      </>
-                    )}
+                      </>}
                 </TabsContent>
 
                 {/* ARTISTAS TAB */}
