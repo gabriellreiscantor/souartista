@@ -312,33 +312,56 @@ const MusicianShows = () => {
   // Artist handlers
   const handleArtistSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user) {
+      toast.error('Usuário não autenticado');
+      return;
+    }
+    
     try {
       const artistData = {
         name: artistFormData.name,
         owner_uid: user.id
       };
+      
+      console.log('Tentando salvar artista:', artistData);
+      
       if (editingArtist) {
-        const {
-          error
-        } = await supabase.from('artists').update(artistData).eq('id', editingArtist.id);
-        if (error) throw error;
+        const { data, error } = await supabase
+          .from('artists')
+          .update(artistData)
+          .eq('id', editingArtist.id)
+          .select();
+          
+        if (error) {
+          console.error('Erro do Supabase ao atualizar:', error);
+          throw error;
+        }
+        console.log('Artista atualizado:', data);
         toast.success('Artista atualizado com sucesso!');
       } else {
-        const {
-          error
-        } = await supabase.from('artists').insert(artistData);
-        if (error) throw error;
+        const { data, error } = await supabase
+          .from('artists')
+          .insert(artistData)
+          .select();
+          
+        if (error) {
+          console.error('Erro do Supabase ao inserir:', error);
+          throw error;
+        }
+        console.log('Artista cadastrado:', data);
         toast.success('Artista cadastrado com sucesso!');
       }
+      
       setArtistDialogOpen(false);
       resetArtistForm();
-      fetchArtists();
+      await fetchArtists();
     } catch (error: any) {
-      toast.error('Erro ao salvar artista');
-      console.error(error);
+      console.error('Erro completo:', error);
+      const errorMessage = error?.message || 'Erro desconhecido ao salvar artista';
+      toast.error(errorMessage);
     }
   };
+  
   const handleArtistEdit = (artist: Artist) => {
     setEditingArtist(artist);
     setArtistFormData({
@@ -370,31 +393,53 @@ const MusicianShows = () => {
   // Instrument handlers
   const handleInstrumentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user) {
+      toast.error('Usuário não autenticado');
+      return;
+    }
+    
     try {
       const instrumentData = {
         name: instrumentFormData.name,
         owner_uid: user.id
       };
+      
+      console.log('Tentando salvar instrumento:', instrumentData);
+      
       if (editingInstrument) {
-        const {
-          error
-        } = await supabase.from('musician_instruments').update(instrumentData).eq('id', editingInstrument.id);
-        if (error) throw error;
+        const { data, error } = await supabase
+          .from('musician_instruments')
+          .update(instrumentData)
+          .eq('id', editingInstrument.id)
+          .select();
+          
+        if (error) {
+          console.error('Erro do Supabase ao atualizar:', error);
+          throw error;
+        }
+        console.log('Instrumento atualizado:', data);
         toast.success('Instrumento atualizado!');
       } else {
-        const {
-          error
-        } = await supabase.from('musician_instruments').insert(instrumentData);
-        if (error) throw error;
+        const { data, error } = await supabase
+          .from('musician_instruments')
+          .insert(instrumentData)
+          .select();
+          
+        if (error) {
+          console.error('Erro do Supabase ao inserir:', error);
+          throw error;
+        }
+        console.log('Instrumento cadastrado:', data);
         toast.success('Instrumento cadastrado!');
       }
+      
       setInstrumentDialogOpen(false);
       resetInstrumentForm();
-      fetchInstruments();
+      await fetchInstruments();
     } catch (error: any) {
-      toast.error('Erro ao salvar instrumento');
-      console.error(error);
+      console.error('Erro completo:', error);
+      const errorMessage = error?.message || 'Erro desconhecido ao salvar instrumento';
+      toast.error(errorMessage);
     }
   };
   const handleInstrumentEdit = (instrument: Instrument) => {
@@ -428,32 +473,54 @@ const MusicianShows = () => {
   // Venue handlers
   const handleVenueSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user) {
+      toast.error('Usuário não autenticado');
+      return;
+    }
+    
     try {
       const venueData = {
         name: venueFormData.name,
         address: venueFormData.address || null,
         owner_uid: user.id
       };
+      
+      console.log('Tentando salvar local:', venueData);
+      
       if (editingVenue) {
-        const {
-          error
-        } = await supabase.from('musician_venues').update(venueData).eq('id', editingVenue.id);
-        if (error) throw error;
+        const { data, error } = await supabase
+          .from('musician_venues')
+          .update(venueData)
+          .eq('id', editingVenue.id)
+          .select();
+          
+        if (error) {
+          console.error('Erro do Supabase ao atualizar:', error);
+          throw error;
+        }
+        console.log('Local atualizado:', data);
         toast.success('Local atualizado!');
       } else {
-        const {
-          error
-        } = await supabase.from('musician_venues').insert(venueData);
-        if (error) throw error;
+        const { data, error } = await supabase
+          .from('musician_venues')
+          .insert(venueData)
+          .select();
+          
+        if (error) {
+          console.error('Erro do Supabase ao inserir:', error);
+          throw error;
+        }
+        console.log('Local cadastrado:', data);
         toast.success('Local cadastrado!');
       }
+      
       setVenueDialogOpen(false);
       resetVenueForm();
-      fetchVenues();
+      await fetchVenues();
     } catch (error: any) {
-      toast.error('Erro ao salvar local');
-      console.error(error);
+      console.error('Erro completo:', error);
+      const errorMessage = error?.message || 'Erro desconhecido ao salvar local';
+      toast.error(errorMessage);
     }
   };
   const handleVenueEdit = (venue: Venue) => {
@@ -506,7 +573,9 @@ const MusicianShows = () => {
     const myEntry = show.expenses_team.find(e => e.musicianId === user?.id);
     return myEntry?.cost || show.fee;
   };
-  return <SidebarProvider>
+  
+  return (
+    <SidebarProvider>
       <div className="min-h-screen flex w-full bg-[#fafafa]">
         <MusicianSidebar />
         
@@ -1108,14 +1177,18 @@ const MusicianShows = () => {
                     </Dialog>
                   </div>
 
-                  {venues.length === 0 ? <Card className="p-8 text-center bg-white border border-gray-200">
+                  {venues.length === 0 ? (
+                    <Card className="p-8 text-center bg-white border border-gray-200">
                       <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-500 mb-4">Nenhum local cadastrado</p>
                       <p className="text-sm text-gray-400">
                         Adicione os locais onde você trabalha
                       </p>
-                    </Card> : <div className="grid gap-4 md:grid-cols-2">
-                      {venues.map(venue => <Card key={venue.id} className="p-4 bg-white border border-gray-200">
+                    </Card>
+                  ) : (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {venues.map(venue => (
+                        <Card key={venue.id} className="p-4 bg-white border border-gray-200">
                           <div className="flex items-start justify-between">
                             <div className="flex items-start gap-4 flex-1">
                               <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
@@ -1135,16 +1208,20 @@ const MusicianShows = () => {
                               </Button>
                             </div>
                           </div>
-                        </Card>)}
-                    </div>}
-                </TabsContent>
-              </Tabs>
-            </div>
-          </main>
-        </div>
-        
-        <MobileBottomNav role="musician" />
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+              </TabsContent>
+            </Tabs>
+          </div>
+        </main>
       </div>
-    </SidebarProvider>;
+      
+      <MobileBottomNav role="musician" />
+    </div>
+    </SidebarProvider>
+  );
 };
+
 export default MusicianShows;
