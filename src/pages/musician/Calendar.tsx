@@ -113,7 +113,11 @@ const MusicianCalendar = () => {
             </div>
           </header>
 
-          <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
+          <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6 scrollbar-hide" style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}>
             <div className="max-w-6xl mx-auto">
               <Card className="bg-white mb-6">
                 <CardContent className="p-6">

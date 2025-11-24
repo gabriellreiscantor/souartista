@@ -603,7 +603,11 @@ const ArtistShows = () => {
             </div>
           </header>
 
-          <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
+          <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6 scrollbar-hide" style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}>
             <div className="max-w-5xl mx-auto">
               <Tabs defaultValue="shows" className="w-full">
                 {/* Mobile tabs */}
@@ -673,7 +677,11 @@ const ArtistShows = () => {
                               Adicionar
                             </Button>
                           </SheetTrigger>
-                          <SheetContent side="bottom" className="h-[90vh] overflow-y-auto bg-white p-0">
+                          <SheetContent side="bottom" className="h-[90vh] overflow-y-auto bg-white p-0 scrollbar-hide" style={{
+                            scrollbarWidth: 'none',
+                            msOverflowStyle: 'none',
+                            WebkitOverflowScrolling: 'touch'
+                          }}>
                           <div className="p-6 pb-8">
                             <SheetHeader className="mb-4">
                               <SheetTitle className="text-gray-900 text-left">
@@ -994,7 +1002,7 @@ const ArtistShows = () => {
                                 Adicionar
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
+                            <DialogContent className="max-w-2xl bg-white">
                             <DialogHeader>
                               <DialogTitle className="text-gray-900">
                                 {editingShow ? 'Editar Show' : 'Adicionar Novo Show'}
@@ -1003,7 +1011,12 @@ const ArtistShows = () => {
                                 Preencha as informações abaixo para gerenciar o show.
                               </p>
                             </DialogHeader>
-                            <form onSubmit={handleShowSubmit} className="space-y-6">
+                            <div className="max-h-[70vh] overflow-y-auto scrollbar-hide px-1" style={{
+                              scrollbarWidth: 'none',
+                              msOverflowStyle: 'none',
+                              WebkitOverflowScrolling: 'touch'
+                            }}>
+                            <form onSubmit={handleShowSubmit} id="desktop-show-form" className="space-y-6">
                               <div className="space-y-4">
                                 <Button
                                   type="button"
@@ -1275,17 +1288,18 @@ const ArtistShows = () => {
                                   </div>
                                 ))}
                               </div>
+                            </form>
+                            </div>
 
-                              <div className="flex gap-3">
+                              <div className="flex gap-3 pt-2 border-t mt-2">
                                 <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white border-gray-300 text-gray-900 hover:bg-gray-50">
                                   Cancelar
                                 </Button>
-                                <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-white">
+                                <Button type="submit" form="desktop-show-form" className="flex-1 bg-primary hover:bg-primary/90 text-white">
                                   Salvar Show
                                 </Button>
                               </div>
-                            </form>
-                          </DialogContent>
+                            </DialogContent>
                         </Dialog>
                         )}
                       </div>
