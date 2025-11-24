@@ -122,6 +122,7 @@ export default function Admin() {
   const [adminUsers, setAdminUsers] = useState<UserProfile[]>([]);
   const [loadingAdmins, setLoadingAdmins] = useState(false);
   const [adminSearchQuery, setAdminSearchQuery] = useState('');
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   
   const usersPerPage = 50;
   useEffect(() => {
@@ -172,6 +173,8 @@ export default function Admin() {
   useEffect(() => {
     if (!isAdmin || currentTab !== 'administradores') return;
 
+    console.log('🔄 Iniciando realtime para admin permissions...');
+
     const adminChannel = supabase
       .channel('admin-permissions-changes')
       .on(
@@ -181,8 +184,8 @@ export default function Admin() {
           schema: 'public',
           table: 'admin_users'
         },
-        () => {
-          console.log('Admin users changed, reloading...');
+        (payload) => {
+          console.log('✅ Admin users changed:', payload);
           fetchAdminUsers();
         }
       )
@@ -193,14 +196,21 @@ export default function Admin() {
           schema: 'public',
           table: 'user_roles'
         },
-        () => {
-          console.log('User roles changed, reloading...');
+        (payload) => {
+          console.log('✅ User roles changed:', payload);
           fetchAdminUsers();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('📡 Realtime status:', status);
+        if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Falha no realtime, usando polling como fallback');
+          toast.error('Realtime indisponível, atualize manualmente se necessário');
+        }
+      });
 
     return () => {
+      console.log('🔌 Desconectando realtime admin permissions');
       supabase.removeChannel(adminChannel);
     };
   }, [isAdmin, currentTab]);
@@ -639,6 +649,7 @@ export default function Admin() {
       })) || [];
       
       setAdminUsers(usersWithPermissions);
+      setLastUpdate(new Date());
     } catch (error) {
       console.error('Erro ao buscar permissões:', error);
       toast.error('Erro ao carregar permissões');
@@ -660,7 +671,9 @@ export default function Admin() {
     } catch (error: any) {
       console.error('Erro ao promover a admin:', error);
       if (error.code === '23505') {
-        toast.error('Este usuário já é administrador');
+        toast.info('Este usuário já é administrador');
+        // Mesmo que já seja admin, atualiza a UI para refletir o estado real
+        fetchAdminUsers();
       } else {
         toast.error('Erro ao promover a administrador');
       }
@@ -697,7 +710,9 @@ export default function Admin() {
     } catch (error: any) {
       console.error('Erro ao promover a suporte:', error);
       if (error.code === '23505') {
-        toast.error('Este usuário já é suporte');
+        toast.info('Este usuário já é suporte');
+        // Mesmo que já seja suporte, atualiza a UI para refletir o estado real
+        fetchAdminUsers();
       } else {
         toast.error('Erro ao promover a suporte');
       }
@@ -1292,14 +1307,32 @@ export default function Admin() {
                     </div>
                   ) : (
                     <>
-                      {/* Campo de busca */}
-                      <div className="mb-6">
-                        <Input
-                          placeholder="Buscar por nome, email, CPF, telefone ou ID..."
-                          value={adminSearchQuery}
-                          onChange={(e) => setAdminSearchQuery(e.target.value)}
-                          className="bg-white text-gray-900 border-gray-200"
-                        />
+                      {/* Header com busca e botão de refresh */}
+                      <div className="mb-6 space-y-3">
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Buscar por nome, email, CPF, telefone ou ID..."
+                            value={adminSearchQuery}
+                            onChange={(e) => setAdminSearchQuery(e.target.value)}
+                            className="bg-white text-gray-900 border-gray-200 flex-1"
+                          />
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              fetchAdminUsers();
+                              toast.success('Lista atualizada!');
+                            }}
+                            className="shrink-0"
+                          >
+                            <Loader2 className="w-4 h-4 mr-2" />
+                            Atualizar
+                          </Button>
+                        </div>
+                        {lastUpdate && (
+                          <p className="text-xs text-gray-500">
+                            Última atualização: {lastUpdate.toLocaleTimeString('pt-BR')}
+                          </p>
+                        )}
                       </div>
 
                       <div className="space-y-4">
