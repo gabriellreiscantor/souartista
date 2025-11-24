@@ -107,6 +107,30 @@ const MusicianShows = () => {
     name: '',
     address: ''
   });
+  const [connectionTest, setConnectionTest] = useState<'testing' | 'ok' | 'error'>('testing');
+
+  // Test connection on mount
+  useEffect(() => {
+    const testConnection = async () => {
+      try {
+        const { error } = await supabase.from('musician_venues').select('id').limit(1);
+        if (error) {
+          console.error('Erro no teste de conexão:', error);
+          setConnectionTest('error');
+        } else {
+          console.log('Conexão OK com Supabase');
+          setConnectionTest('ok');
+        }
+      } catch (err) {
+        console.error('Erro no teste:', err);
+        setConnectionTest('error');
+      }
+    };
+    
+    if (user) {
+      testConnection();
+    }
+  }, [user]);
   useEffect(() => {
     if (user) {
       fetchAll();
@@ -498,71 +522,74 @@ const MusicianShows = () => {
   // Venue handlers
   const handleVenueSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log('=== INÍCIO SUBMIT ===');
+    console.log('User:', user?.id);
+    console.log('Form data:', venueFormData);
+    
     if (!user) {
+      console.error('Sem usuário autenticado');
       toast.error('Usuário não autenticado');
       return;
     }
     
     if (!venueFormData.name || venueFormData.name.trim() === '') {
+      console.error('Nome vazio');
       toast.error('Nome do local é obrigatório');
       return;
     }
     
     try {
-      // Refresh session to ensure valid token
-      const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !currentSession) {
-        console.error('Erro na sessão:', sessionError);
-        toast.error('Sessão expirada. Faça login novamente.');
-        return;
-      }
-      
       const venueData = {
         name: venueFormData.name.trim(),
         address: venueFormData.address ? venueFormData.address.trim() : null,
         owner_uid: user.id
       };
       
-      console.log('Salvando local:', venueData);
-      console.log('Sessão válida:', currentSession.user.id);
+      console.log('Dados a salvar:', venueData);
+      console.log('Editando?', !!editingVenue);
       
       if (editingVenue) {
-        const { error } = await supabase
+        console.log('Fazendo UPDATE...');
+        const { data, error } = await supabase
           .from('musician_venues')
           .update(venueData)
-          .eq('id', editingVenue.id);
+          .eq('id', editingVenue.id)
+          .select();
           
-        if (error) {
-          console.error('Erro do Supabase:', error);
-          throw error;
-        }
+        console.log('Resultado UPDATE:', { data, error });
+          
+        if (error) throw error;
         toast.success('Local atualizado!');
       } else {
-        const { error } = await supabase
+        console.log('Fazendo INSERT...');
+        const { data, error } = await supabase
           .from('musician_venues')
-          .insert(venueData);
+          .insert(venueData)
+          .select();
           
-        if (error) {
-          console.error('Erro do Supabase:', error);
-          throw error;
-        }
+        console.log('Resultado INSERT:', { data, error });
+          
+        if (error) throw error;
         toast.success('Local cadastrado!');
       }
       
+      console.log('Fechando dialog...');
       setVenueDialogOpen(false);
       resetVenueForm();
-      await fetchVenues();
-    } catch (error: any) {
-      console.error('Erro ao salvar:', error);
       
-      if (error?.message?.includes('Failed to fetch')) {
-        toast.error('Erro de conexão. Tente recarregar a página.');
-      } else if (error?.message) {
-        toast.error(error.message);
-      } else {
-        toast.error('Erro ao salvar local');
-      }
+      console.log('Recarregando lista...');
+      await fetchVenues();
+      
+      console.log('=== FIM SUBMIT ===');
+    } catch (error: any) {
+      console.error('=== ERRO NO SUBMIT ===');
+      console.error('Erro completo:', error);
+      console.error('Message:', error?.message);
+      console.error('Code:', error?.code);
+      console.error('Details:', error?.details);
+      
+      toast.error(error?.message || 'Erro ao salvar local');
     }
   };
   const handleVenueEdit = (venue: Venue) => {
@@ -641,6 +668,14 @@ const MusicianShows = () => {
             msOverflowStyle: 'none',
             WebkitOverflowScrolling: 'touch'
           }}>
+            {connectionTest === 'error' && (
+              <Card className="mb-4 p-4 bg-red-50 border-red-200">
+                <p className="text-red-800 text-sm">
+                  ⚠️ Problema de conexão detectado. Tente recarregar a página ou verifique sua conexão.
+                </p>
+              </Card>
+            )}
+            
             <div className="max-w-4xl mx-auto">
               <Tabs defaultValue="shows" className="w-full">
                 {/* Mobile tabs */}
