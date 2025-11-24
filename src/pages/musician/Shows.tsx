@@ -840,22 +840,26 @@ const MusicianShows = () => {
 
                             <div className="grid grid-cols-2 gap-4">
                               <div>
-                                <Label htmlFor="date_local" className="text-gray-900 font-medium">Data *</Label>
+                                 <Label htmlFor="date_local" className="text-gray-900 font-medium">Data *</Label>
                                 <Popover>
                                   <PopoverTrigger asChild>
                                     <Button variant="outline" className={cn("w-full justify-start text-left font-normal bg-white border-gray-300 text-gray-900 h-10", !showFormData.date_local && "text-muted-foreground")}>
                                       <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
                                       <span className="truncate">
-                                        {showFormData.date_local ? format(new Date(showFormData.date_local), "dd/MM/yyyy", {
-                                          locale: ptBR
-                                        }) : "Selecione a data"}
+                                        {showFormData.date_local ? (() => {
+                                          const [year, month, day] = showFormData.date_local.split('-').map(Number);
+                                          return format(new Date(year, month - 1, day), "dd/MM/yyyy", { locale: ptBR });
+                                        })() : "Selecione a data"}
                                       </span>
                                     </Button>
                                   </PopoverTrigger>
                                    <PopoverContent className="w-auto p-0 bg-white z-[100]" align="start">
                                     <CalendarComponent 
                                       mode="single" 
-                                      selected={showFormData.date_local ? new Date(showFormData.date_local + 'T12:00:00') : undefined} 
+                                      selected={showFormData.date_local ? (() => {
+                                        const [year, month, day] = showFormData.date_local.split('-').map(Number);
+                                        return new Date(year, month - 1, day);
+                                      })() : undefined} 
                                       onSelect={date => {
                                         if (date) {
                                           const year = date.getFullYear();
