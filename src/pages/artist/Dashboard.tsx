@@ -196,7 +196,7 @@ const ArtistDashboard = () => {
                       dataKey="receita" 
                       stroke="#22c55e" 
                       strokeWidth={3}
-                      dot={{ fill: '#22c55e', strokeWidth: 2, r: 5, stroke: '#fff' }}
+                      dot={false}
                       activeDot={{ r: 7, fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }}
                     />
                     <Line 
@@ -204,7 +204,7 @@ const ArtistDashboard = () => {
                       dataKey="despesa" 
                       stroke="#ef4444" 
                       strokeWidth={3}
-                      dot={{ fill: '#ef4444', strokeWidth: 2, r: 5, stroke: '#fff' }}
+                      dot={false}
                       activeDot={{ r: 7, fill: '#ef4444', stroke: '#fff', strokeWidth: 2 }}
                     />
                     <Line 
@@ -212,7 +212,7 @@ const ArtistDashboard = () => {
                       dataKey="lucro" 
                       stroke="#a855f7" 
                       strokeWidth={3}
-                      dot={{ fill: '#a855f7', strokeWidth: 2, r: 5, stroke: '#fff' }}
+                      dot={false}
                       activeDot={{ r: 7, fill: '#a855f7', stroke: '#fff', strokeWidth: 2 }}
                     />
                   </LineChart>
@@ -386,7 +386,7 @@ const ArtistDashboard = () => {
                         dataKey="value" 
                         stroke="#eab308" 
                         strokeWidth={3}
-                        dot={{ fill: '#eab308', strokeWidth: 2, r: 5, stroke: '#fff' }}
+                        dot={false}
                         activeDot={{ r: 7, fill: '#eab308', stroke: '#fff', strokeWidth: 2 }}
                       />
                     </LineChart>
