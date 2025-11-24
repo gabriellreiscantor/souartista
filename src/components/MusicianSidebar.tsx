@@ -1,4 +1,4 @@
-import { Music, Calendar, BarChart3, Car, LogOut, LayoutDashboard, Mic2, HelpCircle, User, Settings, Music2, MapPin } from 'lucide-react';
+import { Music, Calendar, BarChart3, Car, LogOut, LayoutDashboard, Mic2, HelpCircle, User, Settings } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -24,8 +24,6 @@ const mainItems = [
 
 const settingsItems = [
   { title: 'Artistas', url: '/musician/artists', icon: Mic2 },
-  { title: 'Instrumentos', url: '/musician/instruments', icon: Music2 },
-  { title: 'Locais e Bares', url: '/musician/venues', icon: MapPin },
   { title: 'Suporte', url: '/musician/support', icon: HelpCircle },
   { title: 'Perfil', url: '/musician/profile', icon: User },
   { title: 'Ajustes', url: '/musician/settings', icon: Settings },
