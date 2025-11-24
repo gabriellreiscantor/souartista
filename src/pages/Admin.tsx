@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, X, Send, Download, Filter, Link as LinkIcon } from 'lucide-react';
+import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, X, Send, Download, Filter, Link as LinkIcon, MessageCircle } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { RouteSelector } from '@/components/RouteSelector';
 import * as XLSX from 'xlsx';
@@ -53,6 +53,7 @@ interface Stats {
   totalUsers: number;
   totalArtists: number;
   totalMusicians: number;
+  totalTickets: number;
 }
 export default function Admin() {
   const navigate = useNavigate();
@@ -69,7 +70,8 @@ export default function Admin() {
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
     totalArtists: 0,
-    totalMusicians: 0
+    totalMusicians: 0,
+    totalTickets: 0
   });
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -122,6 +124,10 @@ export default function Admin() {
   const [supportTickets, setSupportTickets] = useState<any[]>([]);
   const [loadingSupportTickets, setLoadingSupportTickets] = useState(false);
   const [supportFilter, setSupportFilter] = useState('all');
+  const [respondingTicket, setRespondingTicket] = useState<any | null>(null);
+  const [responseMessage, setResponseMessage] = useState('');
+  const [sendingResponse, setSendingResponse] = useState(false);
+  const [showResponseDialog, setShowResponseDialog] = useState(false);
   
   // Estados para Administradores
   const [adminUsers, setAdminUsers] = useState<UserProfile[]>([]);
@@ -241,10 +247,17 @@ export default function Admin() {
         count: 'exact',
         head: true
       }).eq('role', 'musician');
+      const {
+        count: ticketsCount
+      } = await supabase.from('support_tickets').select('*', {
+        count: 'exact',
+        head: true
+      });
       setStats({
         totalUsers: usersCount || 0,
         totalArtists: artistsCount || 0,
-        totalMusicians: musiciansCount || 0
+        totalMusicians: musiciansCount || 0,
+        totalTickets: ticketsCount || 0
       });
     } catch (error) {
       console.error('Erro ao buscar estatísticas:', error);
@@ -660,6 +673,53 @@ export default function Admin() {
     }
   };
 
+  const handleRespondTicket = async () => {
+    if (!respondingTicket || !responseMessage.trim()) {
+      toast.error('Por favor, escreva uma resposta');
+      return;
+    }
+
+    try {
+      setSendingResponse(true);
+
+      // Inserir resposta
+      const { error: responseError } = await supabase
+        .from('support_responses')
+        .insert({
+          ticket_id: respondingTicket.id,
+          user_id: user?.id,
+          message: responseMessage,
+          is_admin: true
+        });
+
+      if (responseError) throw responseError;
+
+      // Atualizar status do ticket para "in_progress" se estiver "open"
+      if (respondingTicket.status === 'open') {
+        const { error: updateError } = await supabase
+          .from('support_tickets')
+          .update({ 
+            status: 'in_progress',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', respondingTicket.id);
+
+        if (updateError) throw updateError;
+      }
+
+      toast.success('Resposta enviada com sucesso!');
+      setShowResponseDialog(false);
+      setResponseMessage('');
+      setRespondingTicket(null);
+      fetchSupportTickets();
+    } catch (error) {
+      console.error('Erro ao enviar resposta:', error);
+      toast.error('Erro ao enviar resposta');
+    } finally {
+      setSendingResponse(false);
+    }
+  };
+
   // Funções para Administradores e Suporte
   const fetchAdminUsers = async () => {
     try {
@@ -992,6 +1052,15 @@ export default function Admin() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-gray-900">{stats.totalMusicians}</div>
+                </CardContent>
+              </Card>
+              <Card className="bg-white border-gray-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-700">Total de Tickets</CardTitle>
+                  <MessageCircle className="h-4 w-4 text-gray-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-gray-900">{stats.totalTickets}</div>
                 </CardContent>
               </Card>
             </div>
@@ -1947,6 +2016,44 @@ export default function Admin() {
                                     </div>
                                   )}
                                   
+                                  <div className="flex gap-2 pt-2">
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+                                      onClick={() => {
+                                        setRespondingTicket(ticket);
+                                        setShowResponseDialog(true);
+                                      }}
+                                    >
+                                      💬 Responder
+                                    </Button>
+                                    {ticket.status !== 'closed' && (
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                                        onClick={async () => {
+                                          try {
+                                            const { error } = await supabase
+                                              .from('support_tickets')
+                                              .update({ status: 'closed', updated_at: new Date().toISOString() })
+                                              .eq('id', ticket.id);
+                                            
+                                            if (error) throw error;
+                                            toast.success('Ticket fechado!');
+                                            fetchSupportTickets();
+                                          } catch (error) {
+                                            console.error('Erro ao fechar ticket:', error);
+                                            toast.error('Erro ao fechar ticket');
+                                          }
+                                        }}
+                                      >
+                                        ✓ Fechar
+                                      </Button>
+                                    )}
+                                  </div>
+                                  
                                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs text-gray-500 pt-2 border-t border-gray-200">
                                     <span>
                                       Criado em: {new Date(ticket.created_at).toLocaleString('pt-BR')}
@@ -2237,6 +2344,60 @@ export default function Admin() {
             </Button>
             <Button onClick={handleDeleteNotification} className="bg-red-600 hover:bg-red-700 text-white">
               Remover
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Response Dialog */}
+      <Dialog open={showResponseDialog} onOpenChange={setShowResponseDialog}>
+        <DialogContent className="bg-white text-gray-900 max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">Responder Ticket</DialogTitle>
+            <DialogDescription className="text-gray-600">
+              {respondingTicket && `Respondendo: ${respondingTicket.subject}`}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="response" className="text-gray-900">Mensagem</Label>
+              <Textarea 
+                id="response" 
+                value={responseMessage} 
+                onChange={e => setResponseMessage(e.target.value)} 
+                className="bg-white text-gray-900 border-gray-200 min-h-[150px]" 
+                placeholder="Digite sua resposta aqui..."
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowResponseDialog(false);
+                setResponseMessage('');
+                setRespondingTicket(null);
+              }}
+              disabled={sendingResponse}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleRespondTicket} 
+              disabled={sendingResponse || !responseMessage.trim()}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {sendingResponse ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Enviar Resposta
+                </>
+              )}
             </Button>
           </div>
         </DialogContent>
