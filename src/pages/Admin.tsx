@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard } from 'lucide-react';
+import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, X } from 'lucide-react';
 interface UserProfile {
   id: string;
   name: string;
@@ -102,8 +102,13 @@ export default function Admin() {
     if (isAdmin) {
       fetchStats();
       fetchUsers();
+      // Limpa a busca quando mudar de tab
+      setSearchedUser(null);
+      setUserShows([]);
+      setUserExpenses([]);
+      setSearchId('');
     }
-  }, [isAdmin]);
+  }, [isAdmin, currentTab]);
   const fetchStats = async () => {
     try {
       const {
@@ -258,6 +263,14 @@ export default function Admin() {
         toast.info('Cole agora (Ctrl+V ou toque longo)', { duration: 2000 });
       }
     }
+  };
+
+  const handleClearSearch = () => {
+    setSearchId('');
+    setSearchedUser(null);
+    setUserShows([]);
+    setUserExpenses([]);
+    toast.info('Busca limpa');
   };
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -466,6 +479,12 @@ export default function Admin() {
                         <Clipboard className="h-4 w-4 sm:mr-2" />
                         <span className="hidden sm:inline">Colar</span>
                       </Button>
+                      {(searchId || searchedUser) && (
+                        <Button variant="outline" onClick={handleClearSearch} className="w-full sm:w-auto">
+                          <X className="h-4 w-4 sm:mr-2" />
+                          <span className="hidden sm:inline">Limpar</span>
+                        </Button>
+                      )}
                       <Button onClick={handleSearchUser} disabled={searching} className="w-full sm:w-auto">
                         {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Buscar'}
                       </Button>
