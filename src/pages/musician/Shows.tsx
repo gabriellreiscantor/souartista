@@ -62,13 +62,23 @@ const MusicianShows = () => {
   const {
     user,
     userData,
-    userRole
+    userRole,
+    loading: authLoading
   } = useAuth();
   const [shows, setShows] = useState<Show[]>([]);
   const [artists, setArtists] = useState<Artist[]>([]);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      console.warn('[MusicianShows] No user found, redirecting to login');
+      toast.error('Por favor, faça login para acessar esta página');
+      window.location.href = '/login';
+    }
+  }, [user, authLoading]);
 
   // Shows dialog
   const [showDialogOpen, setShowDialogOpen] = useState(false);
@@ -111,18 +121,26 @@ const MusicianShows = () => {
   const [connectionTest, setConnectionTest] = useState<'testing' | 'ok' | 'error'>('testing');
   useEffect(() => {
     const testConnection = async () => {
+      if (!user) {
+        console.log('=== AGUARDANDO AUTENTICAÇÃO ===');
+        return;
+      }
+
       try {
         console.log('=== TESTE DE CONEXÃO ===');
         console.log('User ID:', user?.id);
         console.log('User Email:', user?.email);
         console.log('User Data:', userData);
         console.log('User Role:', userRole);
+        
         const {
           error
         } = await supabase.from('musician_venues').select('id').limit(1);
+        
         if (error) {
           console.error('Erro no teste de conexão:', error);
           setConnectionTest('error');
+          toast.error('Erro de conexão com o banco de dados');
         } else {
           console.log('Conexão OK com Supabase');
           setConnectionTest('ok');
@@ -132,12 +150,8 @@ const MusicianShows = () => {
         setConnectionTest('error');
       }
     };
-    if (user) {
-      testConnection();
-    } else {
-      console.log('=== SEM USER ===');
-      console.log('Aguardando autenticação...');
-    }
+    
+    testConnection();
   }, [user, userData, userRole]);
   useEffect(() => {
     if (user) {
