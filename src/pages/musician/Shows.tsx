@@ -1174,10 +1174,34 @@ const MusicianShows = () => {
                         <form onSubmit={handleInstrumentSubmit} className="space-y-4">
                           <div>
                             <Label htmlFor="instrument_name" className="text-gray-900 font-medium">Nome do Instrumento *</Label>
-                            <Input id="instrument_name" value={instrumentFormData.name} onChange={e => setInstrumentFormData({
-                            ...instrumentFormData,
-                            name: e.target.value
-                          })} placeholder="Ex: Guitarra, Bateria, Baixo..." className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" required />
+                            <Select value={instrumentFormData.name} onValueChange={(value) => setInstrumentFormData({
+                              ...instrumentFormData,
+                              name: value
+                            })} required>
+                              <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                                <SelectValue placeholder="Selecione um instrumento" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Guitarra">Guitarra</SelectItem>
+                                <SelectItem value="Violão">Violão</SelectItem>
+                                <SelectItem value="Bateria">Bateria</SelectItem>
+                                <SelectItem value="Baixo">Baixo</SelectItem>
+                                <SelectItem value="Teclado">Teclado</SelectItem>
+                                <SelectItem value="Piano">Piano</SelectItem>
+                                <SelectItem value="Saxofone">Saxofone</SelectItem>
+                                <SelectItem value="Trompete">Trompete</SelectItem>
+                                <SelectItem value="Trombone">Trombone</SelectItem>
+                                <SelectItem value="Flauta">Flauta</SelectItem>
+                                <SelectItem value="Clarinete">Clarinete</SelectItem>
+                                <SelectItem value="Violino">Violino</SelectItem>
+                                <SelectItem value="Violoncelo">Violoncelo</SelectItem>
+                                <SelectItem value="Contrabaixo Acústico">Contrabaixo Acústico</SelectItem>
+                                <SelectItem value="Percussão">Percussão</SelectItem>
+                                <SelectItem value="Voz">Voz</SelectItem>
+                                <SelectItem value="DJ">DJ</SelectItem>
+                                <SelectItem value="Outro">Outro</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="flex gap-3">
                             <Button type="button" variant="outline" onClick={() => setInstrumentDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
