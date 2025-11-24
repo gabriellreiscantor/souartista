@@ -8,11 +8,12 @@ import { useLocomotionData } from '@/hooks/useLocomotionData';
 import { WeeklySchedule } from '@/components/WeeklySchedule';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Music, Loader2, Bell, Car, DollarSign, TrendingDown, Users } from 'lucide-react';
+import { Music, Loader2, Car, DollarSign, TrendingDown, Users } from 'lucide-react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { MusicianSidebar } from '@/components/MusicianSidebar';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { UserMenu } from '@/components/UserMenu';
+import { NotificationBell } from '@/components/NotificationBell';
 import { PeriodFilter } from '@/components/PeriodFilter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -67,9 +68,7 @@ const MusicianDashboard = () => {
             </div>
             
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Bell className="w-5 h-5 text-gray-900" />
-              </Button>
+              <NotificationBell />
               <UserMenu userName={userData?.name} userRole={userRole} />
             </div>
           </header>
