@@ -714,12 +714,21 @@ const ArtistShows = () => {
                                         <SelectValue placeholder="Selecione um local" />
                                       </SelectTrigger>
                                       <SelectContent className="bg-white z-[100]">
-                                        {venues.map((venue) => (
-                                          <SelectItem key={venue.id} value={venue.id}>
-                                            {venue.name}
-                                          </SelectItem>
-                                        ))}
-                                        <SelectItem value="custom">Outro local...</SelectItem>
+                                        {venues.length === 0 ? (
+                                          <div className="p-3 text-center">
+                                            <p className="text-sm text-gray-500 break-words">Nenhum local cadastrado</p>
+                                            <p className="text-xs text-gray-400 mt-1">Adicione em Locais</p>
+                                          </div>
+                                        ) : (
+                                          <>
+                                            {venues.map((venue) => (
+                                              <SelectItem key={venue.id} value={venue.id}>
+                                                {venue.name}
+                                              </SelectItem>
+                                            ))}
+                                            <SelectItem value="custom">Outro local...</SelectItem>
+                                          </>
+                                        )}
                                       </SelectContent>
                                     </Select>
                                     {showFormData.venue_id === 'custom' && (
@@ -833,12 +842,21 @@ const ArtistShows = () => {
                                           <SelectValue placeholder="Selecione" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-white z-[200]">
-                                          {musicians.map((m) => (
-                                            <SelectItem key={m.id} value={m.id} className="text-sm">
-                                              {m.name}
-                                            </SelectItem>
-                                          ))}
-                                          <SelectItem value="freelancer" className="text-sm">Freelancer</SelectItem>
+                                          {musicians.length === 0 ? (
+                                            <div className="p-3 text-center">
+                                              <p className="text-sm text-gray-500 break-words">Nenhum músico cadastrado</p>
+                                              <p className="text-xs text-gray-400 mt-1">Adicione em Músicos</p>
+                                            </div>
+                                          ) : (
+                                            <>
+                                              {musicians.map((m) => (
+                                                <SelectItem key={m.id} value={m.id} className="text-sm">
+                                                  {m.name}
+                                                </SelectItem>
+                                              ))}
+                                              <SelectItem value="freelancer" className="text-sm">Freelancer</SelectItem>
+                                            </>
+                                          )}
                                         </SelectContent>
                                       </Select>
 
@@ -1016,12 +1034,21 @@ const ArtistShows = () => {
                                         <SelectValue placeholder="Selecione um local" />
                                       </SelectTrigger>
                                       <SelectContent className="bg-white">
-                                        {venues.map((venue) => (
-                                          <SelectItem key={venue.id} value={venue.id}>
-                                            {venue.name}
-                                          </SelectItem>
-                                        ))}
-                                        <SelectItem value="custom">Outro local...</SelectItem>
+                                        {venues.length === 0 ? (
+                                          <div className="p-3 text-center">
+                                            <p className="text-sm text-gray-500 break-words">Nenhum local cadastrado</p>
+                                            <p className="text-xs text-gray-400 mt-1">Adicione em Locais</p>
+                                          </div>
+                                        ) : (
+                                          <>
+                                            {venues.map((venue) => (
+                                              <SelectItem key={venue.id} value={venue.id}>
+                                                {venue.name}
+                                              </SelectItem>
+                                            ))}
+                                            <SelectItem value="custom">Outro local...</SelectItem>
+                                          </>
+                                        )}
                                       </SelectContent>
                                     </Select>
                                     {showFormData.venue_id === 'custom' && (
@@ -1163,12 +1190,21 @@ const ArtistShows = () => {
                                           <SelectValue placeholder="Selecione um músico" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-white">
-                                          {musicians.map((m) => (
-                                            <SelectItem key={m.id} value={m.id} className="text-gray-900">
-                                              {m.name} - {m.instrument}
-                                            </SelectItem>
-                                          ))}
-                                          <SelectItem value="freelancer" className="text-gray-900">Freelancer</SelectItem>
+                                          {musicians.length === 0 ? (
+                                            <div className="p-3 text-center">
+                                              <p className="text-sm text-gray-500 break-words">Nenhum músico cadastrado</p>
+                                              <p className="text-xs text-gray-400 mt-1">Adicione em Músicos</p>
+                                            </div>
+                                          ) : (
+                                            <>
+                                              {musicians.map((m) => (
+                                                <SelectItem key={m.id} value={m.id} className="text-gray-900">
+                                                  {m.name} - {m.instrument}
+                                                </SelectItem>
+                                              ))}
+                                              <SelectItem value="freelancer" className="text-gray-900">Freelancer</SelectItem>
+                                            </>
+                                          )}
                                         </SelectContent>
                                       </Select>
 
