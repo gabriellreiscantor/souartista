@@ -122,7 +122,7 @@ export function WeeklySchedule({
         {weekDays.map(day => {
         const dayShows = getShowsForDay(day);
         if (dayShows.length === 0) return null;
-        return <div key={day.toISOString()} className="p-4 rounded-lg bg-gray-50 border border-gray-200 hover:border-primary/30 transition-colors">
+        return <div key={day.toISOString()} className="p-4 rounded-lg bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300">
               <div className="flex items-start gap-4">
                 {/* Date Badge */}
                 <div className="flex flex-col items-center min-w-[60px] bg-primary/10 rounded-lg p-2">
