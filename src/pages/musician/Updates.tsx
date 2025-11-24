@@ -91,7 +91,7 @@ const MusicianUpdates = () => {
           msOverflowStyle: 'none',
           WebkitOverflowScrolling: 'touch'
         }}>
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-3xl mx-auto text-stone-950">
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">Atualizações</h2>
                 <p className="text-gray-600">Veja as novidades e melhorias da plataforma.</p>
