@@ -144,58 +144,68 @@ const MusicianDashboard = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={monthlyData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="month" stroke="#666" />
-                    <YAxis stroke="#666" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: '#fff', 
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        padding: '12px'
-                      }}
-                      formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`}
-                      labelFormatter={(label) => `Mês: ${label}`}
-                    />
-                    <Legend 
-                      iconType="circle"
-                      formatter={(value) => {
-                        const labels: Record<string, string> = {
-                          receita: 'Cachê',
-                          despesa: 'Despesa',
-                          lucro: 'Lucro'
-                        };
-                        return labels[value] || value;
-                      }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="receita" 
-                      stroke="#22c55e" 
-                      strokeWidth={3}
-                      dot={false}
-                      activeDot={{ r: 7, fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="despesa" 
-                      stroke="#ef4444" 
-                      strokeWidth={3}
-                      dot={false}
-                      activeDot={{ r: 7, fill: '#ef4444', stroke: '#fff', strokeWidth: 2 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="lucro" 
-                      stroke="#a855f7" 
-                      strokeWidth={3}
-                      dot={false}
-                      activeDot={{ r: 7, fill: '#a855f7', stroke: '#fff', strokeWidth: 2 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                {monthlyData.every(m => m.receita === 0 && m.despesa === 0) ? (
+                  <div className="h-[300px] flex items-center justify-center text-gray-400">
+                    <div className="text-center">
+                      <Music className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                      <p className="text-sm">Nenhum dado financeiro para {selectedYear}</p>
+                      <p className="text-xs mt-1">Adicione shows para visualizar o gráfico</p>
+                    </div>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={monthlyData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="month" stroke="#666" />
+                      <YAxis stroke="#666" />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: '#fff', 
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          padding: '12px'
+                        }}
+                        formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`}
+                        labelFormatter={(label) => `Mês: ${label}`}
+                      />
+                      <Legend 
+                        iconType="circle"
+                        formatter={(value) => {
+                          const labels: Record<string, string> = {
+                            receita: 'Cachê',
+                            despesa: 'Despesa',
+                            lucro: 'Lucro'
+                          };
+                          return labels[value] || value;
+                        }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="receita" 
+                        stroke="#22c55e" 
+                        strokeWidth={3}
+                        dot={{ r: 4, fill: '#22c55e', strokeWidth: 2 }}
+                        activeDot={{ r: 7, fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="despesa" 
+                        stroke="#ef4444" 
+                        strokeWidth={3}
+                        dot={{ r: 4, fill: '#ef4444', strokeWidth: 2 }}
+                        activeDot={{ r: 7, fill: '#ef4444', stroke: '#fff', strokeWidth: 2 }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="lucro" 
+                        stroke="#a855f7" 
+                        strokeWidth={3}
+                        dot={{ r: 4, fill: '#a855f7', strokeWidth: 2 }}
+                        activeDot={{ r: 7, fill: '#a855f7', stroke: '#fff', strokeWidth: 2 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                )}
               </Card>
 
               <Card className="p-4 md:p-6 bg-white border border-gray-200">
