@@ -2,12 +2,10 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Music, Calendar, DollarSign, Users, TrendingUp, Sparkles, Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
 
 const Landing = () => {
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
   const { user, session, loading: authLoading } = useAuth();
 
   // Redireciona usuários autenticados automaticamente
@@ -17,12 +15,6 @@ const Landing = () => {
       navigate('/app');
     }
   }, [user, session, authLoading, navigate]);
-
-  useEffect(() => {
-    if (isMobile && !user) {
-      navigate('/login');
-    }
-  }, [isMobile, user, navigate]);
 
   // Mostra loading enquanto verifica autenticação
   if (authLoading) {
