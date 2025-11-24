@@ -48,10 +48,10 @@ const ArtistDashboard = () => {
     { month: 'mai', receita: 0, despesa: 0, lucro: 0 },
     { month: 'jun', receita: 0, despesa: 0, lucro: 0 },
     { month: 'jul', receita: 0, despesa: 0, lucro: 0 },
-    { month: 'ago', receita: 3400, despesa: 1600, lucro: 1800 },
-    { month: 'set', receita: 1800, despesa: 800, lucro: 1000 },
-    { month: 'out', receita: 2300, despesa: 1300, lucro: 1000 },
-    { month: 'nov', receita: 5100, despesa: 2600, lucro: 2500 },
+    { month: 'ago', receita: 0, despesa: 0, lucro: 0 },
+    { month: 'set', receita: 0, despesa: 0, lucro: 0 },
+    { month: 'out', receita: 0, despesa: 0, lucro: 0 },
+    { month: 'nov', receita: 0, despesa: 0, lucro: 0 },
     { month: 'dez', receita: 0, despesa: 0, lucro: 0 },
   ];
 
@@ -129,23 +129,23 @@ const ArtistDashboard = () => {
               <StatCard
                 icon={<Music className="w-6 h-6" />}
                 title="Total de Shows"
-                value="4"
+                value="0"
                 iconBg="bg-purple-100"
                 iconColor="text-purple-600"
               />
               <StatCard
                 title="Receita Bruta (Total)"
-                value="R$ 7.400,00"
+                value="R$ 0,00"
                 valueColor="text-green-600"
               />
               <StatCard
                 title="Custos Totais"
-                value="R$ 2.600,00"
+                value="R$ 0,00"
                 valueColor="text-red-600"
               />
               <StatCard
                 title="Lucro Líquido (Total)"
-                value="R$ 4.800,00"
+                value="R$ 0,00"
                 valueColor="text-blue-600"
               />
             </div>
@@ -226,23 +226,12 @@ const ArtistDashboard = () => {
               {/* Upcoming Shows */}
               <Card className="p-4 md:p-6 bg-white border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Próximos Shows</h3>
-                <p className="text-sm text-gray-600 mb-4">Seus 3 próximos eventos agendados.</p>
+                <p className="text-sm text-gray-600 mb-4">Seus próximos eventos agendados.</p>
                 
-                <div className="space-y-3">
-                  <div className="flex gap-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
-                    <div className="flex flex-col items-center justify-center bg-purple-500 text-white rounded-lg px-3 py-2 min-w-[60px]">
-                      <span className="text-xs font-medium">NOV</span>
-                      <span className="text-2xl font-bold">27</span>
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900">Ressaca Bar</h4>
-                      <p className="text-sm text-gray-600 flex items-center gap-1">
-                        <CalendarIcon className="w-3 h-3" />
-                        05:02h
-                      </p>
-                      <p className="text-sm font-semibold text-green-600 mt-1">R$ 2.200,00</p>
-                    </div>
-                  </div>
+                <div className="text-center py-12 text-gray-500">
+                  <Music className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p>Nenhum show agendado</p>
+                  <p className="text-xs mt-2">Adicione seus shows para começar</p>
                 </div>
               </Card>
             </div>
@@ -274,84 +263,52 @@ const ArtistDashboard = () => {
               </div>
 
               {/* Mobile: Vertical event cards */}
-              <div className="md:hidden space-y-3 mb-4">
-                {[
-                  { day: 'DOMINGO', dayNum: '02', date: '02/11', event: 'Pub 65' },
-                  { day: 'TERÇA', dayNum: '04', date: '04/11', event: 'Zenaide' },
-                  { day: 'QUINTA', dayNum: '06', date: '06/11', event: 'Ditado Popular' },
-                  { day: 'SEXTA', dayNum: '07', date: '07/11', event: 'Pub 65' },
-                  { day: 'SÁBADO', dayNum: '08', date: '08/11', event: 'SAPEZAL' },
-                ].map((item) => (
-                  <div
-                    key={item.day}
-                    className="flex items-center gap-4 p-4 bg-purple-50 border border-purple-200 rounded-lg"
-                  >
-                    <div className="flex flex-col items-center justify-center bg-white border-2 border-purple-300 rounded-lg px-4 py-2 min-w-[70px]">
-                      <span className="text-xs font-bold text-purple-600 uppercase">{item.day}</span>
-                      <span className="text-3xl font-bold text-gray-900">{item.dayNum}</span>
-                    </div>
-                    <div className="flex-1 flex items-center gap-2">
-                      <Music className="w-5 h-5 text-purple-600 flex-shrink-0" />
-                      <span className="text-base font-semibold text-gray-900">{item.event}</span>
-                    </div>
-                  </div>
-                ))}
+              <div className="md:hidden text-center py-8 text-gray-500">
+                <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>Nenhum evento agendado</p>
+                <p className="text-xs mt-2">Adicione shows para visualizar sua agenda</p>
               </div>
 
               {/* Desktop: Grid calendar */}
               <div className="hidden md:grid grid-cols-7 gap-2 mb-4">
                 {[
-                  { day: 'DOM', date: '02/11', event: 'Pub 65', highlight: true },
+                  { day: 'DOM', date: '02/11' },
                   { day: 'SEG', date: '03/11' },
-                  { day: 'TER', date: '04/11', event: 'Zenaide', highlight: true },
+                  { day: 'TER', date: '04/11' },
                   { day: 'QUA', date: '05/11' },
-                  { day: 'QUI', date: '06/11', event: 'Ditado Popular', highlight: true },
-                  { day: 'SEX', date: '07/11', event: 'Pub 65', highlight: true },
-                  { day: 'SAB', date: '08/11', event: 'SAPEZAL', highlight: true },
+                  { day: 'QUI', date: '06/11' },
+                  { day: 'SEX', date: '07/11' },
+                  { day: 'SAB', date: '08/11' },
                 ].map((item) => (
                   <div
                     key={item.day}
-                    className={cn(
-                      "p-3 rounded-lg border text-center min-h-[100px]",
-                      item.highlight 
-                        ? "bg-purple-50 border-purple-200" 
-                        : "bg-gray-50 border-gray-200"
-                    )}
+                    className="p-3 rounded-lg border text-center min-h-[100px] bg-gray-50 border-gray-200"
                   >
-                    <div className={cn(
-                      "text-xs font-medium mb-1",
-                      item.highlight ? "text-purple-600" : "text-gray-600"
-                    )}>
+                    <div className="text-xs font-medium mb-1 text-gray-600">
                       {item.day}
                     </div>
                     <div className="text-xs text-gray-500">{item.date}</div>
-                    {item.event && (
-                      <div className="mt-2 text-xs font-medium text-purple-600 flex items-center justify-center gap-1">
-                        <Music className="w-3 h-3" />
-                        <span className="line-clamp-2">{item.event}</span>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
 
-              <div className="hidden md:flex items-center justify-center text-sm text-gray-600 mb-4">
-                <CalendarIcon className="w-4 h-4 mr-2" />
-                Clique em um dia com eventos para ver os detalhes.
+              <div className="hidden md:flex items-center justify-center text-sm text-gray-500 mb-4">
+                <CalendarIcon className="w-4 h-4 mr-2 opacity-30" />
+                Nenhum evento agendado para esta semana.
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 bg-purple-50 p-4 rounded-lg border border-purple-200">
                 <div className="text-center">
                   <p className="text-xs md:text-sm text-gray-600 mb-1">Receita Bruta (Semanal)</p>
-                  <p className="text-xl md:text-2xl font-bold text-green-600">R$ 5.700,00</p>
+                  <p className="text-xl md:text-2xl font-bold text-green-600">R$ 0,00</p>
                 </div>
                 <div className="text-center">
                   <p className="text-xs md:text-sm text-gray-600 mb-1">Despesas (Semanal)</p>
-                  <p className="text-xl md:text-2xl font-bold text-red-600">R$ 2.902,09</p>
+                  <p className="text-xl md:text-2xl font-bold text-red-600">R$ 0,00</p>
                 </div>
                 <div className="text-center">
                   <p className="text-xs md:text-sm text-gray-600 mb-1">Lucro (Semanal)</p>
-                  <p className="text-xl md:text-2xl font-bold text-blue-600">R$ 2.797,91</p>
+                  <p className="text-xl md:text-2xl font-bold text-blue-600">R$ 0,00</p>
                 </div>
               </div>
             </Card>
