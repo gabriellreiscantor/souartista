@@ -135,6 +135,12 @@ export default function Admin() {
   const [adminSearchQuery, setAdminSearchQuery] = useState('');
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   
+  // Estados para Importação Firebase
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importData, setImportData] = useState<any>(null);
+  const [importing, setImporting] = useState(false);
+  const [importReport, setImportReport] = useState<any>(null);
+  
   const usersPerPage = 50;
   useEffect(() => {
     if (!adminLoading && !isAdmin && user) {
@@ -178,6 +184,11 @@ export default function Admin() {
         fetchAdminUsers();
       } else if (currentTab === 'suporte') {
         fetchSupportTickets();
+      } else if (currentTab === 'importacao') {
+        // Limpar estado ao entrar na tab de importação
+        setImportFile(null);
+        setImportData(null);
+        setImportReport(null);
       }
     }
   }, [isAdmin, currentTab]);
@@ -1002,6 +1013,78 @@ export default function Admin() {
   };
   const paginatedUsers = users.slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage);
   const totalPages = Math.ceil(users.length / usersPerPage);
+
+  // Funções para Importação Firebase
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.json')) {
+      toast.error('Por favor, selecione um arquivo JSON');
+      return;
+    }
+
+    setImportFile(file);
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        setImportData(json);
+        toast.success('Arquivo carregado! Revise os dados antes de importar.');
+      } catch (error) {
+        console.error('Erro ao ler JSON:', error);
+        toast.error('Erro ao ler arquivo JSON');
+        setImportFile(null);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleImport = async () => {
+    if (!importData) {
+      toast.error('Nenhum dado para importar');
+      return;
+    }
+
+    try {
+      setImporting(true);
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Sessão expirada. Faça login novamente.');
+        return;
+      }
+
+      console.log('🚀 Iniciando importação...');
+      
+      const { data, error } = await supabase.functions.invoke('import-firebase-shows', {
+        body: { shows: importData },
+      });
+
+      if (error) {
+        console.error('❌ Erro na importação:', error);
+        throw error;
+      }
+
+      console.log('✅ Importação concluída:', data);
+      
+      setImportReport(data);
+      toast.success(`🎉 Importação concluída! ${data.shows_imported} shows importados.`);
+      
+      // Limpar dados após sucesso
+      setImportFile(null);
+      setImportData(null);
+      
+    } catch (error) {
+      console.error('Erro ao importar:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast.error('Erro ao importar dados: ' + errorMessage);
+    } finally {
+      setImporting(false);
+    }
+  };
+
   if (adminLoading) {
     return <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
@@ -1424,6 +1507,200 @@ export default function Admin() {
                   </div>
                 </CardContent>
               </Card>}
+
+            {currentTab === 'importacao' && (
+              <Card className="bg-white border-gray-200">
+                <CardHeader>
+                  <CardTitle className="text-gray-900">📥 Importação Firebase</CardTitle>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Importe seus shows, músicos e venues do Firebase para o Supabase
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  {!importReport ? (
+                    <div className="space-y-6">
+                      {/* Upload do arquivo */}
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                        <input
+                          type="file"
+                          accept=".json"
+                          onChange={handleFileSelect}
+                          className="hidden"
+                          id="firebase-json-upload"
+                          disabled={importing}
+                        />
+                        <label
+                          htmlFor="firebase-json-upload"
+                          className="cursor-pointer block"
+                        >
+                          <div className="space-y-2">
+                            <Download className="w-12 h-12 mx-auto text-gray-400" />
+                            <p className="text-lg font-medium text-gray-900">
+                              {importFile ? importFile.name : 'Selecione o arquivo JSON'}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Clique para selecionar ou arraste o arquivo
+                            </p>
+                          </div>
+                        </label>
+                      </div>
+
+                      {/* Preview dos dados */}
+                      {importData && (
+                        <div className="space-y-4">
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h3 className="font-semibold text-blue-900 mb-3">
+                              Preview dos Dados
+                            </h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              <div className="bg-white p-3 rounded border border-blue-200">
+                                <p className="text-xs text-gray-600">Total de Shows</p>
+                                <p className="text-2xl font-bold text-blue-600">
+                                  {importData.length}
+                                </p>
+                              </div>
+                              <div className="bg-white p-3 rounded border border-green-200">
+                                <p className="text-xs text-gray-600">Receita Bruta</p>
+                                <p className="text-2xl font-bold text-green-600">
+                                  R$ {importData.reduce((sum: number, show: any) => sum + (show.fee || 0), 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                </p>
+                              </div>
+                              <div className="bg-white p-3 rounded border border-purple-200">
+                                <p className="text-xs text-gray-600">Venues Únicos</p>
+                                <p className="text-2xl font-bold text-purple-600">
+                                  {new Set(importData.map((s: any) => s.venueName)).size}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Botão de importação */}
+                          <div className="flex gap-3">
+                            <Button
+                              onClick={handleImport}
+                              disabled={importing}
+                              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                              size="lg"
+                            >
+                              {importing ? (
+                                <>
+                                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                  Importando...
+                                </>
+                              ) : (
+                                <>
+                                  <Download className="w-5 h-5 mr-2" />
+                                  Confirmar Importação
+                                </>
+                              )}
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                setImportFile(null);
+                                setImportData(null);
+                              }}
+                              variant="outline"
+                              disabled={importing}
+                            >
+                              <X className="w-5 h-5" />
+                            </Button>
+                          </div>
+
+                          {/* Barra de progresso */}
+                          {importing && (
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                              <p className="text-sm text-yellow-800 mb-2">
+                                🔄 Importando dados... Isso pode levar alguns segundos.
+                              </p>
+                              <div className="w-full bg-yellow-200 rounded-full h-2">
+                                <div className="bg-yellow-600 h-2 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    // Relatório de importação
+                    <div className="space-y-6">
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                            <span className="text-2xl">✅</span>
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-green-900">
+                              Importação Concluída!
+                            </h3>
+                            <p className="text-sm text-green-700">
+                              Todos os dados foram importados com sucesso
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+                          <div className="bg-white p-4 rounded-lg border border-green-200">
+                            <p className="text-xs text-gray-600 mb-1">Shows Importados</p>
+                            <p className="text-3xl font-bold text-green-600">
+                              {importReport.shows_imported}
+                            </p>
+                          </div>
+                          <div className="bg-white p-4 rounded-lg border border-blue-200">
+                            <p className="text-xs text-gray-600 mb-1">Músicos Criados</p>
+                            <p className="text-3xl font-bold text-blue-600">
+                              {importReport.musicians_created}
+                            </p>
+                          </div>
+                          <div className="bg-white p-4 rounded-lg border border-purple-200">
+                            <p className="text-xs text-gray-600 mb-1">Venues Criados</p>
+                            <p className="text-3xl font-bold text-purple-600">
+                              {importReport.venues_created}
+                            </p>
+                          </div>
+                          <div className="bg-white p-4 rounded-lg border border-green-200">
+                            <p className="text-xs text-gray-600 mb-1">Receita Bruta</p>
+                            <p className="text-2xl font-bold text-green-600">
+                              R$ {importReport.receita_bruta.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </p>
+                          </div>
+                          <div className="bg-white p-4 rounded-lg border border-red-200">
+                            <p className="text-xs text-gray-600 mb-1">Despesas Totais</p>
+                            <p className="text-2xl font-bold text-red-600">
+                              R$ {importReport.despesas_totais.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </p>
+                          </div>
+                          <div className="bg-white p-4 rounded-lg border border-blue-200">
+                            <p className="text-xs text-gray-600 mb-1">Lucro Líquido</p>
+                            <p className="text-2xl font-bold text-blue-600">
+                              R$ {importReport.lucro_liquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={() => navigate('/artist/dashboard')}
+                          className="flex-1 bg-blue-600 hover:bg-blue-700"
+                        >
+                          Ver Dashboard
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setImportReport(null);
+                            setImportFile(null);
+                            setImportData(null);
+                          }}
+                          variant="outline"
+                        >
+                          Nova Importação
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {currentTab === 'administradores' && (
               <Card className="bg-white border-gray-200">
