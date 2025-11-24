@@ -216,14 +216,14 @@ export default function Admin() {
       <div className="flex min-h-screen w-full">
         <AdminSidebar />
         <SidebarInset className="flex-1">
-          <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-6">
+          <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
             <SidebarTrigger />
-            <h1 className="text-2xl font-bold">🛡️ Painel Administrativo</h1>
+            <h1 className="text-lg md:text-2xl font-bold">🛡️ Admin</h1>
           </header>
 
-          <main className="p-6">
+          <main className="p-4 md:p-6 pb-20 md:pb-6">
             {/* Stats Cards */}
-            <div className="grid gap-4 md:grid-cols-3 mb-6">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
@@ -272,24 +272,29 @@ export default function Admin() {
                     </div>
                   ) : (
                     <>
-                      <div className="rounded-md border">
+                      <div className="rounded-md border overflow-x-auto">
                         <table className="w-full">
                           <thead>
                             <tr className="border-b bg-muted/50">
-                              <th className="p-3 text-left font-medium">Nome</th>
-                              <th className="p-3 text-left font-medium">Email</th>
-                              <th className="p-3 text-left font-medium">Plano</th>
-                              <th className="p-3 text-left font-medium">ID</th>
-                              <th className="p-3 text-left font-medium">Ações</th>
+                              <th className="p-2 md:p-3 text-left font-medium text-sm">Nome</th>
+                              <th className="p-2 md:p-3 text-left font-medium text-sm hidden md:table-cell">Email</th>
+                              <th className="p-2 md:p-3 text-left font-medium text-sm">Plano</th>
+                              <th className="p-2 md:p-3 text-left font-medium text-sm hidden lg:table-cell">ID</th>
+                              <th className="p-2 md:p-3 text-left font-medium text-sm">Ações</th>
                             </tr>
                           </thead>
                           <tbody>
                             {paginatedUsers.map((user) => (
                               <tr key={user.id} className="border-b hover:bg-muted/50">
-                                <td className="p-3">{user.name}</td>
-                                <td className="p-3">{user.email}</td>
-                                <td className="p-3">{getStatusBadge(user.status_plano)}</td>
-                                <td className="p-3">
+                                <td className="p-2 md:p-3">
+                                  <div>
+                                    <p className="font-medium text-sm">{user.name}</p>
+                                    <p className="text-xs text-muted-foreground md:hidden">{user.email}</p>
+                                  </div>
+                                </td>
+                                <td className="p-2 md:p-3 hidden md:table-cell">{user.email}</td>
+                                <td className="p-2 md:p-3">{getStatusBadge(user.status_plano)}</td>
+                                <td className="p-2 md:p-3 hidden lg:table-cell">
                                   <div className="flex items-center gap-2">
                                     <span className="text-xs text-muted-foreground font-mono">
                                       {user.id.slice(0, 8)}...
@@ -303,7 +308,7 @@ export default function Admin() {
                                     </Button>
                                   </div>
                                 </td>
-                                <td className="p-3">
+                                <td className="p-2 md:p-3">
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                       <Button variant="ghost" size="sm">
@@ -339,8 +344,8 @@ export default function Admin() {
                       </div>
 
                       {/* Pagination */}
-                      <div className="flex items-center justify-between mt-4">
-                        <p className="text-sm text-muted-foreground">
+                      <div className="flex flex-col md:flex-row items-center justify-between mt-4 gap-4">
+                        <p className="text-xs md:text-sm text-muted-foreground">
                           Mostrando {(currentPage - 1) * usersPerPage + 1} a{' '}
                           {Math.min(currentPage * usersPerPage, users.length)} de {users.length}{' '}
                           usuários
