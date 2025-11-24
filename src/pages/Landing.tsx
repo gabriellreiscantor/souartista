@@ -1,9 +1,18 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Music, Calendar, DollarSign, Users, TrendingUp, Sparkles } from 'lucide-react';
+import { useEffect } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Landing = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
+  useEffect(() => {
+    if (isMobile) {
+      navigate('/login');
+    }
+  }, [isMobile, navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
