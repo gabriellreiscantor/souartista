@@ -1,8 +1,9 @@
-import { Music, Calendar, BarChart3, Car, LogOut, LayoutDashboard, Mic2, HelpCircle, User, Settings } from 'lucide-react';
+import { Music, Calendar, BarChart3, Car, LogOut, LayoutDashboard, Mic2, HelpCircle, User, Settings, Shield } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAdmin } from '@/hooks/useAdmin';
 import {
   Sidebar,
   SidebarContent,
@@ -29,11 +30,16 @@ const settingsItems = [
   { title: 'Ajustes', url: '/musician/settings', icon: Settings },
 ];
 
+const adminItems = [
+  { title: 'Admin', url: '/admin', icon: Shield },
+];
+
 export function MusicianSidebar() {
   const { state, setOpenMobile, isMobile } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === 'collapsed';
+  const { isAdmin } = useAdmin();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -85,8 +91,33 @@ export function MusicianSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {/* Admin Navigation (only visible to admins) */}
+        {isAdmin && (
+          <SidebarGroup className="mt-auto border-t border-sidebar-border pt-4">
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        end
+                        className="hover:bg-sidebar-accent"
+                        activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
         {/* Settings Navigation */}
-        <SidebarGroup className="mt-auto border-t border-sidebar-border pt-4">
+        <SidebarGroup className={isAdmin ? "" : "mt-auto border-t border-sidebar-border pt-4"}>
           <SidebarGroupContent>
             <SidebarMenu>
               {settingsItems.map((item) => (

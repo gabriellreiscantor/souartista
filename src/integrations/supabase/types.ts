@@ -208,6 +208,33 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          link: string | null
+          message: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          link?: string | null
+          message: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          link?: string | null
+          message?: string
+          title?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           birth_date: string | null
@@ -216,6 +243,7 @@ export type Database = {
           email: string
           id: string
           is_verified: boolean | null
+          last_seen_at: string | null
           name: string
           phone: string | null
           photo_url: string | null
@@ -229,6 +257,7 @@ export type Database = {
           email: string
           id: string
           is_verified?: boolean | null
+          last_seen_at?: string | null
           name: string
           phone?: string | null
           photo_url?: string | null
@@ -242,6 +271,7 @@ export type Database = {
           email?: string
           id?: string
           is_verified?: boolean | null
+          last_seen_at?: string | null
           name?: string
           phone?: string | null
           photo_url?: string | null
@@ -447,9 +477,10 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_support: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "artist" | "musician"
+      app_role: "artist" | "musician" | "support"
       expense_type: "uber" | "km" | "van" | "onibus" | "aviao"
       user_role: "artist" | "musician"
     }
@@ -579,7 +610,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["artist", "musician"],
+      app_role: ["artist", "musician", "support"],
       expense_type: ["uber", "km", "van", "onibus", "aviao"],
       user_role: ["artist", "musician"],
     },
