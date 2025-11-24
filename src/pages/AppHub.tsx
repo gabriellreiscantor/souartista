@@ -30,7 +30,7 @@ const AppHub = () => {
       return;
     }
 
-    if (userData?.status_plano !== 'active') {
+    if (userData?.status_plano !== 'ativo') {
       console.log('[AppHub] Plan not active, redirecting to subscribe');
       navigate('/subscribe');
       return;
