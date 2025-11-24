@@ -85,6 +85,7 @@ export default function Admin() {
   
   // Estados para Financeiro Global
   const [googleTax, setGoogleTax] = useState(30);
+  const [appleTax, setAppleTax] = useState(15);
   const [activeUsersCount, setActiveUsersCount] = useState(0);
   const [savingTax, setSavingTax] = useState(false);
   
@@ -332,10 +333,15 @@ export default function Admin() {
       
       setActiveUsersCount(count || 0);
       
-      // Carregar taxa Google salva
-      const savedTax = localStorage.getItem('admin_google_tax');
-      if (savedTax) {
-        setGoogleTax(Number(savedTax));
+      // Carregar taxas salvas
+      const savedGoogleTax = localStorage.getItem('admin_google_tax');
+      if (savedGoogleTax) {
+        setGoogleTax(Number(savedGoogleTax));
+      }
+      
+      const savedAppleTax = localStorage.getItem('admin_apple_tax');
+      if (savedAppleTax) {
+        setAppleTax(Number(savedAppleTax));
       }
     } catch (error) {
       console.error('Erro ao buscar dados financeiros:', error);
@@ -346,10 +352,11 @@ export default function Admin() {
     setSavingTax(true);
     try {
       localStorage.setItem('admin_google_tax', googleTax.toString());
-      toast.success('Taxa Google salva com sucesso!');
+      localStorage.setItem('admin_apple_tax', appleTax.toString());
+      toast.success('Taxas salvas com sucesso!');
     } catch (error) {
-      console.error('Erro ao salvar taxa:', error);
-      toast.error('Erro ao salvar taxa');
+      console.error('Erro ao salvar taxas:', error);
+      toast.error('Erro ao salvar taxas');
     } finally {
       setTimeout(() => setSavingTax(false), 500);
     }
@@ -974,11 +981,15 @@ export default function Admin() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-gray-900">Taxa Apple Store (%)</Label>
+                          <Label htmlFor="apple-tax" className="text-gray-900">Taxa Apple Store (%)</Label>
                           <Input
-                            value="15"
-                            disabled
-                            className="bg-gray-100 text-gray-600 border-gray-200"
+                            id="apple-tax"
+                            type="number"
+                            value={appleTax}
+                            onChange={(e) => setAppleTax(Number(e.target.value))}
+                            className="bg-white text-gray-900 border-gray-200"
+                            min="0"
+                            max="100"
                           />
                         </div>
                       </div>
@@ -1017,9 +1028,9 @@ export default function Admin() {
                       </div>
 
                       <div className="p-4 bg-white rounded-lg border border-gray-200">
-                        <p className="text-xs text-gray-600 mb-1">Taxa Apple (15%)</p>
+                        <p className="text-xs text-gray-600 mb-1">Taxa Apple ({appleTax}%)</p>
                         <p className="text-2xl font-bold text-red-600">
-                          - R$ {(activeUsersCount * 29.90 * 0.15).toFixed(2)}
+                          - R$ {(activeUsersCount * 29.90 * (appleTax / 100)).toFixed(2)}
                         </p>
                       </div>
 
@@ -1034,7 +1045,7 @@ export default function Admin() {
                     <div className="mt-4 p-4 bg-white rounded-lg border-2 border-purple-300">
                       <p className="text-sm text-gray-600 mb-1">Receita Líquida Estimada</p>
                       <p className="text-3xl font-bold text-purple-600">
-                        R$ {(activeUsersCount * 29.90 * (1 - 0.15 - (googleTax / 100))).toFixed(2)}
+                        R$ {(activeUsersCount * 29.90 * (1 - (appleTax / 100) - (googleTax / 100))).toFixed(2)}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         Após taxas Apple e Google
