@@ -97,7 +97,8 @@ const MusicianShows = () => {
   const [instrumentDialogOpen, setInstrumentDialogOpen] = useState(false);
   const [editingInstrument, setEditingInstrument] = useState<Instrument | null>(null);
   const [instrumentFormData, setInstrumentFormData] = useState({
-    name: ''
+    name: '',
+    customInstrument: ''
   });
 
   // Venues dialog
@@ -455,9 +456,19 @@ const MusicianShows = () => {
       return;
     }
     
+    // Se for "Outro", usar o customInstrument
+    const finalInstrumentName = instrumentFormData.name === 'Outro' 
+      ? instrumentFormData.customInstrument.trim()
+      : instrumentFormData.name.trim();
+    
+    if (!finalInstrumentName) {
+      toast.error('Por favor, especifique o nome do instrumento');
+      return;
+    }
+    
     try {
       const instrumentData = {
-        name: instrumentFormData.name.trim(),
+        name: finalInstrumentName,
         owner_uid: user.id
       };
       
@@ -502,7 +513,8 @@ const MusicianShows = () => {
   const handleInstrumentEdit = (instrument: Instrument) => {
     setEditingInstrument(instrument);
     setInstrumentFormData({
-      name: instrument.name
+      name: instrument.name,
+      customInstrument: ''
     });
     setInstrumentDialogOpen(true);
   };
@@ -522,7 +534,8 @@ const MusicianShows = () => {
   };
   const resetInstrumentForm = () => {
     setInstrumentFormData({
-      name: ''
+      name: '',
+      customInstrument: ''
     });
     setEditingInstrument(null);
   };
@@ -1176,12 +1189,13 @@ const MusicianShows = () => {
                             <Label htmlFor="instrument_name" className="text-gray-900 font-medium">Nome do Instrumento *</Label>
                             <Select value={instrumentFormData.name} onValueChange={(value) => setInstrumentFormData({
                               ...instrumentFormData,
-                              name: value
+                              name: value,
+                              customInstrument: value === 'Outro' ? instrumentFormData.customInstrument : ''
                             })} required>
                               <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                                 <SelectValue placeholder="Selecione um instrumento" />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent className="bg-white z-50">
                                 <SelectItem value="Guitarra">Guitarra</SelectItem>
                                 <SelectItem value="Violão">Violão</SelectItem>
                                 <SelectItem value="Bateria">Bateria</SelectItem>
@@ -1203,6 +1217,22 @@ const MusicianShows = () => {
                               </SelectContent>
                             </Select>
                           </div>
+                          {instrumentFormData.name === 'Outro' && (
+                            <div>
+                              <Label htmlFor="custom_instrument" className="text-gray-900 font-medium">Especifique o Instrumento *</Label>
+                              <Input 
+                                id="custom_instrument" 
+                                value={instrumentFormData.customInstrument} 
+                                onChange={e => setInstrumentFormData({
+                                  ...instrumentFormData,
+                                  customInstrument: e.target.value
+                                })} 
+                                placeholder="Digite o nome do instrumento" 
+                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" 
+                                required 
+                              />
+                            </div>
+                          )}
                           <div className="flex gap-3">
                             <Button type="button" variant="outline" onClick={() => setInstrumentDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
                               Cancelar
