@@ -109,10 +109,15 @@ const MusicianShows = () => {
   });
   const [connectionTest, setConnectionTest] = useState<'testing' | 'ok' | 'error'>('testing');
 
-  // Test connection on mount
   useEffect(() => {
     const testConnection = async () => {
       try {
+        console.log('=== TESTE DE CONEXÃO ===');
+        console.log('User ID:', user?.id);
+        console.log('User Email:', user?.email);
+        console.log('User Data:', userData);
+        console.log('User Role:', userRole);
+        
         const { error } = await supabase.from('musician_venues').select('id').limit(1);
         if (error) {
           console.error('Erro no teste de conexão:', error);
@@ -129,8 +134,11 @@ const MusicianShows = () => {
     
     if (user) {
       testConnection();
+    } else {
+      console.log('=== SEM USER ===');
+      console.log('Aguardando autenticação...');
     }
-  }, [user]);
+  }, [user, userData, userRole]);
   useEffect(() => {
     if (user) {
       fetchAll();
@@ -524,14 +532,10 @@ const MusicianShows = () => {
     e.preventDefault();
     
     console.log('=== INÍCIO SUBMIT ===');
-    console.log('User:', user?.id);
+    console.log('User no submit:', user);
+    console.log('User ID:', user?.id);
+    console.log('User Email:', user?.email);
     console.log('Form data:', venueFormData);
-    
-    if (!user) {
-      console.error('Sem usuário autenticado');
-      toast.error('Usuário não autenticado');
-      return;
-    }
     
     if (!venueFormData.name || venueFormData.name.trim() === '') {
       console.error('Nome vazio');
@@ -539,11 +543,24 @@ const MusicianShows = () => {
       return;
     }
     
+    // Pegar o ID do usuário diretamente da sessão
+    const { data: { session } } = await supabase.auth.getSession();
+    const userId = session?.user?.id || user?.id;
+    
+    console.log('Session User ID:', session?.user?.id);
+    console.log('User ID final:', userId);
+    
+    if (!userId) {
+      console.error('Sem ID de usuário');
+      toast.error('Erro de autenticação. Tente fazer login novamente.');
+      return;
+    }
+    
     try {
       const venueData = {
         name: venueFormData.name.trim(),
         address: venueFormData.address ? venueFormData.address.trim() : null,
-        owner_uid: user.id
+        owner_uid: userId
       };
       
       console.log('Dados a salvar:', venueData);
