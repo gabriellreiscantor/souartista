@@ -9,7 +9,7 @@ import { MusicianSidebar } from '@/components/MusicianSidebar';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { UserMenu } from '@/components/UserMenu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { cn } from '@/lib/utils';
 
 const MusicianDashboard = () => {
@@ -27,18 +27,18 @@ const MusicianDashboard = () => {
   }, [userRole, loading, navigate]);
 
   const monthlyData = [
-    { month: 'jan', receita: 0, despesa: 0 },
-    { month: 'fev', receita: 0, despesa: 0 },
-    { month: 'mar', receita: 0, despesa: 0 },
-    { month: 'abr', receita: 0, despesa: 0 },
-    { month: 'mai', receita: 0, despesa: 0 },
-    { month: 'jun', receita: 0, despesa: 0 },
-    { month: 'jul', receita: 0, despesa: 0 },
-    { month: 'ago', receita: 2800, despesa: 800 },
-    { month: 'set', receita: 1500, despesa: 500 },
-    { month: 'out', receita: 1800, despesa: 600 },
-    { month: 'nov', receita: 3200, despesa: 900 },
-    { month: 'dez', receita: 0, despesa: 0 },
+    { month: 'jan', receita: 0, despesa: 0, lucro: 0 },
+    { month: 'fev', receita: 0, despesa: 0, lucro: 0 },
+    { month: 'mar', receita: 0, despesa: 0, lucro: 0 },
+    { month: 'abr', receita: 0, despesa: 0, lucro: 0 },
+    { month: 'mai', receita: 0, despesa: 0, lucro: 0 },
+    { month: 'jun', receita: 0, despesa: 0, lucro: 0 },
+    { month: 'jul', receita: 0, despesa: 0, lucro: 0 },
+    { month: 'ago', receita: 2800, despesa: 800, lucro: 2000 },
+    { month: 'set', receita: 1500, despesa: 500, lucro: 1000 },
+    { month: 'out', receita: 1800, despesa: 600, lucro: 1200 },
+    { month: 'nov', receita: 3200, despesa: 900, lucro: 2300 },
+    { month: 'dez', receita: 0, despesa: 0, lucro: 0 },
   ];
 
   if (loading) {
@@ -127,24 +127,56 @@ const MusicianDashboard = () => {
                   </Select>
                 </div>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={monthlyData}>
+                  <LineChart data={monthlyData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis dataKey="month" stroke="#666" />
                     <YAxis stroke="#666" />
-                    <Tooltip />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#fff', 
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        padding: '12px'
+                      }}
+                      formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`}
+                      labelFormatter={(label) => `Mês: ${label}`}
+                    />
                     <Legend 
-                      iconType="square"
+                      iconType="circle"
                       formatter={(value) => {
                         const labels: Record<string, string> = {
                           receita: 'Cachê',
-                          despesa: 'Despesa'
+                          despesa: 'Despesa',
+                          lucro: 'Lucro'
                         };
                         return labels[value] || value;
                       }}
                     />
-                    <Bar dataKey="receita" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="despesa" fill="#ef4444" radius={[4, 4, 0, 0]} />
-                  </BarChart>
+                    <Line 
+                      type="monotone" 
+                      dataKey="receita" 
+                      stroke="#22c55e" 
+                      strokeWidth={3}
+                      dot={false}
+                      activeDot={{ r: 7, fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="despesa" 
+                      stroke="#ef4444" 
+                      strokeWidth={3}
+                      dot={false}
+                      activeDot={{ r: 7, fill: '#ef4444', stroke: '#fff', strokeWidth: 2 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="lucro" 
+                      stroke="#a855f7" 
+                      strokeWidth={3}
+                      dot={false}
+                      activeDot={{ r: 7, fill: '#a855f7', stroke: '#fff', strokeWidth: 2 }}
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
               </Card>
 
