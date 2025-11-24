@@ -168,16 +168,16 @@ const MusicianCalendar = () => {
                         <button
                           key={i}
                           onClick={() => handleDateClick(dayDate)}
-                          className={`aspect-square relative rounded-lg border transition-all hover:border-purple-500 ${
+                          className={`aspect-square relative rounded-lg border transition-all hover:border-purple-500 flex flex-col items-center justify-center gap-1 py-2 ${
                             isSelected ? 'bg-purple-600 text-white border-purple-600' : 
                             isToday ? 'bg-purple-50 border-purple-300 text-gray-900' :
                             'bg-white border-gray-200 text-gray-900'
                           }`}
                         >
-                          <span className="text-sm font-medium">{i + 1}</span>
+                          <span className="text-base font-medium">{i + 1}</span>
                           {hasShow && (
                             <Music2 
-                              className={`w-3 h-3 absolute bottom-1 right-1 ${
+                              className={`w-3 h-3 ${
                                 isSelected ? 'text-white' : 'text-purple-600'
                               }`} 
                             />
