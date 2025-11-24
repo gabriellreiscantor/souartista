@@ -1,16 +1,13 @@
-import { Music, Calendar, LayoutDashboard, BarChart3, Car, Shield } from 'lucide-react';
+import { Music, Calendar, LayoutDashboard, BarChart3, Car } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { cn } from '@/lib/utils';
-import { useAdmin } from '@/hooks/useAdmin';
 
 interface MobileBottomNavProps {
   role: 'artist' | 'musician';
 }
 
 export function MobileBottomNav({ role }: MobileBottomNavProps) {
-  const { isAdmin } = useAdmin();
-  
-  const baseItems = [
+  const items = [
     { 
       title: 'Shows', 
       url: `/${role}/shows`, 
@@ -31,26 +28,12 @@ export function MobileBottomNav({ role }: MobileBottomNavProps) {
       url: `/${role}/reports`, 
       icon: BarChart3 
     },
+    { 
+      title: 'Locomoção', 
+      url: `/${role}/transportation`, 
+      icon: Car 
+    },
   ];
-
-  // Add Admin button if user is admin, otherwise add Transportation
-  const items = isAdmin 
-    ? [
-        ...baseItems,
-        { 
-          title: 'Admin', 
-          url: '/admin', 
-          icon: Shield 
-        },
-      ]
-    : [
-        ...baseItems,
-        { 
-          title: 'Locomoção', 
-          url: `/${role}/transportation`, 
-          icon: Car 
-        },
-      ];
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 safe-area-inset-bottom">
