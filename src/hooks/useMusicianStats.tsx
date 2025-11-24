@@ -39,9 +39,9 @@ export function useMusicianStats(period: string) {
         const [year, month] = period.split('-');
         const startDate = `${year}-${month}-01`;
         const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate();
-        const endDate = `${year}-${month}-${lastDay}`;
+        const endDate = `${year}-${month}-${lastDay.toString().padStart(2, '0')}`;
         showsQuery = showsQuery.gte('date_local', startDate).lte('date_local', endDate);
-        locomotionQuery = locomotionQuery.gte('created_at', `${period}-01`).lte('created_at', `${period}-31`);
+        locomotionQuery = locomotionQuery.gte('created_at', startDate).lte('created_at', endDate);
       }
 
       const [{ data: shows, error: showsError }, { data: artists, error: artistsError }, { data: locomotionExpenses, error: expensesError }] = await Promise.all([
