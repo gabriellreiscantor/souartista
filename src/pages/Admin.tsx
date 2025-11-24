@@ -622,20 +622,36 @@ export default function Admin() {
     try {
       setLoadingSupportTickets(true);
       
-      const { data: tickets, error } = await supabase
+      // Buscar tickets
+      const { data: tickets, error: ticketsError } = await supabase
         .from('support_tickets')
-        .select(`
-          *,
-          profiles:user_id (
-            name,
-            email
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (ticketsError) throw ticketsError;
       
-      setSupportTickets(tickets || []);
+      if (!tickets || tickets.length === 0) {
+        setSupportTickets([]);
+        return;
+      }
+
+      // Buscar profiles dos usuários
+      const userIds = [...new Set(tickets.map(t => t.user_id))];
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, name, email')
+        .in('id', userIds);
+      
+      if (profilesError) throw profilesError;
+
+      // Mapear profiles aos tickets
+      const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
+      const ticketsWithProfiles = tickets.map(ticket => ({
+        ...ticket,
+        profile: profilesMap.get(ticket.user_id)
+      }));
+      
+      setSupportTickets(ticketsWithProfiles);
     } catch (error) {
       console.error('Erro ao buscar tickets:', error);
       toast.error('Erro ao carregar tickets de suporte');
@@ -1882,7 +1898,7 @@ export default function Admin() {
                                     <div className="flex-1">
                                       <h3 className="font-semibold text-gray-900">{ticket.subject}</h3>
                                       <p className="text-sm text-gray-600 mt-1">
-                                        {ticket.profiles?.name} ({ticket.profiles?.email})
+                                        {ticket.profile?.name} ({ticket.profile?.email})
                                       </p>
                                     </div>
                                     <div className="flex gap-2">
