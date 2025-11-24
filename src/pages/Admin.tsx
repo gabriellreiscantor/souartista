@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard } from 'lucide-react';
+import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft } from 'lucide-react';
 interface UserProfile {
   id: string;
   name: string;
@@ -223,16 +223,6 @@ export default function Admin() {
     navigator.clipboard.writeText(text);
     toast.success('ID copiado!');
   };
-
-  const handlePasteId = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      setSearchId(text);
-      toast.success('ID colado!');
-    } catch (error) {
-      toast.error('Erro ao colar ID');
-    }
-  };
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pendente: {
@@ -287,8 +277,7 @@ export default function Admin() {
               className="ml-auto"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Ir para o app</span>
-              <span className="sm:hidden">App</span>
+              Voltar para app
             </Button>
           </header>
 
@@ -430,11 +419,7 @@ export default function Admin() {
                 <CardContent>
                   <div className="space-y-6">
                     <div className="flex flex-col sm:flex-row gap-2">
-                      <Input placeholder="Cole o ID do usuário aqui..." value={searchId} onChange={e => setSearchId(e.target.value)} className="bg-white text-gray-900 border-gray-200 flex-1" />
-                      <Button variant="outline" onClick={handlePasteId} className="w-full sm:w-auto">
-                        <Clipboard className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Colar</span>
-                      </Button>
+                      <Input placeholder="Cole o ID do usuário aqui (Ctrl+V)..." value={searchId} onChange={e => setSearchId(e.target.value)} className="bg-white text-gray-900 border-gray-200 flex-1" />
                       <Button onClick={handleSearchUser} disabled={searching} className="w-full sm:w-auto">
                         {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Buscar'}
                       </Button>
