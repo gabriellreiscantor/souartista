@@ -610,13 +610,14 @@ const MusicianShows = () => {
                           Adicionar
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white text-gray-900">
+                      <DialogContent className="max-w-2xl bg-white text-gray-900">
                         <DialogHeader>
                           <DialogTitle className="text-gray-900 font-semibold">
                             {editingShow ? 'Editar Show' : 'Adicionar Show'}
                           </DialogTitle>
                         </DialogHeader>
-                        <form onSubmit={handleShowSubmit} className="space-y-6">
+                        <form onSubmit={handleShowSubmit} className="space-y-4">
+                          <div className="max-h-[65vh] overflow-y-auto px-1 space-y-6">
                           <div className="space-y-4">
                             <Button
                               type="button"
@@ -686,10 +687,17 @@ const MusicianShows = () => {
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="date_local" className="text-gray-900 font-medium">Data *</Label>
-                                <Input id="date_local" type="date" value={showFormData.date_local} onChange={e => setShowFormData({
-                                ...showFormData,
-                                date_local: e.target.value
-                              })} className="bg-white border-gray-300 text-gray-900" required />
+                                <Input 
+                                  id="date_local" 
+                                  type="date" 
+                                  value={showFormData.date_local} 
+                                  onChange={e => setShowFormData({
+                                    ...showFormData,
+                                    date_local: e.target.value
+                                  })} 
+                                  className="bg-white border-gray-300 text-gray-900 pr-3" 
+                                  required 
+                                />
                               </div>
                               <div>
                                 <Label htmlFor="time_local" className="text-gray-900 font-medium">Horário *</Label>
@@ -710,17 +718,17 @@ const MusicianShows = () => {
                                 })}
                               >
                                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                                  <SelectValue placeholder="Horas..." />
+                                  <SelectValue placeholder="Horas..." className="text-gray-900" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-white z-50">
-                                  <SelectItem value="1h">1 hora</SelectItem>
-                                  <SelectItem value="2h">2 horas</SelectItem>
-                                  <SelectItem value="3h">3 horas</SelectItem>
-                                  <SelectItem value="4h">4 horas</SelectItem>
-                                  <SelectItem value="5h">5 horas</SelectItem>
-                                  <SelectItem value="6h">6 horas</SelectItem>
-                                  <SelectItem value="7h">7 horas</SelectItem>
-                                  <SelectItem value="8h">8 horas</SelectItem>
+                                <SelectContent className="bg-white z-[100]">
+                                  <SelectItem value="1h" className="text-gray-900">1 hora</SelectItem>
+                                  <SelectItem value="2h" className="text-gray-900">2 horas</SelectItem>
+                                  <SelectItem value="3h" className="text-gray-900">3 horas</SelectItem>
+                                  <SelectItem value="4h" className="text-gray-900">4 horas</SelectItem>
+                                  <SelectItem value="5h" className="text-gray-900">5 horas</SelectItem>
+                                  <SelectItem value="6h" className="text-gray-900">6 horas</SelectItem>
+                                  <SelectItem value="7h" className="text-gray-900">7 horas</SelectItem>
+                                  <SelectItem value="8h" className="text-gray-900">8 horas</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
@@ -781,8 +789,9 @@ const MusicianShows = () => {
                                 </div>
                               </Card>)}
                           </div>
+                          </div>
 
-                          <div className="flex gap-3">
+                          <div className="flex gap-3 pt-2 border-t">
                             <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
                               Cancelar
                             </Button>
