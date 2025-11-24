@@ -36,6 +36,7 @@ interface Show {
   fee: number;
   expenses_team: any;
   expenses_other: any;
+  uid?: string;
 }
 
 interface LocomotionExpense {
@@ -216,6 +217,16 @@ export default function Admin() {
         const {
           data: showsData
         } = await supabase.from('shows').select('id, venue_name, date_local, time_local, fee, expenses_team, expenses_other').eq('uid', searchId.trim()).order('date_local', {
+          ascending: false
+        });
+        shows = showsData || [];
+      }
+
+      // Buscar participações em shows se for músico
+      if (roleData?.role === 'musician') {
+        const {
+          data: showsData
+        } = await supabase.from('shows').select('id, venue_name, date_local, time_local, fee, expenses_team, expenses_other, uid').contains('team_musician_ids', [searchId.trim()]).order('date_local', {
           ascending: false
         });
         shows = showsData || [];
@@ -554,61 +565,117 @@ export default function Admin() {
                         </div>
 
                         {/* Resumo Financeiro */}
-                        {searchedUser.role === 'artist' && (userShows.length > 0 || userExpenses.length > 0) && (() => {
-                          const totalReceita = userShows.reduce((sum, show) => sum + Number(show.fee), 0);
-                          const totalDespesasEquipe = userShows.reduce((sum, show) => {
+                        {(searchedUser.role === 'artist' || searchedUser.role === 'musician') && (userShows.length > 0 || userExpenses.length > 0) && (() => {
+                          const userId = searchedUser.id;
+                          const isArtist = searchedUser.role === 'artist';
+                          
+                          // Cálculos para Artista
+                          const totalReceita = isArtist ? userShows.reduce((sum, show) => sum + Number(show.fee), 0) : 0;
+                          
+                          // Cálculos para Músico - quanto recebeu de participações
+                          const totalRecebidoMusico = !isArtist ? userShows.reduce((sum, show) => {
+                            const expenses = Array.isArray(show.expenses_team) ? show.expenses_team : [];
+                            const myPayment = expenses.find((exp: any) => exp.musician_id === userId);
+                            return sum + Number(myPayment?.amount || 0);
+                          }, 0) : 0;
+
+                          const totalDespesasEquipe = isArtist ? userShows.reduce((sum, show) => {
                             const expenses = Array.isArray(show.expenses_team) ? show.expenses_team : [];
                             return sum + expenses.reduce((expSum: number, exp: any) => expSum + Number(exp.amount || 0), 0);
-                          }, 0);
-                          const totalDespesasOutras = userShows.reduce((sum, show) => {
+                          }, 0) : 0;
+                          
+                          const totalDespesasOutras = isArtist ? userShows.reduce((sum, show) => {
                             const expenses = Array.isArray(show.expenses_other) ? show.expenses_other : [];
                             return sum + expenses.reduce((expSum: number, exp: any) => expSum + Number(exp.amount || 0), 0);
-                          }, 0);
+                          }, 0) : 0;
+                          
                           const totalDespesasLocomocao = userExpenses.reduce((sum, exp) => sum + Number(exp.cost), 0);
                           const totalDespesas = totalDespesasEquipe + totalDespesasOutras + totalDespesasLocomocao;
-                          const lucroLiquido = totalReceita - totalDespesas;
-                          const mediaCacheShow = userShows.length > 0 ? totalReceita / userShows.length : 0;
+                          
+                          const lucroLiquido = isArtist 
+                            ? totalReceita - totalDespesas 
+                            : totalRecebidoMusico - totalDespesasLocomocao;
+                            
+                          const mediaShow = isArtist
+                            ? (userShows.length > 0 ? totalReceita / userShows.length : 0)
+                            : (userShows.length > 0 ? totalRecebidoMusico / userShows.length : 0);
 
                           return (
                             <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
                               <CardHeader>
                                 <CardTitle className="text-sm text-gray-900 flex items-center gap-2">
-                                  💰 Resumo Financeiro Completo
+                                  💰 Resumo Financeiro {isArtist ? 'do Artista' : 'do Músico'}
                                 </CardTitle>
                               </CardHeader>
                               <CardContent>
                                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                                  <div className="p-3 bg-white rounded-lg border border-green-200">
-                                    <p className="text-xs text-gray-600 mb-1">Receita Total (Shows)</p>
-                                    <p className="text-xl font-bold text-green-600">
-                                      R$ {totalReceita.toFixed(2)}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                      {userShows.length} show{userShows.length !== 1 ? 's' : ''}
-                                    </p>
-                                  </div>
+                                  {isArtist ? (
+                                    <>
+                                      <div className="p-3 bg-white rounded-lg border border-green-200">
+                                        <p className="text-xs text-gray-600 mb-1">Receita Total (Shows)</p>
+                                        <p className="text-xl font-bold text-green-600">
+                                          R$ {totalReceita.toFixed(2)}
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          {userShows.length} show{userShows.length !== 1 ? 's' : ''}
+                                        </p>
+                                      </div>
 
-                                  <div className="p-3 bg-white rounded-lg border border-red-200">
-                                    <p className="text-xs text-gray-600 mb-1">Despesas Totais</p>
-                                    <p className="text-xl font-bold text-red-600">
-                                      R$ {totalDespesas.toFixed(2)}
-                                    </p>
-                                    <div className="text-xs text-gray-500 mt-1 space-y-1">
-                                      <div>Equipe: R$ {totalDespesasEquipe.toFixed(2)}</div>
-                                      <div>Locomoção: R$ {totalDespesasLocomocao.toFixed(2)}</div>
-                                      <div>Outras: R$ {totalDespesasOutras.toFixed(2)}</div>
-                                    </div>
-                                  </div>
+                                      <div className="p-3 bg-white rounded-lg border border-red-200">
+                                        <p className="text-xs text-gray-600 mb-1">Despesas Totais</p>
+                                        <p className="text-xl font-bold text-red-600">
+                                          R$ {totalDespesas.toFixed(2)}
+                                        </p>
+                                        <div className="text-xs text-gray-500 mt-1 space-y-1">
+                                          <div>Equipe: R$ {totalDespesasEquipe.toFixed(2)}</div>
+                                          <div>Locomoção: R$ {totalDespesasLocomocao.toFixed(2)}</div>
+                                          <div>Outras: R$ {totalDespesasOutras.toFixed(2)}</div>
+                                        </div>
+                                      </div>
 
-                                  <div className="p-3 bg-white rounded-lg border border-blue-200 sm:col-span-2 lg:col-span-1">
-                                    <p className="text-xs text-gray-600 mb-1">Lucro Líquido</p>
-                                    <p className={`text-xl font-bold ${lucroLiquido >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                                      R$ {lucroLiquido.toFixed(2)}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                      Média/show: R$ {mediaCacheShow.toFixed(2)}
-                                    </p>
-                                  </div>
+                                      <div className="p-3 bg-white rounded-lg border border-blue-200 sm:col-span-2 lg:col-span-1">
+                                        <p className="text-xs text-gray-600 mb-1">Lucro Líquido</p>
+                                        <p className={`text-xl font-bold ${lucroLiquido >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                                          R$ {lucroLiquido.toFixed(2)}
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          Média/show: R$ {mediaShow.toFixed(2)}
+                                        </p>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div className="p-3 bg-white rounded-lg border border-green-200">
+                                        <p className="text-xs text-gray-600 mb-1">Total Recebido (Participações)</p>
+                                        <p className="text-xl font-bold text-green-600">
+                                          R$ {totalRecebidoMusico.toFixed(2)}
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          {userShows.length} participaç{userShows.length !== 1 ? 'ões' : 'ão'}
+                                        </p>
+                                      </div>
+
+                                      <div className="p-3 bg-white rounded-lg border border-red-200">
+                                        <p className="text-xs text-gray-600 mb-1">Despesas Locomoção</p>
+                                        <p className="text-xl font-bold text-red-600">
+                                          R$ {totalDespesasLocomocao.toFixed(2)}
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          {userExpenses.length} despesa{userExpenses.length !== 1 ? 's' : ''}
+                                        </p>
+                                      </div>
+
+                                      <div className="p-3 bg-white rounded-lg border border-blue-200 sm:col-span-2 lg:col-span-1">
+                                        <p className="text-xs text-gray-600 mb-1">Ganho Líquido</p>
+                                        <p className={`text-xl font-bold ${lucroLiquido >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                                          R$ {lucroLiquido.toFixed(2)}
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          Média/show: R$ {mediaShow.toFixed(2)}
+                                        </p>
+                                      </div>
+                                    </>
+                                  )}
                                 </div>
 
                                 {userExpenses.length > 0 && (
@@ -633,25 +700,44 @@ export default function Admin() {
                           );
                         })()}
 
-                        {searchedUser.role === 'artist' && userShows.length > 0 && <Card className="bg-gray-50 border-gray-200">
+                        {userShows.length > 0 && <Card className="bg-gray-50 border-gray-200">
                             <CardHeader>
-                              <CardTitle className="text-sm text-gray-700">Shows ({userShows.length})</CardTitle>
+                              <CardTitle className="text-sm text-gray-700">
+                                {searchedUser.role === 'artist' ? `Shows (${userShows.length})` : `Participações em Shows (${userShows.length})`}
+                              </CardTitle>
                             </CardHeader>
                             <CardContent>
                               <div className="space-y-2 max-h-60 overflow-y-auto">
-                                {userShows.map(show => <div key={show.id} className="p-3 bg-white rounded border border-gray-200">
-                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                                      <div className="flex-1">
-                                        <p className="font-medium text-gray-900 break-words">{show.venue_name}</p>
-                                        <p className="text-xs text-gray-600">
-                                          {new Date(show.date_local).toLocaleDateString('pt-BR')} às {show.time_local}
-                                        </p>
+                                {userShows.map(show => {
+                                  const userId = searchedUser.id;
+                                  const isArtist = searchedUser.role === 'artist';
+                                  
+                                  // Para músicos, buscar quanto recebeu
+                                  let myPayment = 0;
+                                  if (!isArtist && Array.isArray(show.expenses_team)) {
+                                    const expense = show.expenses_team.find((exp: any) => exp.musician_id === userId);
+                                    myPayment = Number(expense?.amount || 0);
+                                  }
+                                  
+                                  return (
+                                    <div key={show.id} className="p-3 bg-white rounded border border-gray-200">
+                                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                                        <div className="flex-1">
+                                          <p className="font-medium text-gray-900 break-words">{show.venue_name}</p>
+                                          <p className="text-xs text-gray-600">
+                                            {new Date(show.date_local).toLocaleDateString('pt-BR')} às {show.time_local}
+                                          </p>
+                                        </div>
+                                        <Badge className="bg-green-100 text-green-800 self-start">
+                                          {isArtist 
+                                            ? `Cachê: R$ ${Number(show.fee).toFixed(2)}`
+                                            : `Recebido: R$ ${myPayment.toFixed(2)}`
+                                          }
+                                        </Badge>
                                       </div>
-                                      <Badge className="bg-green-100 text-green-800 self-start">
-                                        R$ {Number(show.fee).toFixed(2)}
-                                      </Badge>
                                     </div>
-                                  </div>)}
+                                  );
+                                })}
                               </div>
                             </CardContent>
                           </Card>}
