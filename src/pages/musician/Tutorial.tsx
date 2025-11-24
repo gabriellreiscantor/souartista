@@ -46,7 +46,7 @@ const MusicianTutorial = () => {
           <header className="h-16 border-b border-border bg-white flex items-center px-4 md:px-6 gap-4 sticky top-0 z-10 w-full">
             <div className="flex items-center gap-4 flex-1">
               <SidebarTrigger />
-              <Button variant="ghost" size="icon" onClick={() => navigate('/musician/settings')}>
+              <Button variant="ghost" size="icon" onClick={() => navigate('/musician/settings')} className="text-[#1f1825]">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <h1 className="text-xl font-semibold text-black">Tutorial</h1>
