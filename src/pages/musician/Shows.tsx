@@ -1097,30 +1097,34 @@ const MusicianShows = () => {
                                     </div>
                                   </div>
 
-                                  {show.expenses_other.length > 0 && (
-                                    <Collapsible open={isExpanded} onOpenChange={() => toggleShowExpanded(show.id)}>
-                                      <CollapsibleTrigger asChild>
-                                        <Button variant="ghost" className="w-full bg-[#F5F0FA] hover:bg-[#EAD6F5] text-primary font-semibold">
-                                          Detalhes das Despesas
-                                          {isExpanded ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
-                                        </Button>
-                                      </CollapsibleTrigger>
-                                      <CollapsibleContent className="mt-4">
-                                        <div className="p-3 md:p-4 bg-[#F5F0FA] rounded-lg">
-                                          <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 mb-2">
-                                            <DollarSign className="w-4 h-4" />
-                                            Despesas Pessoais
-                                          </div>
-                                          {show.expenses_other.map((expense, idx) => (
+                                  <Collapsible open={isExpanded} onOpenChange={() => toggleShowExpanded(show.id)}>
+                                    <CollapsibleTrigger asChild>
+                                      <Button variant="ghost" className="w-full bg-[#F5F0FA] hover:bg-[#EAD6F5] text-primary font-semibold">
+                                        Detalhes das Despesas
+                                        {isExpanded ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+                                      </Button>
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent className="mt-4">
+                                      <div className="p-3 md:p-4 bg-[#F5F0FA] rounded-lg">
+                                        <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 mb-2">
+                                          <DollarSign className="w-4 h-4" />
+                                          Despesas Pessoais
+                                        </div>
+                                        {show.expenses_other.length > 0 ? (
+                                          show.expenses_other.map((expense, idx) => (
                                             <div key={idx} className="flex justify-between text-sm text-gray-600 mb-1">
                                               <span className="text-gray-500">{expense.description}</span>
                                               <span className="font-medium">R$ {expense.cost.toFixed(2).replace('.', ',')}</span>
                                             </div>
-                                          ))}
-                                        </div>
-                                      </CollapsibleContent>
-                                    </Collapsible>
-                                  )}
+                                          ))
+                                        ) : (
+                                          <div className="text-sm text-gray-500 text-center py-2">
+                                            Nenhuma despesa cadastrada
+                                          </div>
+                                        )}
+                                      </div>
+                                    </CollapsibleContent>
+                                  </Collapsible>
                                 </div>
                               </Card>
                             );
