@@ -19,6 +19,8 @@ interface Artist {
   id: string;
   name: string;
   owner_uid: string;
+  shows_count?: number;
+  total_earned?: number;
 }
 
 const MusicianArtists = () => {
@@ -39,14 +41,52 @@ const MusicianArtists = () => {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
+      // Busca os artistas
+      const { data: artistsData, error: artistsError } = await supabase
         .from('artists')
         .select('*')
         .eq('owner_uid', user.id)
         .order('name', { ascending: true });
 
-      if (error) throw error;
-      setArtists(data || []);
+      if (artistsError) throw artistsError;
+
+      // Busca os shows onde o músico participou
+      const { data: showsData, error: showsError } = await supabase
+        .from('shows')
+        .select('uid, expenses_team')
+        .contains('team_musician_ids', [user.id]);
+
+      if (showsError) throw showsError;
+
+      // Calcula estatísticas para cada artista
+      const artistsWithStats = (artistsData || []).map(artist => {
+        const artistShows = (showsData || []).filter(show => show.uid === artist.owner_uid);
+        
+        // Conta número de shows
+        const shows_count = artistShows.length;
+        
+        // Calcula total ganho
+        let total_earned = 0;
+        artistShows.forEach(show => {
+          if (show.expenses_team && Array.isArray(show.expenses_team)) {
+            const expenses = show.expenses_team as Array<{ musician_id?: string; amount?: number }>;
+            const musicianExpense = expenses.find(
+              (exp) => exp.musician_id === user.id
+            );
+            if (musicianExpense?.amount) {
+              total_earned += Number(musicianExpense.amount) || 0;
+            }
+          }
+        });
+
+        return {
+          ...artist,
+          shows_count,
+          total_earned
+        };
+      });
+
+      setArtists(artistsWithStats);
     } catch (error: any) {
       toast.error('Erro ao carregar artistas');
       console.error(error);
@@ -302,7 +342,25 @@ const MusicianArtists = () => {
                           <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-purple-600 transition-colors">
                             {artist.name}
                           </h3>
-                          <p className="text-sm text-gray-500">Artista parceiro</p>
+                          <p className="text-sm text-gray-500 mb-3">Artista parceiro</p>
+                          
+                          {/* Stats */}
+                          <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
+                            <div className="flex items-center gap-2">
+                              <Music className="w-4 h-4 text-purple-500" />
+                              <span className="text-sm font-semibold text-gray-900">
+                                {artist.shows_count || 0}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {(artist.shows_count || 0) === 1 ? 'show' : 'shows'}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-green-600">
+                                R$ {(artist.total_earned || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                            </div>
+                          </div>
                         </div>
 
                         {/* Bottom accent */}
