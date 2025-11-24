@@ -30,6 +30,22 @@ export function UserMenu({ userName, userRole }: UserMenuProps) {
     }
   };
 
+  const handleProfile = () => {
+    if (userRole === 'artist') {
+      navigate('/artist/profile');
+    } else if (userRole === 'musician') {
+      navigate('/musician/profile');
+    }
+  };
+
+  const handleSettings = () => {
+    if (userRole === 'artist') {
+      navigate('/artist/settings');
+    } else if (userRole === 'musician') {
+      navigate('/musician/settings');
+    }
+  };
+
   const getRoleLabel = () => {
     if (userRole === 'artist') return 'Artista';
     if (userRole === 'musician') return 'Músico';
@@ -51,11 +67,11 @@ export function UserMenu({ userName, userRole }: UserMenuProps) {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer">
+        <DropdownMenuItem onClick={handleProfile} className="cursor-pointer">
           <User className="w-4 h-4 mr-2" />
           Perfil
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer">
+        <DropdownMenuItem onClick={handleSettings} className="cursor-pointer">
           <Settings className="w-4 h-4 mr-2" />
           Ajustes
         </DropdownMenuItem>
