@@ -597,10 +597,10 @@ export default function Admin() {
             </div>
           </div>
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setShowStatusDialog(false)}>
+            <Button variant="outline" onClick={() => setShowStatusDialog(false)} className="text-gray-50 bg-[#ad5af2]">
               Cancelar
             </Button>
-            <Button onClick={handleUpdateStatus}>Salvar</Button>
+            <Button onClick={handleUpdateStatus} className="text-gray-50">Salvar</Button>
           </div>
         </DialogContent>
       </Dialog>
