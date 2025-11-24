@@ -1,18 +1,40 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Music, Calendar, DollarSign, Users, TrendingUp, Sparkles } from 'lucide-react';
+import { Music, Calendar, DollarSign, Users, TrendingUp, Sparkles, Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/hooks/useAuth';
 
 const Landing = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user, session, loading: authLoading } = useAuth();
+
+  // Redireciona usuários autenticados automaticamente
+  useEffect(() => {
+    if (!authLoading && user && session) {
+      console.log('[Landing] User authenticated, redirecting to /app');
+      navigate('/app');
+    }
+  }, [user, session, authLoading, navigate]);
 
   useEffect(() => {
-    if (isMobile) {
+    if (isMobile && !user) {
       navigate('/login');
     }
-  }, [isMobile, navigate]);
+  }, [isMobile, user, navigate]);
+
+  // Mostra loading enquanto verifica autenticação
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
