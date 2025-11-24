@@ -19,31 +19,26 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-
 interface Artist {
   id: string;
   name: string;
   owner_uid: string;
 }
-
 interface Instrument {
   id: string;
   name: string;
   owner_uid: string;
 }
-
 interface Venue {
   id: string;
   name: string;
   address: string | null;
   owner_uid: string;
 }
-
 interface AdditionalExpense {
   description: string;
   cost: number;
 }
-
 interface Show {
   id: string;
   venue_name: string;
@@ -59,15 +54,18 @@ interface Show {
   expenses_other: AdditionalExpense[];
   uid: string;
 }
-
 const MusicianShows = () => {
-  const { user, userData, userRole } = useAuth();
+  const {
+    user,
+    userData,
+    userRole
+  } = useAuth();
   const [shows, setShows] = useState<Show[]>([]);
   const [artists, setArtists] = useState<Artist[]>([]);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Shows dialog
   const [showDialogOpen, setShowDialogOpen] = useState(false);
   const [editingShow, setEditingShow] = useState<Show | null>(null);
@@ -77,7 +75,7 @@ const MusicianShows = () => {
     date_local: '',
     time_local: '',
     fee: '',
-    instrument_id: '',
+    instrument_id: ''
   });
   const [personalExpenses, setPersonalExpenses] = useState<AdditionalExpense[]>([]);
 
@@ -85,14 +83,14 @@ const MusicianShows = () => {
   const [artistDialogOpen, setArtistDialogOpen] = useState(false);
   const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
   const [artistFormData, setArtistFormData] = useState({
-    name: '',
+    name: ''
   });
 
   // Instruments dialog
   const [instrumentDialogOpen, setInstrumentDialogOpen] = useState(false);
   const [editingInstrument, setEditingInstrument] = useState<Instrument | null>(null);
   const [instrumentFormData, setInstrumentFormData] = useState({
-    name: '',
+    name: ''
   });
 
   // Venues dialog
@@ -100,37 +98,31 @@ const MusicianShows = () => {
   const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
   const [venueFormData, setVenueFormData] = useState({
     name: '',
-    address: '',
+    address: ''
   });
-
   useEffect(() => {
     if (user) {
       fetchAll();
     }
   }, [user]);
-
   const fetchAll = async () => {
     await Promise.all([fetchShows(), fetchArtists(), fetchInstruments(), fetchVenues()]);
   };
-
   const fetchShows = async () => {
     if (!user) return;
-    
     try {
-      const { data, error } = await supabase
-        .from('shows')
-        .select('*')
-        .contains('team_musician_ids', [user.id])
-        .order('date_local', { ascending: true });
-
+      const {
+        data,
+        error
+      } = await supabase.from('shows').select('*').contains('team_musician_ids', [user.id]).order('date_local', {
+        ascending: true
+      });
       if (error) throw error;
-      
       const typedShows = (data || []).map(show => ({
         ...show,
-        expenses_team: (show.expenses_team as any) || [],
-        expenses_other: (show.expenses_other as any) || [],
+        expenses_team: show.expenses_team as any || [],
+        expenses_other: show.expenses_other as any || []
       })) as Show[];
-      
       setShows(typedShows);
     } catch (error: any) {
       console.error('Error fetching shows:', error);
@@ -139,51 +131,45 @@ const MusicianShows = () => {
       setLoading(false);
     }
   };
-
   const fetchArtists = async () => {
     if (!user) return;
-    
     try {
-      const { data, error } = await supabase
-        .from('artists')
-        .select('*')
-        .eq('owner_uid', user.id)
-        .order('name', { ascending: true });
-
+      const {
+        data,
+        error
+      } = await supabase.from('artists').select('*').eq('owner_uid', user.id).order('name', {
+        ascending: true
+      });
       if (error) throw error;
       setArtists(data || []);
     } catch (error: any) {
       console.error('Error fetching artists:', error);
     }
   };
-
   const fetchInstruments = async () => {
     if (!user) return;
-    
     try {
-      const { data, error } = await supabase
-        .from('musician_instruments')
-        .select('*')
-        .eq('owner_uid', user.id)
-        .order('name', { ascending: true });
-
+      const {
+        data,
+        error
+      } = await supabase.from('musician_instruments').select('*').eq('owner_uid', user.id).order('name', {
+        ascending: true
+      });
       if (error) throw error;
       setInstruments(data || []);
     } catch (error: any) {
       console.error('Error fetching instruments:', error);
     }
   };
-
   const fetchVenues = async () => {
     if (!user) return;
-    
     try {
-      const { data, error } = await supabase
-        .from('musician_venues')
-        .select('*')
-        .eq('owner_uid', user.id)
-        .order('name', { ascending: true });
-
+      const {
+        data,
+        error
+      } = await supabase.from('musician_venues').select('*').eq('owner_uid', user.id).order('name', {
+        ascending: true
+      });
       if (error) throw error;
       setVenues(data || []);
     } catch (error: any) {
@@ -195,34 +181,28 @@ const MusicianShows = () => {
   const handleShowSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !userData) return;
-
     try {
       const selectedArtist = artists.find(a => a.id === showFormData.artist_id);
       const selectedInstrument = instruments.find(i => i.id === showFormData.instrument_id);
       const selectedVenue = venues.find(v => v.id === showFormData.venue_id);
-      
       if (!selectedArtist) {
         toast.error('Selecione um artista');
         return;
       }
-
       if (!selectedInstrument) {
         toast.error('Selecione um instrumento');
         return;
       }
-
       if (!selectedVenue) {
         toast.error('Selecione um local');
         return;
       }
-
       const musicianEntry = {
         musicianId: user.id,
         name: userData.name,
         instrument: selectedInstrument.name,
-        cost: parseFloat(showFormData.fee),
+        cost: parseFloat(showFormData.fee)
       };
-
       const showData = {
         venue_name: selectedVenue.name,
         date_local: showFormData.date_local,
@@ -232,35 +212,30 @@ const MusicianShows = () => {
         expenses_team: [musicianEntry],
         expenses_other: personalExpenses,
         team_musician_ids: [user.id],
-        uid: selectedArtist.owner_uid,
+        uid: selectedArtist.owner_uid
       };
-
       if (editingShow) {
-        const { error } = await supabase
-          .from('shows')
-          .update({
-            ...showData,
-            expenses_team: showData.expenses_team as any,
-            expenses_other: showData.expenses_other as any,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', editingShow.id);
-
+        const {
+          error
+        } = await supabase.from('shows').update({
+          ...showData,
+          expenses_team: showData.expenses_team as any,
+          expenses_other: showData.expenses_other as any,
+          updated_at: new Date().toISOString()
+        }).eq('id', editingShow.id);
         if (error) throw error;
         toast.success('Show atualizado com sucesso!');
       } else {
-        const { error } = await supabase
-          .from('shows')
-          .insert({
-            ...showData,
-            expenses_team: showData.expenses_team as any,
-            expenses_other: showData.expenses_other as any,
-          });
-
+        const {
+          error
+        } = await supabase.from('shows').insert({
+          ...showData,
+          expenses_team: showData.expenses_team as any,
+          expenses_other: showData.expenses_other as any
+        });
         if (error) throw error;
         toast.success('Show cadastrado com sucesso!');
       }
-
       setShowDialogOpen(false);
       resetShowForm();
       fetchShows();
@@ -269,16 +244,12 @@ const MusicianShows = () => {
       toast.error('Erro ao salvar show');
     }
   };
-
   const handleShowDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este show?')) return;
-
     try {
-      const { error } = await supabase
-        .from('shows')
-        .delete()
-        .eq('id', id);
-
+      const {
+        error
+      } = await supabase.from('shows').delete().eq('id', id);
       if (error) throw error;
       toast.success('Show excluído com sucesso!');
       fetchShows();
@@ -287,31 +258,27 @@ const MusicianShows = () => {
       toast.error('Erro ao excluir show');
     }
   };
-
   const handleShowEdit = (show: Show) => {
     setEditingShow(show);
-    
     const myEntry = show.expenses_team.find(e => e.musicianId === user?.id);
     const savedInstrument = myEntry?.instrument || '';
-    
+
     // Find instrument by name
     const matchingInstrument = instruments.find(i => i.name === savedInstrument);
-    
+
     // Find venue by name
     const matchingVenue = venues.find(v => v.name === show.venue_name);
-    
     setShowFormData({
       artist_id: '',
       venue_id: matchingVenue?.id || '',
       date_local: show.date_local,
       time_local: show.time_local,
       fee: myEntry?.cost.toString() || show.fee.toString(),
-      instrument_id: matchingInstrument?.id || '',
+      instrument_id: matchingInstrument?.id || ''
     });
     setPersonalExpenses(show.expenses_other || []);
     setShowDialogOpen(true);
   };
-
   const resetShowForm = () => {
     setShowFormData({
       artist_id: '',
@@ -319,7 +286,7 @@ const MusicianShows = () => {
       date_local: '',
       time_local: '',
       fee: '',
-      instrument_id: '',
+      instrument_id: ''
     });
     setPersonalExpenses([]);
     setEditingShow(null);
@@ -329,30 +296,24 @@ const MusicianShows = () => {
   const handleArtistSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-
     try {
       const artistData = {
         name: artistFormData.name,
-        owner_uid: user.id,
+        owner_uid: user.id
       };
-
       if (editingArtist) {
-        const { error } = await supabase
-          .from('artists')
-          .update(artistData)
-          .eq('id', editingArtist.id);
-
+        const {
+          error
+        } = await supabase.from('artists').update(artistData).eq('id', editingArtist.id);
         if (error) throw error;
         toast.success('Artista atualizado com sucesso!');
       } else {
-        const { error } = await supabase
-          .from('artists')
-          .insert(artistData);
-
+        const {
+          error
+        } = await supabase.from('artists').insert(artistData);
         if (error) throw error;
         toast.success('Artista cadastrado com sucesso!');
       }
-
       setArtistDialogOpen(false);
       resetArtistForm();
       fetchArtists();
@@ -361,24 +322,19 @@ const MusicianShows = () => {
       console.error(error);
     }
   };
-
   const handleArtistEdit = (artist: Artist) => {
     setEditingArtist(artist);
     setArtistFormData({
-      name: artist.name,
+      name: artist.name
     });
     setArtistDialogOpen(true);
   };
-
   const handleArtistDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este artista?')) return;
-
     try {
-      const { error } = await supabase
-        .from('artists')
-        .delete()
-        .eq('id', id);
-
+      const {
+        error
+      } = await supabase.from('artists').delete().eq('id', id);
       if (error) throw error;
       toast.success('Artista excluído com sucesso!');
       fetchArtists();
@@ -387,9 +343,10 @@ const MusicianShows = () => {
       console.error(error);
     }
   };
-
   const resetArtistForm = () => {
-    setArtistFormData({ name: '' });
+    setArtistFormData({
+      name: ''
+    });
     setEditingArtist(null);
   };
 
@@ -397,30 +354,24 @@ const MusicianShows = () => {
   const handleInstrumentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-
     try {
       const instrumentData = {
         name: instrumentFormData.name,
-        owner_uid: user.id,
+        owner_uid: user.id
       };
-
       if (editingInstrument) {
-        const { error } = await supabase
-          .from('musician_instruments')
-          .update(instrumentData)
-          .eq('id', editingInstrument.id);
-
+        const {
+          error
+        } = await supabase.from('musician_instruments').update(instrumentData).eq('id', editingInstrument.id);
         if (error) throw error;
         toast.success('Instrumento atualizado!');
       } else {
-        const { error } = await supabase
-          .from('musician_instruments')
-          .insert(instrumentData);
-
+        const {
+          error
+        } = await supabase.from('musician_instruments').insert(instrumentData);
         if (error) throw error;
         toast.success('Instrumento cadastrado!');
       }
-
       setInstrumentDialogOpen(false);
       resetInstrumentForm();
       fetchInstruments();
@@ -429,22 +380,19 @@ const MusicianShows = () => {
       console.error(error);
     }
   };
-
   const handleInstrumentEdit = (instrument: Instrument) => {
     setEditingInstrument(instrument);
-    setInstrumentFormData({ name: instrument.name });
+    setInstrumentFormData({
+      name: instrument.name
+    });
     setInstrumentDialogOpen(true);
   };
-
   const handleInstrumentDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este instrumento?')) return;
-
     try {
-      const { error } = await supabase
-        .from('musician_instruments')
-        .delete()
-        .eq('id', id);
-
+      const {
+        error
+      } = await supabase.from('musician_instruments').delete().eq('id', id);
       if (error) throw error;
       toast.success('Instrumento excluído!');
       fetchInstruments();
@@ -453,9 +401,10 @@ const MusicianShows = () => {
       console.error(error);
     }
   };
-
   const resetInstrumentForm = () => {
-    setInstrumentFormData({ name: '' });
+    setInstrumentFormData({
+      name: ''
+    });
     setEditingInstrument(null);
   };
 
@@ -463,31 +412,25 @@ const MusicianShows = () => {
   const handleVenueSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-
     try {
       const venueData = {
         name: venueFormData.name,
         address: venueFormData.address || null,
-        owner_uid: user.id,
+        owner_uid: user.id
       };
-
       if (editingVenue) {
-        const { error } = await supabase
-          .from('musician_venues')
-          .update(venueData)
-          .eq('id', editingVenue.id);
-
+        const {
+          error
+        } = await supabase.from('musician_venues').update(venueData).eq('id', editingVenue.id);
         if (error) throw error;
         toast.success('Local atualizado!');
       } else {
-        const { error } = await supabase
-          .from('musician_venues')
-          .insert(venueData);
-
+        const {
+          error
+        } = await supabase.from('musician_venues').insert(venueData);
         if (error) throw error;
         toast.success('Local cadastrado!');
       }
-
       setVenueDialogOpen(false);
       resetVenueForm();
       fetchVenues();
@@ -496,25 +439,20 @@ const MusicianShows = () => {
       console.error(error);
     }
   };
-
   const handleVenueEdit = (venue: Venue) => {
     setEditingVenue(venue);
     setVenueFormData({
       name: venue.name,
-      address: venue.address || '',
+      address: venue.address || ''
     });
     setVenueDialogOpen(true);
   };
-
   const handleVenueDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este local?')) return;
-
     try {
-      const { error } = await supabase
-        .from('musician_venues')
-        .delete()
-        .eq('id', id);
-
+      const {
+        error
+      } = await supabase.from('musician_venues').delete().eq('id', id);
       if (error) throw error;
       toast.success('Local excluído!');
       fetchVenues();
@@ -523,33 +461,35 @@ const MusicianShows = () => {
       console.error(error);
     }
   };
-
   const resetVenueForm = () => {
-    setVenueFormData({ name: '', address: '' });
+    setVenueFormData({
+      name: '',
+      address: ''
+    });
     setEditingVenue(null);
   };
-
   const addExpense = () => {
-    setPersonalExpenses([...personalExpenses, { description: '', cost: 0 }]);
+    setPersonalExpenses([...personalExpenses, {
+      description: '',
+      cost: 0
+    }]);
   };
-
   const removeExpense = (index: number) => {
     setPersonalExpenses(personalExpenses.filter((_, i) => i !== index));
   };
-
   const updateExpense = (index: number, field: keyof AdditionalExpense, value: any) => {
     const updated = [...personalExpenses];
-    updated[index] = { ...updated[index], [field]: value };
+    updated[index] = {
+      ...updated[index],
+      [field]: value
+    };
     setPersonalExpenses(updated);
   };
-
   const getMyFee = (show: Show) => {
     const myEntry = show.expenses_team.find(e => e.musicianId === user?.id);
     return myEntry?.cost || show.fee;
   };
-
-  return (
-    <SidebarProvider>
+  return <SidebarProvider>
       <div className="min-h-screen flex w-full bg-[#fafafa]">
         <MusicianSidebar />
         
@@ -668,38 +608,36 @@ const MusicianShows = () => {
                             
                             <div>
                               <Label htmlFor="artist_id" className="text-gray-900 font-medium">Artista *</Label>
-                              <Select value={showFormData.artist_id} onValueChange={(value) => setShowFormData({ ...showFormData, artist_id: value })} required>
+                              <Select value={showFormData.artist_id} onValueChange={value => setShowFormData({
+                              ...showFormData,
+                              artist_id: value
+                            })} required>
                                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                                   <SelectValue placeholder="Selecione o artista" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-white z-50">
-                                  {artists.map((artist) => (
-                                    <SelectItem key={artist.id} value={artist.id} className="text-gray-900">
+                                  {artists.map(artist => <SelectItem key={artist.id} value={artist.id} className="text-gray-900">
                                       {artist.name}
-                                    </SelectItem>
-                                  ))}
+                                    </SelectItem>)}
                                 </SelectContent>
                               </Select>
                             </div>
 
                             <div>
                               <Label htmlFor="venue_id" className="text-gray-900 font-medium">Local do Show *</Label>
-                              <Select value={showFormData.venue_id} onValueChange={(value) => setShowFormData({ ...showFormData, venue_id: value })} required>
+                              <Select value={showFormData.venue_id} onValueChange={value => setShowFormData({
+                              ...showFormData,
+                              venue_id: value
+                            })} required>
                                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                                   <SelectValue placeholder="Selecione o local" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-white z-50">
-                                  {venues.length === 0 ? (
-                                    <div className="p-2 text-sm text-gray-500">
+                                  {venues.length === 0 ? <div className="p-2 text-sm text-gray-500">
                                       Nenhum local cadastrado. Adicione em Locais e Bares.
-                                    </div>
-                                  ) : (
-                                    venues.map((venue) => (
-                                      <SelectItem key={venue.id} value={venue.id} className="text-gray-900">
+                                    </div> : venues.map(venue => <SelectItem key={venue.id} value={venue.id} className="text-gray-900">
                                         {venue.name}
-                                      </SelectItem>
-                                    ))
-                                  )}
+                                      </SelectItem>)}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -707,21 +645,17 @@ const MusicianShows = () => {
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="date_local" className="text-gray-900 font-medium">Data *</Label>
-                                <Input
-                                  id="date_local"
-                                  type="date"
-                                  value={showFormData.date_local}
-                                  onChange={(e) => setShowFormData({ ...showFormData, date_local: e.target.value })}
-                                  className="bg-white border-gray-300 text-gray-900"
-                                  required
-                                />
+                                <Input id="date_local" type="date" value={showFormData.date_local} onChange={e => setShowFormData({
+                                ...showFormData,
+                                date_local: e.target.value
+                              })} className="bg-white border-gray-300 text-gray-900" required />
                               </div>
                               <div>
                                 <Label htmlFor="time_local" className="text-gray-900 font-medium">Horário *</Label>
-                                <TimePicker
-                                  value={showFormData.time_local}
-                                  onChange={(time) => setShowFormData({ ...showFormData, time_local: time })}
-                                />
+                                <TimePicker value={showFormData.time_local} onChange={time => setShowFormData({
+                                ...showFormData,
+                                time_local: time
+                              })} />
                               </div>
                             </div>
                           </div>
@@ -731,37 +665,27 @@ const MusicianShows = () => {
                             
                             <div>
                               <Label htmlFor="fee" className="text-gray-900 font-medium">Seu Cachê Individual *</Label>
-                              <CurrencyInput
-                                id="fee"
-                                value={showFormData.fee}
-                                onChange={(value) => setShowFormData({ ...showFormData, fee: value })}
-                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-                                required
-                              />
+                              <CurrencyInput id="fee" value={showFormData.fee} onChange={value => setShowFormData({
+                              ...showFormData,
+                              fee: value
+                            })} className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" required />
                             </div>
 
                             <div>
                               <Label htmlFor="instrument_id" className="text-gray-900 font-medium">Função/Instrumento *</Label>
-                              <Select 
-                                value={showFormData.instrument_id} 
-                                onValueChange={(value) => setShowFormData({ ...showFormData, instrument_id: value })} 
-                                required
-                              >
+                              <Select value={showFormData.instrument_id} onValueChange={value => setShowFormData({
+                              ...showFormData,
+                              instrument_id: value
+                            })} required>
                                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                                   <SelectValue placeholder="Selecione um instrumento" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-white z-50">
-                                  {instruments.length === 0 ? (
-                                    <div className="p-2 text-sm text-gray-500">
+                                  {instruments.length === 0 ? <div className="p-2 text-sm text-gray-500">
                                       Nenhum instrumento cadastrado. Adicione em Instrumentos.
-                                    </div>
-                                  ) : (
-                                    instruments.map((instrument) => (
-                                      <SelectItem key={instrument.id} value={instrument.id} className="text-gray-900">
+                                    </div> : instruments.map(instrument => <SelectItem key={instrument.id} value={instrument.id} className="text-gray-900">
                                         {instrument.name}
-                                      </SelectItem>
-                                    ))
-                                  )}
+                                      </SelectItem>)}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -776,37 +700,19 @@ const MusicianShows = () => {
                               </Button>
                             </div>
 
-                            {personalExpenses.map((expense, index) => (
-                              <Card key={index} className="p-4 bg-white border border-gray-200">
+                            {personalExpenses.map((expense, index) => <Card key={index} className="p-4 bg-white border border-gray-200">
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
                                     <Label className="text-gray-900 font-medium">Despesa {index + 1}</Label>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => removeExpense(index)}
-                                    >
+                                    <Button type="button" variant="ghost" size="sm" onClick={() => removeExpense(index)}>
                                       <X className="w-4 h-4" />
                                     </Button>
                                   </div>
 
-                                  <Input
-                                    placeholder="Descrição (ex: Uber, Cordas)"
-                                    value={expense.description}
-                                    onChange={(e) => updateExpense(index, 'description', e.target.value)}
-                                    className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-                                    required
-                                  />
-                                  <CurrencyInput
-                                    value={expense.cost}
-                                    onChange={(value) => updateExpense(index, 'cost', parseFloat(value) || 0)}
-                                    className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-                                    required
-                                  />
+                                  <Input placeholder="Descrição (ex: Uber, Cordas)" value={expense.description} onChange={e => updateExpense(index, 'description', e.target.value)} className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" required />
+                                  <CurrencyInput value={expense.cost} onChange={value => updateExpense(index, 'cost', parseFloat(value) || 0)} className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" required />
                                 </div>
-                              </Card>
-                            ))}
+                              </Card>)}
                           </div>
 
                           <div className="flex gap-3">
@@ -822,34 +728,31 @@ const MusicianShows = () => {
                     </Dialog>
                   </div>
 
-                  {loading ? (
-                    <div className="text-center py-12">
+                  {loading ? <div className="text-center py-12">
                       <p className="text-gray-500">Carregando...</p>
-                    </div>
-                  ) : shows.length === 0 ? (
-                    <Card className="p-8 text-center bg-white border border-gray-200">
+                    </div> : shows.length === 0 ? <Card className="p-8 text-center bg-white border border-gray-200">
                       <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-500">Nenhum show encontrado para o filtro selecionado.</p>
-                    </Card>
-                  ) : (
-                    <div className="grid gap-4">
-                      {shows.map((show) => {
-                        const showDate = new Date(show.date_local);
-                        const myFee = getMyFee(show);
-                        const totalExpenses = show.expenses_other.reduce((sum, e) => sum + e.cost, 0);
-                        
-                        return (
-                          <Card key={show.id} className="p-4 md:p-6 bg-white border border-gray-200">
+                    </Card> : <div className="grid gap-4">
+                      {shows.map(show => {
+                    const showDate = new Date(show.date_local);
+                    const myFee = getMyFee(show);
+                    const totalExpenses = show.expenses_other.reduce((sum, e) => sum + e.cost, 0);
+                    return <Card key={show.id} className="p-4 md:p-6 bg-white border border-gray-200">
                             <div className="flex items-start gap-3 mb-3">
                               <div className="flex-shrink-0 w-16 text-center bg-[#F5F0FA] rounded-lg p-2 border-2 border-purple-200">
-                                <div className="text-xs text-primary font-bold uppercase">{format(showDate, 'MMM', { locale: ptBR })}</div>
+                                <div className="text-xs text-primary font-bold uppercase">{format(showDate, 'MMM', {
+                              locale: ptBR
+                            })}</div>
                                 <div className="text-3xl font-bold text-gray-900">{format(showDate, 'dd')}</div>
                               </div>
                               
                               <div className="flex-1 min-w-0">
                                 <h3 className="text-base md:text-lg font-bold text-gray-900 truncate">{show.venue_name}</h3>
                                 <p className="text-sm text-gray-600 flex items-center gap-1">
-                                  {format(showDate, "EEEE", { locale: ptBR })} • 
+                                  {format(showDate, "EEEE", {
+                              locale: ptBR
+                            })} • 
                                   <Clock className="w-3 h-3" />
                                   {show.time_local}
                                 </p>
@@ -872,14 +775,12 @@ const MusicianShows = () => {
                                   R$ {myFee.toFixed(2).replace('.', ',')}
                                 </div>
                               </div>
-                              {totalExpenses > 0 && (
-                                <div className="flex-1 text-center">
+                              {totalExpenses > 0 && <div className="flex-1 text-center">
                                   <div className="text-gray-600 text-xs mb-1">Despesas</div>
                                   <div className="text-red-600 font-bold text-sm md:text-base">
                                     R$ {totalExpenses.toFixed(2).replace('.', ',')}
                                   </div>
-                                </div>
-                              )}
+                                </div>}
                               <div className="flex-1 text-center">
                                 <div className="text-gray-600 text-xs mb-1">Líquido</div>
                                 <div className="px-2 py-1 rounded-full bg-primary text-white font-bold text-xs md:text-sm inline-block">
@@ -887,11 +788,9 @@ const MusicianShows = () => {
                                 </div>
                               </div>
                             </div>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  )}
+                          </Card>;
+                  })}
+                    </div>}
                 </TabsContent>
 
                 {/* ARTISTAS TAB */}
@@ -918,14 +817,10 @@ const MusicianShows = () => {
                         <form onSubmit={handleArtistSubmit} className="space-y-4">
                           <div>
                             <Label htmlFor="artist_name" className="text-gray-900 font-medium">Nome do Artista *</Label>
-                            <Input
-                              id="artist_name"
-                              value={artistFormData.name}
-                              onChange={(e) => setArtistFormData({ ...artistFormData, name: e.target.value })}
-                              placeholder="Ex: João Silva"
-                              className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-                              required
-                            />
+                            <Input id="artist_name" value={artistFormData.name} onChange={e => setArtistFormData({
+                            ...artistFormData,
+                            name: e.target.value
+                          })} placeholder="Ex: João Silva" className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" required />
                           </div>
                           <div className="flex gap-3">
                             <Button type="button" variant="outline" onClick={() => setArtistDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
@@ -940,18 +835,14 @@ const MusicianShows = () => {
                     </Dialog>
                   </div>
 
-                  {artists.length === 0 ? (
-                    <Card className="p-8 text-center bg-white border border-gray-200">
+                  {artists.length === 0 ? <Card className="p-8 text-center bg-white border border-gray-200">
                       <Mic2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-500 mb-4">Nenhum artista cadastrado</p>
                       <p className="text-sm text-gray-400">
                         Adicione os artistas com quem você faz freelas
                       </p>
-                    </Card>
-                  ) : (
-                    <div className="grid gap-4">
-                      {artists.map((artist) => (
-                        <Card key={artist.id} className="p-4 bg-white border border-gray-200">
+                    </Card> : <div className="grid gap-4">
+                      {artists.map(artist => <Card key={artist.id} className="p-4 bg-white border border-gray-200">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                               <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
@@ -970,10 +861,8 @@ const MusicianShows = () => {
                               </Button>
                             </div>
                           </div>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
+                        </Card>)}
+                    </div>}
                 </TabsContent>
 
                 {/* INSTRUMENTOS TAB */}
@@ -1000,14 +889,10 @@ const MusicianShows = () => {
                         <form onSubmit={handleInstrumentSubmit} className="space-y-4">
                           <div>
                             <Label htmlFor="instrument_name" className="text-gray-900 font-medium">Nome do Instrumento *</Label>
-                            <Input
-                              id="instrument_name"
-                              value={instrumentFormData.name}
-                              onChange={(e) => setInstrumentFormData({ ...instrumentFormData, name: e.target.value })}
-                              placeholder="Ex: Guitarra, Bateria, Baixo..."
-                              className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-                              required
-                            />
+                            <Input id="instrument_name" value={instrumentFormData.name} onChange={e => setInstrumentFormData({
+                            ...instrumentFormData,
+                            name: e.target.value
+                          })} placeholder="Ex: Guitarra, Bateria, Baixo..." className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" required />
                           </div>
                           <div className="flex gap-3">
                             <Button type="button" variant="outline" onClick={() => setInstrumentDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
@@ -1022,18 +907,14 @@ const MusicianShows = () => {
                     </Dialog>
                   </div>
 
-                  {instruments.length === 0 ? (
-                    <Card className="p-8 text-center bg-white border border-gray-200">
+                  {instruments.length === 0 ? <Card className="p-8 text-center bg-white border border-gray-200">
                       <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-500 mb-4">Nenhum instrumento cadastrado</p>
                       <p className="text-sm text-gray-400">
                         Adicione os instrumentos que você toca
                       </p>
-                    </Card>
-                  ) : (
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {instruments.map((instrument) => (
-                        <Card key={instrument.id} className="p-4 bg-white border border-gray-200">
+                    </Card> : <div className="grid gap-4 md:grid-cols-2">
+                      {instruments.map(instrument => <Card key={instrument.id} className="p-4 bg-white border border-gray-200">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                               <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
@@ -1052,10 +933,8 @@ const MusicianShows = () => {
                               </Button>
                             </div>
                           </div>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
+                        </Card>)}
+                    </div>}
                 </TabsContent>
 
                 {/* LOCAIS E BARES TAB */}
@@ -1068,7 +947,7 @@ const MusicianShows = () => {
                     
                     <Dialog open={venueDialogOpen} onOpenChange={setVenueDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button onClick={resetVenueForm} className="w-full md:w-auto">
+                        <Button onClick={resetVenueForm} className="w-full md:w-auto text-slate-50">
                           <Plus className="w-4 h-4 mr-2" />
                           Adicionar Local
                         </Button>
@@ -1082,24 +961,17 @@ const MusicianShows = () => {
                         <form onSubmit={handleVenueSubmit} className="space-y-4">
                           <div>
                             <Label htmlFor="venue_name" className="text-gray-900 font-medium">Nome do Local *</Label>
-                            <Input
-                              id="venue_name"
-                              value={venueFormData.name}
-                              onChange={(e) => setVenueFormData({ ...venueFormData, name: e.target.value })}
-                              placeholder="Ex: Bar do João, Casa de Shows..."
-                              className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-                              required
-                            />
+                            <Input id="venue_name" value={venueFormData.name} onChange={e => setVenueFormData({
+                            ...venueFormData,
+                            name: e.target.value
+                          })} placeholder="Ex: Bar do João, Casa de Shows..." className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" required />
                           </div>
                           <div>
                             <Label htmlFor="venue_address" className="text-gray-900 font-medium">Endereço (opcional)</Label>
-                            <Input
-                              id="venue_address"
-                              value={venueFormData.address}
-                              onChange={(e) => setVenueFormData({ ...venueFormData, address: e.target.value })}
-                              placeholder="Rua, número, bairro, cidade..."
-                              className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-                            />
+                            <Input id="venue_address" value={venueFormData.address} onChange={e => setVenueFormData({
+                            ...venueFormData,
+                            address: e.target.value
+                          })} placeholder="Rua, número, bairro, cidade..." className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" />
                           </div>
                           <div className="flex gap-3">
                             <Button type="button" variant="outline" onClick={() => setVenueDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
@@ -1114,18 +986,14 @@ const MusicianShows = () => {
                     </Dialog>
                   </div>
 
-                  {venues.length === 0 ? (
-                    <Card className="p-8 text-center bg-white border border-gray-200">
+                  {venues.length === 0 ? <Card className="p-8 text-center bg-white border border-gray-200">
                       <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-500 mb-4">Nenhum local cadastrado</p>
                       <p className="text-sm text-gray-400">
                         Adicione os locais onde você trabalha
                       </p>
-                    </Card>
-                  ) : (
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {venues.map((venue) => (
-                        <Card key={venue.id} className="p-4 bg-white border border-gray-200">
+                    </Card> : <div className="grid gap-4 md:grid-cols-2">
+                      {venues.map(venue => <Card key={venue.id} className="p-4 bg-white border border-gray-200">
                           <div className="flex items-start justify-between">
                             <div className="flex items-start gap-4 flex-1">
                               <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
@@ -1133,9 +1001,7 @@ const MusicianShows = () => {
                               </div>
                               <div className="flex-1">
                                 <h3 className="font-semibold text-gray-900 mb-1">{venue.name}</h3>
-                                {venue.address && (
-                                  <p className="text-sm text-gray-600">{venue.address}</p>
-                                )}
+                                {venue.address && <p className="text-sm text-gray-600">{venue.address}</p>}
                               </div>
                             </div>
                             <div className="flex gap-2 flex-shrink-0">
@@ -1147,10 +1013,8 @@ const MusicianShows = () => {
                               </Button>
                             </div>
                           </div>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
+                        </Card>)}
+                    </div>}
                 </TabsContent>
               </Tabs>
             </div>
@@ -1159,8 +1023,6 @@ const MusicianShows = () => {
         
         <MobileBottomNav role="musician" />
       </div>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 };
-
 export default MusicianShows;
