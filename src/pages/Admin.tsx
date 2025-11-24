@@ -120,6 +120,7 @@ export default function Admin() {
   // Estados para Administradores
   const [adminUsers, setAdminUsers] = useState<UserProfile[]>([]);
   const [loadingAdmins, setLoadingAdmins] = useState(false);
+  const [adminSearchQuery, setAdminSearchQuery] = useState('');
   
   const usersPerPage = 50;
   useEffect(() => {
@@ -1205,14 +1206,46 @@ export default function Admin() {
                     </div>
                   ) : (
                     <>
+                      {/* Campo de busca */}
+                      <div className="mb-6">
+                        <Input
+                          placeholder="Buscar por nome, email, CPF, telefone ou ID..."
+                          value={adminSearchQuery}
+                          onChange={(e) => setAdminSearchQuery(e.target.value)}
+                          className="bg-white text-gray-900 border-gray-200"
+                        />
+                      </div>
+
                       <div className="space-y-4">
                         {/* Admins atuais */}
                         <div>
                           <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                            Administradores Atuais ({adminUsers.filter((u: any) => u.isAdmin).length})
+                            Administradores Atuais ({adminUsers.filter((u: any) => {
+                              if (!u.isAdmin) return false;
+                              if (!adminSearchQuery) return true;
+                              const query = adminSearchQuery.toLowerCase();
+                              return (
+                                u.name.toLowerCase().includes(query) ||
+                                u.email.toLowerCase().includes(query) ||
+                                u.id.toLowerCase().includes(query) ||
+                                (u.cpf && u.cpf.includes(query)) ||
+                                (u.phone && u.phone.includes(query))
+                              );
+                            }).length})
                           </h3>
                           <div className="space-y-2">
-                            {adminUsers.filter((u: any) => u.isAdmin).map((user: any) => (
+                            {adminUsers.filter((u: any) => {
+                              if (!u.isAdmin) return false;
+                              if (!adminSearchQuery) return true;
+                              const query = adminSearchQuery.toLowerCase();
+                              return (
+                                u.name.toLowerCase().includes(query) ||
+                                u.email.toLowerCase().includes(query) ||
+                                u.id.toLowerCase().includes(query) ||
+                                (u.cpf && u.cpf.includes(query)) ||
+                                (u.phone && u.phone.includes(query))
+                              );
+                            }).map((user: any) => (
                               <div
                                 key={user.id}
                                 className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200"
@@ -1244,10 +1277,32 @@ export default function Admin() {
                         {/* Usuários que podem ser promovidos */}
                         <div>
                           <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                            Usuários do Sistema ({adminUsers.filter((u: any) => !u.isAdmin).length})
+                            Usuários do Sistema ({adminUsers.filter((u: any) => {
+                              if (u.isAdmin) return false;
+                              if (!adminSearchQuery) return true;
+                              const query = adminSearchQuery.toLowerCase();
+                              return (
+                                u.name.toLowerCase().includes(query) ||
+                                u.email.toLowerCase().includes(query) ||
+                                u.id.toLowerCase().includes(query) ||
+                                (u.cpf && u.cpf.includes(query)) ||
+                                (u.phone && u.phone.includes(query))
+                              );
+                            }).length})
                           </h3>
                           <div className="space-y-2 max-h-96 overflow-y-auto">
-                            {adminUsers.filter((u: any) => !u.isAdmin).map((user: any) => (
+                            {adminUsers.filter((u: any) => {
+                              if (u.isAdmin) return false;
+                              if (!adminSearchQuery) return true;
+                              const query = adminSearchQuery.toLowerCase();
+                              return (
+                                u.name.toLowerCase().includes(query) ||
+                                u.email.toLowerCase().includes(query) ||
+                                u.id.toLowerCase().includes(query) ||
+                                (u.cpf && u.cpf.includes(query)) ||
+                                (u.phone && u.phone.includes(query))
+                              );
+                            }).map((user: any) => (
                               <div
                                 key={user.id}
                                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
