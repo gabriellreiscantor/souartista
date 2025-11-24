@@ -104,6 +104,11 @@ export default function Admin() {
   const [contacts, setContacts] = useState<any[]>([]);
   const [contactFilter, setContactFilter] = useState('todos');
   const [loadingContacts, setLoadingContacts] = useState(false);
+
+  // Estados para Logs
+  const [systemLogs, setSystemLogs] = useState<any[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+  const [logFilter, setLogFilter] = useState('all');
   const usersPerPage = 50;
   useEffect(() => {
     if (!adminLoading && !isAdmin && user) {
@@ -140,6 +145,8 @@ export default function Admin() {
         fetchNotifications();
       } else if (currentTab === 'contatos') {
         fetchContacts();
+      } else if (currentTab === 'logs') {
+        fetchSystemLogs();
       }
     }
   }, [isAdmin, currentTab]);
@@ -468,8 +475,77 @@ export default function Admin() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Contatos');
     XLSX.writeFile(wb, `contatos-whatsapp-${new Date().toISOString().split('T')[0]}.xlsx`);
-    toast.success('Planilha exportada com sucesso!');
+    toast.success('Contatos exportados com sucesso!');
   };
+
+  // Funções para Logs do Sistema
+  const fetchSystemLogs = async () => {
+    try {
+      setLoadingLogs(true);
+      
+      // Buscar logs de atividades recentes
+      const logs = [];
+      
+      // 1. Últimos usuários criados
+      const { data: recentUsers } = await supabase
+        .from('profiles')
+        .select('name, email, created_at')
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      recentUsers?.forEach(user => {
+        logs.push({
+          type: 'user_created',
+          message: `Novo usuário: ${user.name} (${user.email})`,
+          timestamp: user.created_at,
+          severity: 'info'
+        });
+      });
+
+      // 2. Últimos shows criados
+      const { data: recentShows } = await supabase
+        .from('shows')
+        .select('venue_name, date_local, created_at')
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      recentShows?.forEach(show => {
+        logs.push({
+          type: 'show_created',
+          message: `Novo show: ${show.venue_name} - ${show.date_local}`,
+          timestamp: show.created_at,
+          severity: 'success'
+        });
+      });
+
+      // 3. Últimas notificações enviadas
+      const { data: recentNotifications } = await supabase
+        .from('notifications')
+        .select('title, created_at')
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      recentNotifications?.forEach(notif => {
+        logs.push({
+          type: 'notification_sent',
+          message: `Notificação enviada: ${notif.title}`,
+          timestamp: notif.created_at,
+          severity: 'warning'
+        });
+      });
+
+      // Ordenar por timestamp
+      logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      
+      setSystemLogs(logs);
+    } catch (error) {
+      console.error('Erro ao buscar logs:', error);
+      toast.error('Erro ao carregar logs do sistema');
+    } finally {
+      setLoadingLogs(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pendente: {
@@ -1179,6 +1255,98 @@ export default function Admin() {
                           </table>
                         </div>
                       </>}
+                  </div>
+                </CardContent>
+              </Card>}
+
+            {/* Logs do Sistema */}
+            {currentTab === 'logs' && <Card className="bg-white border-gray-200">
+                <CardHeader>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                      <CardTitle className="text-gray-900">📊 Logs do Sistema</CardTitle>
+                      <p className="text-sm text-gray-500 mt-1">Monitoramento em tempo real das atividades</p>
+                    </div>
+                    <Button onClick={fetchSystemLogs} variant="outline" size="sm" disabled={loadingLogs}>
+                      {loadingLogs ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                      Atualizar
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* Estatísticas Rápidas */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                        <CardContent className="p-4">
+                          <div className="text-2xl font-bold text-blue-900">{stats.totalUsers}</div>
+                          <div className="text-sm text-blue-700">Total de Usuários</div>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                        <CardContent className="p-4">
+                          <div className="text-2xl font-bold text-green-900">{stats.totalArtists}</div>
+                          <div className="text-sm text-green-700">Artistas Ativos</div>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                        <CardContent className="p-4">
+                          <div className="text-2xl font-bold text-purple-900">{stats.totalMusicians}</div>
+                          <div className="text-sm text-purple-700">Músicos Ativos</div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Filtro de Logs */}
+                    <div className="flex gap-2">
+                      <Select value={logFilter} onValueChange={setLogFilter}>
+                        <SelectTrigger className="bg-white text-gray-900 border-gray-200 w-full sm:w-[200px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white text-gray-900 border border-gray-200">
+                          <SelectItem value="all">Todos os Logs</SelectItem>
+                          <SelectItem value="user_created">Novos Usuários</SelectItem>
+                          <SelectItem value="show_created">Novos Shows</SelectItem>
+                          <SelectItem value="notification_sent">Notificações</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Lista de Logs */}
+                    {loadingLogs ? <div className="flex justify-center py-8">
+                        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                      </div> : <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                        {systemLogs
+                          .filter(log => logFilter === 'all' || log.type === logFilter)
+                          .map((log, idx) => {
+                            const getSeverityColor = (severity: string) => {
+                              switch (severity) {
+                                case 'success': return 'bg-green-100 text-green-800 border-green-200';
+                                case 'warning': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                                case 'error': return 'bg-red-100 text-red-800 border-red-200';
+                                default: return 'bg-blue-100 text-blue-800 border-blue-200';
+                              }
+                            };
+
+                            return (
+                              <Card key={idx} className={`border ${getSeverityColor(log.severity)}`}>
+                                <CardContent className="p-3">
+                                  <div className="flex justify-between items-start gap-2">
+                                    <p className="text-sm font-medium flex-1">{log.message}</p>
+                                    <span className="text-xs text-gray-600 whitespace-nowrap">
+                                      {new Date(log.timestamp).toLocaleString('pt-BR')}
+                                    </span>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                        {systemLogs.filter(log => logFilter === 'all' || log.type === logFilter).length === 0 && (
+                          <div className="text-center py-8 text-gray-500">
+                            Nenhum log encontrado
+                          </div>
+                        )}
+                      </div>}
                   </div>
                 </CardContent>
               </Card>}

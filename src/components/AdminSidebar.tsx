@@ -1,4 +1,4 @@
-import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut } from 'lucide-react';
+import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -22,6 +22,7 @@ const mainItems = [
   { title: 'Financeiro Global', url: '/admin?tab=financeiro', icon: DollarSign },
   { title: 'Notificações', url: '/admin?tab=notificacoes', icon: Bell },
   { title: 'Contatos WhatsApp', url: '/admin?tab=contatos', icon: MessageCircle },
+  { title: 'Logs do Sistema', url: '/admin?tab=logs', icon: FileText },
 ];
 
 export function AdminSidebar() {
