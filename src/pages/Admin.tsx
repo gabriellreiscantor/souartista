@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdmin } from '@/hooks/useAdmin';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { queryClient } from '@/providers/QueryProvider';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { AdminSidebar } from '@/components/AdminSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -1071,6 +1072,15 @@ export default function Admin() {
       
       setImportReport(data);
       toast.success(`🎉 Importação concluída! ${data.shows_imported} shows importados.`);
+      
+      // Invalidar cache para atualizar dados no dashboard
+      queryClient.invalidateQueries({ queryKey: ['shows'] });
+      queryClient.invalidateQueries({ queryKey: ['artist-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['musician-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['monthly-data'] });
+      queryClient.invalidateQueries({ queryKey: ['locomotion-data'] });
+      
+      console.log('🔄 Cache invalidado - dados serão recarregados');
       
       // Limpar dados após sucesso
       setImportFile(null);
