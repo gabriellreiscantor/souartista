@@ -18,11 +18,23 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { instruments } from '@/data/brazilLocations';
 
 interface Artist {
   id: string;
   name: string;
+  owner_uid: string;
+}
+
+interface Instrument {
+  id: string;
+  name: string;
+  owner_uid: string;
+}
+
+interface Venue {
+  id: string;
+  name: string;
+  address: string | null;
   owner_uid: string;
 }
 
@@ -51,6 +63,8 @@ const MusicianShows = () => {
   const { user, userData, userRole } = useAuth();
   const [shows, setShows] = useState<Show[]>([]);
   const [artists, setArtists] = useState<Artist[]>([]);
+  const [instruments, setInstruments] = useState<Instrument[]>([]);
+  const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Shows dialog
@@ -58,12 +72,11 @@ const MusicianShows = () => {
   const [editingShow, setEditingShow] = useState<Show | null>(null);
   const [showFormData, setShowFormData] = useState({
     artist_id: '',
-    venue_name: '',
+    venue_id: '',
     date_local: '',
     time_local: '',
     fee: '',
-    instrument: '',
-    customInstrument: '',
+    instrument_id: '',
   });
   const [personalExpenses, setPersonalExpenses] = useState<AdditionalExpense[]>([]);
 
@@ -81,7 +94,7 @@ const MusicianShows = () => {
   }, [user]);
 
   const fetchAll = async () => {
-    await Promise.all([fetchShows(), fetchArtists()]);
+    await Promise.all([fetchShows(), fetchArtists(), fetchInstruments(), fetchVenues()]);
   };
 
   const fetchShows = async () => {
@@ -128,6 +141,40 @@ const MusicianShows = () => {
     }
   };
 
+  const fetchInstruments = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('musician_instruments')
+        .select('*')
+        .eq('owner_uid', user.id)
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      setInstruments(data || []);
+    } catch (error: any) {
+      console.error('Error fetching instruments:', error);
+    }
+  };
+
+  const fetchVenues = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('musician_venues')
+        .select('*')
+        .eq('owner_uid', user.id)
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      setVenues(data || []);
+    } catch (error: any) {
+      console.error('Error fetching venues:', error);
+    }
+  };
+
   // Show handlers
   const handleShowSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,25 +182,33 @@ const MusicianShows = () => {
 
     try {
       const selectedArtist = artists.find(a => a.id === showFormData.artist_id);
+      const selectedInstrument = instruments.find(i => i.id === showFormData.instrument_id);
+      const selectedVenue = venues.find(v => v.id === showFormData.venue_id);
       
       if (!selectedArtist) {
         toast.error('Selecione um artista');
         return;
       }
 
-      const finalInstrument = showFormData.instrument === 'Outro...' 
-        ? showFormData.customInstrument 
-        : showFormData.instrument;
+      if (!selectedInstrument) {
+        toast.error('Selecione um instrumento');
+        return;
+      }
+
+      if (!selectedVenue) {
+        toast.error('Selecione um local');
+        return;
+      }
 
       const musicianEntry = {
         musicianId: user.id,
         name: userData.name,
-        instrument: finalInstrument,
+        instrument: selectedInstrument.name,
         cost: parseFloat(showFormData.fee),
       };
 
       const showData = {
-        venue_name: showFormData.venue_name,
+        venue_name: selectedVenue.name,
         date_local: showFormData.date_local,
         time_local: showFormData.time_local,
         fee: parseFloat(showFormData.fee),
@@ -222,16 +277,20 @@ const MusicianShows = () => {
     
     const myEntry = show.expenses_team.find(e => e.musicianId === user?.id);
     const savedInstrument = myEntry?.instrument || '';
-    const isCustomInstrument = savedInstrument && !instruments.includes(savedInstrument);
+    
+    // Find instrument by name
+    const matchingInstrument = instruments.find(i => i.name === savedInstrument);
+    
+    // Find venue by name
+    const matchingVenue = venues.find(v => v.name === show.venue_name);
     
     setShowFormData({
       artist_id: '',
-      venue_name: show.venue_name,
+      venue_id: matchingVenue?.id || '',
       date_local: show.date_local,
       time_local: show.time_local,
       fee: myEntry?.cost.toString() || show.fee.toString(),
-      instrument: isCustomInstrument ? 'Outro...' : savedInstrument,
-      customInstrument: isCustomInstrument ? savedInstrument : '',
+      instrument_id: matchingInstrument?.id || '',
     });
     setPersonalExpenses(show.expenses_other || []);
     setShowDialogOpen(true);
@@ -240,12 +299,11 @@ const MusicianShows = () => {
   const resetShowForm = () => {
     setShowFormData({
       artist_id: '',
-      venue_name: '',
+      venue_id: '',
       date_local: '',
       time_local: '',
       fee: '',
-      instrument: '',
-      customInstrument: '',
+      instrument_id: '',
     });
     setPersonalExpenses([]);
     setEditingShow(null);
@@ -451,15 +509,25 @@ const MusicianShows = () => {
                             </div>
 
                             <div>
-                              <Label htmlFor="venue_name" className="text-gray-900 font-medium">Local do Show *</Label>
-                              <Input
-                                id="venue_name"
-                                value={showFormData.venue_name}
-                                onChange={(e) => setShowFormData({ ...showFormData, venue_name: e.target.value })}
-                                placeholder="Ex: Bar do João"
-                                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-                                required
-                              />
+                              <Label htmlFor="venue_id" className="text-gray-900 font-medium">Local do Show *</Label>
+                              <Select value={showFormData.venue_id} onValueChange={(value) => setShowFormData({ ...showFormData, venue_id: value })} required>
+                                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                                  <SelectValue placeholder="Selecione o local" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white z-50">
+                                  {venues.length === 0 ? (
+                                    <div className="p-2 text-sm text-gray-500">
+                                      Nenhum local cadastrado. Adicione em Locais e Bares.
+                                    </div>
+                                  ) : (
+                                    venues.map((venue) => (
+                                      <SelectItem key={venue.id} value={venue.id} className="text-gray-900">
+                                        {venue.name}
+                                      </SelectItem>
+                                    ))
+                                  )}
+                                </SelectContent>
+                              </Select>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
@@ -499,38 +567,30 @@ const MusicianShows = () => {
                             </div>
 
                             <div>
-                              <Label htmlFor="instrument" className="text-gray-900 font-medium">Função/Instrumento *</Label>
+                              <Label htmlFor="instrument_id" className="text-gray-900 font-medium">Função/Instrumento *</Label>
                               <Select 
-                                value={showFormData.instrument} 
-                                onValueChange={(value) => setShowFormData({ ...showFormData, instrument: value, customInstrument: value !== 'Outro...' ? '' : showFormData.customInstrument })} 
+                                value={showFormData.instrument_id} 
+                                onValueChange={(value) => setShowFormData({ ...showFormData, instrument_id: value })} 
                                 required
                               >
                                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                                  <SelectValue placeholder="Selecione uma função" />
+                                  <SelectValue placeholder="Selecione um instrumento" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-white z-50">
-                                  {instruments.map((instrument) => (
-                                    <SelectItem key={instrument} value={instrument} className="text-gray-900">
-                                      {instrument}
-                                    </SelectItem>
-                                  ))}
+                                  {instruments.length === 0 ? (
+                                    <div className="p-2 text-sm text-gray-500">
+                                      Nenhum instrumento cadastrado. Adicione em Instrumentos.
+                                    </div>
+                                  ) : (
+                                    instruments.map((instrument) => (
+                                      <SelectItem key={instrument.id} value={instrument.id} className="text-gray-900">
+                                        {instrument.name}
+                                      </SelectItem>
+                                    ))
+                                  )}
                                 </SelectContent>
                               </Select>
                             </div>
-
-                            {showFormData.instrument === 'Outro...' && (
-                              <div>
-                                <Label htmlFor="customInstrument" className="text-gray-900 font-medium">Qual função? *</Label>
-                                <Input
-                                  id="customInstrument"
-                                  value={showFormData.customInstrument}
-                                  onChange={(e) => setShowFormData({ ...showFormData, customInstrument: e.target.value })}
-                                  placeholder="Digite a função/instrumento"
-                                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-                                  required
-                                />
-                              </div>
-                            )}
                           </div>
 
                           <div className="space-y-4">

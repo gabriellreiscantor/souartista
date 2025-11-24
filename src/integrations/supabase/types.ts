@@ -112,6 +112,67 @@ export type Database = {
           },
         ]
       }
+      musician_instruments: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_uid: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          owner_uid: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_uid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_musician_instruments_owner"
+            columns: ["owner_uid"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      musician_venues: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: string
+          name: string
+          owner_uid: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          owner_uid: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          owner_uid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_musician_venues_owner"
+            columns: ["owner_uid"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       musicians: {
         Row: {
           created_at: string
