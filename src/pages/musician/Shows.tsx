@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { TimePicker } from '@/components/ui/time-picker';
-import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2, ChevronDown, ChevronUp, Users, TrendingDown, ArrowUpRight, Guitar } from 'lucide-react';
+import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2, ChevronDown, ChevronUp, Users, TrendingDown, ArrowUpRight, Guitar, Calendar as CalendarIcon } from 'lucide-react';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -72,6 +72,7 @@ const MusicianShows = () => {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedShows, setExpandedShows] = useState<Set<string>>(new Set());
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -156,8 +157,10 @@ const MusicianShows = () => {
       fetchAll();
     }
   }, [user]);
+
   const fetchAll = async () => {
     await Promise.all([fetchShows(), fetchArtists(), fetchInstruments(), fetchVenues()]);
+    setLastUpdated(new Date());
   };
   const fetchShows = async () => {
     if (!user) return;
@@ -764,8 +767,22 @@ const MusicianShows = () => {
                   <Card className="md:hidden bg-white border border-gray-200 p-4 space-y-3 mb-4">
                     <div>
                       <h2 className="text-xl font-bold text-gray-900">Meus Freelas</h2>
-                      <p className="text-sm text-gray-600 mt-1">Gerencie seus shows e cachês</p>
+                      <p className="text-xs text-gray-500">
+                        Atualizado em {format(lastUpdated, "dd/MM/yyyy 'às' HH:mm:ss")}
+                      </p>
                     </div>
+                    
+                    <Select defaultValue="week">
+                      <SelectTrigger className="w-full bg-white text-gray-900 border-gray-300">
+                        <CalendarIcon className="w-4 h-4 mr-2 text-gray-900" />
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white">
+                        <SelectItem value="week" className="text-gray-900">Próximos Shows</SelectItem>
+                        <SelectItem value="month" className="text-gray-900">Este Mês</SelectItem>
+                        <SelectItem value="all" className="text-gray-900">Todos</SelectItem>
+                      </SelectContent>
+                    </Select>
                     
                     <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
                       <DialogTrigger asChild>
@@ -791,16 +808,31 @@ const MusicianShows = () => {
                   <div className="hidden md:flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <div>
                       <h2 className="text-xl md:text-2xl font-bold text-gray-900">Meus Freelas</h2>
-                      <p className="text-sm text-gray-600">Gerencie seus shows e cachês</p>
+                      <p className="text-sm text-gray-500">
+                        Atualizado em {format(lastUpdated, "dd/MM/yyyy 'às' HH:mm:ss")}
+                      </p>
                     </div>
                     
-                    <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button onClick={resetShowForm} className="bg-primary hover:bg-primary/90 text-slate-50">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Adicionar
-                        </Button>
-                      </DialogTrigger>
+                    <div className="flex items-center gap-3">
+                      <Select defaultValue="week">
+                        <SelectTrigger className="w-[200px] bg-white text-gray-900 border-gray-300">
+                          <CalendarIcon className="w-4 h-4 mr-2 text-gray-900" />
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white">
+                          <SelectItem value="week" className="text-gray-900">Próximos Shows</SelectItem>
+                          <SelectItem value="month" className="text-gray-900">Este Mês</SelectItem>
+                          <SelectItem value="all" className="text-gray-900">Todos</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button onClick={resetShowForm} className="bg-primary hover:bg-primary/90 text-slate-50">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Adicionar
+                          </Button>
+                        </DialogTrigger>
                       <DialogContent className="max-w-2xl bg-white text-gray-900">
                         <DialogHeader>
                           <DialogTitle className="text-gray-900 font-semibold">
@@ -1012,6 +1044,7 @@ const MusicianShows = () => {
                         </form>
                       </DialogContent>
                     </Dialog>
+                    </div>
                   </div>
 
                   {loading ? <div className="text-center py-12">
