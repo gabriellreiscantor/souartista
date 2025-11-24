@@ -91,10 +91,10 @@ export function WeeklySchedule({
         </div>
       </Card>;
   }
-  return <Card className="p-4 sm:p-6 border-border bg-neutral-50 text-slate-50">
+  return <Card className="p-4 sm:p-6 border-border bg-card">
       {/* Header */}
       <div className="mb-4">
-        <h3 className="text-lg font-semibold mb-2 text-[#1c1c1c]">Agenda da Semana</h3>
+        <h3 className="text-lg font-semibold mb-2 text-foreground">Agenda da Semana</h3>
         <p className="text-sm text-muted-foreground">
           De {format(weekStart, "d/MM", {
           locale: ptBR
@@ -109,7 +109,7 @@ export function WeeklySchedule({
         <Button variant="outline" size="icon" onClick={handlePreviousWeek} className="h-9 w-9">
           <ChevronLeft className="w-4 h-4" />
         </Button>
-        <Button variant="outline" onClick={handleToday} className="flex-1 justify-center bg-red-50">
+        <Button variant="outline" onClick={handleToday} className="flex-1 justify-center">
           Semana Atual
         </Button>
         <Button variant="outline" size="icon" onClick={handleNextWeek} className="h-9 w-9">
@@ -122,16 +122,16 @@ export function WeeklySchedule({
         {weekDays.map(day => {
         const dayShows = getShowsForDay(day);
         if (dayShows.length === 0) return null;
-        return <div key={day.toISOString()} className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+        return <div key={day.toISOString()} className="p-4 rounded-lg bg-primary/5 border border-border hover:border-primary/30 transition-colors">
               <div className="flex items-start gap-4">
                 {/* Date Badge */}
-                <div className="flex flex-col items-center min-w-[60px]">
+                <div className="flex flex-col items-center min-w-[60px] bg-primary/10 rounded-lg p-2">
                   <span className="text-xs font-bold text-primary uppercase tracking-wider">
                     {format(day, 'EEEE', {
                   locale: ptBR
                 }).slice(0, 3)}
                   </span>
-                  <span className="text-3xl font-bold text-foreground">
+                  <span className="text-3xl font-bold text-primary">
                     {format(day, 'd')}
                   </span>
                 </div>
