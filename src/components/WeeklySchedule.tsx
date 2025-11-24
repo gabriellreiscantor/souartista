@@ -106,13 +106,13 @@ export function WeeklySchedule({
 
       {/* Navigation */}
       <div className="flex items-center gap-2 mb-4">
-        <Button variant="outline" size="icon" onClick={handlePreviousWeek} className="h-9 w-9 bg-white hover:bg-gray-50">
+        <Button variant="outline" size="icon" onClick={handlePreviousWeek} className="h-9 w-9 bg-white hover:bg-gray-50 border-gray-200 text-gray-900">
           <ChevronLeft className="w-4 h-4" />
         </Button>
-        <Button variant="outline" onClick={handleToday} className="flex-1 justify-center bg-white hover:bg-gray-50">
+        <Button variant="outline" onClick={handleToday} className="flex-1 justify-center bg-white hover:bg-gray-50 border-gray-200 text-gray-900">
           Semana Atual
         </Button>
-        <Button variant="outline" size="icon" onClick={handleNextWeek} className="h-9 w-9 bg-white hover:bg-gray-50">
+        <Button variant="outline" size="icon" onClick={handleNextWeek} className="h-9 w-9 bg-white hover:bg-gray-50 border-gray-200 text-gray-900">
           <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
