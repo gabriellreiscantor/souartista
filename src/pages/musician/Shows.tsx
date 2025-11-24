@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { TimePicker } from '@/components/ui/time-picker';
-import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2 } from 'lucide-react';
+import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2, ChevronDown, ChevronUp, Users, TrendingDown, ArrowUpRight } from 'lucide-react';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -70,6 +71,7 @@ const MusicianShows = () => {
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedShows, setExpandedShows] = useState<Set<string>>(new Set());
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -655,6 +657,33 @@ const MusicianShows = () => {
     const myEntry = show.expenses_team.find(e => e.musicianId === user?.id);
     return myEntry?.cost || show.fee;
   };
+
+  const getMyInstrument = (show: Show) => {
+    const myEntry = show.expenses_team.find(e => e.musicianId === user?.id);
+    return myEntry?.instrument || '';
+  };
+
+  const toggleShowExpanded = (showId: string) => {
+    setExpandedShows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(showId)) {
+        newSet.delete(showId);
+      } else {
+        newSet.add(showId);
+      }
+      return newSet;
+    });
+  };
+
+  const calculateTotals = () => {
+    const totalRevenue = shows.reduce((sum, show) => sum + getMyFee(show), 0);
+    const totalExpenses = shows.reduce((sum, show) => {
+      const showExpenses = show.expenses_other.reduce((expSum, e) => expSum + e.cost, 0);
+      return sum + showExpenses;
+    }, 0);
+    const netProfit = totalRevenue - totalExpenses;
+    return { totalRevenue, totalExpenses, netProfit };
+  };
   return <SidebarProvider>
       <div className="min-h-screen flex w-full bg-[#fafafa]">
         <MusicianSidebar />
@@ -990,64 +1019,154 @@ const MusicianShows = () => {
                     </div> : shows.length === 0 ? <Card className="p-8 text-center bg-white border border-gray-200">
                       <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-500">Nenhum show encontrado para o filtro selecionado.</p>
-                    </Card> : <div className="grid gap-4">
-                      {shows.map(show => {
-                    const showDate = new Date(show.date_local);
-                    const myFee = getMyFee(show);
-                    const totalExpenses = show.expenses_other.reduce((sum, e) => sum + e.cost, 0);
-                    return <Card key={show.id} className="p-4 md:p-6 bg-white border border-gray-200">
-                            <div className="flex items-start gap-3 mb-3">
-                              <div className="flex-shrink-0 w-16 text-center bg-[#F5F0FA] rounded-lg p-2 border-2 border-purple-200">
-                                <div className="text-xs text-primary font-bold uppercase">{format(showDate, 'MMM', {
-                              locale: ptBR
-                            })}</div>
-                                <div className="text-3xl font-bold text-gray-900">{format(showDate, 'dd')}</div>
-                              </div>
-                              
-                              <div className="flex-1 min-w-0">
-                                <h3 className="text-base md:text-lg font-bold text-gray-900 truncate">{show.venue_name}</h3>
-                                <p className="text-sm text-gray-600 flex items-center gap-1">
-                                  {format(showDate, "EEEE", {
-                              locale: ptBR
-                            })} • 
-                                  <Clock className="w-3 h-3" />
-                                  {show.time_local}
-                                </p>
-                              </div>
-                              
-                              <div className="flex gap-1 flex-shrink-0">
-                                <Button variant="outline" size="icon" onClick={() => handleShowEdit(show)} className="h-8 w-8 md:h-10 md:w-10">
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                                <Button variant="outline" size="icon" onClick={() => handleShowDelete(show.id)} className="h-8 w-8 md:h-10 md:w-10">
-                                  <Trash2 className="w-4 h-4 text-red-600" />
-                                </Button>
-                              </div>
-                            </div>
-
-                            <div className="flex gap-3 text-sm">
-                              <div className="flex-1 text-center">
-                                <div className="text-gray-600 text-xs mb-1">Cachê</div>
-                                <div className="text-green-600 font-bold text-sm md:text-base">
-                                  R$ {myFee.toFixed(2).replace('.', ',')}
-                                </div>
-                              </div>
-                              {totalExpenses > 0 && <div className="flex-1 text-center">
-                                  <div className="text-gray-600 text-xs mb-1">Despesas</div>
-                                  <div className="text-red-600 font-bold text-sm md:text-base">
-                                    R$ {totalExpenses.toFixed(2).replace('.', ',')}
+                    </Card> : (
+                      <>
+                        <div className="grid gap-4">
+                          {shows.map(show => {
+                            const showDate = new Date(show.date_local);
+                            const myFee = getMyFee(show);
+                            const myInstrument = getMyInstrument(show);
+                            const totalExpenses = show.expenses_other.reduce((sum, e) => sum + e.cost, 0);
+                            const isExpanded = expandedShows.has(show.id);
+                            
+                            // Encontrar o artista pelo uid do show
+                            const artist = artists.find(a => a.owner_uid === show.uid);
+                            
+                            return (
+                              <Card key={show.id} className="bg-white border border-gray-200 overflow-hidden">
+                                <div className="p-4 md:p-6">
+                                  <div className="flex items-start gap-3 mb-3">
+                                    <div className="flex-shrink-0 w-16 text-center bg-[#F5F0FA] rounded-lg p-2 border-2 border-purple-200">
+                                      <div className="text-xs text-primary font-bold uppercase">
+                                        {format(showDate, 'MMM', { locale: ptBR })}
+                                      </div>
+                                      <div className="text-3xl font-bold text-gray-900">
+                                        {format(showDate, 'dd')}
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="flex-1 min-w-0">
+                                      <h3 className="text-base md:text-lg font-bold text-gray-900 truncate">{show.venue_name}</h3>
+                                      <p className="text-sm text-gray-600 flex items-center gap-1">
+                                        {format(showDate, "EEEE", { locale: ptBR })} • 
+                                        <Clock className="w-3 h-3" />
+                                        {show.time_local}
+                                      </p>
+                                      {artist && (
+                                        <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                                          <Mic2 className="w-3 h-3" />
+                                          {artist.name}
+                                        </p>
+                                      )}
+                                      {myInstrument && (
+                                        <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                                          <Music2 className="w-3 h-3" />
+                                          {myInstrument}
+                                        </p>
+                                      )}
+                                    </div>
+                                    
+                                    <div className="flex gap-1 flex-shrink-0">
+                                      <Button variant="outline" size="icon" onClick={() => handleShowEdit(show)} className="h-8 w-8 md:h-10 md:w-10">
+                                        <Edit className="w-4 h-4" />
+                                      </Button>
+                                      <Button variant="outline" size="icon" onClick={() => handleShowDelete(show.id)} className="h-8 w-8 md:h-10 md:w-10">
+                                        <Trash2 className="w-4 h-4 text-red-600" />
+                                      </Button>
+                                    </div>
                                   </div>
-                                </div>}
-                              <div className="flex-1 text-center">
-                                <div className="text-gray-600 text-xs mb-1">Líquido</div>
-                                <div className="px-2 py-1 rounded-full bg-primary text-white font-bold text-xs md:text-sm inline-block">
-                                  R$ {(myFee - totalExpenses).toFixed(2).replace('.', ',')}
+
+                                  <div className="flex gap-3 text-sm mb-3">
+                                    <div className="flex-1 text-center">
+                                      <div className="text-gray-600 text-xs mb-1">Cachê</div>
+                                      <div className="text-green-600 font-bold text-sm md:text-base">
+                                        R$ {myFee.toFixed(2).replace('.', ',')}
+                                      </div>
+                                    </div>
+                                    <div className="flex-1 text-center">
+                                      <div className="text-gray-600 text-xs mb-1">Despesas</div>
+                                      <div className="text-red-600 font-bold text-sm md:text-base">
+                                        R$ {totalExpenses.toFixed(2).replace('.', ',')}
+                                      </div>
+                                    </div>
+                                    <div className="flex-1 text-center">
+                                      <div className="text-gray-600 text-xs mb-1">Líquido</div>
+                                      <div className="px-2 py-1 rounded-full bg-primary text-white font-bold text-xs md:text-sm inline-block">
+                                        R$ {(myFee - totalExpenses).toFixed(2).replace('.', ',')}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {show.expenses_other.length > 0 && (
+                                    <Collapsible open={isExpanded} onOpenChange={() => toggleShowExpanded(show.id)}>
+                                      <CollapsibleTrigger asChild>
+                                        <Button variant="ghost" className="w-full bg-[#F5F0FA] hover:bg-[#EAD6F5] text-primary font-semibold">
+                                          Detalhes das Despesas
+                                          {isExpanded ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+                                        </Button>
+                                      </CollapsibleTrigger>
+                                      <CollapsibleContent className="mt-4">
+                                        <div className="p-3 md:p-4 bg-[#F5F0FA] rounded-lg">
+                                          <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 mb-2">
+                                            <DollarSign className="w-4 h-4" />
+                                            Despesas Pessoais
+                                          </div>
+                                          {show.expenses_other.map((expense, idx) => (
+                                            <div key={idx} className="flex justify-between text-sm text-gray-600 mb-1">
+                                              <span className="text-gray-500">{expense.description}</span>
+                                              <span className="font-medium">R$ {expense.cost.toFixed(2).replace('.', ',')}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </CollapsibleContent>
+                                    </Collapsible>
+                                  )}
+                                </div>
+                              </Card>
+                            );
+                          })}
+                        </div>
+                        
+                        {/* Financial summary */}
+                        <Card className="p-4 md:p-6 bg-[#F5F0FA] border-0 mt-4">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                                <DollarSign className="w-5 h-5 text-green-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm text-gray-600">Receita Bruta</div>
+                                <div className="text-lg md:text-xl font-bold text-gray-900">
+                                  R$ {calculateTotals().totalRevenue.toFixed(2).replace('.', ',')}
                                 </div>
                               </div>
                             </div>
-                          </Card>;
-                  })}
-                    </div>}
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                                <TrendingDown className="w-5 h-5 text-red-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm text-gray-600">Despesas</div>
+                                <div className="text-lg md:text-xl font-bold text-gray-900">
+                                  R$ {calculateTotals().totalExpenses.toFixed(2).replace('.', ',')}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <ArrowUpRight className="w-5 h-5 text-blue-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm text-gray-600">Lucro Líquido</div>
+                                <div className="text-lg md:text-xl font-bold text-gray-900">
+                                  R$ {calculateTotals().netProfit.toFixed(2).replace('.', ',')}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+                      </>
+                    )}
                 </TabsContent>
 
                 {/* ARTISTAS TAB */}
