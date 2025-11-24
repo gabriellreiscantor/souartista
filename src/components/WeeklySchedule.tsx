@@ -18,11 +18,15 @@ interface Show {
   fee: number;
   expenses_team: Array<{
     cost: number;
+    name?: string;
+    instrument?: string;
+    musicianId?: string;
   }>;
   expenses_other: Array<{
     cost: number;
   }>;
   artist_name?: string;
+  musician_instrument?: string;
 }
 export function WeeklySchedule({
   userRole
@@ -45,7 +49,7 @@ export function WeeklySchedule({
     data: shows = [],
     isLoading
   } = useQuery({
-    queryKey: ['weekly-shows', user?.id, userRole, format(weekStart, 'yyyy-MM-dd'), format(weekEnd, 'yyyy-MM-dd')],
+    queryKey: ['weekly-shows-v2', user?.id, userRole, format(weekStart, 'yyyy-MM-dd'), format(weekEnd, 'yyyy-MM-dd')],
     queryFn: async () => {
       if (!user) return [];
       let query = supabase.from('shows').select('*, profiles!shows_uid_fkey(name)').gte('date_local', format(weekStart, 'yyyy-MM-dd')).lte('date_local', format(weekEnd, 'yyyy-MM-dd')).order('date_local', {
@@ -61,12 +65,18 @@ export function WeeklySchedule({
         error
       } = await query;
       if (error) throw error;
-      return (data || []).map(show => ({
-        ...show,
-        expenses_team: show.expenses_team as any || [],
-        expenses_other: show.expenses_other as any || [],
-        artist_name: (show.profiles as any)?.name
-      })) as Show[];
+      return (data || []).map(show => {
+        const expenses_team = (show.expenses_team as any) || [];
+        const currentMusicianExpense = expenses_team.find((exp: any) => exp.musicianId === user.id);
+        
+        return {
+          ...show,
+          expenses_team,
+          expenses_other: show.expenses_other as any || [],
+          artist_name: (show.profiles as any)?.name,
+          musician_instrument: currentMusicianExpense?.instrument
+        };
+      }) as Show[];
     },
     enabled: !!user
   });
@@ -155,6 +165,11 @@ export function WeeklySchedule({
                           {show.time_local && (
                             <p className="text-xs text-gray-600">
                               <span className="font-medium">Horário:</span> {show.time_local}
+                            </p>
+                          )}
+                          {show.musician_instrument && (
+                            <p className="text-xs text-gray-600">
+                              <span className="font-medium">Instrumento:</span> {show.musician_instrument}
                             </p>
                           )}
                         </div>
