@@ -60,7 +60,7 @@ const Landing = () => {
 
         {/* Logo */}
         <div className="mb-8 animate-scale-in">
-          <img src={logo} alt="SouArtista" className="h-20 w-auto" />
+          <img src={logo} alt="SouArtista" className="h-32 w-auto drop-shadow-[0_0_20px_rgba(168,85,247,0.6)]" />
         </div>
 
         {/* Headline */}

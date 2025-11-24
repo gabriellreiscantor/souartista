@@ -113,7 +113,7 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
 
       {/* Logo */}
       <div className="relative flex justify-center pt-8 pb-6 z-10">
-        <img src={logo} alt="SouArtista" className="h-20 w-auto animate-fade-in drop-shadow-[0_0_16px_rgba(168,85,247,0.5)]" />
+        <img src={logo} alt="SouArtista" className="h-32 w-auto animate-fade-in drop-shadow-[0_0_20px_rgba(168,85,247,0.6)]" />
       </div>
 
       {/* Skip button */}
