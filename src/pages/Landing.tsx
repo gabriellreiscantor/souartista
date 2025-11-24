@@ -1,14 +1,25 @@
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Music, Calendar, DollarSign, Users, TrendingUp, Sparkles, Loader2 } from 'lucide-react';
-import { useEffect } from 'react';
+import { DollarSign, Loader2, ArrowRight, Play } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import Onboarding from '@/components/Onboarding';
+import logo from '@/assets/logo.png';
 
 const Landing = () => {
   const navigate = useNavigate();
   const { user, session, loading: authLoading } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
-  // Redireciona usuários autenticados automaticamente
+  // Check if user has completed onboarding
+  useEffect(() => {
+    const hasCompleted = localStorage.getItem('hasCompletedOnboarding');
+    if (!hasCompleted) {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  // Redirect authenticated users
   useEffect(() => {
     if (!authLoading && user && session) {
       console.log('[Landing] User authenticated, redirecting to /app');
@@ -16,10 +27,10 @@ const Landing = () => {
     }
   }, [user, session, authLoading, navigate]);
 
-  // Mostra loading enquanto verifica autenticação
+  // Loading state
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
           <p className="text-muted-foreground">Carregando...</p>
@@ -28,114 +39,92 @@ const Landing = () => {
     );
   }
 
+  // Show onboarding if not completed
+  if (showOnboarding) {
+    return <Onboarding onComplete={() => setShowOnboarding(false)} />;
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 pt-20 pb-32">
-        <div className="flex flex-col items-center text-center space-y-8 max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Plataforma Completa de Gestão</span>
-          </div>
-          
-          <h1 className="text-5xl md:text-7xl font-heading font-bold tracking-tight">
-            Gerencie sua carreira
-            <span className="block gradient-primary mt-2">
-              como um profissional
-            </span>
-          </h1>
-          
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl">
-            A plataforma definitiva para artistas e músicos organizarem shows, equipes, 
-            finanças e muito mais em um só lugar.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 pt-4">
-            <Button 
-              size="lg" 
-              onClick={() => navigate('/register')}
-              className="text-lg px-8 shadow-primary hover:shadow-xl transition-all"
-            >
-              Começar Gratuitamente
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              onClick={() => navigate('/login')}
-              className="text-lg px-8"
-            >
-              Já tenho conta
-            </Button>
-          </div>
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-primary/10 pointer-events-none" />
+      
+      {/* Content */}
+      <div className="relative flex-1 flex flex-col items-center justify-center px-6 py-12">
+        
+        {/* Trial badge */}
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/15 border border-primary/30 mb-8 animate-fade-in">
+          <DollarSign className="w-4 h-4 text-primary" />
+          <span className="text-sm font-medium text-primary">Experimente por 14 dias</span>
         </div>
-      </section>
 
-      {/* Features Grid */}
-      <section className="container mx-auto px-4 pb-32">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          <FeatureCard
-            icon={<Calendar className="w-8 h-8" />}
-            title="Agenda Inteligente"
-            description="Visualize todos os seus shows em calendário e timeline com informações detalhadas"
-          />
-          <FeatureCard
-            icon={<DollarSign className="w-8 h-8" />}
-            title="Gestão Financeira"
-            description="Controle cachês, despesas e lucros com relatórios completos e exportação"
-          />
-          <FeatureCard
-            icon={<Users className="w-8 h-8" />}
-            title="Equipe Organizada"
-            description="Cadastre músicos, defina cachês e monte equipes para cada show"
-          />
-          <FeatureCard
-            icon={<Music className="w-8 h-8" />}
-            title="Locais Recorrentes"
-            description="Salve seus bares e locais favoritos para agilizar cadastros"
-          />
-          <FeatureCard
-            icon={<TrendingUp className="w-8 h-8" />}
-            title="Análises e Rankings"
-            description="Veja os locais mais lucrativos e tome decisões baseadas em dados"
-          />
-          <FeatureCard
-            icon={<Sparkles className="w-8 h-8" />}
-            title="Mobile First"
-            description="Use como app no celular com todas as funcionalidades"
-          />
+        {/* Logo */}
+        <div className="mb-8 animate-scale-in">
+          <img src={logo} alt="SouArtista" className="h-20 w-auto" />
         </div>
-      </section>
 
-      {/* CTA Section */}
-      <section className="container mx-auto px-4 pb-32">
-        <div className="glass-card rounded-3xl p-12 text-center max-w-4xl mx-auto border-2 border-primary/20">
-          <h2 className="text-4xl font-heading font-bold mb-6">
-            Pronto para transformar sua carreira?
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            Junte-se a centenas de artistas que já profissionalizaram sua gestão
-          </p>
-          <Button 
+        {/* Headline */}
+        <h1 className="text-4xl md:text-5xl font-heading font-bold text-center text-foreground mb-4 max-w-md animate-fade-in">
+          Suas finanças musicais, organizadas.
+        </h1>
+
+        {/* Subheadline */}
+        <p className="text-lg text-center text-muted-foreground mb-12 max-w-sm animate-fade-in">
+          Cuidamos da parte chata e você cuida da música.
+        </p>
+
+        {/* Action buttons */}
+        <div className="w-full max-w-sm space-y-4 animate-fade-in">
+          <Button
             size="lg"
             onClick={() => navigate('/register')}
-            className="text-lg px-12 shadow-primary hover:shadow-xl transition-all"
+            className="w-full rounded-full text-lg font-medium shadow-primary hover:scale-105 transition-transform"
           >
-            Criar Conta Grátis
+            Criar minha conta agora
+            <ArrowRight className="ml-2 w-5 h-5" />
+          </Button>
+
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={() => navigate('/login')}
+            className="w-full rounded-full text-lg font-medium border-2 border-primary/30 hover:bg-primary/10"
+          >
+            Já tenho uma conta
+          </Button>
+
+          <Button
+            size="lg"
+            variant="ghost"
+            onClick={() => navigate('/app')}
+            className="w-full rounded-full text-lg font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+          >
+            <Play className="mr-2 w-5 h-5" />
+            Ver Demonstração
           </Button>
         </div>
-      </section>
-    </div>
-  );
-};
-
-const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => {
-  return (
-    <div className="glass-card rounded-2xl p-6 hover:border-primary/40 transition-smooth group">
-      <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-smooth">
-        {icon}
       </div>
-      <h3 className="text-xl font-heading font-semibold mb-2">{title}</h3>
-      <p className="text-muted-foreground">{description}</p>
+
+      {/* Footer */}
+      <footer className="relative py-8 px-6 text-center space-y-2 animate-fade-in">
+        <p className="text-xs text-muted-foreground">
+          © 2025 SouArtista. Todos os direitos reservados.
+        </p>
+        <div className="flex justify-center gap-4 text-xs">
+          <button
+            onClick={() => navigate('/terms')}
+            className="text-muted-foreground hover:text-foreground transition-colors underline"
+          >
+            Termos de Uso
+          </button>
+          <button
+            onClick={() => navigate('/privacy')}
+            className="text-muted-foreground hover:text-foreground transition-colors underline"
+          >
+            Política de Privacidade
+          </button>
+        </div>
+      </footer>
     </div>
   );
 };
