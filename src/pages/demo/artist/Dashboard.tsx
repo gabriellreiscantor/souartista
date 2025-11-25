@@ -36,27 +36,30 @@ const DemoArtistDashboard = () => {
     netProfit: 16200,
   };
 
+  const upcomingShowsYear = currentDate.getFullYear();
+  const upcomingShowsMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+
   const upcomingShows = [
     {
       id: '1',
-      venue_name: 'Pub Rock City',
-      date_local: '2025-01-10',
-      time_local: '22:00',
-      fee: 900,
+      venue_name: 'Casa de Shows Melodia',
+      date_local: `${upcomingShowsYear}-${upcomingShowsMonth}-12`,
+      time_local: '20:00',
+      fee: 2500,
     },
     {
       id: '2',
-      venue_name: 'Teatro Municipal',
-      date_local: '2025-01-15',
-      time_local: '20:00',
-      fee: 2000,
+      venue_name: 'Pub e Lounge Estrela',
+      date_local: `${upcomingShowsYear}-${upcomingShowsMonth}-14`,
+      time_local: '21:00',
+      fee: 350,
     },
     {
       id: '3',
-      venue_name: 'Festa Corporativa',
-      date_local: '2025-01-25',
+      venue_name: 'Restaurante e Bar Acústico',
+      date_local: `${upcomingShowsYear}-${upcomingShowsMonth}-18`,
       time_local: '19:00',
-      fee: 1800,
+      fee: 550,
     },
   ];
 

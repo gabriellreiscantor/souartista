@@ -19,12 +19,16 @@ const DemoMusicianShows = () => {
   const [expandedShows, setExpandedShows] = useState<Set<string>>(new Set());
   const lastUpdated = new Date();
 
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonthNum = String(currentDate.getMonth() + 1).padStart(2, '0');
+
   const demoShows = [
     {
       id: '1',
       venue_name: 'Pub e Lounge Music Point',
       artist_name: 'João Silva',
-      date_local: '2025-01-10',
+      date_local: `${currentYear}-${currentMonthNum}-10`,
       time_local: '22:00',
       fee: 480,
       instrument: 'Guitarra',
@@ -34,7 +38,7 @@ const DemoMusicianShows = () => {
       id: '2',
       venue_name: 'Casa de Eventos Ritmo',
       artist_name: 'Maria Santos',
-      date_local: '2025-01-15',
+      date_local: `${currentYear}-${currentMonthNum}-15`,
       time_local: '20:00',
       fee: 500,
       instrument: 'Baixo',
@@ -44,7 +48,7 @@ const DemoMusicianShows = () => {
       id: '3',
       venue_name: 'Salão de Festas Estrela',
       artist_name: 'Pedro Costa',
-      date_local: '2025-01-25',
+      date_local: `${currentYear}-${currentMonthNum}-25`,
       time_local: '19:00',
       fee: 450,
       instrument: 'Teclado',

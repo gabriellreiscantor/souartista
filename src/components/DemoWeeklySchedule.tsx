@@ -10,7 +10,7 @@ interface DemoWeeklyScheduleProps {
 }
 
 export function DemoWeeklySchedule({ userRole }: DemoWeeklyScheduleProps) {
-  const [currentWeek, setCurrentWeek] = useState(new Date());
+  const [currentWeek] = useState(new Date()); // Always current week
   
   const weekStart = startOfWeek(currentWeek, { locale: ptBR });
   const weekEnd = endOfWeek(currentWeek, { locale: ptBR });
@@ -58,10 +58,6 @@ export function DemoWeeklySchedule({ userRole }: DemoWeeklyScheduleProps) {
 
   const profit = weeklyStats.revenue - weeklyStats.expenses;
 
-  const handlePreviousWeek = () => setCurrentWeek(subWeeks(currentWeek, 1));
-  const handleNextWeek = () => setCurrentWeek(addWeeks(currentWeek, 1));
-  const handleToday = () => setCurrentWeek(new Date());
-
   return (
     <Card className="p-4 sm:p-6 border-gray-200 bg-white">
       {/* Header */}
@@ -72,32 +68,6 @@ export function DemoWeeklySchedule({ userRole }: DemoWeeklyScheduleProps) {
         </p>
       </div>
 
-      {/* Navigation */}
-      <div className="flex items-center gap-2 mb-4">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={handlePreviousWeek}
-          className="h-9 w-9 bg-white hover:bg-gray-50 border-gray-200 text-gray-900"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </Button>
-        <Button
-          variant="outline"
-          onClick={handleToday}
-          className="flex-1 justify-center bg-white hover:bg-gray-50 border-gray-200 text-gray-900"
-        >
-          Semana Atual
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={handleNextWeek}
-          className="h-9 w-9 bg-white hover:bg-gray-50 border-gray-200 text-gray-900"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </Button>
-      </div>
 
       {/* Days with Shows */}
       <div className="space-y-3 mb-4">
