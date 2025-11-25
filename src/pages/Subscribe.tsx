@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Check, Shield } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Check, Shield, Mail, Building2 } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { supabase } from '@/integrations/supabase/client';
 
 const Subscribe = () => {
   const [billingCycle, setBillingCycle] = useState<'annual' | 'monthly'>('annual');
+  const [showContactDialog, setShowContactDialog] = useState(false);
   const { updateUserData, user } = useAuth();
   const navigate = useNavigate();
 
@@ -68,6 +70,20 @@ const Subscribe = () => {
         'Pague uma vez, use o ano todo',
         'Suporte premium via WhatsApp',
       ]
+    },
+    enterprise: {
+      features: [
+        'Gerenciamento de shows ilimitado',
+        'Controle financeiro completo',
+        'Gestão de equipe e músicos',
+        'Relatórios detalhados',
+        'Suporte prioritário via tickets',
+        'Pague uma vez, use o ano todo',
+        'Suporte premium via WhatsApp',
+        'Gestão de múltiplos artistas',
+        'API de integração personalizada',
+        'Onboarding dedicado',
+      ]
     }
   };
 
@@ -121,37 +137,42 @@ const Subscribe = () => {
             </button>
             <button
               onClick={() => setBillingCycle('annual')}
-              className={`px-6 py-2.5 rounded-full transition-all font-medium ${
+              className={`px-6 py-2.5 rounded-full transition-all font-medium relative ${
                 billingCycle === 'annual'
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Anual
+              <span className="absolute -top-2 -right-2 text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow-md">
+                -33%
+              </span>
             </button>
           </div>
         </div>
 
         {/* Plans Grid */}
-        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mb-8">
+        <div className="grid md:grid-cols-3 gap-4 lg:gap-6 max-w-7xl mx-auto mb-8">
           {/* Monthly Plan */}
-          <Card className={`glass-card rounded-2xl p-6 md:p-8 transition-all ${
-            billingCycle === 'monthly' ? 'border-2 border-primary shadow-lg' : 'border border-border/50'
+          <Card className={`glass-card rounded-2xl p-6 transition-all ${
+            billingCycle === 'monthly' 
+              ? 'border-2 border-primary shadow-lg opacity-100' 
+              : 'border border-border/30 opacity-50'
           }`}>
-            <div className="mb-6">
-              <h3 className="text-2xl font-heading font-bold mb-2">Plano Mensal</h3>
-              <p className="text-sm text-muted-foreground mb-4">
+            <div className="mb-4">
+              <h3 className="text-xl font-heading font-bold mb-1">Plano Mensal</h3>
+              <p className="text-xs text-muted-foreground mb-3">
                 Ideal para começar e explorar os recursos.
               </p>
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl md:text-5xl font-heading font-bold">
+                <span className="text-3xl font-heading font-bold">
                   {plans.monthly.price}
                 </span>
-                <span className="text-muted-foreground">{plans.monthly.period}</span>
+                <span className="text-sm text-muted-foreground">{plans.monthly.period}</span>
               </div>
             </div>
 
-            <ul className="space-y-3 mb-8">
+            <ul className="space-y-2 mb-6">
               {plans.monthly.features.map((feature, idx) => (
                 <Feature key={idx} text={feature} />
               ))}
@@ -159,43 +180,45 @@ const Subscribe = () => {
 
             <Button
               variant={billingCycle === 'monthly' ? 'default' : 'outline'}
-              className="w-full h-12"
+              className="w-full h-11"
               onClick={() => handleSubscribe('monthly')}
+              disabled={billingCycle !== 'monthly'}
             >
               Selecionar Plano Mensal
             </Button>
           </Card>
 
           {/* Annual Plan */}
-          <Card className={`glass-card rounded-2xl p-6 md:p-8 transition-all relative ${
-            billingCycle === 'annual' ? 'border-2 border-primary shadow-lg' : 'border border-border/50'
+          <Card className={`glass-card rounded-2xl p-6 transition-all relative ${
+            billingCycle === 'annual' 
+              ? 'border-2 border-primary shadow-lg opacity-100' 
+              : 'border border-border/30 opacity-50'
           }`}>
-            {/* Badges */}
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-sm font-medium shadow-lg">
-                ⭐ Mais Popular
-              </span>
-              <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-green-500 text-white text-sm font-bold shadow-lg">
-                -33%
-              </span>
-            </div>
+            {/* Badge */}
+            {billingCycle === 'annual' && (
+              <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium shadow-md">
+                  ⭐ Mais Popular
+                </span>
+              </div>
+            )}
 
-            <div className="mb-6 mt-2">
-              <h3 className="text-2xl font-heading font-bold mb-2">Plano Anual</h3>
-              <p className="text-sm text-muted-foreground mb-4">
+            <div className="mb-4 mt-3">
+              <h3 className="text-xl font-heading font-bold mb-1">Plano Anual</h3>
+              <p className="text-xs text-muted-foreground mb-3">
                 A melhor opção para profissionais comprometidos.
               </p>
-              <div className="flex items-baseline gap-1 mb-2">
-                <span className="text-4xl md:text-5xl font-heading font-bold">
+              <div className="flex items-baseline gap-1 mb-1">
+                <span className="text-3xl font-heading font-bold">
                   {plans.annual.price}
                 </span>
-                <span className="text-muted-foreground">{plans.annual.period}</span>
+                <span className="text-sm text-muted-foreground">{plans.annual.period}</span>
               </div>
-              <p className="text-sm text-muted-foreground mb-1">{plans.annual.total}</p>
-              <p className="text-sm text-green-500 font-semibold">{plans.annual.savings}</p>
+              <p className="text-xs text-muted-foreground mb-0.5">{plans.annual.total}</p>
+              <p className="text-xs text-green-500 font-semibold">{plans.annual.savings}</p>
             </div>
 
-            <ul className="space-y-3 mb-8">
+            <ul className="space-y-2 mb-6">
               {plans.annual.features.map((feature, idx) => (
                 <Feature key={idx} text={feature} />
               ))}
@@ -203,10 +226,42 @@ const Subscribe = () => {
 
             <Button
               variant={billingCycle === 'annual' ? 'default' : 'outline'}
-              className="w-full h-12"
+              className="w-full h-11"
               onClick={() => handleSubscribe('annual')}
+              disabled={billingCycle !== 'annual'}
             >
               Selecionar Plano Anual
+            </Button>
+          </Card>
+
+          {/* Enterprise Plan */}
+          <Card className="glass-card rounded-2xl p-6 transition-all border border-border/50">
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Building2 className="w-5 h-5 text-primary" />
+                <h3 className="text-xl font-heading font-bold">Enterprise</h3>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                Para produtoras e empresas de grande porte.
+              </p>
+              <div className="text-2xl font-heading font-bold text-primary mb-2">
+                Plano Customizado
+              </div>
+            </div>
+
+            <ul className="space-y-2 mb-6">
+              {plans.enterprise.features.map((feature, idx) => (
+                <Feature key={idx} text={feature} />
+              ))}
+            </ul>
+
+            <Button
+              variant="outline"
+              className="w-full h-11"
+              onClick={() => setShowContactDialog(true)}
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              Entre em Contato
             </Button>
           </Card>
         </div>
@@ -215,16 +270,56 @@ const Subscribe = () => {
           Todos os planos incluem 7 dias de teste grátis. Cancele quando quiser.
         </p>
       </div>
+
+      {/* Contact Dialog */}
+      <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-primary" />
+              Plano Enterprise
+            </DialogTitle>
+            <DialogDescription>
+              Entre em contato conosco para discutir as necessidades da sua produtora.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex flex-col gap-4 py-4">
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Mail className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium mb-1">Email de Contato</p>
+                <a 
+                  href="mailto:contato@souartista.app" 
+                  className="text-sm text-primary hover:underline font-medium"
+                >
+                  contato@souartista.app
+                </a>
+              </div>
+            </div>
+
+            <p className="text-xs text-muted-foreground text-center">
+              Nossa equipe entrará em contato em até 24 horas para apresentar uma proposta personalizada.
+            </p>
+          </div>
+
+          <Button onClick={() => setShowContactDialog(false)} className="w-full">
+            Fechar
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
 const Feature = ({ text }: { text: string }) => (
-  <li className="flex items-start gap-3">
-    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-      <Check className="w-3 h-3 text-primary" />
+  <li className="flex items-start gap-2">
+    <div className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+      <Check className="w-2.5 h-2.5 text-primary" />
     </div>
-    <span className="text-sm">{text}</span>
+    <span className="text-xs leading-relaxed">{text}</span>
   </li>
 );
 
