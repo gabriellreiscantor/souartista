@@ -101,12 +101,12 @@ const Landing = () => {
 
         {/* Action buttons */}
         <div className="w-full max-w-sm space-y-4 animate-fade-in">
-          <Button size="lg" onClick={() => navigate('/register')} className="w-full rounded-full text-lg font-medium shadow-primary hover:scale-105 transition-transform text-white hover:text-white">
+          <Button size="lg" onClick={() => navigate('/register')} className="w-full rounded-full text-lg font-medium shadow-primary hover:scale-105 transition-transform">
             Criar minha conta agora
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
 
-          <Button size="lg" variant="outline" onClick={() => navigate('/login')} className="w-full rounded-full text-lg font-medium border-2 border-primary/30 hover:bg-primary/10 text-white hover:text-white">
+          <Button size="lg" variant="secondary" onClick={() => navigate('/login')} className="w-full rounded-full text-lg font-medium bg-white text-foreground hover:bg-white/90">
             Já tenho uma conta
           </Button>
 
