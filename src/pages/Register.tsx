@@ -152,7 +152,8 @@ const Register = () => {
   // Mostra loading enquanto verifica autenticação
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5" style={{
+      <div className="min-h-screen flex items-center justify-center" style={{
+        background: 'linear-gradient(to bottom, #110016 0%, #080010 45%, #040008 100%)',
         position: 'fixed',
         top: 0,
         left: 0,
@@ -163,14 +164,15 @@ const Register = () => {
       }}>
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Verificando autenticação...</p>
+          <p className="text-gray-300">Verificando autenticação...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-gradient-to-br from-background via-background to-primary/5" style={{
+    <div className="min-h-screen flex items-center justify-center px-4 py-8 relative" style={{
+      background: 'linear-gradient(to bottom, #110016 0%, #080010 45%, #040008 100%)',
       position: 'fixed',
       top: 0,
       left: 0,
@@ -180,14 +182,50 @@ const Register = () => {
       overscrollBehavior: 'contain',
       overflow: 'auto'
     }}>
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="flex items-center justify-center mb-8">
-          <img src={logo} alt="Sou Artista" className="h-16 w-auto" />
+      {/* Botão Voltar para Home */}
+      <Link 
+        to="/" 
+        className="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all hover:scale-105"
+      >
+        <ArrowLeft className="w-4 h-4 text-white" />
+        <span className="text-white font-medium text-sm">Voltar</span>
+      </Link>
+
+      {/* Linhas musicais abstratas - bem discretas */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
+        backgroundImage: `
+          repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 60px,
+            #5A1E90 60px,
+            #5A1E90 61px
+          ),
+          repeating-linear-gradient(
+            -45deg,
+            transparent,
+            transparent 80px,
+            #5A1E90 80px,
+            #5A1E90 81px
+          )
+        `,
+      }} />
+
+      <div className="w-full max-w-md relative z-10">
+        {/* Glow atrás da logo */}
+        <div className="flex items-center justify-center mb-8 relative">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-[200px] h-[200px] bg-[#A66CFF] opacity-15 blur-[60px] rounded-full" />
+          </div>
+          <img src={logo} alt="Sou Artista" className="h-16 w-auto relative z-10" />
         </div>
 
-        {/* Card */}
-        <div className="glass-card rounded-3xl p-8 space-y-6">
+        {/* Glow atrás do card */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-[#A66CFF] opacity-15 blur-[60px] rounded-3xl scale-105" />
+          
+          {/* Card */}
+          <div className="glass-card rounded-3xl p-8 space-y-6 relative z-10">
           <div className="space-y-4">
             <div className="text-center space-y-2">
               <h1 className="text-3xl font-heading font-bold">Criar conta</h1>
@@ -368,6 +406,7 @@ const Register = () => {
               Fazer login
             </Link>
           </div>
+        </div>
         </div>
       </div>
     </div>
