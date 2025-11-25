@@ -15,7 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { TimePicker } from '@/components/ui/time-picker';
-import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2, ChevronDown, ChevronUp, Users, TrendingDown, ArrowUpRight, Guitar, Calendar as CalendarIcon } from 'lucide-react';
+import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2, ChevronDown, ChevronUp, Users, TrendingDown, ArrowUpRight, Guitar, Calendar as CalendarIcon, LayoutGrid, List } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -60,6 +61,7 @@ interface Show {
   uid: string;
 }
 const MusicianShows = () => {
+  const isMobile = useIsMobile();
   const {
     user,
     userData,
@@ -73,6 +75,7 @@ const MusicianShows = () => {
   const [loading, setLoading] = useState(true);
   const [expandedShows, setExpandedShows] = useState<Set<string>>(new Set());
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -817,6 +820,25 @@ const MusicianShows = () => {
                     </div>
                     
                     <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1 border border-gray-300 rounded-lg p-1 bg-white">
+                        <Button
+                          variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                          size="icon"
+                          onClick={() => setViewMode('grid')}
+                          className="h-8 w-8"
+                        >
+                          <LayoutGrid className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant={viewMode === 'list' ? 'default' : 'ghost'}
+                          size="icon"
+                          onClick={() => setViewMode('list')}
+                          className="h-8 w-8"
+                        >
+                          <List className="w-4 h-4" />
+                        </Button>
+                      </div>
+
                       <Select defaultValue="upcoming">
                         <SelectTrigger className="w-[200px] bg-white text-gray-900 border-gray-300">
                           <CalendarIcon className="w-4 h-4 mr-2 text-gray-900" />
@@ -1062,7 +1084,52 @@ const MusicianShows = () => {
                       <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-500">Nenhum show encontrado para o filtro selecionado.</p>
                     </Card> : <>
-                        <div className="grid gap-4">
+                        {viewMode === 'list' && !isMobile ? <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                            <div className="grid grid-cols-[1fr,120px,120px,120px,80px] gap-4 p-4 bg-gray-50 border-b text-sm font-medium text-gray-600">
+                              <div>Data e Local</div>
+                              <div className="text-center">Cachê</div>
+                              <div className="text-center">Despesas</div>
+                              <div className="text-center">Líquido</div>
+                              <div className="text-center">Ações</div>
+                            </div>
+                            {shows.map(show => {
+                              const showDate = new Date(show.date_local);
+                              const myFee = getMyFee(show);
+                              const myInstrument = getMyInstrument(show);
+                              const totalExpenses = show.expenses_other.reduce((sum, e) => sum + e.cost, 0);
+                              const artist = artists.find(a => a.owner_uid === show.uid);
+
+                              return <div key={show.id} className="grid grid-cols-[1fr,120px,120px,120px,80px] gap-4 p-4 border-b hover:bg-gray-50 items-center">
+                                  <div>
+                                    <div className="font-semibold text-gray-900">{show.venue_name}</div>
+                                    <div className="text-sm text-gray-600">
+                                      {format(showDate, "dd 'de' MMMM", { locale: ptBR })} • {show.time_local}
+                                    </div>
+                                    {artist && <div className="text-sm text-gray-600">{artist.name}</div>}
+                                    {myInstrument && <div className="text-sm text-gray-500">{myInstrument}</div>}
+                                  </div>
+                                  <div className="text-center font-semibold text-green-600">
+                                    R$ {myFee.toFixed(2).replace('.', ',')}
+                                  </div>
+                                  <div className="text-center font-semibold text-red-600">
+                                    R$ {totalExpenses.toFixed(2).replace('.', ',')}
+                                  </div>
+                                  <div className="text-center">
+                                    <span className="px-3 py-1 rounded-full bg-primary text-white font-bold text-sm inline-block">
+                                      R$ {(myFee - totalExpenses).toFixed(2).replace('.', ',')}
+                                    </span>
+                                  </div>
+                                  <div className="flex gap-1 justify-center">
+                                    <Button variant="outline" size="icon" onClick={() => handleShowEdit(show)} className="h-8 w-8">
+                                      <Edit className="w-4 h-4" />
+                                    </Button>
+                                    <Button variant="outline" size="icon" onClick={() => handleShowDelete(show.id)} className="h-8 w-8">
+                                      <Trash2 className="w-4 h-4 text-red-600" />
+                                    </Button>
+                                  </div>
+                                </div>;
+                            })}
+                          </div> : <div className="grid gap-4">
                           {shows.map(show => {
                       const showDate = new Date(show.date_local);
                       const myFee = getMyFee(show);
@@ -1161,7 +1228,7 @@ const MusicianShows = () => {
                                 </div>
                               </Card>;
                     })}
-                        </div>
+                          </div>}
                         
                         {/* Financial summary */}
                         <Card className="p-4 md:p-6 bg-[#F5F0FA] border-0 mt-4">
