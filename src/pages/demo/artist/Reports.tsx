@@ -68,7 +68,7 @@ const DemoArtistReports = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Período:</label>
                       <Select value={period} onValueChange={setPeriod}>
-                        <SelectTrigger className="w-full bg-white border-2 border-primary text-gray-900 font-medium">
+                        <SelectTrigger className="w-full bg-white text-gray-900 font-medium">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-white text-gray-900">
