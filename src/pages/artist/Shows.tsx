@@ -93,7 +93,7 @@ const ArtistShows = () => {
     venue_id: '',
     custom_venue: '',
     date_local: '',
-    time_local: '',
+    time_local: '20:00',
     fee: '',
     is_private_event: false
   });
@@ -268,7 +268,7 @@ const ArtistShows = () => {
       venue_id: '',
       custom_venue: '',
       date_local: '',
-      time_local: '',
+      time_local: '20:00',
       fee: '',
       is_private_event: false
     });
