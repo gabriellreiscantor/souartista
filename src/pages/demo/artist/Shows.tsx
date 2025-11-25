@@ -4,11 +4,15 @@ import { DemoArtistSidebar } from '@/components/DemoArtistSidebar';
 import { DemoUserMenu } from '@/components/DemoUserMenu';
 import { DemoMobileBottomNav } from '@/components/DemoMobileBottomNav';
 import { DemoBanner } from '@/components/DemoBanner';
+import { DemoLockedModal } from '@/components/DemoLockedModal';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Plus, Calendar as CalendarIcon, Clock, MapPin, Music2, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { toast } from 'sonner';
@@ -18,6 +22,10 @@ import { ptBR } from 'date-fns/locale';
 const DemoArtistShows = () => {
   const [showFilter, setShowFilter] = useState('lastWeek');
   const [expandedShows, setExpandedShows] = useState<Set<string>>(new Set());
+  const [addVenueOpen, setAddVenueOpen] = useState(false);
+  const [lockedModalOpen, setLockedModalOpen] = useState(false);
+  const [venueName, setVenueName] = useState('');
+  const [venueAddress, setVenueAddress] = useState('');
   const lastUpdated = new Date();
 
   const demoShows = [
@@ -121,6 +129,13 @@ const DemoArtistShows = () => {
     toast.info('Modo Demo', {
       description: 'Esta função está disponível apenas na versão completa.'
     });
+  };
+
+  const handleSaveVenue = () => {
+    setAddVenueOpen(false);
+    setVenueName('');
+    setVenueAddress('');
+    setLockedModalOpen(true);
   };
 
   const totals = calculateTotals();
@@ -334,7 +349,7 @@ const DemoArtistShows = () => {
                 <TabsContent value="venues" className="mt-0 md:mt-6 space-y-4">
                   <Card className="md:hidden bg-white border border-gray-200 p-4">
                     <h2 className="text-xl font-bold text-gray-900 mb-4">Locais e Bares</h2>
-                    <Button onClick={handleDemoAction} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
+                    <Button onClick={() => setAddVenueOpen(true)} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
                       <Plus className="w-5 h-5 mr-2" />
                       Adicionar Local
                     </Button>
@@ -374,6 +389,55 @@ const DemoArtistShows = () => {
         
         <DemoMobileBottomNav role="artist" />
       </div>
+
+      {/* Add Venue Modal */}
+      <Dialog open={addVenueOpen} onOpenChange={setAddVenueOpen}>
+        <DialogContent className="bg-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-900">Adicionar Local</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="venue-name" className="text-gray-900">Nome do Local</Label>
+              <Input
+                id="venue-name"
+                placeholder="Ex: Bar e Restaurante Harmonia"
+                value={venueName}
+                onChange={(e) => setVenueName(e.target.value)}
+                className="bg-white border-gray-300 text-gray-900"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="venue-address" className="text-gray-900">Endereço</Label>
+              <Input
+                id="venue-address"
+                placeholder="Ex: Goiânia - GO"
+                value={venueAddress}
+                onChange={(e) => setVenueAddress(e.target.value)}
+                className="bg-white border-gray-300 text-gray-900"
+              />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setAddVenueOpen(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSaveVenue}
+                className="flex-1 bg-primary hover:bg-primary/90 text-white"
+              >
+                Salvar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Demo Locked Modal */}
+      <DemoLockedModal open={lockedModalOpen} onOpenChange={setLockedModalOpen} />
     </SidebarProvider>
   );
 };
