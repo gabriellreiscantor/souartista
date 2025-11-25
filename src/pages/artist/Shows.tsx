@@ -892,9 +892,40 @@ const ArtistShows = () => {
                                       </Button>
                                     </div>
 
-                                    <div className="grid grid-cols-3 gap-2">
-                                      <Input placeholder="Tipo" value={expense.type} onChange={e => updateExpense(index, 'type', e.target.value)} className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9" required />
-                                      <Input placeholder="Descrição" value={expense.description} onChange={e => updateExpense(index, 'description', e.target.value)} className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9" required />
+                                    <div className="space-y-2">
+                                      <Select value={expense.type} onValueChange={value => updateExpense(index, 'type', value)}>
+                                        <SelectTrigger className="bg-white text-gray-900 text-sm h-9">
+                                          <SelectValue placeholder="Tipo" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-white z-[200]">
+                                          <SelectItem value="transporte" className="text-sm">Transporte</SelectItem>
+                                          <SelectItem value="alimentacao" className="text-sm">Alimentação</SelectItem>
+                                          <SelectItem value="hospedagem" className="text-sm">Hospedagem</SelectItem>
+                                          <SelectItem value="equipamento" className="text-sm">Equipamento</SelectItem>
+                                          <SelectItem value="outro" className="text-sm">Outro</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      
+                                      {expense.type === 'outro' && (
+                                        <Input 
+                                          placeholder="Digite o tipo" 
+                                          value={expense.description} 
+                                          onChange={e => updateExpense(index, 'description', e.target.value)} 
+                                          className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9" 
+                                          required 
+                                        />
+                                      )}
+                                      
+                                      {expense.type !== 'outro' && (
+                                        <Input 
+                                          placeholder="Descrição" 
+                                          value={expense.description} 
+                                          onChange={e => updateExpense(index, 'description', e.target.value)} 
+                                          className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9" 
+                                          required 
+                                        />
+                                      )}
+                                      
                                       <CurrencyInput value={expense.cost || 0} onChange={value => updateExpense(index, 'cost', parseFloat(value) || 0)} className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9" required />
                                     </div>
                                   </div>)}
@@ -1183,7 +1214,7 @@ const ArtistShows = () => {
                                             </Button>
                                           </div>
 
-                                          <div className="grid grid-cols-3 gap-3">
+                                          <div className="space-y-3">
                                             <Select value={expense.type} onValueChange={value => updateAdditionalExpense(index, 'type', value)}>
                                               <SelectTrigger className="bg-white text-gray-900">
                                                 <SelectValue placeholder="Tipo" />
@@ -1196,8 +1227,28 @@ const ArtistShows = () => {
                                                 <SelectItem value="outro" className="text-gray-900">Outro</SelectItem>
                                               </SelectContent>
                                             </Select>
-
-                                            <Input type="text" placeholder="Descrição" value={expense.description} onChange={e => updateAdditionalExpense(index, 'description', e.target.value)} className="bg-white text-gray-900 placeholder:text-gray-500" required />
+                                            
+                                            {expense.type === 'outro' && (
+                                              <Input 
+                                                type="text" 
+                                                placeholder="Digite o tipo" 
+                                                value={expense.description} 
+                                                onChange={e => updateAdditionalExpense(index, 'description', e.target.value)} 
+                                                className="bg-white text-gray-900 placeholder:text-gray-500" 
+                                                required 
+                                              />
+                                            )}
+                                            
+                                            {expense.type !== 'outro' && (
+                                              <Input 
+                                                type="text" 
+                                                placeholder="Descrição" 
+                                                value={expense.description} 
+                                                onChange={e => updateAdditionalExpense(index, 'description', e.target.value)} 
+                                                className="bg-white text-gray-900 placeholder:text-gray-500" 
+                                                required 
+                                              />
+                                            )}
 
                                             <CurrencyInput placeholder="Custo (R$)" value={expense.cost || 0} onChange={value => updateAdditionalExpense(index, 'cost', parseFloat(value) || 0)} className="bg-white text-gray-900 placeholder:text-gray-500" required />
                                           </div>

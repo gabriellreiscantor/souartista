@@ -745,19 +745,41 @@ const DemoArtistShows = () => {
                       <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Input
-                      placeholder="Tipo"
-                      value={expense.type}
-                      onChange={(e) => updateExpense(index, 'type', e.target.value)}
-                      className="bg-white border-gray-300 text-gray-900 text-sm h-9"
-                    />
-                    <Input
-                      placeholder="Descrição"
-                      value={expense.description}
-                      onChange={(e) => updateExpense(index, 'description', e.target.value)}
-                      className="bg-white border-gray-300 text-gray-900 text-sm h-9"
-                    />
+                  <div className="space-y-2">
+                    <Select 
+                      value={expense.type} 
+                      onValueChange={(value) => updateExpense(index, 'type', value)}
+                    >
+                      <SelectTrigger className="bg-white border-gray-300 text-gray-900 text-sm h-9">
+                        <SelectValue placeholder="Tipo" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white z-[200]">
+                        <SelectItem value="transporte" className="text-sm">Transporte</SelectItem>
+                        <SelectItem value="alimentacao" className="text-sm">Alimentação</SelectItem>
+                        <SelectItem value="hospedagem" className="text-sm">Hospedagem</SelectItem>
+                        <SelectItem value="equipamento" className="text-sm">Equipamento</SelectItem>
+                        <SelectItem value="outro" className="text-sm">Outro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    {expense.type === 'outro' && (
+                      <Input
+                        placeholder="Digite o tipo"
+                        value={expense.description}
+                        onChange={(e) => updateExpense(index, 'description', e.target.value)}
+                        className="bg-white border-gray-300 text-gray-900 text-sm h-9"
+                      />
+                    )}
+                    
+                    {expense.type !== 'outro' && (
+                      <Input
+                        placeholder="Descrição"
+                        value={expense.description}
+                        onChange={(e) => updateExpense(index, 'description', e.target.value)}
+                        className="bg-white border-gray-300 text-gray-900 text-sm h-9"
+                      />
+                    )}
+                    
                     <CurrencyInput
                       placeholder="0,00"
                       value={expense.cost}
