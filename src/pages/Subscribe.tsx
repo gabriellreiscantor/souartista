@@ -70,20 +70,6 @@ const Subscribe = () => {
         'Pague uma vez, use o ano todo',
         'Suporte premium via WhatsApp',
       ]
-    },
-    enterprise: {
-      features: [
-        'Gerenciamento de shows ilimitado',
-        'Controle financeiro completo',
-        'Gestão de equipe e músicos',
-        'Relatórios detalhados',
-        'Suporte prioritário via tickets',
-        'Pague uma vez, use o ano todo',
-        'Suporte premium via WhatsApp',
-        'Gestão de múltiplos artistas',
-        'API de integração personalizada',
-        'Onboarding dedicado',
-      ]
     }
   };
 
@@ -152,7 +138,7 @@ const Subscribe = () => {
         </div>
 
         {/* Plans Grid */}
-        <div className="grid md:grid-cols-3 gap-4 lg:gap-6 max-w-7xl mx-auto mb-8">
+        <div className="grid md:grid-cols-2 gap-4 lg:gap-6 max-w-5xl mx-auto mb-6">
           {/* Monthly Plan */}
           <Card className={`glass-card rounded-2xl p-6 transition-all ${
             billingCycle === 'monthly' 
@@ -233,37 +219,19 @@ const Subscribe = () => {
               Selecionar Plano Anual
             </Button>
           </Card>
+        </div>
 
-          {/* Enterprise Plan */}
-          <Card className="glass-card rounded-2xl p-6 transition-all border border-border/50">
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Building2 className="w-5 h-5 text-primary" />
-                <h3 className="text-xl font-heading font-bold">Enterprise</h3>
-              </div>
-              <p className="text-xs text-muted-foreground mb-3">
-                Para produtoras e empresas de grande porte.
-              </p>
-              <div className="text-2xl font-heading font-bold text-primary mb-2">
-                Plano Customizado
-              </div>
-            </div>
-
-            <ul className="space-y-2 mb-6">
-              {plans.enterprise.features.map((feature, idx) => (
-                <Feature key={idx} text={feature} />
-              ))}
-            </ul>
-
-            <Button
-              variant="outline"
-              className="w-full h-11"
+        {/* Enterprise Contact */}
+        <div className="text-center mb-8">
+          <p className="text-sm text-muted-foreground">
+            Precisa de mais? Tem uma produtora?{' '}
+            <button 
               onClick={() => setShowContactDialog(true)}
+              className="text-primary hover:underline font-medium"
             >
-              <Mail className="w-4 h-4 mr-2" />
-              Entre em Contato
-            </Button>
-          </Card>
+              Entre em contato.
+            </button>
+          </p>
         </div>
 
         <p className="text-center text-sm text-muted-foreground">
