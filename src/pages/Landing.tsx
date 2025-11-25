@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { DollarSign, Loader2, ArrowRight, Play } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import Onboarding from '@/components/Onboarding';
@@ -96,12 +96,12 @@ const Landing = () => {
           © 2025 SouArtista. Todos os direitos reservados.
         </p>
         <div className="flex justify-center gap-4 text-xs">
-          <button onClick={() => navigate('/terms')} className="text-muted-foreground hover:text-foreground transition-colors underline">
+          <Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors underline">
             Termos de Uso
-          </button>
-          <button onClick={() => navigate('/privacy')} className="text-muted-foreground hover:text-foreground transition-colors underline">
+          </Link>
+          <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors underline">
             Política de Privacidade
-          </button>
+          </Link>
         </div>
       </footer>
     </div>;
