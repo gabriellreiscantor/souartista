@@ -10,7 +10,11 @@ import { Progress } from '@/components/ui/progress';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import { Music, Loader2, ArrowLeft, CalendarIcon } from 'lucide-react';
+import { Music, Loader2, ArrowLeft, CalendarIcon, Camera, Mail } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { ImageEditor } from '@/components/ImageEditor';
+import { supabase } from '@/integrations/supabase/client';
 import logo from '@/assets/logo.png';
 import { cn } from '@/lib/utils';
 
@@ -42,9 +46,21 @@ const formatPhone = (value: string) => {
 const Register = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const { signUp, user, session, loading: authLoading } = useAuth();
+  const { signUp, user, session, loading: authLoading, verifyOtp, resendOtp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Estados para foto de perfil
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [croppedPhoto, setCroppedPhoto] = useState<Blob | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string>('');
+  const [imageEditorOpen, setImageEditorOpen] = useState(false);
+
+  // Estados para OTP
+  const [otpCode, setOtpCode] = useState('');
+  const [resendTimer, setResendTimer] = useState(0);
+  const [verifying, setVerifying] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
 
   // Redireciona automaticamente se já estiver logado
   useEffect(() => {
@@ -67,7 +83,39 @@ const Register = () => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
 
-  const progress = (step / 3) * 100;
+  const progress = (step / 4) * 100;
+
+  // Timer para reenviar OTP
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendTimer]);
+
+  // Handlers para foto
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: 'Arquivo muito grande',
+          description: 'A foto deve ter no máximo 5MB',
+          variant: 'destructive',
+        });
+        return;
+      }
+      setPhotoFile(file);
+      setImageEditorOpen(true);
+    }
+  };
+
+  const handlePhotoSave = (croppedBlob: Blob) => {
+    setCroppedPhoto(croppedBlob);
+    const url = URL.createObjectURL(croppedBlob);
+    setPhotoPreview(url);
+    setImageEditorOpen(false);
+  };
 
   const handleNext = () => {
     if (step === 1) {
@@ -141,11 +189,92 @@ const Register = () => {
       });
       setLoading(false);
     } else {
+      // Armazena email e vai para etapa 4 (OTP)
+      setRegisteredEmail(formData.email);
+      setStep(4);
+      setResendTimer(60);
       toast({
-        title: 'Conta criada!',
-        description: 'Bem-vindo ao Sou Artista',
+        title: 'Código enviado!',
+        description: 'Verifique seu e-mail',
       });
-      navigate('/app');
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otpCode.length !== 6) {
+      toast({
+        title: 'Código incompleto',
+        description: 'Digite o código de 6 dígitos',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setVerifying(true);
+
+    const { error } = await verifyOtp(registeredEmail, otpCode);
+
+    if (error) {
+      toast({
+        title: 'Código inválido',
+        description: error.message,
+        variant: 'destructive',
+      });
+      setVerifying(false);
+      return;
+    }
+
+    // Upload da foto se houver
+    if (croppedPhoto) {
+      try {
+        const fileName = `${Date.now()}.jpg`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('profile-photos')
+          .upload(fileName, croppedPhoto, {
+            contentType: 'image/jpeg',
+          });
+
+        if (!uploadError && uploadData) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('profile-photos')
+            .getPublicUrl(fileName);
+
+          await supabase
+            .from('profiles')
+            .update({ photo_url: publicUrl })
+            .eq('email', registeredEmail);
+        }
+      } catch (err) {
+        console.error('Erro ao fazer upload da foto:', err);
+      }
+    }
+
+    toast({
+      title: 'Conta verificada!',
+      description: 'Bem-vindo ao Sou Artista',
+    });
+    setVerifying(false);
+    navigate('/app');
+  };
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0) return;
+
+    const { error } = await resendOtp(registeredEmail);
+
+    if (error) {
+      toast({
+        title: 'Erro ao reenviar',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Código reenviado!',
+        description: 'Verifique seu e-mail',
+      });
+      setResendTimer(60);
     }
   };
 
@@ -239,7 +368,7 @@ const Register = () => {
           <div className="space-y-4">
             <div className="text-center space-y-2">
               <h1 className="text-3xl font-heading font-bold text-white">Criar conta</h1>
-              <p className="text-[#C8BAD4]">Etapa {step} de 3</p>
+              <p className="text-[#C8BAD4]">Etapa {step} de 4</p>
             </div>
             
             <Progress value={progress} className="h-2" />
@@ -248,6 +377,29 @@ const Register = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {step === 1 && (
               <>
+                {/* Avatar Upload */}
+                <div className="flex flex-col items-center space-y-2 mb-4">
+                  <div className="relative">
+                    <Avatar className="w-24 h-24 border-2 border-[#B96FFF]">
+                      <AvatarImage src={photoPreview} />
+                      <AvatarFallback className="bg-[#1B0D29] text-[#B96FFF] text-2xl">
+                        <Camera className="w-8 h-8" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <label htmlFor="photo-upload" className="absolute bottom-0 right-0 bg-[#B96FFF] rounded-full p-2 cursor-pointer hover:bg-[#A15EEF] transition-colors">
+                      <Camera className="w-4 h-4 text-white" />
+                      <input
+                        id="photo-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoSelect}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                  <p className="text-xs text-[#C8BAD4]">Adicionar foto (opcional)</p>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-white">Nome completo</Label>
                   <Input
@@ -408,17 +560,88 @@ const Register = () => {
                 </div>
               </>
             )}
+
+            {step === 4 && (
+              <div className="space-y-6">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-[#B96FFF]/20 flex items-center justify-center">
+                    <Mail className="w-8 h-8 text-[#B96FFF]" />
+                  </div>
+                  <div className="text-center space-y-2">
+                    <h2 className="text-2xl font-bold text-white">Verifique seu email</h2>
+                    <p className="text-sm text-[#C8BAD4]">
+                      Digite o código de 6 dígitos enviado para<br />
+                      <span className="text-white font-medium">{registeredEmail}</span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-center">
+                  <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} className="h-12 w-12 text-white border-[#B96FFF]" />
+                      <InputOTPSlot index={1} className="h-12 w-12 text-white border-[#B96FFF]" />
+                      <InputOTPSlot index={2} className="h-12 w-12 text-white border-[#B96FFF]" />
+                      <InputOTPSlot index={3} className="h-12 w-12 text-white border-[#B96FFF]" />
+                      <InputOTPSlot index={4} className="h-12 w-12 text-white border-[#B96FFF]" />
+                      <InputOTPSlot index={5} className="h-12 w-12 text-white border-[#B96FFF]" />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={handleVerifyOtp}
+                  disabled={verifying || otpCode.length !== 6}
+                  className="w-full h-11"
+                >
+                  {verifying ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Verificando...
+                    </>
+                  ) : (
+                    'Verificar código'
+                  )}
+                </Button>
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={resendTimer > 0}
+                    className="text-sm text-[#B96FFF] hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {resendTimer > 0
+                      ? `Reenviar código (${resendTimer}s)`
+                      : 'Reenviar código'}
+                  </button>
+                </div>
+              </div>
+            )}
           </form>
 
-          <div className="text-center text-sm text-[#C8BAD4]">
-            Já tem uma conta?{' '}
-            <Link to="/login" className="text-[#B96FFF] hover:underline font-medium">
-              Fazer login
-            </Link>
-          </div>
+          {step !== 4 && (
+            <div className="text-center text-sm text-[#C8BAD4]">
+              Já tem uma conta?{' '}
+              <Link to="/login" className="text-[#B96FFF] hover:underline font-medium">
+                Fazer login
+              </Link>
+            </div>
+          )}
         </div>
         </div>
       </div>
+
+      {/* Image Editor Modal */}
+      {photoFile && (
+        <ImageEditor
+          open={imageEditorOpen}
+          onOpenChange={setImageEditorOpen}
+          imageFile={photoFile}
+          onSave={handlePhotoSave}
+        />
+      )}
     </div>
   );
 };
