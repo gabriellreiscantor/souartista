@@ -16,7 +16,7 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
       // Convert initial value to formatted display
       const numValue = typeof value === 'string' ? parseFloat(value) || 0 : value;
       setDisplayValue(formatCurrency(numValue));
-    }, []);
+    }, [value]);
 
     const formatCurrency = (num: number): string => {
       return num.toLocaleString('pt-BR', {
