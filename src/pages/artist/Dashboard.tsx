@@ -102,7 +102,7 @@ const ArtistDashboard = () => {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
-              <StatCard icon={<Music className="w-6 h-6 text-blue-600" />} title="Total de Shows" value={stats.totalShows.toString()} iconBg="bg-purple-100" iconColor="text-purple-600" />
+              <StatCard icon={<Music className="w-6 h-6 text-blue-600" />} title="Total de Shows" value={stats.totalShows.toString()} iconBg="bg-purple-100" iconColor="text-purple-600" valueColor="text-purple-500" />
               <StatCard icon={<DollarSign className="w-6 h-6" />} title="Receita Bruta (Total)" value={formatCurrency(stats.grossRevenue)} iconBg="bg-green-100" iconColor="text-green-600" valueColor="text-green-600" />
               <StatCard icon={<TrendingDown className="w-6 h-6" />} title="Custos Totais" value={formatCurrency(stats.totalCosts)} iconBg="bg-red-100" iconColor="text-red-600" valueColor="text-red-600" />
               <StatCard icon={<TrendingUp className="w-6 h-6" />} title="Lucro Líquido (Total)" value={formatCurrency(stats.netProfit)} iconBg="bg-blue-100" iconColor="text-blue-600" valueColor="text-blue-600" />
