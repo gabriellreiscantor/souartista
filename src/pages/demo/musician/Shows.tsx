@@ -50,7 +50,7 @@ const DemoMusicianShows = () => {
   const currentMonthNum = String(currentDate.getMonth() + 1).padStart(2, '0');
 
   const demoArtists = [
-    { id: '1', name: 'Gabrieli Reis' },
+    { id: '1', name: 'Gabriell Reis' },
     { id: '2', name: 'Gusttavo Lima' },
     { id: '3', name: 'Juliano' },
     { id: '4', name: 'Jorge e Mateus' },
@@ -78,7 +78,7 @@ const DemoMusicianShows = () => {
     {
       id: '1',
       venue_name: 'Pub e Lounge Music Point',
-      artist_name: 'Gabrieli Reis',
+      artist_name: 'Gabriell Reis',
       date_local: `${currentYear}-${currentMonthNum}-10`,
       time_local: '22:00',
       fee: 480,
