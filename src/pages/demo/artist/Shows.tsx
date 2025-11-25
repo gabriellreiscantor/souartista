@@ -24,12 +24,17 @@ const DemoArtistShows = () => {
   const [expandedShows, setExpandedShows] = useState<Set<string>>(new Set());
   const [addVenueOpen, setAddVenueOpen] = useState(false);
   const [addMusicianOpen, setAddMusicianOpen] = useState(false);
+  const [addShowOpen, setAddShowOpen] = useState(false);
   const [lockedModalOpen, setLockedModalOpen] = useState(false);
   const [venueName, setVenueName] = useState('');
   const [venueAddress, setVenueAddress] = useState('');
   const [musicianName, setMusicianName] = useState('');
   const [musicianInstrument, setMusicianInstrument] = useState('');
   const [musicianFee, setMusicianFee] = useState('');
+  const [showVenue, setShowVenue] = useState('');
+  const [showDate, setShowDate] = useState('');
+  const [showTime, setShowTime] = useState('');
+  const [showFee, setShowFee] = useState('');
   const lastUpdated = new Date();
 
   const demoShows = [
@@ -177,6 +182,21 @@ const DemoArtistShows = () => {
     setLockedModalOpen(true);
   };
 
+  const handleSaveShow = () => {
+    setAddShowOpen(false);
+    setShowVenue('');
+    setShowDate('');
+    setShowTime('');
+    setShowFee('');
+    setLockedModalOpen(true);
+  };
+
+  const handleFilterChange = (value: string) => {
+    if (value !== showFilter) {
+      setLockedModalOpen(true);
+    }
+  };
+
   const totals = calculateTotals();
 
   return (
@@ -252,7 +272,7 @@ const DemoArtistShows = () => {
                         </p>
                       </div>
                       
-                      <Select value={showFilter} onValueChange={setShowFilter}>
+                      <Select value={showFilter} onValueChange={handleFilterChange}>
                         <SelectTrigger className="w-full bg-white text-gray-900 border-gray-300">
                           <CalendarIcon className="w-4 h-4 mr-2 text-gray-900" />
                           <SelectValue />
@@ -267,7 +287,7 @@ const DemoArtistShows = () => {
                         </SelectContent>
                       </Select>
 
-                      <Button onClick={handleDemoAction} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
+                      <Button onClick={() => setAddShowOpen(true)} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
                         <Plus className="w-5 h-5 mr-2" />
                         Adicionar
                       </Button>
@@ -468,6 +488,79 @@ const DemoArtistShows = () => {
         
         <DemoMobileBottomNav role="artist" />
       </div>
+
+      {/* Add Show Modal */}
+      <Dialog open={addShowOpen} onOpenChange={setAddShowOpen}>
+        <DialogContent className="bg-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-900 text-center">Adicionar Show</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="show-venue" className="text-gray-900">Local/Bar</Label>
+              <Input
+                id="show-venue"
+                placeholder="Ex: Bar e Restaurante Harmonia"
+                value={showVenue}
+                onChange={(e) => setShowVenue(e.target.value)}
+                className="bg-white border-gray-300 text-gray-900"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="show-date" className="text-gray-900">Data</Label>
+                <Input
+                  id="show-date"
+                  type="date"
+                  value={showDate}
+                  onChange={(e) => setShowDate(e.target.value)}
+                  className="bg-white border-gray-300 text-gray-900"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="show-time" className="text-gray-900">Horário</Label>
+                <Input
+                  id="show-time"
+                  type="time"
+                  value={showTime}
+                  onChange={(e) => setShowTime(e.target.value)}
+                  className="bg-white border-gray-300 text-gray-900"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="show-fee" className="text-gray-900">Cachê (R$)</Label>
+              <Input
+                id="show-fee"
+                type="number"
+                placeholder="Ex: 500.00"
+                value={showFee}
+                onChange={(e) => setShowFee(e.target.value)}
+                className="bg-white border-gray-300 text-gray-900"
+              />
+            </div>
+            
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setAddShowOpen(false)}
+                className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSaveShow}
+                className="flex-1 bg-primary hover:bg-primary/90 text-white"
+              >
+                Salvar Show
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Venue Modal */}
       <Dialog open={addVenueOpen} onOpenChange={setAddVenueOpen}>
