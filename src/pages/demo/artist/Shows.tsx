@@ -26,8 +26,6 @@ const DemoArtistShows = () => {
   const [addVenueOpen, setAddVenueOpen] = useState(false);
   const [addMusicianOpen, setAddMusicianOpen] = useState(false);
   const [addShowOpen, setAddShowOpen] = useState(false);
-  const [addTeamMemberOpen, setAddTeamMemberOpen] = useState(false);
-  const [addExpenseOpen, setAddExpenseOpen] = useState(false);
   const [isPrivateEvent, setIsPrivateEvent] = useState(false);
   const [lockedModalOpen, setLockedModalOpen] = useState(false);
   const [venueName, setVenueName] = useState('');
@@ -36,17 +34,13 @@ const DemoArtistShows = () => {
   const [musicianInstrument, setMusicianInstrument] = useState('');
   const [musicianFee, setMusicianFee] = useState('');
   const [showVenue, setShowVenue] = useState('');
+  const [showCustomVenue, setShowCustomVenue] = useState('');
   const [showDate, setShowDate] = useState('');
   const [showTime, setShowTime] = useState('');
   const [showFee, setShowFee] = useState('');
   const [showDuration, setShowDuration] = useState('');
-  const [teamMembers, setTeamMembers] = useState<Array<{id: string, name: string, cost: string}>>([]);
-  const [expenses, setExpenses] = useState<Array<{id: string, type: string, description: string, cost: string}>>([]);
-  const [selectedTeamMember, setSelectedTeamMember] = useState('');
-  const [teamMemberCost, setTeamMemberCost] = useState('');
-  const [expenseType, setExpenseType] = useState('');
-  const [expenseDescription, setExpenseDescription] = useState('');
-  const [expenseCost, setExpenseCost] = useState('');
+  const [teamMembers, setTeamMembers] = useState<Array<{musicianId?: string, name: string, cost: number}>>([]);
+  const [expenses, setExpenses] = useState<Array<{type: string, description: string, cost: number}>>([]);
   const lastUpdated = new Date();
 
   const demoShows = [
@@ -194,10 +188,57 @@ const DemoArtistShows = () => {
     setLockedModalOpen(true);
   };
 
+  const addTeamMember = () => {
+    if (demoMusicians.length > 0) {
+      const firstMusician = demoMusicians[0];
+      setTeamMembers([...teamMembers, {
+        musicianId: firstMusician.id,
+        name: firstMusician.name,
+        cost: firstMusician.default_fee,
+      }]);
+    }
+  };
+
+  const removeTeamMember = (index: number) => {
+    setTeamMembers(teamMembers.filter((_, i) => i !== index));
+  };
+
+  const updateTeamMember = (index: number, field: string, value: any) => {
+    const updated = [...teamMembers];
+    if (field === 'musicianId') {
+      const musician = demoMusicians.find(m => m.id === value);
+      if (musician) {
+        updated[index] = {
+          musicianId: musician.id,
+          name: musician.name,
+          cost: musician.default_fee
+        };
+      }
+    } else {
+      updated[index] = { ...updated[index], [field]: value };
+    }
+    setTeamMembers(updated);
+  };
+
+  const addExpense = () => {
+    setExpenses([...expenses, { type: '', description: '', cost: 0 }]);
+  };
+
+  const removeExpense = (index: number) => {
+    setExpenses(expenses.filter((_, i) => i !== index));
+  };
+
+  const updateExpense = (index: number, field: string, value: any) => {
+    const updated = [...expenses];
+    updated[index] = { ...updated[index], [field]: value };
+    setExpenses(updated);
+  };
+
   const handleSaveShow = () => {
     setAddShowOpen(false);
     setIsPrivateEvent(false);
     setShowVenue('');
+    setShowCustomVenue('');
     setShowDate('');
     setShowTime('');
     setShowFee('');
@@ -205,53 +246,6 @@ const DemoArtistShows = () => {
     setTeamMembers([]);
     setExpenses([]);
     setLockedModalOpen(true);
-  };
-
-  const handleAddTeamMember = () => {
-    if (selectedTeamMember && teamMemberCost) {
-      const member = demoMusicians.find(m => m.id === selectedTeamMember);
-      if (member) {
-        setTeamMembers([...teamMembers, {
-          id: Date.now().toString(),
-          name: member.name,
-          cost: teamMemberCost
-        }]);
-      }
-      setSelectedTeamMember('');
-      setTeamMemberCost('');
-      setAddTeamMemberOpen(false);
-    }
-  };
-
-  const handleRemoveTeamMember = (id: string) => {
-    setTeamMembers(teamMembers.filter(m => m.id !== id));
-  };
-
-  const handleAddExpense = () => {
-    if (expenseType && expenseDescription && expenseCost) {
-      setExpenses([...expenses, {
-        id: Date.now().toString(),
-        type: expenseType,
-        description: expenseDescription,
-        cost: expenseCost
-      }]);
-      setExpenseType('');
-      setExpenseDescription('');
-      setExpenseCost('');
-      setAddExpenseOpen(false);
-    }
-  };
-
-  const handleRemoveExpense = (id: string) => {
-    setExpenses(expenses.filter(e => e.id !== id));
-  };
-
-  const calculateTeamTotal = () => {
-    return teamMembers.reduce((sum, member) => sum + parseFloat(member.cost || '0'), 0);
-  };
-
-  const calculateExpenseTotal = () => {
-    return expenses.reduce((sum, expense) => sum + parseFloat(expense.cost || '0'), 0);
   };
 
   const handleFilterChange = (value: string) => {
@@ -564,6 +558,7 @@ const DemoArtistShows = () => {
             </p>
             
             <Button 
+              type="button"
               variant="outline" 
               className={cn(
                 "w-full border-2 font-semibold",
@@ -576,7 +571,7 @@ const DemoArtistShows = () => {
               Evento Particular
             </Button>
             
-            {!isPrivateEvent && (
+            {!isPrivateEvent ? (
               <div className="space-y-2">
                 <Label htmlFor="show-venue" className="text-gray-900 font-semibold">Nome do local</Label>
                 <Select value={showVenue} onValueChange={setShowVenue}>
@@ -591,6 +586,18 @@ const DemoArtistShows = () => {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="show-custom-venue" className="text-gray-900 font-semibold">Nome do local</Label>
+                <Input
+                  id="show-custom-venue"
+                  type="text"
+                  placeholder="Digite o nome do local"
+                  value={showCustomVenue}
+                  onChange={(e) => setShowCustomVenue(e.target.value)}
+                  className="bg-white border-gray-300 text-gray-900"
+                />
               </div>
             )}
             
@@ -653,13 +660,14 @@ const DemoArtistShows = () => {
                 <div>
                   <div className="text-gray-900 font-semibold">Equipe/Músicos</div>
                   <div className="text-xs text-gray-500">
-                    Custo total: R$ {calculateTeamTotal().toFixed(2).replace('.', ',')}
+                    Custo total: R$ {teamMembers.reduce((s, m) => s + m.cost, 0).toFixed(2).replace('.', ',')}
                   </div>
                 </div>
                 <Button 
+                  type="button"
                   variant="outline" 
                   size="sm"
-                  onClick={() => setAddTeamMemberOpen(true)}
+                  onClick={addTeamMember}
                   className="border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
                 >
                   <Plus className="w-4 h-4 mr-1" />
@@ -667,27 +675,42 @@ const DemoArtistShows = () => {
                 </Button>
               </div>
               
-              {teamMembers.map((member) => (
-                <div key={member.id} className="bg-gray-50 p-3 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm text-gray-600">Membro</span>
+              {teamMembers.map((member, index) => (
+                <div key={index} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-gray-600">Membro</span>
                     <button 
-                      onClick={() => handleRemoveTeamMember(member.id)}
-                      className="ml-auto text-red-600 hover:text-red-700"
+                      type="button"
+                      onClick={() => removeTeamMember(index)}
+                      className="text-red-600 hover:text-red-700"
                     >
-                      <X className="w-4 h-4" />
+                      <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
+                    <Select
+                      value={member.musicianId || ''}
+                      onValueChange={(value) => updateTeamMember(index, 'musicianId', value)}
+                    >
+                      <SelectTrigger className="bg-white border-gray-300 text-gray-900 text-sm h-9">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-gray-200">
+                        {demoMusicians.map((m) => (
+                          <SelectItem key={m.id} value={m.id} className="text-sm text-gray-900">
+                            {m.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <Input
-                      value={member.name}
-                      disabled
-                      className="bg-white border-gray-300 text-gray-900"
-                    />
-                    <Input
-                      value={`R$ ${member.cost}`}
-                      disabled
-                      className="bg-white border-gray-300 text-gray-900"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="R$ 150,00"
+                      value={member.cost}
+                      onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
+                      className="bg-white border-gray-300 text-gray-900 text-sm h-9"
                     />
                   </div>
                 </div>
@@ -700,13 +723,14 @@ const DemoArtistShows = () => {
                 <div>
                   <div className="text-gray-900 font-semibold">Despesas Adicionais</div>
                   <div className="text-xs text-gray-500">
-                    Custo total: R$ {calculateExpenseTotal().toFixed(2).replace('.', ',')}
+                    Custo total: R$ {expenses.reduce((s, e) => s + e.cost, 0).toFixed(2).replace('.', ',')}
                   </div>
                 </div>
                 <Button 
+                  type="button"
                   variant="outline" 
                   size="sm"
-                  onClick={() => setAddExpenseOpen(true)}
+                  onClick={addExpense}
                   className="border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
                 >
                   <Plus className="w-4 h-4 mr-1" />
@@ -714,34 +738,39 @@ const DemoArtistShows = () => {
                 </Button>
               </div>
               
-              {expenses.map((expense) => (
-                <div key={expense.id} className="bg-gray-50 p-3 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm text-gray-600">Despesa</span>
+              {expenses.map((expense, index) => (
+                <div key={index} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-gray-600">Despesa</span>
                     <button 
-                      onClick={() => handleRemoveExpense(expense.id)}
-                      className="ml-auto text-red-600 hover:text-red-700"
+                      type="button"
+                      onClick={() => removeExpense(index)}
+                      className="text-red-600 hover:text-red-700"
                     >
-                      <X className="w-4 h-4" />
+                      <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     <Input
-                      value={expense.type}
-                      disabled
                       placeholder="Tipo"
-                      className="bg-white border-gray-300 text-gray-900 text-sm"
+                      value={expense.type}
+                      onChange={(e) => updateExpense(index, 'type', e.target.value)}
+                      className="bg-white border-gray-300 text-gray-900 text-sm h-9"
                     />
                     <Input
-                      value={expense.description}
-                      disabled
                       placeholder="Descrição"
-                      className="bg-white border-gray-300 text-gray-900 text-sm"
+                      value={expense.description}
+                      onChange={(e) => updateExpense(index, 'description', e.target.value)}
+                      className="bg-white border-gray-300 text-gray-900 text-sm h-9"
                     />
                     <Input
-                      value={`R$ ${expense.cost}`}
-                      disabled
-                      className="bg-white border-gray-300 text-gray-900 text-sm"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="R$ 0,00"
+                      value={expense.cost}
+                      onChange={(e) => updateExpense(index, 'cost', parseFloat(e.target.value) || 0)}
+                      className="bg-white border-gray-300 text-gray-900 text-sm h-9"
                     />
                   </div>
                 </div>
@@ -750,6 +779,7 @@ const DemoArtistShows = () => {
             
             <div className="flex gap-3 pt-4">
               <Button
+                type="button"
                 variant="outline"
                 onClick={() => setAddShowOpen(false)}
                 className="flex-1 border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
@@ -757,123 +787,11 @@ const DemoArtistShows = () => {
                 Cancelar
               </Button>
               <Button
+                type="button"
                 onClick={handleSaveShow}
                 className="flex-1 bg-primary hover:bg-primary/90 text-white"
               >
                 Salvar Show
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Team Member Modal */}
-      <Dialog open={addTeamMemberOpen} onOpenChange={setAddTeamMemberOpen}>
-        <DialogContent className="bg-white sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-gray-900">Adicionar Membro da Equipe</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label htmlFor="team-member-select" className="text-gray-900">Membro</Label>
-              <Select value={selectedTeamMember} onValueChange={setSelectedTeamMember}>
-                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Selecione um músico" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-gray-200">
-                  {demoMusicians.map((musician) => (
-                    <SelectItem key={musician.id} value={musician.id} className="text-gray-900">
-                      {musician.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="team-member-cost" className="text-gray-900">Custo (R$)</Label>
-              <Input
-                id="team-member-cost"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder="R$ 150,00"
-                value={teamMemberCost}
-                onChange={(e) => setTeamMemberCost(e.target.value)}
-                className="bg-white border-gray-300 text-gray-900"
-              />
-            </div>
-            <div className="flex gap-3 pt-2">
-              <Button
-                variant="outline"
-                onClick={() => setAddTeamMemberOpen(false)}
-                className="flex-1 border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleAddTeamMember}
-                className="flex-1 bg-primary hover:bg-primary/90 text-white"
-              >
-                Adicionar
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Expense Modal */}
-      <Dialog open={addExpenseOpen} onOpenChange={setAddExpenseOpen}>
-        <DialogContent className="bg-white sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-gray-900">Adicionar Despesa</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label htmlFor="expense-type" className="text-gray-900">Tipo</Label>
-              <Input
-                id="expense-type"
-                placeholder="Ex: Transporte"
-                value={expenseType}
-                onChange={(e) => setExpenseType(e.target.value)}
-                className="bg-white border-gray-300 text-gray-900"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="expense-description" className="text-gray-900">Descrição</Label>
-              <Input
-                id="expense-description"
-                placeholder="Ex: Uber ida e volta"
-                value={expenseDescription}
-                onChange={(e) => setExpenseDescription(e.target.value)}
-                className="bg-white border-gray-300 text-gray-900"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="expense-cost" className="text-gray-900">Custo (R$)</Label>
-              <Input
-                id="expense-cost"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder="R$ 0,00"
-                value={expenseCost}
-                onChange={(e) => setExpenseCost(e.target.value)}
-                className="bg-white border-gray-300 text-gray-900"
-              />
-            </div>
-            <div className="flex gap-3 pt-2">
-              <Button
-                variant="outline"
-                onClick={() => setAddExpenseOpen(false)}
-                className="flex-1 border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleAddExpense}
-                className="flex-1 bg-primary hover:bg-primary/90 text-white"
-              >
-                Adicionar
               </Button>
             </div>
           </div>
