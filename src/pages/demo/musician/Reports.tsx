@@ -26,7 +26,7 @@ const DemoMusicianReports = () => {
       artist_name: 'Gabriell Reis',
       date_local: `${currentYear}-${currentMonthNum}-10`,
       fee: 480,
-      expenses: 0
+      expenses: 45
     },
     {
       id: '2',
@@ -34,7 +34,7 @@ const DemoMusicianReports = () => {
       artist_name: 'Gusttavo Lima',
       date_local: `${currentYear}-${currentMonthNum}-15`,
       fee: 500,
-      expenses: 0
+      expenses: 35
     },
     {
       id: '3',
@@ -42,7 +42,7 @@ const DemoMusicianReports = () => {
       artist_name: 'Jorge e Mateus',
       date_local: `${currentYear}-${currentMonthNum}-25`,
       fee: 450,
-      expenses: 0
+      expenses: 28
     }
   ];
 
