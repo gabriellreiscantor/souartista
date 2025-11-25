@@ -1,7 +1,11 @@
 import { DemoArtistSidebar } from "@/components/DemoArtistSidebar";
 import { DemoBanner } from "@/components/DemoBanner";
+import { DemoMobileBottomNav } from "@/components/DemoMobileBottomNav";
+import { DemoUserMenu } from "@/components/DemoUserMenu";
+import { NotificationBell } from "@/components/NotificationBell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Plus, Calendar, MapPin, DollarSign, Users } from "lucide-react";
 import { toast } from "sonner";
 import { demoShows } from "@/data/demoData";
@@ -19,25 +23,37 @@ export default function DemoArtistShows() {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-gray-50">
-      <DemoArtistSidebar />
-      
-      <div className="flex-1 flex flex-col min-w-0">
-        <DemoBanner />
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-gray-50">
+        <DemoArtistSidebar />
         
-        <main className="flex-1 overflow-auto">
-          <div className="container mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Shows</h1>
-                <p className="text-gray-600 mt-1 text-sm md:text-base">Gerencie todos os seus shows</p>
-              </div>
-              <Button onClick={handleAddShow} className="gap-2 text-sm md:text-base whitespace-nowrap">
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Adicionar Show</span>
-                <span className="sm:hidden">Adicionar</span>
-              </Button>
+        <div className="flex-1 flex flex-col min-w-0">
+          <DemoBanner />
+          
+          <header className="h-16 border-b border-gray-200 bg-white flex items-center px-6 justify-between">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+              <h1 className="text-xl font-semibold text-gray-900">Shows</h1>
             </div>
+            
+            <div className="flex items-center gap-3">
+              <NotificationBell />
+              <DemoUserMenu userName="Demo" userRole="artist" />
+            </div>
+          </header>
+          
+          <main className="flex-1 overflow-auto pb-20 md:pb-6">
+            <div className="container mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-gray-600 mt-1 text-sm md:text-base">Gerencie todos os seus shows</p>
+                </div>
+                <Button onClick={handleAddShow} className="gap-2 text-sm md:text-base whitespace-nowrap">
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Adicionar Show</span>
+                  <span className="sm:hidden">Adicionar</span>
+                </Button>
+              </div>
 
             <div className="grid gap-3 md:gap-4">
               {demoShows.map((show) => {
@@ -107,6 +123,9 @@ export default function DemoArtistShows() {
           </div>
         </main>
       </div>
+      
+      <DemoMobileBottomNav role="artist" />
     </div>
+    </SidebarProvider>
   );
 }
