@@ -6,12 +6,16 @@ import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bell, Music2, DollarSign, TrendingDown, TrendingUp, TrendingUpIcon, FileText, Users, Car, Building2 } from 'lucide-react';
+import { Bell, Music2, DollarSign, TrendingDown, TrendingUp, TrendingUpIcon, FileText, Users, Car, Building2, Download } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useReportVisibility } from '@/hooks/useReportVisibility';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subDays, startOfYear, endOfYear, subMonths, differenceInMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
+import { toast } from 'sonner';
 
 interface Show {
   id: string;
@@ -242,6 +246,257 @@ const ArtistReports = () => {
     }
   };
 
+  const exportToPDF = async () => {
+    try {
+      toast.info('Gerando PDF...');
+      
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      
+      // Load and add logo
+      const logoImg = new Image();
+      logoImg.src = '/logo.png';
+      await new Promise((resolve) => {
+        logoImg.onload = resolve;
+      });
+      
+      // Header with logo and title
+      doc.addImage(logoImg, 'PNG', 15, 15, 30, 30);
+      doc.setFontSize(24);
+      doc.setTextColor(139, 92, 246); // Purple
+      doc.text('Relatório Financeiro', 50, 25);
+      
+      doc.setFontSize(12);
+      doc.setTextColor(100, 100, 100);
+      doc.text(getPeriodLabel(), 50, 35);
+      doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`, 50, 42);
+      
+      // Main statistics section
+      doc.setFontSize(16);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Resumo Financeiro', 15, 60);
+      
+      const summaryData = [
+        ['Total de Shows', totalShows.toString()],
+        ['Receita Bruta', `R$ ${formatCurrency(totalRevenue)}`],
+        ['Custos de Show', `R$ ${formatCurrency(totalExpenses)}`],
+        ['Lucro Líquido', `R$ ${formatCurrency(totalProfit)}`],
+        ['Ticket Médio', `R$ ${formatCurrency(averageTicket)}`],
+        ['Média Mensal (Todo Período)', `R$ ${formatCurrency(monthlyAverage)}`],
+      ];
+      
+      autoTable(doc, {
+        startY: 65,
+        head: [['Métrica', 'Valor']],
+        body: summaryData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [139, 92, 246],
+          textColor: [255, 255, 255],
+          fontSize: 11,
+          fontStyle: 'bold',
+        },
+        bodyStyles: {
+          textColor: [50, 50, 50],
+        },
+        alternateRowStyles: {
+          fillColor: [245, 243, 255],
+        },
+      });
+      
+      // Shows details
+      const finalY = (doc as any).lastAutoTable.finalY || 120;
+      doc.setFontSize(16);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Detalhes dos Shows', 15, finalY + 15);
+      
+      const showsData = showsWithExpenses.map(show => [
+        format(new Date(show.date_local), 'dd/MM/yyyy', { locale: ptBR }),
+        show.venue_name,
+        `R$ ${formatCurrency(Number(show.fee))}`,
+        `R$ ${formatCurrency(show.expenses)}`,
+        `R$ ${formatCurrency(show.profit)}`,
+      ]);
+      
+      autoTable(doc, {
+        startY: finalY + 20,
+        head: [['Data', 'Local', 'Cachê', 'Despesas', 'Lucro']],
+        body: showsData,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [139, 92, 246],
+          textColor: [255, 255, 255],
+          fontSize: 10,
+          fontStyle: 'bold',
+        },
+        bodyStyles: {
+          fontSize: 9,
+          textColor: [50, 50, 50],
+        },
+        alternateRowStyles: {
+          fillColor: [250, 250, 250],
+        },
+      });
+      
+      // Add new page if needed for Top 5 section
+      const showsTableFinalY = (doc as any).lastAutoTable.finalY || 200;
+      if (showsTableFinalY > pageHeight - 80) {
+        doc.addPage();
+        doc.addImage(logoImg, 'PNG', 15, 15, 20, 20);
+      }
+      
+      // Top 5 sections
+      const top5StartY = showsTableFinalY > pageHeight - 80 ? 45 : showsTableFinalY + 15;
+      
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Top 5 Locais por Lucro', 15, top5StartY);
+      
+      const venuesData = venuesByProfit.map((v, i) => [
+        `${i + 1}º`,
+        v.name,
+        `R$ ${formatCurrency(v.profit)}`,
+      ]);
+      
+      if (venuesData.length > 0) {
+        autoTable(doc, {
+          startY: top5StartY + 5,
+          head: [['#', 'Local', 'Lucro']],
+          body: venuesData,
+          theme: 'grid',
+          headStyles: {
+            fillColor: [139, 92, 246],
+            textColor: [255, 255, 255],
+            fontSize: 10,
+          },
+          bodyStyles: {
+            fontSize: 9,
+          },
+        });
+      }
+      
+      // Footer on all pages
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(
+          `Página ${i} de ${totalPages} • Relatório Confidencial`,
+          pageWidth / 2,
+          pageHeight - 10,
+          { align: 'center' }
+        );
+      }
+      
+      // Save PDF
+      doc.save(`relatorio-${period}-${format(new Date(), 'dd-MM-yyyy')}.pdf`);
+      toast.success('PDF gerado com sucesso!');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Erro ao gerar PDF');
+    }
+  };
+
+  const exportToXLSX = () => {
+    try {
+      toast.info('Gerando XLSX...');
+      
+      const wb = XLSX.utils.book_new();
+      
+      // Summary sheet
+      const summaryData = [
+        ['RELATÓRIO FINANCEIRO'],
+        ['Período:', getPeriodLabel()],
+        [`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`],
+        [],
+        ['RESUMO FINANCEIRO'],
+        ['Métrica', 'Valor'],
+        ['Total de Shows', totalShows],
+        ['Receita Bruta', `R$ ${formatCurrency(totalRevenue)}`],
+        ['Custos de Show', `R$ ${formatCurrency(totalExpenses)}`],
+        ['Lucro Líquido', `R$ ${formatCurrency(totalProfit)}`],
+        ['Ticket Médio', `R$ ${formatCurrency(averageTicket)}`],
+        ['Média Mensal (Todo Período)', `R$ ${formatCurrency(monthlyAverage)}`],
+      ];
+      
+      const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+      
+      // Style summary sheet
+      summaryWs['!cols'] = [{ wch: 30 }, { wch: 20 }];
+      
+      XLSX.utils.book_append_sheet(wb, summaryWs, 'Resumo');
+      
+      // Shows details sheet
+      const showsHeaders = ['Data', 'Local', 'Cachê', 'Despesas Equipe', 'Despesas Outras', 'Locomoção', 'Total Despesas', 'Lucro'];
+      const showsData = showsWithExpenses.map(show => [
+        format(new Date(show.date_local), 'dd/MM/yyyy', { locale: ptBR }),
+        show.venue_name,
+        Number(show.fee),
+        Array.isArray(show.expenses_team) ? show.expenses_team.reduce((sum: number, exp: any) => sum + (Number(exp.cost) || 0), 0) : 0,
+        Array.isArray(show.expenses_other) ? show.expenses_other.reduce((sum: number, exp: any) => sum + (Number(exp.cost) || Number(exp.amount) || 0), 0) : 0,
+        show.locomotion,
+        show.expenses,
+        show.profit,
+      ]);
+      
+      const showsWsData = [showsHeaders, ...showsData];
+      const showsWs = XLSX.utils.aoa_to_sheet(showsWsData);
+      
+      // Style shows sheet
+      showsWs['!cols'] = [
+        { wch: 12 },
+        { wch: 25 },
+        { wch: 12 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 12 },
+        { wch: 15 },
+        { wch: 12 },
+      ];
+      
+      XLSX.utils.book_append_sheet(wb, showsWs, 'Shows');
+      
+      // Top 5 venues sheet
+      const venuesHeaders = ['Posição', 'Local', 'Lucro'];
+      const venuesData = venuesByProfit.map((v, i) => [
+        `${i + 1}º`,
+        v.name,
+        v.profit,
+      ]);
+      
+      const venuesWsData = [venuesHeaders, ...venuesData];
+      const venuesWs = XLSX.utils.aoa_to_sheet(venuesWsData);
+      
+      venuesWs['!cols'] = [{ wch: 10 }, { wch: 30 }, { wch: 15 }];
+      
+      XLSX.utils.book_append_sheet(wb, venuesWs, 'Top 5 Locais');
+      
+      // Top 5 team costs sheet
+      const teamHeaders = ['Posição', 'Nome', 'Custo Total'];
+      const teamData = teamExpensesByMember.map((m, i) => [
+        `${i + 1}º`,
+        m.name,
+        m.amount,
+      ]);
+      
+      const teamWsData = [teamHeaders, ...teamData];
+      const teamWs = XLSX.utils.aoa_to_sheet(teamWsData);
+      
+      teamWs['!cols'] = [{ wch: 10 }, { wch: 30 }, { wch: 15 }];
+      
+      XLSX.utils.book_append_sheet(wb, teamWs, 'Top 5 Equipe');
+      
+      // Save file
+      XLSX.writeFile(wb, `relatorio-${period}-${format(new Date(), 'dd-MM-yyyy')}.xlsx`);
+      toast.success('XLSX gerado com sucesso!');
+    } catch (error) {
+      console.error('Error generating XLSX:', error);
+      toast.error('Erro ao gerar XLSX');
+    }
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-[#fafafa]">
@@ -293,12 +548,20 @@ const ArtistReports = () => {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button size="sm" className="flex-1 bg-primary text-white hover:bg-primary/90">
-                        <FileText className="w-4 h-4 mr-2" />
+                      <Button 
+                        size="sm" 
+                        className="flex-1 bg-primary text-white hover:bg-primary/90"
+                        onClick={exportToPDF}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
                         PDF
                       </Button>
-                      <Button size="sm" className="flex-1 bg-primary text-white hover:bg-primary/90">
-                        <FileText className="w-4 h-4 mr-2" />
+                      <Button 
+                        size="sm" 
+                        className="flex-1 bg-primary text-white hover:bg-primary/90"
+                        onClick={exportToXLSX}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
                         XLSX
                       </Button>
                     </div>
