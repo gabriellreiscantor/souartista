@@ -23,7 +23,7 @@ const DemoArtistShows = () => {
   const demoShows = [
     {
       id: '1',
-      venue_name: 'Tatu Bola',
+      venue_name: 'Bar e Restaurante Harmonia',
       date_local: '2025-11-18',
       time_local: '19:00',
       fee: 550,
@@ -35,7 +35,7 @@ const DemoArtistShows = () => {
     },
     {
       id: '2',
-      venue_name: 'Ditado Popular',
+      venue_name: 'Casa de Shows Melodia',
       date_local: '2025-11-12',
       time_local: '20:00',
       fee: 2500,
@@ -47,7 +47,7 @@ const DemoArtistShows = () => {
     },
     {
       id: '3',
-      venue_name: 'Pub 65',
+      venue_name: 'Pub e Lounge Estrela',
       date_local: '2025-11-14',
       time_local: '21:00',
       fee: 350,
@@ -56,7 +56,7 @@ const DemoArtistShows = () => {
     },
     {
       id: '4',
-      venue_name: 'Raiznejo',
+      venue_name: 'Restaurante e Bar Acústico',
       date_local: '2025-11-14',
       time_local: '20:00',
       fee: 2100,
