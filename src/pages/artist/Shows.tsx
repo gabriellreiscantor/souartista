@@ -1226,12 +1226,12 @@ const ArtistShows = () => {
                                             <MoreVertical className="h-4 w-4" />
                                           </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="bg-white z-50">
-                                          <DropdownMenuItem onClick={() => handleShowEdit(show)}>
-                                            <Edit className="w-4 h-4 mr-2" />
+                                        <DropdownMenuContent className="bg-white border border-gray-200 shadow-lg z-50">
+                                          <DropdownMenuItem onClick={() => handleShowEdit(show)} className="text-gray-900 hover:bg-purple-50 cursor-pointer">
+                                            <Edit className="w-4 h-4 mr-2 text-primary" />
                                             Editar
                                           </DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => handleShowDelete(show.id)} className="text-red-600">
+                                          <DropdownMenuItem onClick={() => handleShowDelete(show.id)} className="text-red-600 hover:bg-red-50 cursor-pointer">
                                             <Trash2 className="w-4 h-4 mr-2" />
                                             Excluir
                                           </DropdownMenuItem>
@@ -1284,12 +1284,12 @@ const ArtistShows = () => {
                                                 <MoreVertical className="h-4 w-4 text-stone-950" />
                                               </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent className="bg-white z-50">
-                                              <DropdownMenuItem onClick={() => handleShowEdit(show)}>
-                                                <Edit className="w-4 h-4 mr-2" />
+                                            <DropdownMenuContent className="bg-white border border-gray-200 shadow-lg z-50">
+                                              <DropdownMenuItem onClick={() => handleShowEdit(show)} className="text-gray-900 hover:bg-purple-50 cursor-pointer">
+                                                <Edit className="w-4 h-4 mr-2 text-primary" />
                                                 Editar
                                               </DropdownMenuItem>
-                                              <DropdownMenuItem onClick={() => handleShowDelete(show.id)} className="text-red-600">
+                                              <DropdownMenuItem onClick={() => handleShowDelete(show.id)} className="text-red-600 hover:bg-red-50 cursor-pointer">
                                                 <Trash2 className="w-4 h-4 mr-2" />
                                                 Excluir
                                               </DropdownMenuItem>
