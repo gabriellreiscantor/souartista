@@ -26,30 +26,33 @@ export default function DemoMusicianDashboard() {
   }));
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
+    <div className="flex min-h-screen w-full bg-gray-50">
       <DemoMusicianSidebar />
       
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         <DemoBanner />
         
         <main className="flex-1 overflow-auto">
-          <div className="container mx-auto p-6 space-y-6">
+          <div className="container mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex flex-col gap-3 md:gap-4">
               <div>
-                <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-                <p className="text-muted-foreground mt-1">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
+                <p className="text-gray-600 mt-1 text-sm md:text-base">
                   Olá, João Silva! Aqui está um resumo da sua agenda.
                 </p>
               </div>
-              <PeriodFilter
-                value={selectedPeriod}
-                onChange={setSelectedPeriod}
-              />
+              <div className="w-full md:w-auto">
+                <PeriodFilter
+                  value={selectedPeriod}
+                  onChange={setSelectedPeriod}
+                  className="w-full md:w-auto"
+                />
+              </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
               <StatCard
                 icon={Music}
                 title="Total de Shows"
@@ -81,27 +84,27 @@ export default function DemoMusicianDashboard() {
             </div>
 
             {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               {/* Upcoming Shows */}
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-primary" />
+              <Card className="p-4 md:p-6 bg-white border-gray-200">
+                <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4 flex items-center gap-2 text-gray-900">
+                  <Calendar className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                   Próximos Shows
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-2 md:space-y-3">
                   {demoUpcomingShows.slice(0, 5).map((show) => (
                     <div
                       key={show.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                      className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
                     >
-                      <div className="flex-1">
-                        <p className="font-medium text-foreground">{show.venue_name}</p>
-                        <p className="text-sm text-muted-foreground">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 truncate text-sm md:text-base">{show.venue_name}</p>
+                        <p className="text-xs md:text-sm text-gray-600">
                           {new Date(show.date_local).toLocaleDateString('pt-BR')} às {show.time_local}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-green-600">
+                      <div className="text-right ml-2">
+                        <p className="font-semibold text-green-600 text-sm md:text-base whitespace-nowrap">
                           {formatCurrency(show.fee * 0.25)}
                         </p>
                       </div>
@@ -111,21 +114,22 @@ export default function DemoMusicianDashboard() {
               </Card>
 
               {/* Monthly Earnings Chart */}
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-primary" />
+              <Card className="p-4 md:p-6 bg-white border-gray-200">
+                <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4 flex items-center gap-2 text-gray-900">
+                  <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                   Ganhos Mensais
                 </h3>
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={earningsData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="month" className="text-xs" />
-                    <YAxis className="text-xs" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="month" className="text-xs" stroke="#6b7280" />
+                    <YAxis className="text-xs" stroke="#6b7280" />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #e5e7eb',
                         borderRadius: '8px',
+                        color: '#111827'
                       }}
                     />
                     <Legend />
@@ -136,16 +140,16 @@ export default function DemoMusicianDashboard() {
             </div>
 
             {/* Weekly Schedule */}
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-primary" />
+            <Card className="p-4 md:p-6 bg-white border-gray-200">
+              <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4 flex items-center gap-2 text-gray-900">
+                <Calendar className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                 Agenda Semanal
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-2 md:space-y-3">
                 {demoWeekSchedule.map((day) => (
-                  <div key={day.day} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <span className="font-medium text-foreground">{day.day}</span>
-                    <span className="text-sm text-muted-foreground">
+                  <div key={day.day} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+                    <span className="font-medium text-gray-900 text-sm md:text-base">{day.day}</span>
+                    <span className="text-xs md:text-sm text-gray-600">
                       {day.shows} show{day.shows !== 1 ? 's' : ''}
                     </span>
                   </div>
@@ -168,16 +172,16 @@ interface StatCardProps {
   valueColor?: string;
 }
 
-function StatCard({ icon: Icon, title, value, iconBg, iconColor, valueColor = "text-foreground" }: StatCardProps) {
+function StatCard({ icon: Icon, title, value, iconBg, iconColor, valueColor = "text-gray-900" }: StatCardProps) {
   return (
-    <Card className="p-6 hover:shadow-lg transition-shadow">
-      <div className="flex items-center gap-4">
-        <div className={`w-12 h-12 rounded-lg ${iconBg} flex items-center justify-center flex-shrink-0`}>
-          <Icon className={`w-6 h-6 ${iconColor}`} />
+    <Card className="p-4 md:p-6 hover:shadow-lg transition-shadow bg-white border-gray-200">
+      <div className="flex items-center gap-3 md:gap-4">
+        <div className={`w-10 h-10 md:w-12 md:h-12 rounded-lg ${iconBg} flex items-center justify-center flex-shrink-0`}>
+          <Icon className={`w-5 h-5 md:w-6 md:h-6 ${iconColor}`} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-muted-foreground truncate">{title}</p>
-          <p className={`text-2xl font-bold ${valueColor} truncate`}>{value}</p>
+          <p className="text-xs md:text-sm text-gray-600 truncate">{title}</p>
+          <p className={`text-lg md:text-2xl font-bold ${valueColor} truncate`}>{value}</p>
         </div>
       </div>
     </Card>
