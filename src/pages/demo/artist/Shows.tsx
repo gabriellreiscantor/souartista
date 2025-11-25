@@ -502,7 +502,7 @@ const DemoArtistShows = () => {
             
             <Button 
               variant="outline" 
-              className="w-full border-2 border-gray-300 text-gray-700 font-semibold"
+              className="w-full border-2 border-gray-300 text-gray-700 font-semibold bg-white hover:bg-gray-50"
               onClick={handleDemoAction}
             >
               Evento Particular
@@ -511,12 +511,12 @@ const DemoArtistShows = () => {
             <div className="space-y-2">
               <Label htmlFor="show-venue" className="text-gray-900 font-semibold">Nome do local</Label>
               <Select>
-                <SelectTrigger className="bg-white border-gray-300">
+                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                   <SelectValue placeholder="Selecione um local" />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="1">Bar e Restaurante Harmonia</SelectItem>
-                  <SelectItem value="2">Casa de Shows Melodia</SelectItem>
+                <SelectContent className="bg-white border-gray-200">
+                  <SelectItem value="1" className="text-gray-900">Bar e Restaurante Harmonia</SelectItem>
+                  <SelectItem value="2" className="text-gray-900">Casa de Shows Melodia</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -548,14 +548,14 @@ const DemoArtistShows = () => {
             <div className="space-y-2">
               <Label htmlFor="show-duration" className="text-gray-900 font-semibold">Duração de show</Label>
               <Select>
-                <SelectTrigger className="bg-white border-gray-300">
+                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                   <SelectValue placeholder="4 horas" />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="2">2 horas</SelectItem>
-                  <SelectItem value="3">3 horas</SelectItem>
-                  <SelectItem value="4">4 horas</SelectItem>
-                  <SelectItem value="5">5 horas</SelectItem>
+                <SelectContent className="bg-white border-gray-200">
+                  <SelectItem value="2" className="text-gray-900">2 horas</SelectItem>
+                  <SelectItem value="3" className="text-gray-900">3 horas</SelectItem>
+                  <SelectItem value="4" className="text-gray-900">4 horas</SelectItem>
+                  <SelectItem value="5" className="text-gray-900">5 horas</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -582,7 +582,7 @@ const DemoArtistShows = () => {
                   variant="outline" 
                   size="sm"
                   onClick={handleDemoAction}
-                  className="border-gray-300 text-gray-700"
+                  className="border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   Adicionar
@@ -600,7 +600,7 @@ const DemoArtistShows = () => {
                   variant="outline" 
                   size="sm"
                   onClick={handleDemoAction}
-                  className="border-gray-300 text-gray-700"
+                  className="border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   Adicionar
@@ -612,7 +612,7 @@ const DemoArtistShows = () => {
               <Button
                 variant="outline"
                 onClick={() => setAddShowOpen(false)}
-                className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="flex-1 border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
               >
                 Cancelar
               </Button>
