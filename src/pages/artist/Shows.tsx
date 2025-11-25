@@ -16,7 +16,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { TimePicker } from '@/components/ui/time-picker';
-import { Bell, Plus, Calendar as CalendarIcon, Clock, MapPin, DollarSign, Edit, Trash2, Music2, Users, List, Grid3x3, ChevronDown, ChevronUp, MoreVertical, TrendingDown, ArrowUpRight } from 'lucide-react';
+import { Bell, Plus, Calendar as CalendarIcon, Clock, MapPin, DollarSign, Edit, Trash2, Music2, Users, List, Grid3x3, ChevronDown, ChevronUp, MoreVertical, TrendingDown, ArrowUpRight, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -75,6 +76,15 @@ const ArtistShows = () => {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [showFilter, setShowFilter] = useState<string>('upcoming');
+  
+  // Check if selected date is in the past
+  const isDateInPast = () => {
+    if (!showFormData.date_local) return false;
+    const selectedDate = new Date(showFormData.date_local + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return selectedDate < today;
+  };
 
   // Shows dialog
   const [showDialogOpen, setShowDialogOpen] = useState(false);
@@ -765,6 +775,15 @@ const ArtistShows = () => {
                                     ...showFormData,
                                     date_local: e.target.value
                                   })} className="bg-white text-gray-900 mt-1.5" required />
+                                    
+                                    {isDateInPast() && (
+                                      <Alert className="mt-2 border-orange-200 bg-orange-50">
+                                        <AlertCircle className="h-4 w-4 text-orange-600" />
+                                        <AlertDescription className="text-orange-800 text-sm">
+                                          A data selecionada está no passado. Isso é apenas um lembrete.
+                                        </AlertDescription>
+                                      </Alert>
+                                    )}
                                   </div>
                                   
                                   <div>
@@ -1002,8 +1021,8 @@ const ArtistShows = () => {
                                     })} placeholder="Digite o nome do local" required />}
                                         </div>}
 
-                                      <div className="grid grid-cols-3 gap-4">
-                                        <div>
+                                      <div className="space-y-4">
+                                        <div className="col-span-3">
                                           <Label htmlFor="date_local" className="text-gray-900">Data do show</Label>
                                           <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                                             <PopoverTrigger asChild>
@@ -1038,7 +1057,19 @@ const ArtistShows = () => {
                                           }} initialFocus className="pointer-events-auto" />
                                             </PopoverContent>
                                           </Popover>
+                                          
+                                          {isDateInPast() && (
+                                            <Alert className="mt-2 border-orange-200 bg-orange-50">
+                                              <AlertCircle className="h-4 w-4 text-orange-600" />
+                                              <AlertDescription className="text-orange-800 text-sm">
+                                                A data selecionada está no passado. Isso é apenas um lembrete.
+                                              </AlertDescription>
+                                            </Alert>
+                                          )}
                                         </div>
+                                      </div>
+                                      
+                                      <div className="grid grid-cols-2 gap-4">
                                         <div>
                                           <Label htmlFor="time_local" className="text-gray-900">Horário</Label>
                                           <TimePicker value={showFormData.time_local} onChange={time => setShowFormData({
