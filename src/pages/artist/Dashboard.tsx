@@ -24,8 +24,15 @@ import { ptBR } from 'date-fns/locale';
 const ArtistDashboard = () => {
   const { userData, userRole, loading } = useAuth();
   const navigate = useNavigate();
-  const [selectedPeriod, setSelectedPeriod] = useState<string>("all");
-  const [selectedYear, setSelectedYear] = useState("2025");
+  
+  // Inicializa com o mês e ano atuais
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+  const defaultPeriod = `${currentYear}-${currentMonth}`;
+  
+  const [selectedPeriod, setSelectedPeriod] = useState<string>(defaultPeriod);
+  const [selectedYear, setSelectedYear] = useState(currentYear.toString());
 
   const stats = useArtistStats(selectedPeriod);
   const { data: monthlyData } = useMonthlyData(selectedYear, userRole);
