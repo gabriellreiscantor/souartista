@@ -22,62 +22,33 @@ const DemoArtistReports = () => {
   const currentMonthNum = String(currentDate.getMonth() + 1).padStart(2, '0');
 
   const demoShows = [
-    {
-      id: '1',
-      venue_name: 'Casa de Shows Melodia',
-      date_local: `${currentYear}-${currentMonthNum}-12`,
-      fee: 2500,
-      teamExpenses: 1800,
-      locomotionExpenses: 0
-    },
-    {
-      id: '2',
-      venue_name: 'Pub e Lounge Estrela',
-      date_local: `${currentYear}-${currentMonthNum}-14`,
-      fee: 350,
-      teamExpenses: 0,
-      locomotionExpenses: 0
-    },
-    {
-      id: '3',
-      venue_name: 'Restaurante e Bar Acústico',
-      date_local: `${currentYear}-${currentMonthNum}-14`,
-      fee: 2100,
-      teamExpenses: 150,
-      locomotionExpenses: 0
-    },
-    {
-      id: '4',
-      venue_name: 'Bar e Restaurante Harmonia',
-      date_local: `${currentYear}-${currentMonthNum}-18`,
-      fee: 550,
-      teamExpenses: 150,
-      locomotionExpenses: 0
-    },
-    {
-      id: '5',
-      venue_name: 'SAPEZAL',
-      date_local: `${currentYear}-${currentMonthNum}-20`,
-      fee: 1500,
-      teamExpenses: 302,
-      locomotionExpenses: 0
-    },
-    {
-      id: '6',
-      venue_name: 'Pub 65',
-      date_local: `${currentYear}-${currentMonthNum}-22`,
-      fee: 1200,
-      teamExpenses: 850,
-      locomotionExpenses: 0
-    },
-    {
-      id: '7',
-      venue_name: 'Raiznejo',
-      date_local: `${currentYear}-${currentMonthNum}-25`,
-      fee: 1200,
-      teamExpenses: 100,
-      locomotionExpenses: 0
-    }
+    // Casa de Shows Melodia - 7 shows
+    { id: '1', venue_name: 'Casa de Shows Melodia', date_local: `${currentYear}-${currentMonthNum}-02`, fee: 2500, teamExpenses: 1800, locomotionExpenses: 0 },
+    { id: '2', venue_name: 'Casa de Shows Melodia', date_local: `${currentYear}-${currentMonthNum}-05`, fee: 2400, teamExpenses: 1700, locomotionExpenses: 0 },
+    { id: '3', venue_name: 'Casa de Shows Melodia', date_local: `${currentYear}-${currentMonthNum}-08`, fee: 2600, teamExpenses: 1850, locomotionExpenses: 0 },
+    { id: '4', venue_name: 'Casa de Shows Melodia', date_local: `${currentYear}-${currentMonthNum}-12`, fee: 2500, teamExpenses: 1800, locomotionExpenses: 0 },
+    { id: '5', venue_name: 'Casa de Shows Melodia', date_local: `${currentYear}-${currentMonthNum}-15`, fee: 2450, teamExpenses: 1750, locomotionExpenses: 0 },
+    { id: '6', venue_name: 'Casa de Shows Melodia', date_local: `${currentYear}-${currentMonthNum}-20`, fee: 2550, teamExpenses: 1820, locomotionExpenses: 0 },
+    { id: '7', venue_name: 'Casa de Shows Melodia', date_local: `${currentYear}-${currentMonthNum}-25`, fee: 2500, teamExpenses: 1800, locomotionExpenses: 0 },
+    
+    // Pub e Lounge Estrela - 5 shows
+    { id: '8', venue_name: 'Pub e Lounge Estrela', date_local: `${currentYear}-${currentMonthNum}-03`, fee: 350, teamExpenses: 0, locomotionExpenses: 0 },
+    { id: '9', venue_name: 'Pub e Lounge Estrela', date_local: `${currentYear}-${currentMonthNum}-07`, fee: 380, teamExpenses: 0, locomotionExpenses: 0 },
+    { id: '10', venue_name: 'Pub e Lounge Estrela', date_local: `${currentYear}-${currentMonthNum}-14`, fee: 350, teamExpenses: 0, locomotionExpenses: 0 },
+    { id: '11', venue_name: 'Pub e Lounge Estrela', date_local: `${currentYear}-${currentMonthNum}-21`, fee: 370, teamExpenses: 0, locomotionExpenses: 0 },
+    { id: '12', venue_name: 'Pub e Lounge Estrela', date_local: `${currentYear}-${currentMonthNum}-28`, fee: 360, teamExpenses: 0, locomotionExpenses: 0 },
+    
+    // Restaurante e Bar Acústico - 3 shows
+    { id: '13', venue_name: 'Restaurante e Bar Acústico', date_local: `${currentYear}-${currentMonthNum}-06`, fee: 2100, teamExpenses: 150, locomotionExpenses: 0 },
+    { id: '14', venue_name: 'Restaurante e Bar Acústico', date_local: `${currentYear}-${currentMonthNum}-13`, fee: 2050, teamExpenses: 150, locomotionExpenses: 0 },
+    { id: '15', venue_name: 'Restaurante e Bar Acústico', date_local: `${currentYear}-${currentMonthNum}-27`, fee: 2150, teamExpenses: 150, locomotionExpenses: 0 },
+    
+    // Bar e Restaurante Harmonia - 2 shows
+    { id: '16', venue_name: 'Bar e Restaurante Harmonia', date_local: `${currentYear}-${currentMonthNum}-10`, fee: 550, teamExpenses: 150, locomotionExpenses: 0 },
+    { id: '17', venue_name: 'Bar e Restaurante Harmonia', date_local: `${currentYear}-${currentMonthNum}-24`, fee: 580, teamExpenses: 150, locomotionExpenses: 0 },
+    
+    // Clube Social Vitória - 1 show
+    { id: '18', venue_name: 'Clube Social Vitória', date_local: `${currentYear}-${currentMonthNum}-18`, fee: 1500, teamExpenses: 302, locomotionExpenses: 0 }
   ];
 
   const totalShows = demoShows.length;
@@ -103,6 +74,15 @@ const DemoArtistReports = () => {
     { name: 'Roberto Santos', cost: 302 },
     { name: 'Ana Paula', cost: 150 },
     { name: 'Fernando Costa', cost: 100 }
+  ];
+
+  // Top 5 custos de locomoção (dados fictícios)
+  const locomotionCosts = [
+    { name: 'Passagem Avião', cost: 850 },
+    { name: 'Uber', cost: 320 },
+    { name: 'Avião', cost: 780 },
+    { name: 'Ônibus', cost: 150 },
+    { name: 'Uber', cost: 95 }
   ];
 
   // Top 5 locais por número de shows (baseado nos shows demo)
@@ -404,7 +384,18 @@ const DemoArtistReports = () => {
                     <Car className="w-5 h-5" />
                     Top 5 Custos de Locomoção
                   </h3>
-                  <p className="text-sm text-gray-500">Dados insuficientes para análise.</p>
+                  <div className="space-y-2">
+                    {locomotionCosts.map((item, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <span className="text-sm text-gray-900">
+                          {index + 1}. {item.name}
+                        </span>
+                        <div className="bg-primary text-white px-3 py-1 rounded-full">
+                          <span className="text-xs font-bold">R$ {formatCurrency(item.cost)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
 
