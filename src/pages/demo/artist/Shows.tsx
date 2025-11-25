@@ -18,6 +18,7 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 const DemoArtistShows = () => {
   const [showFilter, setShowFilter] = useState('lastWeek');
@@ -27,6 +28,7 @@ const DemoArtistShows = () => {
   const [addShowOpen, setAddShowOpen] = useState(false);
   const [addTeamMemberOpen, setAddTeamMemberOpen] = useState(false);
   const [addExpenseOpen, setAddExpenseOpen] = useState(false);
+  const [isPrivateEvent, setIsPrivateEvent] = useState(false);
   const [lockedModalOpen, setLockedModalOpen] = useState(false);
   const [venueName, setVenueName] = useState('');
   const [venueAddress, setVenueAddress] = useState('');
@@ -37,7 +39,10 @@ const DemoArtistShows = () => {
   const [showDate, setShowDate] = useState('');
   const [showTime, setShowTime] = useState('');
   const [showFee, setShowFee] = useState('');
-  const [teamMemberName, setTeamMemberName] = useState('');
+  const [showDuration, setShowDuration] = useState('');
+  const [teamMembers, setTeamMembers] = useState<Array<{id: string, name: string, cost: string}>>([]);
+  const [expenses, setExpenses] = useState<Array<{id: string, type: string, description: string, cost: string}>>([]);
+  const [selectedTeamMember, setSelectedTeamMember] = useState('');
   const [teamMemberCost, setTeamMemberCost] = useState('');
   const [expenseType, setExpenseType] = useState('');
   const [expenseDescription, setExpenseDescription] = useState('');
@@ -191,26 +196,62 @@ const DemoArtistShows = () => {
 
   const handleSaveShow = () => {
     setAddShowOpen(false);
+    setIsPrivateEvent(false);
     setShowVenue('');
     setShowDate('');
     setShowTime('');
     setShowFee('');
+    setShowDuration('');
+    setTeamMembers([]);
+    setExpenses([]);
     setLockedModalOpen(true);
   };
 
-  const handleSaveTeamMember = () => {
-    setAddTeamMemberOpen(false);
-    setTeamMemberName('');
-    setTeamMemberCost('');
-    setLockedModalOpen(true);
+  const handleAddTeamMember = () => {
+    if (selectedTeamMember && teamMemberCost) {
+      const member = demoMusicians.find(m => m.id === selectedTeamMember);
+      if (member) {
+        setTeamMembers([...teamMembers, {
+          id: Date.now().toString(),
+          name: member.name,
+          cost: teamMemberCost
+        }]);
+      }
+      setSelectedTeamMember('');
+      setTeamMemberCost('');
+      setAddTeamMemberOpen(false);
+    }
   };
 
-  const handleSaveExpense = () => {
-    setAddExpenseOpen(false);
-    setExpenseType('');
-    setExpenseDescription('');
-    setExpenseCost('');
-    setLockedModalOpen(true);
+  const handleRemoveTeamMember = (id: string) => {
+    setTeamMembers(teamMembers.filter(m => m.id !== id));
+  };
+
+  const handleAddExpense = () => {
+    if (expenseType && expenseDescription && expenseCost) {
+      setExpenses([...expenses, {
+        id: Date.now().toString(),
+        type: expenseType,
+        description: expenseDescription,
+        cost: expenseCost
+      }]);
+      setExpenseType('');
+      setExpenseDescription('');
+      setExpenseCost('');
+      setAddExpenseOpen(false);
+    }
+  };
+
+  const handleRemoveExpense = (id: string) => {
+    setExpenses(expenses.filter(e => e.id !== id));
+  };
+
+  const calculateTeamTotal = () => {
+    return teamMembers.reduce((sum, member) => sum + parseFloat(member.cost || '0'), 0);
+  };
+
+  const calculateExpenseTotal = () => {
+    return expenses.reduce((sum, expense) => sum + parseFloat(expense.cost || '0'), 0);
   };
 
   const handleFilterChange = (value: string) => {
@@ -524,24 +565,34 @@ const DemoArtistShows = () => {
             
             <Button 
               variant="outline" 
-              className="w-full border-2 border-gray-300 text-gray-700 font-semibold bg-white hover:bg-gray-50"
-              onClick={() => setLockedModalOpen(true)}
+              className={cn(
+                "w-full border-2 font-semibold",
+                isPrivateEvent 
+                  ? "bg-primary text-white border-primary hover:bg-primary/90" 
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+              )}
+              onClick={() => setIsPrivateEvent(!isPrivateEvent)}
             >
               Evento Particular
             </Button>
             
-            <div className="space-y-2">
-              <Label htmlFor="show-venue" className="text-gray-900 font-semibold">Nome do local</Label>
-              <Select>
-                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
-                  <SelectValue placeholder="Selecione um local" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-gray-200">
-                  <SelectItem value="1" className="text-gray-900">Bar e Restaurante Harmonia</SelectItem>
-                  <SelectItem value="2" className="text-gray-900">Casa de Shows Melodia</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {!isPrivateEvent && (
+              <div className="space-y-2">
+                <Label htmlFor="show-venue" className="text-gray-900 font-semibold">Nome do local</Label>
+                <Select value={showVenue} onValueChange={setShowVenue}>
+                  <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                    <SelectValue placeholder="Selecione um local" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-gray-200">
+                    {demoVenues.map((venue) => (
+                      <SelectItem key={venue.id} value={venue.id} className="text-gray-900">
+                        {venue.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             
             <div className="space-y-2">
               <Label htmlFor="show-date" className="text-gray-900 font-semibold">Data do show</Label>
@@ -569,7 +620,7 @@ const DemoArtistShows = () => {
             
             <div className="space-y-2">
               <Label htmlFor="show-duration" className="text-gray-900 font-semibold">Duração de show</Label>
-              <Select>
+              <Select value={showDuration} onValueChange={setShowDuration}>
                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                   <SelectValue placeholder="4 horas" />
                 </SelectTrigger>
@@ -596,11 +647,14 @@ const DemoArtistShows = () => {
               />
             </div>
             
-            <div className="space-y-2">
+            {/* Equipe/Músicos Section */}
+            <div className="space-y-3 border-t pt-4">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-gray-900 font-semibold">Equipe/Músicos</div>
-                  <div className="text-xs text-gray-500">Custo total: R$ 0,00</div>
+                  <div className="text-xs text-gray-500">
+                    Custo total: R$ {calculateTeamTotal().toFixed(2).replace('.', ',')}
+                  </div>
                 </div>
                 <Button 
                   variant="outline" 
@@ -612,13 +666,42 @@ const DemoArtistShows = () => {
                   Adicionar
                 </Button>
               </div>
+              
+              {teamMembers.map((member) => (
+                <div key={member.id} className="bg-gray-50 p-3 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm text-gray-600">Membro</span>
+                    <button 
+                      onClick={() => handleRemoveTeamMember(member.id)}
+                      className="ml-auto text-red-600 hover:text-red-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      value={member.name}
+                      disabled
+                      className="bg-white border-gray-300 text-gray-900"
+                    />
+                    <Input
+                      value={`R$ ${member.cost}`}
+                      disabled
+                      className="bg-white border-gray-300 text-gray-900"
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
             
-            <div className="space-y-2">
+            {/* Despesas Adicionais Section */}
+            <div className="space-y-3 border-t pt-4">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-gray-900 font-semibold">Despesas Adicionais</div>
-                  <div className="text-xs text-gray-500">Custo total: R$ 0,00</div>
+                  <div className="text-xs text-gray-500">
+                    Custo total: R$ {calculateExpenseTotal().toFixed(2).replace('.', ',')}
+                  </div>
                 </div>
                 <Button 
                   variant="outline" 
@@ -630,6 +713,39 @@ const DemoArtistShows = () => {
                   Adicionar
                 </Button>
               </div>
+              
+              {expenses.map((expense) => (
+                <div key={expense.id} className="bg-gray-50 p-3 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm text-gray-600">Despesa</span>
+                    <button 
+                      onClick={() => handleRemoveExpense(expense.id)}
+                      className="ml-auto text-red-600 hover:text-red-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Input
+                      value={expense.type}
+                      disabled
+                      placeholder="Tipo"
+                      className="bg-white border-gray-300 text-gray-900 text-sm"
+                    />
+                    <Input
+                      value={expense.description}
+                      disabled
+                      placeholder="Descrição"
+                      className="bg-white border-gray-300 text-gray-900 text-sm"
+                    />
+                    <Input
+                      value={`R$ ${expense.cost}`}
+                      disabled
+                      className="bg-white border-gray-300 text-gray-900 text-sm"
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
             
             <div className="flex gap-3 pt-4">
@@ -659,15 +775,17 @@ const DemoArtistShows = () => {
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
-              <Label htmlFor="team-member-name" className="text-gray-900">Nome</Label>
-              <Select>
+              <Label htmlFor="team-member-select" className="text-gray-900">Membro</Label>
+              <Select value={selectedTeamMember} onValueChange={setSelectedTeamMember}>
                 <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                   <SelectValue placeholder="Selecione um músico" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-gray-200">
-                  <SelectItem value="1" className="text-gray-900">Freelancer</SelectItem>
-                  <SelectItem value="2" className="text-gray-900">Produtor Musical</SelectItem>
-                  <SelectItem value="3" className="text-gray-900">Hold</SelectItem>
+                  {demoMusicians.map((musician) => (
+                    <SelectItem key={musician.id} value={musician.id} className="text-gray-900">
+                      {musician.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -693,7 +811,7 @@ const DemoArtistShows = () => {
                 Cancelar
               </Button>
               <Button
-                onClick={handleSaveTeamMember}
+                onClick={handleAddTeamMember}
                 className="flex-1 bg-primary hover:bg-primary/90 text-white"
               >
                 Adicionar
@@ -752,7 +870,7 @@ const DemoArtistShows = () => {
                 Cancelar
               </Button>
               <Button
-                onClick={handleSaveExpense}
+                onClick={handleAddExpense}
                 className="flex-1 bg-primary hover:bg-primary/90 text-white"
               >
                 Adicionar
