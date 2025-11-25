@@ -15,7 +15,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Plus, Calendar as CalendarIcon, Clock, MapPin, Music2, Mic2, ChevronDown, ChevronUp, Edit, Trash2, X, Guitar } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, Clock, MapPin, Music2, Mic2, ChevronDown, ChevronUp, Edit, Trash2, X, Guitar, LayoutGrid, List } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { NotificationBell } from '@/components/NotificationBell';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { toast } from 'sonner';
@@ -23,6 +24,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 const DemoMusicianShows = () => {
+  const isMobile = useIsMobile();
   const [expandedShows, setExpandedShows] = useState<Set<string>>(new Set());
   const [showLockedModal, setShowLockedModal] = useState(false);
   const [showDialogOpen, setShowDialogOpen] = useState(false);
@@ -31,6 +33,7 @@ const DemoMusicianShows = () => {
   const [venueDialogOpen, setVenueDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [personalExpenses, setPersonalExpenses] = useState<Array<{ description: string; cost: string }>>([]);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
   const [showFormData, setShowFormData] = useState({
     artist_id: '',
@@ -247,8 +250,93 @@ const DemoMusicianShows = () => {
                     </Button>
                   </Card>
 
+                  {/* Desktop header */}
+                  <div className="hidden md:flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div>
+                      <h2 className="text-xl md:text-2xl font-bold text-gray-900">Meus Freelas</h2>
+                      <p className="text-sm text-gray-500">
+                        Atualizado em {format(lastUpdated, "dd/MM/yyyy 'às' HH:mm:ss")}
+                      </p>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1 border border-gray-300 rounded-lg p-1 bg-white">
+                        <Button
+                          variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                          size="icon"
+                          onClick={() => setViewMode('grid')}
+                          className="h-8 w-8"
+                        >
+                          <LayoutGrid className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant={viewMode === 'list' ? 'default' : 'ghost'}
+                          size="icon"
+                          onClick={() => setViewMode('list')}
+                          className="h-8 w-8"
+                        >
+                          <List className="w-4 h-4" />
+                        </Button>
+                      </div>
+
+                      <Select defaultValue="upcoming" onValueChange={handleFilterChange}>
+                        <SelectTrigger className="w-[200px] bg-white text-gray-900 border-gray-300">
+                          <CalendarIcon className="w-4 h-4 mr-2 text-gray-900" />
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white">
+                          <SelectItem value="upcoming" className="text-gray-900">Próximos Shows</SelectItem>
+                          <SelectItem value="thisWeek" className="text-gray-900">Esta Semana</SelectItem>
+                          <SelectItem value="lastWeek" className="text-gray-900">Semana Passada</SelectItem>
+                          <SelectItem value="twoWeeksAgo" className="text-gray-900">Semana Retrasada</SelectItem>
+                          <SelectItem value="thisMonth" className="text-gray-900">Este Mês</SelectItem>
+                          <SelectItem value="all" className="text-gray-900">Todos os Shows</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Button onClick={() => setShowDialogOpen(true)} className="bg-primary hover:bg-primary/90 text-white">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Adicionar
+                      </Button>
+                    </div>
+                  </div>
+
                   {/* Shows list */}
-                  <div className="grid gap-4">
+                  {viewMode === 'list' && !isMobile ? <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-4">
+                      <div className="grid grid-cols-[1fr,120px,120px,120px] gap-4 p-4 bg-gray-50 border-b text-sm font-medium text-gray-600">
+                        <div>Data e Local</div>
+                        <div className="text-center">Cachê</div>
+                        <div className="text-center">Despesas</div>
+                        <div className="text-center">Lucro</div>
+                      </div>
+                      {demoShows.map((show) => {
+                        const expenses = calculateShowExpenses(show);
+                        const profit = calculateShowProfit(show);
+                        const showDate = new Date(show.date_local);
+
+                        return <div key={show.id} className="grid grid-cols-[1fr,120px,120px,120px] gap-4 p-4 border-b hover:bg-gray-50 items-center">
+                            <div>
+                              <div className="font-semibold text-gray-900">{show.venue_name}</div>
+                              <div className="text-sm text-gray-600">
+                                {format(showDate, "dd 'de' MMMM", { locale: ptBR })} • {show.time_local}
+                              </div>
+                              <div className="text-sm text-gray-600">{show.artist_name}</div>
+                              <div className="text-sm text-gray-500">{show.instrument}</div>
+                            </div>
+                            <div className="text-center font-semibold text-green-600">
+                              R$ {show.fee.toFixed(2).replace('.', ',')}
+                            </div>
+                            <div className="text-center font-semibold text-red-600">
+                              R$ {expenses.toFixed(2).replace('.', ',')}
+                            </div>
+                            <div className="text-center">
+                              <span className="px-3 py-1 rounded-full bg-primary text-white font-bold text-sm inline-block">
+                                R$ {profit.toFixed(2).replace('.', ',')}
+                              </span>
+                            </div>
+                          </div>;
+                      })}
+                    </div> : <div className="grid gap-4">
                     {demoShows.map((show) => {
                       const expenses = calculateShowExpenses(show);
                       const profit = calculateShowProfit(show);
@@ -324,7 +412,7 @@ const DemoMusicianShows = () => {
                         </Card>
                       );
                     })}
-                  </div>
+                  </div>}
 
                   {/* Financial summary */}
                   <Card className="p-4 md:p-6 bg-[#F5F0FA] border-0 mt-4">
