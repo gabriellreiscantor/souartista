@@ -1,7 +1,11 @@
 import { DemoMusicianSidebar } from "@/components/DemoMusicianSidebar";
 import { DemoBanner } from "@/components/DemoBanner";
+import { DemoMobileBottomNav } from "@/components/DemoMobileBottomNav";
+import { DemoUserMenu } from "@/components/DemoUserMenu";
+import { NotificationBell } from "@/components/NotificationBell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Calendar, MapPin, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { demoShows } from "@/data/demoData";
@@ -15,18 +19,30 @@ export default function DemoMusicianShows() {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-gray-50">
-      <DemoMusicianSidebar />
-      
-      <div className="flex-1 flex flex-col min-w-0">
-        <DemoBanner />
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-gray-50">
+        <DemoMusicianSidebar />
         
-        <main className="flex-1 overflow-auto">
-          <div className="container mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Meus Shows</h1>
-              <p className="text-gray-600 mt-1 text-sm md:text-base">Acompanhe todos os seus shows</p>
+        <div className="flex-1 flex flex-col min-w-0">
+          <DemoBanner />
+          
+          <header className="h-16 border-b border-gray-200 bg-white flex items-center px-6 justify-between">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+              <h1 className="text-xl font-semibold text-gray-900">Meus Shows</h1>
             </div>
+            
+            <div className="flex items-center gap-3">
+              <NotificationBell />
+              <DemoUserMenu userName="Demo" userRole="musician" />
+            </div>
+          </header>
+          
+          <main className="flex-1 overflow-auto pb-20 md:pb-6">
+            <div className="container mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
+              <div>
+                <p className="text-gray-600 mt-1 text-sm md:text-base">Acompanhe todos os seus shows</p>
+              </div>
 
             <div className="grid gap-3 md:gap-4">
               {demoShows.map((show) => {
@@ -83,6 +99,9 @@ export default function DemoMusicianShows() {
           </div>
         </main>
       </div>
+      
+      <DemoMobileBottomNav role="musician" />
     </div>
+    </SidebarProvider>
   );
 }
