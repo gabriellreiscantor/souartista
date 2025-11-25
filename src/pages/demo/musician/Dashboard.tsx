@@ -1,16 +1,95 @@
-import { useState } from "react";
-import { DemoMusicianSidebar } from "@/components/DemoMusicianSidebar";
-import { DemoBanner } from "@/components/DemoBanner";
-import { Card } from "@/components/ui/card";
-import { Music, DollarSign, TrendingUp, Calendar } from "lucide-react";
-import { PeriodFilter } from "@/components/PeriodFilter";
-import { WeeklySchedule } from "@/components/WeeklySchedule";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { demoMusicianStats, demoMonthlyData, demoUpcomingShows, demoWeekSchedule } from "@/data/demoData";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { DemoWeeklySchedule } from '@/components/DemoWeeklySchedule';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Music, Car, DollarSign, TrendingDown, Users } from 'lucide-react';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { DemoMusicianSidebar } from '@/components/DemoMusicianSidebar';
+import { DemoMobileBottomNav } from '@/components/DemoMobileBottomNav';
+import { DemoUserMenu } from '@/components/DemoUserMenu';
+import { NotificationBell } from '@/components/NotificationBell';
+import { PeriodFilter } from '@/components/PeriodFilter';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { cn } from '@/lib/utils';
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { DemoBanner } from '@/components/DemoBanner';
 
-export default function DemoMusicianDashboard() {
-  const [selectedPeriod, setSelectedPeriod] = useState("all");
-  const [selectedYear] = useState(new Date().getFullYear());
+const DemoMusicianDashboard = () => {
+  const navigate = useNavigate();
+  
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+  const defaultPeriod = `${currentYear}-${currentMonth}`;
+  
+  const [selectedPeriod, setSelectedPeriod] = useState<string>(defaultPeriod);
+  const [selectedYear, setSelectedYear] = useState(currentYear.toString());
+
+  const stats = {
+    totalShows: 18,
+    totalEarnings: 8640,
+    totalArtists: 5,
+    totalExpenses: 1250,
+  };
+
+  const upcomingShows = [
+    {
+      id: '1',
+      venue_name: 'Pub Rock City',
+      date_local: '2025-01-10',
+      time_local: '22:00',
+      fee: 480,
+    },
+    {
+      id: '2',
+      venue_name: 'Teatro Municipal',
+      date_local: '2025-01-15',
+      time_local: '20:00',
+      fee: 500,
+    },
+    {
+      id: '3',
+      venue_name: 'Festa Corporativa',
+      date_local: '2025-01-25',
+      time_local: '19:00',
+      fee: 450,
+    },
+  ];
+
+  const monthlyData = [
+    { month: 'Jan', receita: 630, despesa: 90, lucro: 540 },
+    { month: 'Fev', receita: 540, despesa: 80, lucro: 460 },
+    { month: 'Mar', receita: 720, despesa: 110, lucro: 610 },
+    { month: 'Abr', receita: 660, despesa: 95, lucro: 565 },
+    { month: 'Mai', receita: 780, despesa: 120, lucro: 660 },
+    { month: 'Jun', receita: 690, despesa: 100, lucro: 590 },
+    { month: 'Jul', receita: 840, despesa: 130, lucro: 710 },
+    { month: 'Ago', receita: 750, despesa: 110, lucro: 640 },
+    { month: 'Set', receita: 810, despesa: 125, lucro: 685 },
+    { month: 'Out', receita: 720, despesa: 105, lucro: 615 },
+    { month: 'Nov', receita: 870, despesa: 135, lucro: 735 },
+    { month: 'Dez', receita: 960, despesa: 145, lucro: 815 },
+  ];
+
+  const locomotionData = [
+    { month: 'Jan', value: 90 },
+    { month: 'Fev', value: 80 },
+    { month: 'Mar', value: 110 },
+    { month: 'Abr', value: 95 },
+    { month: 'Mai', value: 120 },
+    { month: 'Jun', value: 100 },
+    { month: 'Jul', value: 130 },
+    { month: 'Ago', value: 110 },
+    { month: 'Set', value: 125 },
+    { month: 'Out', value: 105 },
+    { month: 'Nov', value: 135 },
+    { month: 'Dez', value: 145 },
+  ];
+
+  const locomotionTotal = locomotionData.reduce((sum, m) => sum + m.value, 0);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -19,171 +98,288 @@ export default function DemoMusicianDashboard() {
     }).format(value);
   };
 
-  const earningsData = demoMonthlyData.months.map((month, index) => ({
-    month,
-    ganhos: demoMonthlyData.profit[index] * 0.6, // Simula ganhos de músico
-    shows: demoMonthlyData.shows[index],
-  }));
-
   return (
-    <div className="flex min-h-screen w-full bg-gray-50">
-      <DemoMusicianSidebar />
-      
-      <div className="flex-1 flex flex-col min-w-0">
-        <DemoBanner />
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-[#fafafa]">
+        <DemoMusicianSidebar />
         
-        <main className="flex-1 overflow-auto">
-          <div className="container mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
-            {/* Header */}
-            <div className="flex flex-col gap-3 md:gap-4">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-gray-600 mt-1 text-sm md:text-base">
-                  Olá, João Silva! Aqui está um resumo da sua agenda.
+        <div className="flex-1 flex flex-col">
+          <DemoBanner />
+          
+          <header className="h-16 border-b border-gray-200 bg-white flex items-center px-6 justify-between">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+              <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <NotificationBell />
+              <DemoUserMenu userName="Carlos Demo" userRole="musician" />
+            </div>
+          </header>
+
+          <main className="flex-1 overflow-auto pb-20 md:pb-6 scrollbar-hide" style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}>
+            <div className="p-4 md:p-6">
+              <div className="mb-6 md:mb-8 text-center">
+                <h2 className="text-2xl md:text-3xl font-bold mb-2 text-gray-900">
+                  Olá, meu músico Carlos Demo! 👋
+                </h2>
+                <p className="text-sm md:text-base text-gray-600 mb-4">
+                  Gerencie seus freelas e cachês em um só lugar
                 </p>
-              </div>
-              <div className="w-full md:w-auto">
-                <PeriodFilter
-                  value={selectedPeriod}
+              
+                <PeriodFilter 
+                  value={selectedPeriod} 
                   onChange={setSelectedPeriod}
-                  className="w-full md:w-auto"
+                  className="mx-auto"
                 />
               </div>
-            </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
               <StatCard
-                icon={Music}
+                icon={<Music className="w-6 h-6" />}
                 title="Total de Shows"
-                value={demoMusicianStats.totalShows.toString()}
-                iconBg="bg-blue-500/10"
-                iconColor="text-blue-500"
+                value={stats.totalShows.toString()}
+                iconBg="bg-purple-100"
+                iconColor="text-purple-600"
               />
               <StatCard
-                icon={DollarSign}
-                title="Ganhos Totais"
-                value={formatCurrency(demoMusicianStats.totalEarnings)}
-                iconBg="bg-green-500/10"
-                iconColor="text-green-500"
+                icon={<DollarSign className="w-6 h-6" />}
+                title="Cachê Total"
+                value={formatCurrency(stats.totalEarnings)}
+                iconBg="bg-green-100"
+                iconColor="text-green-600"
+                valueColor="text-green-600"
               />
               <StatCard
-                icon={TrendingUp}
-                title="Média por Show"
-                value={formatCurrency(demoMusicianStats.averagePerShow)}
-                iconBg="bg-purple-500/10"
-                iconColor="text-purple-500"
+                icon={<Users className="w-6 h-6" />}
+                title="Artistas"
+                value={stats.totalArtists.toString()}
+                iconBg="bg-blue-100"
+                iconColor="text-blue-600"
+                valueColor="text-blue-600"
               />
               <StatCard
-                icon={Calendar}
-                title="Próximos Shows"
-                value={demoMusicianStats.upcomingShows.toString()}
-                iconBg="bg-orange-500/10"
-                iconColor="text-orange-500"
+                icon={<TrendingDown className="w-6 h-6" />}
+                title="Despesas"
+                value={formatCurrency(stats.totalExpenses)}
+                iconBg="bg-red-100"
+                iconColor="text-red-600"
+                valueColor="text-red-600"
               />
             </div>
 
-            {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-              {/* Upcoming Shows */}
-              <Card className="p-4 md:p-6 bg-white border-gray-200">
-                <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4 flex items-center gap-2 text-gray-900">
-                  <Calendar className="w-4 h-4 md:w-5 md:h-5 text-primary" />
-                  Próximos Shows
-                </h3>
-                <div className="space-y-2 md:space-y-3">
-                  {demoUpcomingShows.slice(0, 5).map((show) => (
-                    <div
-                      key={show.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 truncate text-sm md:text-base">{show.venue_name}</p>
-                        <p className="text-xs md:text-sm text-gray-600">
-                          {new Date(show.date_local).toLocaleDateString('pt-BR')} às {show.time_local}
-                        </p>
-                      </div>
-                      <div className="text-right ml-2">
-                        <p className="font-semibold text-green-600 text-sm md:text-base whitespace-nowrap">
-                          {formatCurrency(show.fee * 0.25)}
-                        </p>
-                      </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-4 md:mb-6">
+              <Card className="p-4 md:p-6 bg-white border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Próximos Shows</h3>
+                <p className="text-sm text-gray-600 mb-4">Seus próximos eventos agendados.</p>
+                
+                <div className="space-y-3">
+                  {upcomingShows.map((show) => (
+                    <div key={show.id} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <p className="font-semibold text-gray-900">{show.venue_name}</p>
+                      <p className="text-sm text-gray-600">
+                        {format(parseISO(show.date_local), "dd/MM/yyyy", { locale: ptBR })}
+                        {show.time_local && ` - ${show.time_local}`}
+                      </p>
+                      <p className="text-sm font-medium text-green-600 mt-1">
+                        {formatCurrency(show.fee)}
+                      </p>
                     </div>
                   ))}
                 </div>
               </Card>
 
-              {/* Monthly Earnings Chart */}
-              <Card className="p-4 md:p-6 bg-white border-gray-200">
-                <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4 flex items-center gap-2 text-gray-900">
-                  <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-primary" />
-                  Ganhos Mensais
-                </h3>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={earningsData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="month" className="text-xs" stroke="#6b7280" />
-                    <YAxis className="text-xs" stroke="#6b7280" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#ffffff',
+              <Card className="lg:col-span-2 p-4 md:p-6 bg-white border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Cachês Mensais</h3>
+                    <p className="text-sm text-gray-600">Receitas e despesas por mês</p>
+                  </div>
+                  <Select value={selectedYear} onValueChange={setSelectedYear}>
+                    <SelectTrigger className="w-[120px] bg-white border-gray-300 text-gray-900">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-gray-300 text-gray-900">
+                      <SelectItem value="2025">2025</SelectItem>
+                      <SelectItem value="2024">2024</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={monthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="month" stroke="#666" />
+                    <YAxis stroke="#666" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#fff', 
                         border: '1px solid #e5e7eb',
                         borderRadius: '8px',
-                        color: '#111827'
+                        padding: '12px'
+                      }}
+                      formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`}
+                      labelFormatter={(label) => `Mês: ${label}`}
+                    />
+                    <Legend 
+                      iconType="circle"
+                      formatter={(value) => {
+                        const labels: Record<string, string> = {
+                          receita: 'Cachê',
+                          despesa: 'Despesa',
+                          lucro: 'Lucro'
+                        };
+                        return labels[value] || value;
                       }}
                     />
-                    <Legend />
-                    <Bar dataKey="ganhos" fill="#8b5cf6" name="Ganhos (R$)" />
-                  </BarChart>
+                    <Line 
+                      type="monotone" 
+                      dataKey="receita" 
+                      stroke="#22c55e" 
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: '#22c55e', strokeWidth: 2 }}
+                      activeDot={{ r: 7, fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="despesa" 
+                      stroke="#ef4444" 
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: '#ef4444', strokeWidth: 2 }}
+                      activeDot={{ r: 7, fill: '#ef4444', stroke: '#fff', strokeWidth: 2 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="lucro" 
+                      stroke="#a855f7" 
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: '#a855f7', strokeWidth: 2 }}
+                      activeDot={{ r: 7, fill: '#a855f7', stroke: '#fff', strokeWidth: 2 }}
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
               </Card>
             </div>
 
-            {/* Weekly Schedule */}
-            <Card className="p-4 md:p-6 bg-white border-gray-200">
-              <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4 flex items-center gap-2 text-gray-900">
-                <Calendar className="w-4 h-4 md:w-5 md:h-5 text-primary" />
-                Agenda Semanal
-              </h3>
-              <div className="space-y-2 md:space-y-3">
-                {demoWeekSchedule.map((day) => (
-                  <div key={day.day} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                    <span className="font-medium text-gray-900 text-sm md:text-base">{day.day}</span>
-                    <span className="text-xs md:text-sm text-gray-600">
-                      {day.shows} show{day.shows !== 1 ? 's' : ''}
-                    </span>
+            <div className="mb-4 md:mb-6">
+              <DemoWeeklySchedule userRole="musician" />
+            </div>
+
+            {/* Transportation Expenses */}
+            <div className="mb-4 md:mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Resumo de Despesas com Locomoção</h3>
+              <div className="grid lg:grid-cols-3 gap-6">
+                <Card className="p-6 bg-white border border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm text-gray-600">Despesas com Locomoção</h4>
+                    <Car className="w-5 h-5 text-yellow-500" />
                   </div>
-                ))}
+                  <p className="text-3xl font-bold text-gray-900">{formatCurrency(locomotionTotal)}</p>
+                </Card>
+
+                <Card className="lg:col-span-2 p-6 bg-white border border-gray-200">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Locomoção por Mês</h4>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={locomotionData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="month" stroke="#666" />
+                      <YAxis stroke="#666" />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: '#fff', 
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          padding: '12px'
+                        }}
+                        formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR')}`, 'Despesas']}
+                        labelFormatter={(label) => `Mês: ${label}`}
+                      />
+                      <Legend 
+                        iconType="circle"
+                        formatter={() => 'Despesas'}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="value" 
+                        name="Despesas"
+                        stroke="#eab308" 
+                        strokeWidth={3}
+                        dot={false}
+                        activeDot={{ r: 7, fill: '#eab308', stroke: '#fff', strokeWidth: 2 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                  <p className="text-xs text-gray-500 mt-3 text-center">
+                    Para ver mais detalhes das despesas, acesse a página de{' '}
+                    <Button 
+                      variant="link" 
+                      className="text-xs p-0 h-auto text-primary underline"
+                      onClick={() => navigate('/demo/musician/transportation')}
+                    >
+                      Locomoção
+                    </Button>
+                  </p>
+                </Card>
+              </div>
+            </div>
+
+            <Card className="rounded-2xl p-6 md:p-8 border border-gray-200 bg-gradient-to-br from-purple-50 to-purple-100">
+              <div className="text-center max-w-2xl mx-auto space-y-4">
+                <h3 className="text-2xl font-bold text-gray-900">
+                  Organize seus freelas
+                </h3>
+                <p className="text-gray-600">
+                  Adicione seus shows, cadastre os artistas com quem trabalha e 
+                  tenha controle total dos seus ganhos.
+                </p>
+                <div className="flex flex-wrap justify-center gap-4 pt-4">
+                  <Button className="bg-primary text-white hover:bg-primary/90">Adicionar Show</Button>
+                  <Button className="bg-primary text-white hover:bg-primary/90">Cadastrar Artista</Button>
+                </div>
               </div>
             </Card>
-          </div>
-        </main>
+            </div>
+          </main>
+        </div>
+        
+        <DemoMobileBottomNav role="musician" />
       </div>
-    </div>
+    </SidebarProvider>
   );
-}
+};
 
-interface StatCardProps {
-  icon: React.ElementType;
-  title: string;
+const StatCard = ({ 
+  icon, 
+  title, 
+  value, 
+  iconBg,
+  iconColor,
+  valueColor
+}: { 
+  icon?: React.ReactNode; 
+  title: string; 
   value: string;
-  iconBg: string;
-  iconColor: string;
+  iconBg?: string;
+  iconColor?: string;
   valueColor?: string;
-}
-
-function StatCard({ icon: Icon, title, value, iconBg, iconColor, valueColor = "text-gray-900" }: StatCardProps) {
+}) => {
   return (
-    <Card className="p-4 md:p-6 hover:shadow-lg transition-shadow bg-white border-gray-200">
-      <div className="flex items-center gap-3 md:gap-4">
-        <div className={`w-10 h-10 md:w-12 md:h-12 rounded-lg ${iconBg} flex items-center justify-center flex-shrink-0`}>
-          <Icon className={`w-5 h-5 md:w-6 md:h-6 ${iconColor}`} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-xs md:text-sm text-gray-600 truncate">{title}</p>
-          <p className={`text-lg md:text-2xl font-bold ${valueColor} truncate`}>{value}</p>
-        </div>
+    <Card className="rounded-lg p-4 bg-white border-2 border-purple-200 hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between mb-3">
+        <p className="text-sm text-gray-600 font-medium">{title}</p>
+        {icon && (
+          <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", iconBg, iconColor)}>
+            {icon}
+          </div>
+        )}
       </div>
+      <p className={cn("text-2xl font-bold", valueColor || "text-gray-900")}>{value}</p>
     </Card>
   );
-}
+};
+
+export default DemoMusicianDashboard;

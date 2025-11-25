@@ -1,75 +1,128 @@
-import { Home, Calendar, Music, TrendingUp, Users, Settings, HelpCircle, Bell, FileText, Truck, LogOut } from "lucide-react";
-import { NavLink } from "./NavLink";
-import { useNavigate } from "react-router-dom";
-import logo from "@/assets/nova_logo.png";
+import { Music, LayoutDashboard, Calendar, Users, Car, BarChart3, Info, HelpCircle, Settings, LogOut } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { NavLink } from '@/components/NavLink';
+import { cn } from '@/lib/utils';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from '@/components/ui/sidebar';
+
+const mainItems = [
+  { title: 'Dashboard', url: '/demo/musician/dashboard', icon: LayoutDashboard },
+  { title: 'Shows', url: '/demo/musician/shows', icon: Music },
+  { title: 'Artistas', url: '/demo/musician/artists', icon: Users },
+  { title: 'Calendário', url: '/demo/musician/calendar', icon: Calendar },
+  { title: 'Locomoção', url: '/demo/musician/transportation', icon: Car },
+  { title: 'Relatórios', url: '/demo/musician/reports', icon: BarChart3 },
+];
+
+const settingsItems = [
+  { title: 'Atualizações', url: '/demo/musician/updates', icon: Info },
+  { title: 'Tutorial', url: '/demo/musician/tutorial', icon: HelpCircle },
+  { title: 'Suporte', url: '/demo/musician/support', icon: HelpCircle },
+  { title: 'Configurações', url: '/demo/musician/settings', icon: Settings },
+];
 
 export function DemoMusicianSidebar() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { state, isMobile, setOpenMobile } = useSidebar();
+  const collapsed = state === "collapsed";
+  const currentPath = location.pathname;
+
+  const handleSignOut = () => {
+    navigate('/');
+  };
+
+  const handleSidebarClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isMobile && e.target === e.currentTarget) {
+      setOpenMobile(false);
+    }
+  };
 
   return (
-    <aside className="hidden md:flex w-64 bg-white border-r border-gray-200 flex-col h-screen sticky top-0">
-      {/* Logo */}
-      <div className="p-6 border-b border-gray-200">
-        <img src={logo} alt="Sou Artista" className="h-10 w-auto" />
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-4 space-y-2 bg-white">
-        <NavLink to="/demo/musician/dashboard" className="flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 text-gray-900" activeClassName="bg-gray-100 text-primary">
-          <Home className="w-4 h-4" />
-          <span>Dashboard</span>
-        </NavLink>
-        <NavLink to="/demo/musician/shows" className="flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 text-gray-900" activeClassName="bg-gray-100 text-primary">
-          <Music className="w-4 h-4" />
-          <span>Shows</span>
-        </NavLink>
-        <NavLink to="/demo/musician/calendar" className="flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 text-gray-900" activeClassName="bg-gray-100 text-primary">
-          <Calendar className="w-4 h-4" />
-          <span>Calendário</span>
-        </NavLink>
-        <NavLink to="/demo/musician/artists" className="flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 text-gray-900" activeClassName="bg-gray-100 text-primary">
-          <Users className="w-4 h-4" />
-          <span>Artistas</span>
-        </NavLink>
-        <NavLink to="/demo/musician/transportation" className="flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 text-gray-900" activeClassName="bg-gray-100 text-primary">
-          <Truck className="w-4 h-4" />
-          <span>Locomoção</span>
-        </NavLink>
-        <NavLink to="/demo/musician/reports" className="flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 text-gray-900" activeClassName="bg-gray-100 text-primary">
-          <TrendingUp className="w-4 h-4" />
-          <span>Relatórios</span>
-        </NavLink>
-
-        <div className="pt-4 mt-4 border-t border-gray-200 space-y-2">
-          <NavLink to="/demo/musician/updates" className="flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 text-gray-900" activeClassName="bg-gray-100 text-primary">
-            <Bell className="w-4 h-4" />
-            <span>Atualizações</span>
-          </NavLink>
-          <NavLink to="/demo/musician/tutorial" className="flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 text-gray-900" activeClassName="bg-gray-100 text-primary">
-            <FileText className="w-4 h-4" />
-            <span>Tutorial</span>
-          </NavLink>
-          <NavLink to="/demo/musician/support" className="flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 text-gray-900" activeClassName="bg-gray-100 text-primary">
-            <HelpCircle className="w-4 h-4" />
-            <span>Suporte</span>
-          </NavLink>
-          <NavLink to="/demo/musician/settings" className="flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-100 text-gray-900" activeClassName="bg-gray-100 text-primary">
-            <Settings className="w-4 h-4" />
-            <span>Configurações</span>
-          </NavLink>
+    <Sidebar collapsible="icon" className="border-r border-gray-200 bg-white hidden md:flex">
+      <div onClick={handleSidebarClick} className="h-full flex flex-col">
+        {/* Logo */}
+        <div className="h-16 border-b border-gray-200 flex items-center px-6">
+          <img 
+            src="/logo.png" 
+            alt="Logo" 
+            className={cn(
+              "transition-all duration-200",
+              collapsed ? "h-8" : "h-10"
+            )}
+          />
         </div>
-      </nav>
 
-      {/* Exit Demo */}
-      <div className="p-4 border-t border-gray-200 bg-white">
-        <button
-          onClick={() => navigate('/')}
-          className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-          Sair da Demo
-        </button>
+        <SidebarContent>
+          {/* Main Navigation */}
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-gray-500 uppercase text-xs font-semibold">
+              Menu Principal
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {mainItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        end
+                        className="hover:bg-gray-100 text-gray-700"
+                        activeClassName="bg-primary/10 text-primary font-semibold"
+                      >
+                        <item.icon className="w-5 h-5" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          {/* Settings Navigation */}
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-gray-500 uppercase text-xs font-semibold">
+              Configurações
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {settingsItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        className="hover:bg-gray-100 text-gray-700"
+                        activeClassName="bg-primary/10 text-primary font-semibold"
+                      >
+                        <item.icon className="w-5 h-5" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+
+                {/* Sair Button */}
+                <SidebarMenuItem>
+                  <SidebarMenuButton onClick={handleSignOut} className="hover:bg-red-50 text-red-600">
+                    <LogOut className="w-5 h-5" />
+                    {!collapsed && <span>Sair</span>}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
       </div>
-    </aside>
+    </Sidebar>
   );
 }
