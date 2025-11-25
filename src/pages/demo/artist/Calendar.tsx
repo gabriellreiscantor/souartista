@@ -13,14 +13,15 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { DemoBanner } from '@/components/DemoBanner';
 
 const DemoArtistCalendar = () => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date(2025, 10, 1)); // November 2025
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showAgenda, setShowAgenda] = useState(false);
 
   const demoShows = [
-    { id: '1', venue_name: 'Pub Rock City', date_local: '2025-01-10', time_local: '22:00', fee: 900 },
-    { id: '2', venue_name: 'Teatro Municipal', date_local: '2025-01-15', time_local: '20:00', fee: 2000 },
-    { id: '3', venue_name: 'Festa Corporativa', date_local: '2025-01-25', time_local: '19:00', fee: 1800 },
+    { id: '1', venue_name: 'Casa de Shows Melodia', date_local: '2025-11-12', time_local: '20:00', fee: 2500 },
+    { id: '2', venue_name: 'Pub e Lounge Estrela', date_local: '2025-11-14', time_local: '21:00', fee: 350 },
+    { id: '3', venue_name: 'Restaurante e Bar Acústico', date_local: '2025-11-14', time_local: '20:00', fee: 2100 },
+    { id: '4', venue_name: 'Bar e Restaurante Harmonia', date_local: '2025-11-18', time_local: '19:00', fee: 550 },
   ];
 
   const getDatesWithShows = () => {
