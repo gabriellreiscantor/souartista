@@ -28,20 +28,20 @@ export function TimePicker({ value, onChange, className }: TimePickerProps) {
   const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, "0"));
   const minutes = ["00", "15", "30", "45"];
 
-  // Call onChange on mount if value is empty but we have defaults
-  React.useEffect(() => {
-    if (!value && onChange) {
-      onChange("20:00");
-    }
-  }, []);
-
   React.useEffect(() => {
     if (value) {
       const [h, m] = value.split(":");
       setHour(h);
       setMinute(m);
+    } else {
+      // Set default time when no value
+      setHour("20");
+      setMinute("00");
+      if (onChange) {
+        onChange("20:00");
+      }
     }
-  }, [value]);
+  }, [value, onChange]);
 
   const handleTimeChange = (newHour: string, newMinute: string) => {
     const time = `${newHour}:${newMinute}`;
