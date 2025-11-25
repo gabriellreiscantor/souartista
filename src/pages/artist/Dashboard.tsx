@@ -197,13 +197,13 @@ const ArtistDashboard = () => {
                       stroke: '#fff',
                       strokeWidth: 2
                     }} />
-                      <Line type="monotone" dataKey="lucro" stroke="#a855f7" strokeWidth={3} dot={{
+                      <Line type="monotone" dataKey="lucro" stroke="#3b82f6" strokeWidth={3} dot={{
                       r: 4,
-                      fill: '#a855f7',
+                      fill: '#3b82f6',
                       strokeWidth: 2
                     }} activeDot={{
                       r: 7,
-                      fill: '#a855f7',
+                      fill: '#3b82f6',
                       stroke: '#fff',
                       strokeWidth: 2
                     }} />
