@@ -9,7 +9,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { demoArtistStats, demoMonthlyData, demoUpcomingShows, demoLocomotionData, demoWeekSchedule } from "@/data/demoData";
 
 export default function DemoArtistDashboard() {
-  const [selectedPeriod, setSelectedPeriod] = useState("month");
+  const [selectedPeriod, setSelectedPeriod] = useState("all");
   const [selectedYear] = useState(new Date().getFullYear());
 
   const formatCurrency = (value: number) => {
