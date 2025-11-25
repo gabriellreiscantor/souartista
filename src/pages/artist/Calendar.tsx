@@ -152,15 +152,15 @@ const ArtistCalendar = () => {
                   </div>
 
                   {/* Calendar Grid */}
-                  <div className="grid grid-cols-7 gap-3">
+                  <div className="grid grid-cols-7 gap-1 md:gap-3">
                     {['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'].map((day) => (
-                      <div key={day} className="text-center text-sm font-medium text-gray-600 py-2">
+                      <div key={day} className="text-center text-xs md:text-sm font-medium text-gray-600 py-1 md:py-2">
                         {day}
                       </div>
                     ))}
                     
                     {Array.from({ length: new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay() }).map((_, i) => (
-                      <div key={`empty-${i}`} className="aspect-square" />
+                      <div key={`empty-${i}`} className="h-12 md:aspect-square" />
                     ))}
                     
                     {Array.from({ length: new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate() }).map((_, i) => {
@@ -174,16 +174,16 @@ const ArtistCalendar = () => {
                         <button
                           key={i}
                           onClick={() => handleDateClick(dayDate)}
-                          className={`aspect-square relative rounded-lg border transition-all hover:border-purple-500 flex flex-col items-center justify-center gap-1 py-2 ${
+                          className={`h-12 md:aspect-square relative rounded-lg border transition-all hover:border-purple-500 flex flex-col items-center justify-center gap-0.5 md:gap-1 py-1 md:py-2 ${
                             isSelected ? 'bg-purple-600 text-white border-purple-600' : 
                             isToday ? 'bg-purple-50 border-purple-300 text-gray-900' :
                             'bg-white border-gray-200 text-gray-900'
                           }`}
                         >
-                          <span className="text-base font-medium">{i + 1}</span>
+                          <span className="text-sm md:text-base font-medium">{i + 1}</span>
                           {hasShow && (
                             <Music2 
-                              className={`w-3 h-3 ${
+                              className={`w-2.5 h-2.5 md:w-3 md:h-3 ${
                                 isSelected ? 'text-white' : 'text-purple-600'
                               }`} 
                             />
