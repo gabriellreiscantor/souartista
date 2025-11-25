@@ -215,16 +215,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             birth_date: userData.birth_date,
             photo_url: userData.photo_url,
             status_plano: userData.status_plano || 'inactive',
-            is_verified: false, // Usuario precisa verificar email
+            is_verified: false,
           },
         },
       });
 
       if (error) return { error };
 
-      // Com auto_confirm desativado, Supabase enviará email de confirmação automaticamente
-      console.log('Conta criada com sucesso. Email de confirmação enviado.');
+      console.log('Conta criada com sucesso. Enviando código OTP...');
 
+      // Enviar código OTP via nossa edge function customizada
+      const { error: otpError } = await supabase.functions.invoke('send-otp-email', {
+        body: { email }
+      });
+
+      if (otpError) {
+        console.error('Erro ao enviar código OTP:', otpError);
+        return { error: otpError };
+      }
+
+      console.log('Código OTP enviado com sucesso');
       return { error: null };
     } catch (error: any) {
       console.error('Erro no signup:', error);
@@ -233,20 +243,52 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const verifyOtp = async (email: string, token: string) => {
-    const { error } = await supabase.auth.verifyOtp({
-      email,
-      token,
-      type: 'signup',
-    });
-    return { error };
+    try {
+      console.log('Verificando código OTP...');
+      
+      // Chamar nossa edge function customizada para verificar o código
+      const { data, error } = await supabase.functions.invoke('verify-otp', {
+        body: { email, code: token }
+      });
+
+      if (error) {
+        console.error('Erro ao verificar OTP:', error);
+        return { error };
+      }
+
+      if (data?.error) {
+        console.error('Erro na resposta:', data.error);
+        return { error: new Error(data.error) };
+      }
+
+      console.log('Código OTP verificado com sucesso');
+      return { error: null };
+    } catch (error: any) {
+      console.error('Erro ao verificar OTP:', error);
+      return { error };
+    }
   };
 
   const resendOtp = async (email: string) => {
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email,
-    });
-    return { error };
+    try {
+      console.log('Reenviando código OTP...');
+      
+      // Chamar nossa edge function para gerar e enviar novo código
+      const { error } = await supabase.functions.invoke('send-otp-email', {
+        body: { email }
+      });
+
+      if (error) {
+        console.error('Erro ao reenviar OTP:', error);
+        return { error };
+      }
+
+      console.log('Novo código OTP enviado com sucesso');
+      return { error: null };
+    } catch (error: any) {
+      console.error('Erro ao reenviar OTP:', error);
+      return { error };
+    }
   };
 
   const signOut = async () => {
