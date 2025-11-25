@@ -13,7 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Calendar as CalendarIcon, Clock, MapPin, Music2, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, Clock, MapPin, Music2, Users, ChevronDown, ChevronUp, Pencil, Trash2 } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -23,9 +23,13 @@ const DemoArtistShows = () => {
   const [showFilter, setShowFilter] = useState('lastWeek');
   const [expandedShows, setExpandedShows] = useState<Set<string>>(new Set());
   const [addVenueOpen, setAddVenueOpen] = useState(false);
+  const [addMusicianOpen, setAddMusicianOpen] = useState(false);
   const [lockedModalOpen, setLockedModalOpen] = useState(false);
   const [venueName, setVenueName] = useState('');
   const [venueAddress, setVenueAddress] = useState('');
+  const [musicianName, setMusicianName] = useState('');
+  const [musicianInstrument, setMusicianInstrument] = useState('');
+  const [musicianFee, setMusicianFee] = useState('');
   const lastUpdated = new Date();
 
   const demoShows = [
@@ -98,6 +102,33 @@ const DemoArtistShows = () => {
     }
   ];
 
+  const demoMusicians = [
+    {
+      id: '1',
+      name: 'Freelancer',
+      instrument: 'Baixista',
+      default_fee: 150.00
+    },
+    {
+      id: '2',
+      name: 'Produtor Musical',
+      instrument: 'Produtor',
+      default_fee: 300.00
+    },
+    {
+      id: '3',
+      name: 'Hold',
+      instrument: 'Tecladista',
+      default_fee: 200.00
+    },
+    {
+      id: '4',
+      name: 'Videomaker',
+      instrument: 'Videomaker',
+      default_fee: 250.00
+    }
+  ];
+
   const toggleShowExpanded = (id: string) => {
     const newExpanded = new Set(expandedShows);
     if (newExpanded.has(id)) {
@@ -135,6 +166,14 @@ const DemoArtistShows = () => {
     setAddVenueOpen(false);
     setVenueName('');
     setVenueAddress('');
+    setLockedModalOpen(true);
+  };
+
+  const handleSaveMusician = () => {
+    setAddMusicianOpen(false);
+    setMusicianName('');
+    setMusicianInstrument('');
+    setMusicianFee('');
     setLockedModalOpen(true);
   };
 
@@ -373,14 +412,54 @@ const DemoArtistShows = () => {
                 </TabsContent>
 
                 {/* MÚSICOS E EQUIPE TAB */}
-                <TabsContent value="musicians" className="mt-0 md:mt-6">
-                  <Card className="p-8 text-center bg-white border border-gray-200">
-                    <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 mb-4">Modo Demo - Gerencie sua equipe na versão completa</p>
-                    <Button onClick={handleDemoAction} variant="outline">
-                      Criar Conta para Gerenciar Músicos
+                <TabsContent value="musicians" className="mt-0 md:mt-6 space-y-4">
+                  <Card className="md:hidden bg-white border border-gray-200 p-4">
+                    <div className="mb-4">
+                      <h2 className="text-xl font-bold text-gray-900">Músicos e Equipe</h2>
+                      <p className="text-sm text-gray-500">Gerencie seus músicos e cachês padrão</p>
+                    </div>
+                    <Button onClick={() => setAddMusicianOpen(true)} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
+                      <Plus className="w-5 h-5 mr-2" />
+                      Adicionar
                     </Button>
                   </Card>
+
+                  <div className="space-y-3">
+                    {demoMusicians.map((musician) => (
+                      <Card key={musician.id} className="bg-white border border-gray-200 p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#F5F0FA] flex items-center justify-center border-2 border-purple-200">
+                            <Music2 className="w-6 h-6 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-base font-bold text-gray-900">{musician.name}</h3>
+                            <p className="text-sm text-gray-600">{musician.instrument}</p>
+                            <p className="text-sm font-semibold text-green-600">
+                              Cachê padrão: R$ {musician.default_fee.toFixed(2).replace('.', ',')}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              onClick={handleDemoAction}
+                              className="h-10 w-10 bg-gray-900 hover:bg-gray-800 border-0"
+                            >
+                              <Pencil className="h-4 w-4 text-white" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              onClick={handleDemoAction}
+                              className="h-10 w-10 bg-red-900 hover:bg-red-800 border-0"
+                            >
+                              <Trash2 className="h-4 w-4 text-white" />
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
                 </TabsContent>
               </Tabs>
             </div>
@@ -430,6 +509,63 @@ const DemoArtistShows = () => {
                 className="flex-1 bg-primary hover:bg-primary/90 text-white"
               >
                 Salvar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Musician Modal */}
+      <Dialog open={addMusicianOpen} onOpenChange={setAddMusicianOpen}>
+        <DialogContent className="bg-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-900">Adicionar Músico</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="musician-name" className="text-gray-900">Nome</Label>
+              <Input
+                id="musician-name"
+                placeholder="Ex: João Silva"
+                value={musicianName}
+                onChange={(e) => setMusicianName(e.target.value)}
+                className="bg-white border-gray-300 text-gray-900"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="musician-instrument" className="text-gray-900">Instrumento/Função</Label>
+              <Input
+                id="musician-instrument"
+                placeholder="Ex: Baixista"
+                value={musicianInstrument}
+                onChange={(e) => setMusicianInstrument(e.target.value)}
+                className="bg-white border-gray-300 text-gray-900"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="musician-fee" className="text-gray-900">Cachê Padrão</Label>
+              <Input
+                id="musician-fee"
+                type="number"
+                placeholder="Ex: 150.00"
+                value={musicianFee}
+                onChange={(e) => setMusicianFee(e.target.value)}
+                className="bg-white border-gray-300 text-gray-900"
+              />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setAddMusicianOpen(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSaveMusician}
+                className="flex-1 bg-primary hover:bg-primary/90 text-white"
+              >
+                Cadastrar
               </Button>
             </div>
           </div>
