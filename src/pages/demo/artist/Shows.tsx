@@ -473,34 +473,61 @@ const DemoArtistShows = () => {
       <Dialog open={addVenueOpen} onOpenChange={setAddVenueOpen}>
         <DialogContent className="bg-white sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-gray-900">Adicionar Local</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-gray-900 text-center">Adicionar Novo Local/Bar</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-4">
+          <div className="space-y-4 pt-2">
+            <p className="text-sm text-gray-600 text-center">
+              Cadastre um local fixo para selecioná-lo facilmente ao agendar shows.
+            </p>
+            <p className="text-xs text-gray-400 italic text-center">
+              (Caso for um particular, adicione pela aba "Agenda de Shows".)
+            </p>
+            
             <div className="space-y-2">
-              <Label htmlFor="venue-name" className="text-gray-900">Nome do Local</Label>
+              <Label htmlFor="venue-name" className="text-gray-900">Nome do Local/Bar</Label>
               <Input
                 id="venue-name"
-                placeholder="Ex: Bar e Restaurante Harmonia"
+                placeholder="Ex: Bar do Zé"
                 value={venueName}
                 onChange={(e) => setVenueName(e.target.value)}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-white border-2 border-primary text-gray-900 focus:border-primary"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="venue-address" className="text-gray-900">Endereço</Label>
-              <Input
-                id="venue-address"
-                placeholder="Ex: Goiânia - GO"
-                value={venueAddress}
-                onChange={(e) => setVenueAddress(e.target.value)}
-                className="bg-white border-gray-300 text-gray-900"
-              />
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="venue-state" className="text-gray-900">Estado</Label>
+                <Select>
+                  <SelectTrigger className="bg-white border-gray-300 text-gray-500">
+                    <SelectValue placeholder="Selecione o..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="GO">Goiás</SelectItem>
+                    <SelectItem value="MT">Mato Grosso</SelectItem>
+                    <SelectItem value="SP">São Paulo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="venue-city" className="text-gray-900">Cidade</Label>
+                <Select>
+                  <SelectTrigger className="bg-white border-gray-300 text-gray-400">
+                    <SelectValue placeholder="Escolha um..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="goiania">Goiânia</SelectItem>
+                    <SelectItem value="cuiaba">Cuiabá</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+            
             <div className="flex gap-3 pt-2">
               <Button
                 variant="outline"
                 onClick={() => setAddVenueOpen(false)}
-                className="flex-1"
+                className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 Cancelar
               </Button>
@@ -508,7 +535,7 @@ const DemoArtistShows = () => {
                 onClick={handleSaveVenue}
                 className="flex-1 bg-primary hover:bg-primary/90 text-white"
               >
-                Salvar
+                Salvar Local
               </Button>
             </div>
           </div>
