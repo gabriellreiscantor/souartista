@@ -121,16 +121,13 @@ const Subscribe = () => {
             </button>
             <button
               onClick={() => setBillingCycle('annual')}
-              className={`px-6 py-2.5 rounded-full transition-all font-medium flex items-center gap-2 ${
+              className={`px-6 py-2.5 rounded-full transition-all font-medium ${
                 billingCycle === 'annual'
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Anual
-              <span className="text-xs bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full font-bold">
-                -33%
-              </span>
             </button>
           </div>
         </div>
@@ -173,10 +170,13 @@ const Subscribe = () => {
           <Card className={`glass-card rounded-2xl p-6 md:p-8 transition-all relative ${
             billingCycle === 'annual' ? 'border-2 border-primary shadow-lg' : 'border border-border/50'
           }`}>
-            {/* Popular Badge */}
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+            {/* Badges */}
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-2">
               <span className="inline-flex items-center gap-1 px-4 py-1.5 rounded-full bg-primary text-primary-foreground text-sm font-medium shadow-lg">
                 ⭐ Mais Popular
+              </span>
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-green-500 text-white text-sm font-bold shadow-lg">
+                -33%
               </span>
             </div>
 
