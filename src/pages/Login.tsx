@@ -88,7 +88,7 @@ const Login = () => {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{
-        background: 'linear-gradient(to bottom, #110016 0%, #080010 45%, #040008 100%)',
+        background: '#1E082B',
         position: 'fixed',
         top: 0,
         left: 0,
@@ -107,7 +107,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden" style={{
-      background: 'linear-gradient(to bottom, #110016 0%, #080010 45%, #040008 100%)',
+      background: '#1E082B',
       position: 'fixed',
       top: 0,
       left: 0,
@@ -117,6 +117,15 @@ const Login = () => {
       overscrollBehavior: 'none',
       WebkitOverflowScrolling: 'auto'
     }}>
+      {/* Glow central suave e sutil */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="w-[600px] h-[600px] bg-[#B96FFF] opacity-[0.08] blur-[120px] rounded-full" />
+      </div>
+      
+      {/* Vignette nas bordas */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: 'radial-gradient(circle at center, transparent 0%, rgba(30, 8, 43, 0.6) 100%)'
+      }} />
       {/* Botão Voltar para Home */}
       <Link 
         to="/" 
@@ -126,44 +135,45 @@ const Login = () => {
         <span className="text-white font-medium text-sm">Voltar</span>
       </Link>
 
-      {/* Linhas musicais abstratas - bem discretas */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
+      {/* Partículas discretas */}
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{
         backgroundImage: `
           repeating-linear-gradient(
             45deg,
             transparent,
-            transparent 60px,
-            #5A1E90 60px,
-            #5A1E90 61px
+            transparent 80px,
+            #B96FFF 80px,
+            #B96FFF 81px
           ),
           repeating-linear-gradient(
             -45deg,
             transparent,
-            transparent 80px,
-            #5A1E90 80px,
-            #5A1E90 81px
+            transparent 100px,
+            #B96FFF 100px,
+            #B96FFF 101px
           )
         `,
       }} />
 
       <div className="w-full max-w-sm relative z-10">
-        {/* Glow atrás da logo */}
-        <div className="flex items-center justify-center mb-12 relative">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-[300px] h-[300px] bg-[#A66CFF] opacity-20 blur-[80px] rounded-full" />
-          </div>
-          <img src={logo} alt="Sou Artista" className="h-40 w-auto relative z-10" />
+        {/* Logo */}
+        <div className="flex items-center justify-center mb-8 relative">
+          <img src={logo} alt="Sou Artista" className="h-32 w-auto relative z-10 drop-shadow-[0_0_25px_rgba(185,111,255,0.4)]" />
         </div>
 
-        {/* Glow atrás do card */}
+        {/* Card com tema premium */}
         <div className="relative">
-          <div className="absolute inset-0 bg-[#A66CFF] opacity-15 blur-[60px] rounded-3xl scale-105" />
+          <div className="absolute inset-0 bg-[#B96FFF] opacity-10 blur-[50px] rounded-3xl" />
           
           {/* Card */}
-          <div className="glass-card rounded-3xl p-6 space-y-5 relative z-10">
+          <div className="relative z-10 rounded-3xl p-8 space-y-6 border border-[#B96FFF]/20" style={{
+            background: 'rgba(42, 23, 56, 0.85)',
+            backdropFilter: 'blur(20px)',
+            boxShadow: '0 8px 32px 0 rgba(185, 111, 255, 0.15)'
+          }}>
           <div className="text-center space-y-2">
             <h1 className="text-3xl font-heading font-bold text-white">Bem-vindo de volta</h1>
-            <p className="text-gray-300">Entre com sua conta para continuar</p>
+            <p className="text-[#C8BAD4]">Entre com sua conta para continuar</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -176,7 +186,7 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
-                className="h-11 bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
               />
             </div>
 
@@ -188,7 +198,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
-                className="h-11 bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
               />
             </div>
 
@@ -208,9 +218,9 @@ const Login = () => {
             </Button>
           </form>
 
-          <div className="text-center text-sm text-gray-300">
+          <div className="text-center text-sm text-[#C8BAD4]">
             Não tem uma conta?{' '}
-            <Link to="/register" className="text-primary hover:underline font-medium">
+            <Link to="/register" className="text-[#B96FFF] hover:underline font-medium">
               Criar conta
             </Link>
           </div>

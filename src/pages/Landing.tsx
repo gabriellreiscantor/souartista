@@ -45,7 +45,7 @@ const Landing = () => {
     return <Onboarding onComplete={() => setShowOnboarding(false)} />;
   }
   return <div className="min-h-screen flex flex-col relative overflow-hidden" style={{
-      background: 'linear-gradient(to bottom, #110016 0%, #080010 45%, #040008 100%)',
+      background: '#1E082B',
       position: 'fixed',
       top: 0,
       left: 0,
@@ -55,6 +55,15 @@ const Landing = () => {
       overscrollBehavior: 'none',
       WebkitOverflowScrolling: 'auto'
     }}>
+      {/* Glow central suave e sutil */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="w-[600px] h-[600px] bg-[#B96FFF] opacity-[0.08] blur-[120px] rounded-full" />
+      </div>
+      
+      {/* Vignette nas bordas */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: 'radial-gradient(circle at center, transparent 0%, rgba(30, 8, 43, 0.6) 100%)'
+      }} />
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 opacity-[0.03]" style={{
         backgroundImage: `

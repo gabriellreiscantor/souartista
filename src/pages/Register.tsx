@@ -153,7 +153,7 @@ const Register = () => {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{
-        background: 'linear-gradient(to bottom, #110016 0%, #080010 45%, #040008 100%)',
+        background: '#1E082B',
         position: 'fixed',
         top: 0,
         left: 0,
@@ -172,7 +172,7 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-8 relative" style={{
-      background: 'linear-gradient(to bottom, #110016 0%, #080010 45%, #040008 100%)',
+      background: '#1E082B',
       position: 'fixed',
       top: 0,
       left: 0,
@@ -182,6 +182,15 @@ const Register = () => {
       overscrollBehavior: 'contain',
       overflow: 'auto'
     }}>
+      {/* Glow central suave e sutil */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="w-[600px] h-[600px] bg-[#B96FFF] opacity-[0.08] blur-[120px] rounded-full" />
+      </div>
+      
+      {/* Vignette nas bordas */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: 'radial-gradient(circle at center, transparent 0%, rgba(30, 8, 43, 0.6) 100%)'
+      }} />
       {/* Botão Voltar para Home */}
       <Link 
         to="/" 
@@ -191,45 +200,46 @@ const Register = () => {
         <span className="text-white font-medium text-sm">Voltar</span>
       </Link>
 
-      {/* Linhas musicais abstratas - bem discretas */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
+      {/* Partículas discretas */}
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{
         backgroundImage: `
           repeating-linear-gradient(
             45deg,
             transparent,
-            transparent 60px,
-            #5A1E90 60px,
-            #5A1E90 61px
+            transparent 80px,
+            #B96FFF 80px,
+            #B96FFF 81px
           ),
           repeating-linear-gradient(
             -45deg,
             transparent,
-            transparent 80px,
-            #5A1E90 80px,
-            #5A1E90 81px
+            transparent 100px,
+            #B96FFF 100px,
+            #B96FFF 101px
           )
         `,
       }} />
 
       <div className="w-full max-w-md relative z-10">
-        {/* Glow atrás da logo */}
+        {/* Logo */}
         <div className="flex items-center justify-center mb-8 relative">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-[200px] h-[200px] bg-[#A66CFF] opacity-15 blur-[60px] rounded-full" />
-          </div>
-          <img src={logo} alt="Sou Artista" className="h-16 w-auto relative z-10" />
+          <img src={logo} alt="Sou Artista" className="h-24 w-auto relative z-10 drop-shadow-[0_0_25px_rgba(185,111,255,0.4)]" />
         </div>
 
-        {/* Glow atrás do card */}
+        {/* Card com tema premium */}
         <div className="relative">
-          <div className="absolute inset-0 bg-[#A66CFF] opacity-15 blur-[60px] rounded-3xl scale-105" />
+          <div className="absolute inset-0 bg-[#B96FFF] opacity-10 blur-[50px] rounded-3xl" />
           
           {/* Card */}
-          <div className="glass-card rounded-3xl p-8 space-y-6 relative z-10">
+          <div className="relative z-10 rounded-3xl p-8 space-y-6 border border-[#B96FFF]/20" style={{
+            background: 'rgba(42, 23, 56, 0.85)',
+            backdropFilter: 'blur(20px)',
+            boxShadow: '0 8px 32px 0 rgba(185, 111, 255, 0.15)'
+          }}>
           <div className="space-y-4">
             <div className="text-center space-y-2">
-              <h1 className="text-3xl font-heading font-bold">Criar conta</h1>
-              <p className="text-muted-foreground">Etapa {step} de 3</p>
+              <h1 className="text-3xl font-heading font-bold text-white">Criar conta</h1>
+              <p className="text-[#C8BAD4]">Etapa {step} de 3</p>
             </div>
             
             <Progress value={progress} className="h-2" />
@@ -239,26 +249,26 @@ const Register = () => {
             {step === 1 && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nome completo</Label>
+                  <Label htmlFor="name" className="text-white">Nome completo</Label>
                   <Input
                     id="name"
                     type="text"
                     placeholder="Seu nome"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="h-11"
+                    className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">E-mail</Label>
+                  <Label htmlFor="email" className="text-white">E-mail</Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="seu@email.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="h-11"
+                    className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
                   />
                 </div>
 
@@ -271,7 +281,7 @@ const Register = () => {
             {step === 2 && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="cpf">CPF</Label>
+                  <Label htmlFor="cpf" className="text-white">CPF</Label>
                   <Input
                     id="cpf"
                     type="text"
@@ -282,12 +292,12 @@ const Register = () => {
                       setFormData({ ...formData, cpf: formatted });
                     }}
                     maxLength={14}
-                    className="h-11"
+                    className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="birthDate">Data de nascimento</Label>
+                  <Label htmlFor="birthDate" className="text-white">Data de nascimento</Label>
                   <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <Button
@@ -327,7 +337,7 @@ const Register = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">WhatsApp</Label>
+                  <Label htmlFor="phone" className="text-white">WhatsApp</Label>
                   <Input
                     id="phone"
                     type="tel"
@@ -338,7 +348,7 @@ const Register = () => {
                       setFormData({ ...formData, phone: formatted });
                     }}
                     maxLength={19}
-                    className="h-11"
+                    className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
                   />
                 </div>
 
@@ -357,26 +367,26 @@ const Register = () => {
             {step === 3 && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Senha</Label>
+                  <Label htmlFor="password" className="text-white">Senha</Label>
                   <PasswordInput
                     id="password"
                     placeholder="Mínimo 6 caracteres"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     disabled={loading}
-                    className="h-11"
+                    className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirmar senha</Label>
+                  <Label htmlFor="confirmPassword" className="text-white">Confirmar senha</Label>
                   <PasswordInput
                     id="confirmPassword"
                     placeholder="Digite a senha novamente"
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                     disabled={loading}
-                    className="h-11"
+                    className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
                   />
                 </div>
 
@@ -400,9 +410,9 @@ const Register = () => {
             )}
           </form>
 
-          <div className="text-center text-sm text-muted-foreground">
+          <div className="text-center text-sm text-[#C8BAD4]">
             Já tem uma conta?{' '}
-            <Link to="/login" className="text-primary hover:underline font-medium">
+            <Link to="/login" className="text-[#B96FFF] hover:underline font-medium">
               Fazer login
             </Link>
           </div>
