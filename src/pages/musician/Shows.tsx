@@ -924,8 +924,11 @@ const MusicianShows = () => {
                                       </span>
                                     </Button>
                                   </PopoverTrigger>
-                                   <PopoverContent className="w-auto p-0 bg-white z-[100]" align="start">
-                                    <CalendarComponent mode="single" selected={showFormData.date_local ? (() => {
+                                   <PopoverContent className="w-auto p-0 bg-white border-gray-200 z-[100]" align="start">
+                                    <CalendarComponent 
+                                      mode="single" 
+                                      variant="light"
+                                      selected={showFormData.date_local ? (() => {
                                         const [year, month, day] = showFormData.date_local.split('-').map(Number);
                                         return new Date(year, month - 1, day);
                                       })() : undefined} onSelect={date => {

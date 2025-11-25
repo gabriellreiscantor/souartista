@@ -10,7 +10,7 @@ export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
   variant?: "light" | "primary";
 };
 
-function Calendar({ className, classNames, showOutsideDays = true, variant = "primary", ...props }: CalendarProps) {
+function Calendar({ className, classNames, showOutsideDays = true, variant = "light", ...props }: CalendarProps) {
   const [month, setMonth] = React.useState<Date>(props.month || new Date());
 
   const CustomCaption = (captionProps: CaptionProps) => {
