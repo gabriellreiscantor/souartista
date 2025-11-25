@@ -4,6 +4,7 @@ import { DemoArtistSidebar } from '@/components/DemoArtistSidebar';
 import { DemoUserMenu } from '@/components/DemoUserMenu';
 import { DemoMobileBottomNav } from '@/components/DemoMobileBottomNav';
 import { DemoBanner } from '@/components/DemoBanner';
+import { DemoLockedModal } from '@/components/DemoLockedModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -16,6 +17,7 @@ import { ptBR } from 'date-fns/locale';
 const DemoArtistReports = () => {
   const [period, setPeriod] = useState('this-month');
   const [visibleShows, setVisibleShows] = useState(3);
+  const [showLockedModal, setShowLockedModal] = useState(false);
 
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
@@ -108,9 +110,19 @@ const DemoArtistReports = () => {
   };
 
   const handleExport = (type: string) => {
-    toast.info('Modo Demo', {
-      description: `Exportação ${type} disponível apenas na versão completa.`
-    });
+    setShowLockedModal(true);
+  };
+
+  const handlePeriodChange = (value: string) => {
+    if (value === 'this-month' || value === 'this-year') {
+      setShowLockedModal(true);
+    } else {
+      setPeriod(value);
+    }
+  };
+
+  const handleShowMore = () => {
+    setShowLockedModal(true);
   };
 
   const remainingShows = demoShows.length - visibleShows;
@@ -146,7 +158,7 @@ const DemoArtistReports = () => {
                 <CardContent className="p-4 space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Período:</label>
-                    <Select value={period} onValueChange={setPeriod}>
+                    <Select value={period} onValueChange={handlePeriodChange}>
                       <SelectTrigger className="w-full bg-white border-primary text-gray-900 font-medium">
                         <SelectValue />
                       </SelectTrigger>
@@ -324,7 +336,7 @@ const DemoArtistReports = () => {
                 
                 {remainingShows > 0 && (
                   <Button
-                    onClick={() => setVisibleShows(prev => Math.min(prev + 4, demoShows.length))}
+                    onClick={handleShowMore}
                     variant="ghost"
                     className="w-full mt-3 bg-purple-50 hover:bg-purple-100 text-primary"
                   >
@@ -426,6 +438,7 @@ const DemoArtistReports = () => {
           </main>
         </div>
         <DemoMobileBottomNav role="artist" />
+        <DemoLockedModal open={showLockedModal} onOpenChange={setShowLockedModal} />
       </div>
     </SidebarProvider>
   );
