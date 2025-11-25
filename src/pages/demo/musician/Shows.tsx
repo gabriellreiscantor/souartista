@@ -22,7 +22,7 @@ const DemoMusicianShows = () => {
   const demoShows = [
     {
       id: '1',
-      venue_name: 'Pub Rock City',
+      venue_name: 'Pub e Lounge Music Point',
       artist_name: 'João Silva',
       date_local: '2025-01-10',
       time_local: '22:00',
@@ -32,7 +32,7 @@ const DemoMusicianShows = () => {
     },
     {
       id: '2',
-      venue_name: 'Teatro Municipal',
+      venue_name: 'Casa de Eventos Ritmo',
       artist_name: 'Maria Santos',
       date_local: '2025-01-15',
       time_local: '20:00',
@@ -42,7 +42,7 @@ const DemoMusicianShows = () => {
     },
     {
       id: '3',
-      venue_name: 'Festa Corporativa',
+      venue_name: 'Salão de Festas Estrela',
       artist_name: 'Pedro Costa',
       date_local: '2025-01-25',
       time_local: '19:00',
