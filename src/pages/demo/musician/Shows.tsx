@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Plus, Calendar as CalendarIcon, Clock, MapPin, Music2, Mic2, ChevronDown, ChevronUp, Edit, Trash2, X } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, Clock, MapPin, Music2, Mic2, ChevronDown, ChevronUp, Edit, Trash2, X, Guitar } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { toast } from 'sonner';
@@ -276,7 +276,7 @@ const DemoMusicianShows = () => {
                                     {show.artist_name}
                                   </p>
                                   <p className="text-sm text-gray-600 flex items-center gap-1">
-                                    <Music2 className="w-3 h-3" />
+                                    <Guitar className="w-3 h-3" />
                                     {show.instrument}
                                   </p>
                                 </div>
