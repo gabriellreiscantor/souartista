@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { ZoomIn, ZoomOut } from 'lucide-react';
@@ -118,6 +118,9 @@ export const ImageEditor = ({ open, onOpenChange, imageFile, onSave }: ImageEdit
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Editar Foto</DialogTitle>
+          <DialogDescription>
+            Ajuste o zoom e a área de corte da sua foto de perfil.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
