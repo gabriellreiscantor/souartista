@@ -162,13 +162,13 @@ const Login = () => {
           {/* Card */}
           <div className="glass-card rounded-3xl p-6 space-y-5 relative z-10">
           <div className="text-center space-y-2">
-            <h1 className="text-3xl font-heading font-bold">Bem-vindo de volta</h1>
-            <p className="text-muted-foreground">Entre com sua conta para continuar</p>
+            <h1 className="text-3xl font-heading font-bold text-white">Bem-vindo de volta</h1>
+            <p className="text-gray-300">Entre com sua conta para continuar</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
+              <Label htmlFor="email" className="text-white">E-mail</Label>
               <Input
                 id="email"
                 type="email"
@@ -176,19 +176,19 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
-                className="h-11"
+                className="h-11 bg-white/10 border-white/20 text-white placeholder:text-gray-400"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
+              <Label htmlFor="password" className="text-white">Senha</Label>
               <PasswordInput
                 id="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
-                className="h-11"
+                className="h-11 bg-white/10 border-white/20 text-white placeholder:text-gray-400"
               />
             </div>
 
@@ -208,7 +208,7 @@ const Login = () => {
             </Button>
           </form>
 
-          <div className="text-center text-sm text-muted-foreground">
+          <div className="text-center text-sm text-gray-300">
             Não tem uma conta?{' '}
             <Link to="/register" className="text-primary hover:underline font-medium">
               Criar conta
