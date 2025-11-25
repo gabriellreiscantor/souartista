@@ -4,37 +4,82 @@ import { DemoMusicianSidebar } from '@/components/DemoMusicianSidebar';
 import { DemoUserMenu } from '@/components/DemoUserMenu';
 import { DemoMobileBottomNav } from '@/components/DemoMobileBottomNav';
 import { DemoBanner } from '@/components/DemoBanner';
+import { DemoLockedModal } from '@/components/DemoLockedModal';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { NotificationBell } from '@/components/NotificationBell';
-import { Music2, DollarSign, TrendingUp, Download } from 'lucide-react';
-import { toast } from 'sonner';
+import { Music2, DollarSign, TrendingUp, TrendingDown, FileText, Download, Mic2, MapPin, Car } from 'lucide-react';
 
 const DemoMusicianReports = () => {
   const [period, setPeriod] = useState('this-month');
+  const [showLockedModal, setShowLockedModal] = useState(false);
 
-  const stats = {
-    totalShows: 18,
-    totalRevenue: 8640,
-    totalProfit: 7390,
-    averageTicket: 410
-  };
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonthNum = String(currentDate.getMonth() + 1).padStart(2, '0');
 
-  const artistsByProfit = [
-    { name: 'João Silva', profit: 2400 },
-    { name: 'Maria Santos', profit: 1920 },
-    { name: 'Pedro Costa', profit: 1440 }
+  const demoShows = [
+    {
+      id: '1',
+      venue_name: 'Pub e Lounge Music Point',
+      artist_name: 'Gabriell Reis',
+      date_local: `${currentYear}-${currentMonthNum}-10`,
+      fee: 480,
+      expenses: 0
+    },
+    {
+      id: '2',
+      venue_name: 'Casa de Eventos Ritmo',
+      artist_name: 'Gusttavo Lima',
+      date_local: `${currentYear}-${currentMonthNum}-15`,
+      fee: 500,
+      expenses: 0
+    },
+    {
+      id: '3',
+      venue_name: 'Salão de Festas Estrela',
+      artist_name: 'Jorge e Mateus',
+      date_local: `${currentYear}-${currentMonthNum}-25`,
+      fee: 450,
+      expenses: 0
+    }
   ];
 
+  const totalShows = demoShows.length;
+  const totalRevenue = demoShows.reduce((sum, show) => sum + show.fee, 0);
+  const totalExpenses = demoShows.reduce((sum, show) => sum + show.expenses, 0);
+  const netProfit = totalRevenue - totalExpenses;
+  const averageTicket = totalShows > 0 ? totalRevenue / totalShows : 0;
+
+  const artistsByProfit = [
+    { name: 'Gabriell Reis', profit: 480 },
+    { name: 'Gusttavo Lima', profit: 500 },
+    { name: 'Jorge e Mateus', profit: 450 }
+  ].sort((a, b) => b.profit - a.profit).slice(0, 5);
+
+  const venuesByShows = [
+    { name: 'Pub e Lounge Music Point', shows: 1 },
+    { name: 'Casa de Eventos Ritmo', shows: 1 },
+    { name: 'Salão de Festas Estrela', shows: 1 }
+  ].sort((a, b) => b.shows - a.shows).slice(0, 5);
+
+  const transportCosts = [
+    { name: 'Pub e Lounge Music Point', cost: 33 },
+    { name: 'Casa de Eventos Ritmo', cost: 28 },
+    { name: 'Salão de Festas Estrela', cost: 25 }
+  ].sort((a, b) => b.cost - a.cost).slice(0, 5);
+
   const formatCurrency = (value: number) => {
-    return value.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
   };
 
-  const handleExport = (type: string) => {
-    toast.info('Modo Demo', {
-      description: `Exportação ${type} disponível apenas na versão completa.`
-    });
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
   return (
@@ -57,98 +102,210 @@ const DemoMusicianReports = () => {
             </div>
           </header>
 
-          <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6 scrollbar-hide">
-            <div className="max-w-7xl mx-auto space-y-6">
-              <Card className="bg-white border-gray-200">
-                <CardContent className="p-4">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Período:</label>
-                      <Select value={period} onValueChange={setPeriod}>
-                        <SelectTrigger className="w-full bg-white text-gray-900 font-medium">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white text-gray-900">
-                          <SelectItem value="this-month">Este Mês</SelectItem>
-                          <SelectItem value="last-month">Mês Passado</SelectItem>
-                          <SelectItem value="this-year">Este Ano</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2">
-                      <Button onClick={() => handleExport('PDF')} variant="outline" className="flex items-center gap-2">
-                        <Download className="w-4 h-4" />
-                        Exportar PDF
-                      </Button>
-                      <Button onClick={() => handleExport('XLSX')} variant="outline">
-                        <Download className="w-4 h-4 mr-2" />
-                        Exportar XLSX
-                      </Button>
-                    </div>
+          <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6 scrollbar-hide" style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}>
+            <div className="max-w-4xl mx-auto space-y-4">
+              {/* Period and Export Card */}
+              <Card className="bg-white border border-gray-200 p-4">
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">Período:</label>
+                    <Select value={period} onValueChange={setPeriod}>
+                      <SelectTrigger className="w-full bg-white border-2 border-primary text-gray-900 font-medium">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white">
+                        <SelectItem value="this-month" className="text-gray-900">Este Mês</SelectItem>
+                        <SelectItem value="last-month" className="text-gray-900">Mês Passado</SelectItem>
+                        <SelectItem value="this-year" className="text-gray-900">Este Ano</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                </CardContent>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button 
+                      onClick={() => setShowLockedModal(true)}
+                      className="bg-primary hover:bg-primary/90 text-white font-semibold"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      PDF
+                    </Button>
+                    <Button 
+                      onClick={() => setShowLockedModal(true)}
+                      className="bg-primary hover:bg-primary/90 text-white font-semibold"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      XLSX
+                    </Button>
+                  </div>
+                </div>
               </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Card className="bg-white">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600">Total de Shows</p>
-                        <p className="text-3xl font-bold text-gray-900">{stats.totalShows}</p>
-                      </div>
-                      <Music2 className="w-12 h-12 text-purple-600" />
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* Total de Shows */}
+              <Card className="bg-white border border-gray-200 p-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Total de Shows</p>
+                    <p className="text-4xl font-bold text-gray-900">{totalShows}</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                    <Music2 className="w-6 h-6 text-primary" />
+                  </div>
+                </div>
+              </Card>
 
-                <Card className="bg-white">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600">Cachê Total</p>
-                        <p className="text-3xl font-bold text-green-600">R$ {formatCurrency(stats.totalRevenue)}</p>
-                      </div>
-                      <DollarSign className="w-12 h-12 text-green-600" />
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* Cachê Total */}
+              <Card className="bg-white border border-gray-200 p-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Cachê Total (Período)</p>
+                    <p className="text-4xl font-bold text-gray-900">{formatCurrency(totalRevenue)}</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                    <DollarSign className="w-6 h-6 text-green-600" />
+                  </div>
+                </div>
+              </Card>
 
-                <Card className="bg-white">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600">Lucro Líquido</p>
-                        <p className="text-3xl font-bold text-blue-600">R$ {formatCurrency(stats.totalProfit)}</p>
-                      </div>
-                      <TrendingUp className="w-12 h-12 text-blue-600" />
+              {/* Despesas */}
+              <Card className="bg-white border border-gray-200 p-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Despesas (Período)</p>
+                    <p className="text-4xl font-bold text-gray-900">{formatCurrency(totalExpenses)}</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                    <TrendingDown className="w-6 h-6 text-red-600" />
+                  </div>
+                </div>
+              </Card>
+
+              {/* Lucro Líquido */}
+              <Card className="bg-white border border-gray-200 p-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Lucro Líquido (Período)</p>
+                    <p className="text-4xl font-bold text-gray-900">{formatCurrency(netProfit)}</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                    <TrendingUp className="w-6 h-6 text-blue-600" />
+                  </div>
+                </div>
+              </Card>
+
+              {/* Ticket Médio */}
+              <Card className="bg-white border border-gray-200 p-6">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Ticket Médio (Período)</p>
+                  <p className="text-xs text-gray-500 mb-3">Seu lucro líquido médio por show no período selecionado.</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-6 h-6 text-primary" />
                     </div>
-                  </CardContent>
-                </Card>
+                    <div>
+                      <p className="text-3xl font-bold text-gray-900">{formatCurrency(averageTicket)}</p>
+                      <p className="text-xs text-gray-500">Valor exato: {formatCurrency(averageTicket)} / show</p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Detalhes dos Shows */}
+              <div className="space-y-3">
+                <h2 className="text-xl font-bold text-gray-900">Detalhes dos Shows</h2>
+                
+                {demoShows.map((show) => {
+                  const profit = show.fee - show.expenses;
+                  return (
+                    <Card key={show.id} className="bg-white border border-gray-200 p-4">
+                      <h3 className="font-bold text-gray-900 mb-1">{show.venue_name}</h3>
+                      <p className="text-sm text-gray-600 mb-3">{formatDate(show.date_local)}</p>
+                      
+                      <div className="grid grid-cols-2 gap-4 mb-3">
+                        <div>
+                          <p className="text-xs text-gray-600">Seu Cachê</p>
+                          <p className="font-bold text-green-600">{formatCurrency(show.fee)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-600">Despesas</p>
+                          <p className="font-bold text-red-600">{formatCurrency(show.expenses)}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-end">
+                        <div className="px-4 py-2 rounded-full bg-primary text-white font-bold">
+                          {formatCurrency(profit)}
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
               </div>
 
-              <Card className="bg-white">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-bold mb-4">Top 3 Artistas por Lucro</h3>
-                  <div className="space-y-3">
-                    {artistsByProfit.map((artist, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <span className="font-bold text-purple-600">{i + 1}º</span>
-                          <span className="font-medium">{artist.name}</span>
-                        </div>
-                        <span className="text-green-600 font-bold">R$ {formatCurrency(artist.profit)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
+              {/* Top 5 Artistas por Lucro */}
+              <Card className="bg-white border border-gray-200 p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Mic2 className="w-5 h-5 text-gray-900" />
+                  <h3 className="font-bold text-gray-900">Top 5 Artistas por Lucro</h3>
+                </div>
+                <div className="space-y-2">
+                  {artistsByProfit.map((artist, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <span className="text-sm text-gray-900">{index + 1}. {artist.name}</span>
+                      <span className="px-3 py-1 rounded-full bg-primary text-white text-sm font-bold">
+                        {formatCurrency(artist.profit)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Top 5 locais por nº de shows */}
+              <Card className="bg-white border border-gray-200 p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <MapPin className="w-5 h-5 text-gray-900" />
+                  <h3 className="font-bold text-gray-900">Top 5 locais por nº de shows</h3>
+                </div>
+                <div className="space-y-2">
+                  {venuesByShows.map((venue, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <span className="text-sm text-gray-900">{index + 1}. {venue.name}</span>
+                      <span className="px-3 py-1 rounded-full bg-primary text-white text-sm font-bold">
+                        {venue.shows} show{venue.shows !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Top 5 Custos de Locomoção */}
+              <Card className="bg-white border border-gray-200 p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Car className="w-5 h-5 text-gray-900" />
+                  <h3 className="font-bold text-gray-900">Top 5 Custos de Locomoção</h3>
+                </div>
+                <div className="space-y-2">
+                  {transportCosts.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <span className="text-sm text-gray-900">{index + 1}. {item.name}</span>
+                      <span className="px-3 py-1 rounded-full bg-primary text-white text-sm font-bold">
+                        {formatCurrency(item.cost)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </Card>
             </div>
           </main>
         </div>
+        
         <DemoMobileBottomNav role="musician" />
       </div>
+      
+      <DemoLockedModal open={showLockedModal} onOpenChange={setShowLockedModal} />
     </SidebarProvider>
   );
 };
