@@ -62,18 +62,8 @@ const Register = () => {
   const [verifying, setVerifying] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
 
-  // Redireciona para /select-role apenas se usuário estiver autenticado E email verificado
-  useEffect(() => {
-    if (!authLoading && user && session) {
-      // Verifica se o email foi confirmado
-      if (user.email_confirmed_at) {
-        console.log('[Register] User authenticated and email verified, redirecting to /select-role');
-        navigate('/select-role');
-      } else {
-        console.log('[Register] User authenticated but email not verified yet');
-      }
-    }
-  }, [user, session, authLoading, navigate]);
+  // NÃO redireciona automaticamente - deixa o fluxo do formulário seguir
+  // O redirecionamento acontece apenas após verificar o OTP no step 4
 
   const [formData, setFormData] = useState({
     name: '',
