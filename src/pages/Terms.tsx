@@ -1,0 +1,127 @@
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import logo from '@/assets/logo.png';
+
+const Terms = () => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-card">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Voltar
+          </Button>
+          <img src={logo} alt="SouArtista" className="h-10 w-auto" />
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8 max-w-4xl">
+        <h1 className="text-4xl font-bold mb-8 text-foreground">Termos de Uso</h1>
+
+        <div className="prose prose-invert max-w-none space-y-6 text-muted-foreground">
+          <section>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">1. Aceitação dos Termos</h2>
+            <p>
+              Ao acessar e usar o SouArtista, você aceita e concorda em ficar vinculado aos termos
+              e condições deste acordo. Se você não concordar com qualquer parte destes termos,
+              não deve usar nosso serviço.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">2. Descrição do Serviço</h2>
+            <p>
+              O SouArtista é uma plataforma de gerenciamento financeiro para artistas e músicos,
+              oferecendo ferramentas para organizar shows, controlar receitas e despesas, e
+              gerenciar equipes musicais.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">3. Cadastro e Conta</h2>
+            <p>
+              Para usar o SouArtista, você deve criar uma conta fornecendo informações precisas
+              e completas. Você é responsável por manter a confidencialidade de sua senha e
+              por todas as atividades que ocorram em sua conta.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">4. Uso Aceitável</h2>
+            <p>
+              Você concorda em usar o serviço apenas para fins legítimos e de acordo com estes
+              Termos. Você não deve usar o serviço de maneira que possa danificar, desabilitar,
+              sobrecarregar ou prejudicar nossos servidores ou redes.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">5. Propriedade Intelectual</h2>
+            <p>
+              Todo o conteúdo, recursos e funcionalidades do SouArtista são de propriedade
+              exclusiva da empresa e são protegidos por leis de direitos autorais, marcas
+              registradas e outras leis de propriedade intelectual.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">6. Pagamentos e Assinaturas</h2>
+            <p>
+              O acesso a determinados recursos pode exigir uma assinatura paga. Você concorda
+              em fornecer informações de pagamento precisas e atualizadas. As taxas de assinatura
+              são cobradas antecipadamente e não são reembolsáveis.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">7. Cancelamento</h2>
+            <p>
+              Você pode cancelar sua conta a qualquer momento através das configurações da sua
+              conta. Reservamo-nos o direito de suspender ou encerrar sua conta se você violar
+              estes Termos.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">8. Limitação de Responsabilidade</h2>
+            <p>
+              O SouArtista é fornecido "como está" sem garantias de qualquer tipo. Não seremos
+              responsáveis por quaisquer danos diretos, indiretos, incidentais ou consequenciais
+              resultantes do uso ou da incapacidade de usar o serviço.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">9. Alterações aos Termos</h2>
+            <p>
+              Reservamo-nos o direito de modificar estes Termos a qualquer momento. Notificaremos
+              você sobre quaisquer alterações publicando os novos Termos nesta página. É sua
+              responsabilidade revisar estes Termos periodicamente.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">10. Contato</h2>
+            <p>
+              Se você tiver dúvidas sobre estes Termos, entre em contato conosco através dos
+              canais de suporte disponíveis no aplicativo.
+            </p>
+          </section>
+
+          <p className="text-sm mt-8">
+            Última atualização: Janeiro de 2025
+          </p>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default Terms;

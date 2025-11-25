@@ -7,6 +7,8 @@ import { AuthProvider } from "./hooks/useAuth";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 import CompleteProfile from "./pages/CompleteProfile";
 import SelectRole from "./pages/SelectRole";
 import Subscribe from "./pages/Subscribe";
@@ -72,6 +74,8 @@ const App = () => (
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
             <Route path="/complete-profile" element={<CompleteProfile />} />
             <Route path="/select-role" element={<SelectRole />} />
             <Route path="/subscribe" element={<Subscribe />} />
