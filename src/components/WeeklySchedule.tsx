@@ -103,10 +103,10 @@ export function WeeklySchedule({
   const handleNextWeek = () => setCurrentWeek(addWeeks(currentWeek, 1));
   const handleToday = () => setCurrentWeek(new Date());
   if (isLoading) {
-    return <Card className="p-4 sm:p-6 bg-card border-border animate-pulse">
-        <div className="h-6 bg-muted rounded w-1/3 mb-4"></div>
+    return <Card className="p-4 sm:p-6 bg-white border-gray-200 animate-pulse">
+        <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
         <div className="space-y-3">
-          {[1, 2, 3].map(i => <div key={i} className="h-20 bg-muted rounded-lg"></div>)}
+          {[1, 2, 3].map(i => <div key={i} className="h-20 bg-gray-200 rounded-lg"></div>)}
         </div>
       </Card>;
   }
