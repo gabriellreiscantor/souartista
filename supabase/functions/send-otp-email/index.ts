@@ -25,9 +25,9 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Sending OTP email to:", email);
 
     const emailResponse = await resend.emails.send({
-      from: "Nova <noreply@souartista.app>",
+      from: "Seu Artista <noreply@souartista.app>",
       to: [email],
-      subject: "Seu código de verificação - Nova",
+      subject: "Seu código de verificação - Seu Artista",
       html: `
         <!DOCTYPE html>
         <html>
@@ -36,17 +36,17 @@ const handler = async (req: Request): Promise<Response> => {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Código de Verificação</title>
           </head>
-          <body style="margin: 0; padding: 0; background-color: #0A0118; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0A0118; padding: 40px 20px;">
+          <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
               <tr>
                 <td align="center">
-                  <table width="600" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #1B0D29 0%, #0A0118 100%); border-radius: 16px; border: 1px solid rgba(185, 111, 255, 0.2); overflow: hidden;">
+                  <table width="600" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; border: 2px solid #B96FFF; overflow: hidden; box-shadow: 0 4px 12px rgba(185, 111, 255, 0.15);">
                     
                     <!-- Header -->
                     <tr>
-                      <td style="padding: 40px; text-align: center; background: linear-gradient(135deg, rgba(185, 111, 255, 0.1) 0%, transparent 100%);">
-                        <h1 style="color: #B96FFF; margin: 0; font-size: 32px; font-weight: 700;">
-                          Nova
+                      <td style="padding: 40px; text-align: center; background: linear-gradient(135deg, #f8f5ff 0%, #ffffff 100%);">
+                        <h1 style="color: #B96FFF; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(185, 111, 255, 0.1);">
+                          Seu Artista
                         </h1>
                       </td>
                     </tr>
@@ -54,23 +54,23 @@ const handler = async (req: Request): Promise<Response> => {
                     <!-- Content -->
                     <tr>
                       <td style="padding: 0 40px 40px 40px;">
-                        <h2 style="color: #FFFFFF; font-size: 24px; margin: 0 0 16px 0; font-weight: 600;">
-                          Bem-vindo ao Nova! 🎉
+                        <h2 style="color: #333333; font-size: 24px; margin: 0 0 16px 0; font-weight: 600;">
+                          Bem-vindo ao Seu Artista! 🎉
                         </h2>
                         
-                        <p style="color: rgba(255, 255, 255, 0.7); font-size: 16px; line-height: 1.6; margin: 0 0 32px 0;">
-                          Use o código abaixo para verificar seu email e começar a usar o Nova:
+                        <p style="color: #666666; font-size: 16px; line-height: 1.6; margin: 0 0 32px 0;">
+                          Use o código abaixo para verificar seu email e começar a usar o Seu Artista:
                         </p>
 
                         <!-- OTP Code Box -->
                         <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 32px;">
                           <tr>
                             <td align="center">
-                              <div style="background: rgba(185, 111, 255, 0.1); border: 2px solid #B96FFF; border-radius: 12px; padding: 24px; display: inline-block;">
-                                <p style="color: rgba(255, 255, 255, 0.6); font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px;">
+                              <div style="background: linear-gradient(135deg, #f8f5ff 0%, #fff 100%); border: 3px solid #B96FFF; border-radius: 12px; padding: 24px; display: inline-block; box-shadow: 0 4px 12px rgba(185, 111, 255, 0.2);">
+                                <p style="color: #999999; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
                                   Seu código de verificação
                                 </p>
-                                <p style="color: #B96FFF; font-size: 36px; font-weight: 700; margin: 0; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+                                <p style="color: #B96FFF; font-size: 36px; font-weight: 700; margin: 0; letter-spacing: 8px; font-family: 'Courier New', monospace; text-shadow: 0 2px 4px rgba(185, 111, 255, 0.15);">
                                   ${token}
                                 </p>
                               </div>
@@ -78,7 +78,7 @@ const handler = async (req: Request): Promise<Response> => {
                           </tr>
                         </table>
 
-                        <p style="color: rgba(255, 255, 255, 0.5); font-size: 14px; line-height: 1.6; margin: 0;">
+                        <p style="color: #999999; font-size: 14px; line-height: 1.6; margin: 0;">
                           Este código expira em 60 minutos. Se você não solicitou este código, pode ignorar este email com segurança.
                         </p>
                       </td>
@@ -86,9 +86,9 @@ const handler = async (req: Request): Promise<Response> => {
 
                     <!-- Footer -->
                     <tr>
-                      <td style="padding: 24px 40px; background: rgba(0, 0, 0, 0.2); border-top: 1px solid rgba(185, 111, 255, 0.1);">
-                        <p style="color: rgba(255, 255, 255, 0.4); font-size: 12px; line-height: 1.6; margin: 0; text-align: center;">
-                          © 2025 Nova. Todos os direitos reservados.<br>
+                      <td style="padding: 24px 40px; background: #f8f5ff; border-top: 2px solid #f0e6ff;">
+                        <p style="color: #999999; font-size: 12px; line-height: 1.6; margin: 0; text-align: center;">
+                          © 2025 Seu Artista. Todos os direitos reservados.<br>
                           Este é um email automático, por favor não responda.
                         </p>
                       </td>

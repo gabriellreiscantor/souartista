@@ -222,47 +222,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) return { error };
 
-      // Com auto_confirm ativado, gerar OTP manualmente para verificação
-      if (data.user) {
-        try {
-          console.log('Gerando OTP para verificação...');
-          
-          // Gerar OTP via Supabase
-          const { error: otpError } = await supabase.auth.signInWithOtp({
-            email,
-            options: {
-              shouldCreateUser: false,
-            },
-          });
-
-          if (otpError) {
-            console.error('Erro ao gerar OTP:', otpError);
-            return { error: otpError };
-          }
-
-          console.log('OTP gerado, enviando email customizado...');
-          
-          // Chamar edge function para enviar email customizado
-          // Nota: O token real é gerado pelo Supabase, nossa função envia o email com o formato
-          const { error: emailError } = await supabase.functions.invoke('send-otp-email', {
-            body: {
-              email,
-              token: '******', // Token real é enviado pelo Supabase, este é apenas placeholder
-              type: 'signup',
-            },
-          });
-
-          if (emailError) {
-            console.error('Erro ao enviar email customizado:', emailError);
-            // Não falhar o signup se o email customizado falhar
-          } else {
-            console.log('Email OTP customizado enviado com sucesso!');
-          }
-        } catch (emailError) {
-          console.error('Erro ao processar email OTP:', emailError);
-          // Continuar mesmo se o email customizado falhar
-        }
-      }
+      // Com auto_confirm desativado, Supabase enviará email de confirmação automaticamente
+      console.log('Conta criada com sucesso. Email de confirmação enviado.');
 
       return { error: null };
     } catch (error: any) {
