@@ -318,7 +318,12 @@ const DemoMusicianShows = () => {
                             <div>
                               <div className="font-semibold text-gray-900">{show.venue_name}</div>
                               <div className="text-sm text-gray-600">
-                                {format(showDate, "dd 'de' MMMM", { locale: ptBR })} • {show.time_local}
+                                {(() => {
+                                  const dayOfWeek = format(showDate, "EEEE", { locale: ptBR });
+                                  const capitalizedDay = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1);
+                                  return `${capitalizedDay}, ${format(showDate, "dd 'de' MMMM", { locale: ptBR })}`;
+                                })()}
+                                {show.time_local && ` 🕐 ${show.time_local}`}
                               </div>
                               <div className="text-sm text-gray-600">{show.artist_name}</div>
                               <div className="text-sm text-gray-500">{show.instrument}</div>
