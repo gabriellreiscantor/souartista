@@ -139,11 +139,11 @@ const Login = () => {
 
       <div className="w-full max-w-sm relative z-10">
         {/* Glow atrás da logo */}
-        <div className="flex items-center justify-center mb-8 relative">
+        <div className="flex items-center justify-center mb-12 relative">
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-[260px] h-[260px] bg-[#A66CFF] opacity-20 blur-[80px] rounded-full" />
+            <div className="w-[300px] h-[300px] bg-[#A66CFF] opacity-20 blur-[80px] rounded-full" />
           </div>
-          <img src={logo} alt="Sou Artista" className="h-32 w-auto relative z-10" />
+          <img src={logo} alt="Sou Artista" className="h-40 w-auto relative z-10" />
         </div>
 
         {/* Glow atrás do card */}
