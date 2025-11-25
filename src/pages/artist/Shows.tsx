@@ -6,6 +6,7 @@ import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -76,6 +77,10 @@ const ArtistShows = () => {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [showFilter, setShowFilter] = useState<string>('upcoming');
+  
+  // Delete confirmation states
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'show' | 'musician' | 'venue' } | null>(null);
   
   // Check if selected date is in the past
   const isDateInPast = () => {
@@ -235,18 +240,37 @@ const ArtistShows = () => {
       toast.error('Erro ao salvar show');
     }
   };
-  const handleShowDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este show?')) return;
+  const handleShowDelete = (id: string) => {
+    setItemToDelete({ id, type: 'show' });
+    setDeleteConfirmOpen(true);
+  };
+  
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    
     try {
-      const {
-        error
-      } = await supabase.from('shows').delete().eq('id', id);
-      if (error) throw error;
-      toast.success('Show excluído com sucesso!');
-      fetchShows();
+      if (itemToDelete.type === 'show') {
+        const { error } = await supabase.from('shows').delete().eq('id', itemToDelete.id);
+        if (error) throw error;
+        toast.success('Show excluído com sucesso!');
+        fetchShows();
+      } else if (itemToDelete.type === 'musician') {
+        const { error } = await supabase.from('musicians').delete().eq('id', itemToDelete.id);
+        if (error) throw error;
+        toast.success('Músico excluído com sucesso!');
+        fetchMusicians();
+      } else if (itemToDelete.type === 'venue') {
+        const { error } = await supabase.from('venues').delete().eq('id', itemToDelete.id);
+        if (error) throw error;
+        toast.success('Local excluído com sucesso!');
+        fetchVenues();
+      }
     } catch (error: any) {
-      console.error('Error deleting show:', error);
-      toast.error('Erro ao excluir show');
+      console.error('Error deleting:', error);
+      toast.error('Erro ao excluir');
+    } finally {
+      setDeleteConfirmOpen(false);
+      setItemToDelete(null);
     }
   };
   const handleShowEdit = (show: Show) => {
@@ -323,19 +347,9 @@ const ArtistShows = () => {
     });
     setMusicianDialogOpen(true);
   };
-  const handleMusicianDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este músico?')) return;
-    try {
-      const {
-        error
-      } = await supabase.from('musicians').delete().eq('id', id);
-      if (error) throw error;
-      toast.success('Músico excluído com sucesso!');
-      fetchMusicians();
-    } catch (error: any) {
-      toast.error('Erro ao excluir músico');
-      console.error(error);
-    }
+  const handleMusicianDelete = (id: string) => {
+    setItemToDelete({ id, type: 'musician' });
+    setDeleteConfirmOpen(true);
   };
   const resetMusicianForm = () => {
     setMusicianFormData({
@@ -416,19 +430,9 @@ const ArtistShows = () => {
     }
     setVenueDialogOpen(true);
   };
-  const handleVenueDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este local?')) return;
-    try {
-      const {
-        error
-      } = await supabase.from('venues').delete().eq('id', id);
-      if (error) throw error;
-      toast.success('Local excluído com sucesso!');
-      fetchVenues();
-    } catch (error: any) {
-      toast.error('Erro ao excluir local');
-      console.error(error);
-    }
+  const handleVenueDelete = (id: string) => {
+    setItemToDelete({ id, type: 'venue' });
+    setDeleteConfirmOpen(true);
   };
   const resetVenueForm = () => {
     setVenueFormData({
@@ -1747,6 +1751,23 @@ const ArtistShows = () => {
         
         <MobileBottomNav role="artist" />
       </div>
+      
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent className="bg-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente o item selecionado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </SidebarProvider>;
 };
 export default ArtistShows;

@@ -6,6 +6,7 @@ import { UserMenu } from '@/components/UserMenu';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -37,6 +38,10 @@ const ArtistMusicians = () => {
     default_fee: '',
   });
   const [isFreelancer, setIsFreelancer] = useState(false);
+  
+  // Delete confirmation states
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [musicianToDelete, setMusicianToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMusicians();
@@ -119,14 +124,19 @@ const ArtistMusicians = () => {
     setDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este músico?')) return;
+  const handleDelete = (id: string) => {
+    setMusicianToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+  
+  const confirmDelete = async () => {
+    if (!musicianToDelete) return;
 
     try {
       const { error } = await supabase
         .from('musicians')
         .delete()
-        .eq('id', id);
+        .eq('id', musicianToDelete);
 
       if (error) throw error;
       toast.success('Músico excluído com sucesso!');
@@ -134,6 +144,9 @@ const ArtistMusicians = () => {
     } catch (error: any) {
       toast.error('Erro ao excluir músico');
       console.error(error);
+    } finally {
+      setDeleteConfirmOpen(false);
+      setMusicianToDelete(null);
     }
   };
 
@@ -344,6 +357,23 @@ const ArtistMusicians = () => {
         
         <MobileBottomNav role="artist" />
       </div>
+      
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent className="bg-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente este músico.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </SidebarProvider>
   );
 };
