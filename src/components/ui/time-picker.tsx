@@ -55,9 +55,9 @@ export function TimePicker({ value, onChange, className }: TimePickerProps) {
           {hour && minute ? `${hour}:${minute}` : <span>Selecionar horário</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 bg-primary" align="start">
+      <PopoverContent className="w-auto p-0 bg-white border-gray-200" align="start">
         <div className="p-4 space-y-3">
-          <div className="text-sm font-medium text-white mb-3">Selecionar Horário</div>
+          <div className="text-sm font-medium text-gray-900 mb-3">Selecionar Horário</div>
           <div className="flex gap-2 items-center">
             <Select
               value={hour}
@@ -66,7 +66,7 @@ export function TimePicker({ value, onChange, className }: TimePickerProps) {
                 handleTimeChange(h, minute);
               }}
             >
-              <SelectTrigger className="w-20 bg-white/10 text-white border-white/20">
+              <SelectTrigger className="w-20 bg-white text-gray-900 border-gray-300">
                 <SelectValue placeholder="HH" />
               </SelectTrigger>
               <SelectContent className="max-h-60">
@@ -77,7 +77,7 @@ export function TimePicker({ value, onChange, className }: TimePickerProps) {
                 ))}
               </SelectContent>
             </Select>
-            <span className="text-white font-bold">:</span>
+            <span className="text-gray-900 font-bold">:</span>
             <Select
               value={minute}
               onValueChange={(m) => {
@@ -85,7 +85,7 @@ export function TimePicker({ value, onChange, className }: TimePickerProps) {
                 handleTimeChange(hour, m);
               }}
             >
-              <SelectTrigger className="w-20 bg-white/10 text-white border-white/20">
+              <SelectTrigger className="w-20 bg-white text-gray-900 border-gray-300">
                 <SelectValue placeholder="MM" />
               </SelectTrigger>
               <SelectContent>
