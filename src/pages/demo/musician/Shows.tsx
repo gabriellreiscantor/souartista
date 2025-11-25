@@ -482,7 +482,7 @@ const DemoMusicianShows = () => {
               <Button 
                 type="button"
                 variant="outline" 
-                className="w-full text-gray-900 border-gray-300 hover:bg-gray-50"
+                className="w-full bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
                 onClick={() => setShowFormData({...showFormData, is_private_event: !showFormData.is_private_event})}
               >
                 Evento Particular
@@ -670,7 +670,7 @@ const DemoMusicianShows = () => {
             </div>
 
             <div className="flex gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 text-gray-900 border-gray-300 hover:bg-gray-50">
+              <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
                 Cancelar
               </Button>
               <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-white">
