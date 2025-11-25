@@ -263,7 +263,7 @@ const Register = () => {
                         {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "Selecione sua data de nascimento"}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0 bg-white border-gray-200" align="start">
                       <Calendar
                         mode="single"
                         selected={selectedDate}

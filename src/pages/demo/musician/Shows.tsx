@@ -551,12 +551,14 @@ const DemoMusicianShows = () => {
                         {selectedDate ? format(selectedDate, 'dd/MM/yyyy') : <span className="text-gray-500">Selecione a...</span>}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-white">
+                    <PopoverContent className="w-auto p-0 bg-white border-gray-200">
                       <CalendarComponent
                         mode="single"
+                        variant="light"
                         selected={selectedDate}
                         onSelect={setSelectedDate}
                         initialFocus
+                        className="pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>

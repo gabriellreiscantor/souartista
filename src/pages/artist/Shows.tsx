@@ -1017,8 +1017,11 @@ const ArtistShows = () => {
                                             })() : "Selecione a data"}
                                               </Button>
                                             </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0 bg-primary border-0" align="start">
-                                              <Calendar mode="single" selected={showFormData.date_local ? (() => {
+                                            <PopoverContent className="w-auto p-0 bg-white border-gray-200" align="start">
+                                              <Calendar 
+                                                mode="single" 
+                                                variant="light"
+                                                selected={showFormData.date_local ? (() => {
                                             const [year, month, day] = showFormData.date_local.split('-').map(Number);
                                             return new Date(year, month - 1, day);
                                           })() : undefined} onSelect={date => {
@@ -1032,7 +1035,7 @@ const ArtistShows = () => {
                                               });
                                               setCalendarOpen(false);
                                             }
-                                          }} initialFocus className="bg-primary text-white pointer-events-auto" />
+                                          }} initialFocus className="pointer-events-auto" />
                                             </PopoverContent>
                                           </Popover>
                                         </div>
