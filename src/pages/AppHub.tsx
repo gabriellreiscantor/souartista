@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import logo from '@/assets/logo.png';
 
 const AppHub = () => {
-  const { user, userData, userRole, loading } = useAuth();
+  const { user, userData, userRole, loading, signOut } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,6 +15,16 @@ const AppHub = () => {
     if (!user) {
       console.log('[AppHub] No user, redirecting to login');
       navigate('/login');
+      return;
+    }
+
+    // Se usuário está autenticado mas não tem profile, fazer logout
+    // Isso acontece quando o trigger de criação de profile falha
+    if (user && !userData) {
+      console.error('[AppHub] User authenticated but no profile found. Forcing logout.');
+      signOut().then(() => {
+        navigate('/login');
+      });
       return;
     }
 
