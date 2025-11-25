@@ -48,7 +48,7 @@ export default function DemoArtistShows() {
                 <div>
                   <p className="text-gray-600 mt-1 text-sm md:text-base">Gerencie todos os seus shows</p>
                 </div>
-                <Button onClick={handleAddShow} className="gap-2 text-sm md:text-base whitespace-nowrap">
+                <Button onClick={handleAddShow} variant="outline" className="gap-2 text-sm md:text-base whitespace-nowrap">
                   <Plus className="w-4 h-4" />
                   <span className="hidden sm:inline">Adicionar Show</span>
                   <span className="sm:hidden">Adicionar</span>
