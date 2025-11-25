@@ -587,6 +587,8 @@ const DemoArtistShows = () => {
               <Input
                 id="show-fee"
                 type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 placeholder="R$ 0,00"
                 value={showFee}
                 onChange={(e) => setShowFee(e.target.value)}
@@ -674,6 +676,8 @@ const DemoArtistShows = () => {
               <Input
                 id="team-member-cost"
                 type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 placeholder="R$ 150,00"
                 value={teamMemberCost}
                 onChange={(e) => setTeamMemberCost(e.target.value)}
@@ -731,6 +735,8 @@ const DemoArtistShows = () => {
               <Input
                 id="expense-cost"
                 type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 placeholder="R$ 0,00"
                 value={expenseCost}
                 onChange={(e) => setExpenseCost(e.target.value)}
@@ -860,7 +866,9 @@ const DemoArtistShows = () => {
               <Label htmlFor="musician-fee" className="text-gray-900">Cachê Padrão</Label>
               <Input
                 id="musician-fee"
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 placeholder="Ex: 150.00"
                 value={musicianFee}
                 onChange={(e) => setMusicianFee(e.target.value)}
