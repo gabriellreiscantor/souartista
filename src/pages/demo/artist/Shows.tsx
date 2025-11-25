@@ -25,6 +25,8 @@ const DemoArtistShows = () => {
   const [addVenueOpen, setAddVenueOpen] = useState(false);
   const [addMusicianOpen, setAddMusicianOpen] = useState(false);
   const [addShowOpen, setAddShowOpen] = useState(false);
+  const [addTeamMemberOpen, setAddTeamMemberOpen] = useState(false);
+  const [addExpenseOpen, setAddExpenseOpen] = useState(false);
   const [lockedModalOpen, setLockedModalOpen] = useState(false);
   const [venueName, setVenueName] = useState('');
   const [venueAddress, setVenueAddress] = useState('');
@@ -35,6 +37,11 @@ const DemoArtistShows = () => {
   const [showDate, setShowDate] = useState('');
   const [showTime, setShowTime] = useState('');
   const [showFee, setShowFee] = useState('');
+  const [teamMemberName, setTeamMemberName] = useState('');
+  const [teamMemberCost, setTeamMemberCost] = useState('');
+  const [expenseType, setExpenseType] = useState('');
+  const [expenseDescription, setExpenseDescription] = useState('');
+  const [expenseCost, setExpenseCost] = useState('');
   const lastUpdated = new Date();
 
   const demoShows = [
@@ -188,6 +195,21 @@ const DemoArtistShows = () => {
     setShowDate('');
     setShowTime('');
     setShowFee('');
+    setLockedModalOpen(true);
+  };
+
+  const handleSaveTeamMember = () => {
+    setAddTeamMemberOpen(false);
+    setTeamMemberName('');
+    setTeamMemberCost('');
+    setLockedModalOpen(true);
+  };
+
+  const handleSaveExpense = () => {
+    setAddExpenseOpen(false);
+    setExpenseType('');
+    setExpenseDescription('');
+    setExpenseCost('');
     setLockedModalOpen(true);
   };
 
@@ -503,7 +525,7 @@ const DemoArtistShows = () => {
             <Button 
               variant="outline" 
               className="w-full border-2 border-gray-300 text-gray-700 font-semibold bg-white hover:bg-gray-50"
-              onClick={handleDemoAction}
+              onClick={() => setLockedModalOpen(true)}
             >
               Evento Particular
             </Button>
@@ -581,7 +603,7 @@ const DemoArtistShows = () => {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={handleDemoAction}
+                  onClick={() => setAddTeamMemberOpen(true)}
                   className="border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
                 >
                   <Plus className="w-4 h-4 mr-1" />
@@ -599,7 +621,7 @@ const DemoArtistShows = () => {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={handleDemoAction}
+                  onClick={() => setAddExpenseOpen(true)}
                   className="border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
                 >
                   <Plus className="w-4 h-4 mr-1" />
@@ -621,6 +643,113 @@ const DemoArtistShows = () => {
                 className="flex-1 bg-primary hover:bg-primary/90 text-white"
               >
                 Salvar Show
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Team Member Modal */}
+      <Dialog open={addTeamMemberOpen} onOpenChange={setAddTeamMemberOpen}>
+        <DialogContent className="bg-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-900">Adicionar Membro da Equipe</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="team-member-name" className="text-gray-900">Nome</Label>
+              <Select>
+                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                  <SelectValue placeholder="Selecione um músico" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-gray-200">
+                  <SelectItem value="1" className="text-gray-900">Freelancer</SelectItem>
+                  <SelectItem value="2" className="text-gray-900">Produtor Musical</SelectItem>
+                  <SelectItem value="3" className="text-gray-900">Hold</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="team-member-cost" className="text-gray-900">Custo (R$)</Label>
+              <Input
+                id="team-member-cost"
+                type="text"
+                placeholder="R$ 150,00"
+                value={teamMemberCost}
+                onChange={(e) => setTeamMemberCost(e.target.value)}
+                className="bg-white border-gray-300 text-gray-900"
+              />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setAddTeamMemberOpen(false)}
+                className="flex-1 border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSaveTeamMember}
+                className="flex-1 bg-primary hover:bg-primary/90 text-white"
+              >
+                Adicionar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Expense Modal */}
+      <Dialog open={addExpenseOpen} onOpenChange={setAddExpenseOpen}>
+        <DialogContent className="bg-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-900">Adicionar Despesa</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="expense-type" className="text-gray-900">Tipo</Label>
+              <Input
+                id="expense-type"
+                placeholder="Ex: Transporte"
+                value={expenseType}
+                onChange={(e) => setExpenseType(e.target.value)}
+                className="bg-white border-gray-300 text-gray-900"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="expense-description" className="text-gray-900">Descrição</Label>
+              <Input
+                id="expense-description"
+                placeholder="Ex: Uber ida e volta"
+                value={expenseDescription}
+                onChange={(e) => setExpenseDescription(e.target.value)}
+                className="bg-white border-gray-300 text-gray-900"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="expense-cost" className="text-gray-900">Custo (R$)</Label>
+              <Input
+                id="expense-cost"
+                type="text"
+                placeholder="R$ 0,00"
+                value={expenseCost}
+                onChange={(e) => setExpenseCost(e.target.value)}
+                className="bg-white border-gray-300 text-gray-900"
+              />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setAddExpenseOpen(false)}
+                className="flex-1 border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSaveExpense}
+                className="flex-1 bg-primary hover:bg-primary/90 text-white"
+              >
+                Adicionar
               </Button>
             </div>
           </div>
