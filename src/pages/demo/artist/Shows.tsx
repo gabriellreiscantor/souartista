@@ -13,7 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Calendar as CalendarIcon, Clock, MapPin, Music2, Users, ChevronDown, ChevronUp, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, Clock, MapPin, Music2, Users, ChevronDown, ChevronUp, Pencil, Trash2, X } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -491,59 +491,124 @@ const DemoArtistShows = () => {
 
       {/* Add Show Modal */}
       <Dialog open={addShowOpen} onOpenChange={setAddShowOpen}>
-        <DialogContent className="bg-white sm:max-w-md">
+        <DialogContent className="bg-white sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-gray-900 text-center">Adicionar Show</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-gray-900">Adicionar Novo Show</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
+            <p className="text-sm text-gray-600">
+              Preencha as informações abaixo para gerenciar o show.
+            </p>
+            
+            <Button 
+              variant="outline" 
+              className="w-full border-2 border-gray-300 text-gray-700 font-semibold"
+              onClick={handleDemoAction}
+            >
+              Evento Particular
+            </Button>
+            
             <div className="space-y-2">
-              <Label htmlFor="show-venue" className="text-gray-900">Local/Bar</Label>
+              <Label htmlFor="show-venue" className="text-gray-900 font-semibold">Nome do local</Label>
+              <Select>
+                <SelectTrigger className="bg-white border-gray-300">
+                  <SelectValue placeholder="Selecione um local" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="1">Bar e Restaurante Harmonia</SelectItem>
+                  <SelectItem value="2">Casa de Shows Melodia</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="show-date" className="text-gray-900 font-semibold">Data do show</Label>
               <Input
-                id="show-venue"
-                placeholder="Ex: Bar e Restaurante Harmonia"
-                value={showVenue}
-                onChange={(e) => setShowVenue(e.target.value)}
+                id="show-date"
+                type="date"
+                placeholder="dd/mm/aaaa"
+                value={showDate}
+                onChange={(e) => setShowDate(e.target.value)}
                 className="bg-white border-gray-300 text-gray-900"
               />
             </div>
             
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="show-date" className="text-gray-900">Data</Label>
-                <Input
-                  id="show-date"
-                  type="date"
-                  value={showDate}
-                  onChange={(e) => setShowDate(e.target.value)}
-                  className="bg-white border-gray-300 text-gray-900"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="show-time" className="text-gray-900">Horário</Label>
-                <Input
-                  id="show-time"
-                  type="time"
-                  value={showTime}
-                  onChange={(e) => setShowTime(e.target.value)}
-                  className="bg-white border-gray-300 text-gray-900"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="show-time" className="text-gray-900 font-semibold">Horário</Label>
+              <Input
+                id="show-time"
+                type="time"
+                placeholder="--:--"
+                value={showTime}
+                onChange={(e) => setShowTime(e.target.value)}
+                className="bg-white border-gray-300 text-gray-900"
+              />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="show-fee" className="text-gray-900">Cachê (R$)</Label>
+              <Label htmlFor="show-duration" className="text-gray-900 font-semibold">Duração de show</Label>
+              <Select>
+                <SelectTrigger className="bg-white border-gray-300">
+                  <SelectValue placeholder="4 horas" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="2">2 horas</SelectItem>
+                  <SelectItem value="3">3 horas</SelectItem>
+                  <SelectItem value="4">4 horas</SelectItem>
+                  <SelectItem value="5">5 horas</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="show-fee" className="text-gray-900 font-semibold">Cachê</Label>
               <Input
                 id="show-fee"
-                type="number"
-                placeholder="Ex: 500.00"
+                type="text"
+                placeholder="R$ 0,00"
                 value={showFee}
                 onChange={(e) => setShowFee(e.target.value)}
                 className="bg-white border-gray-300 text-gray-900"
               />
             </div>
             
-            <div className="flex gap-3 pt-2">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-gray-900 font-semibold">Equipe/Músicos</div>
+                  <div className="text-xs text-gray-500">Custo total: R$ 0,00</div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleDemoAction}
+                  className="border-gray-300 text-gray-700"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Adicionar
+                </Button>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-gray-900 font-semibold">Despesas Adicionais</div>
+                  <div className="text-xs text-gray-500">Custo total: R$ 0,00</div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleDemoAction}
+                  className="border-gray-300 text-gray-700"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Adicionar
+                </Button>
+              </div>
+            </div>
+            
+            <div className="flex gap-3 pt-4">
               <Button
                 variant="outline"
                 onClick={() => setAddShowOpen(false)}
