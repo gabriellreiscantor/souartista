@@ -266,13 +266,18 @@ const DemoMusicianShows = () => {
                               <div className="flex-1">
                                 <div className="mb-2">
                                   <h3 className="text-base md:text-lg font-bold text-gray-900">{show.venue_name}</h3>
-                                  <p className="text-sm text-gray-600">
-                                    Artista: {show.artist_name}
-                                  </p>
                                   <p className="text-sm text-gray-600 flex items-center gap-1">
                                     {format(showDate, "EEEE", { locale: ptBR })} • 
                                     <Clock className="w-3 h-3" />
                                     {show.time_local}
+                                  </p>
+                                  <p className="text-sm text-gray-600 flex items-center gap-1">
+                                    <Music2 className="w-3 h-3" />
+                                    {show.artist_name}
+                                  </p>
+                                  <p className="text-sm text-gray-600 flex items-center gap-1">
+                                    <Music2 className="w-3 h-3" />
+                                    {show.instrument}
                                   </p>
                                 </div>
                                 <div className="flex gap-3 md:gap-6 text-sm">
