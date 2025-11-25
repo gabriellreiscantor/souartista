@@ -75,7 +75,7 @@ const DemoArtistTransportation = () => {
                     <p className="text-gray-600 mb-4">
                       Registre suas despesas de locomoção de forma organizada
                     </p>
-                    <Button onClick={handleSave} size="lg">
+                    <Button onClick={handleSave} variant="outline" size="lg">
                       Salvar Despesa
                     </Button>
                   </div>
