@@ -88,7 +88,6 @@ const DemoArtistCalendar = () => {
                         variant="outline" 
                         size="icon"
                         onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                        className="bg-primary text-white hover:bg-primary/90 border-primary"
                       >
                         <ChevronLeft className="w-4 h-4" />
                       </Button>
@@ -96,7 +95,6 @@ const DemoArtistCalendar = () => {
                         variant="outline" 
                         size="icon"
                         onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                        className="bg-primary text-white hover:bg-primary/90 border-primary"
                       >
                         <ChevronRight className="w-4 h-4" />
                       </Button>
@@ -208,7 +206,8 @@ const DemoArtistCalendar = () => {
                     </SheetTitle>
                     <Button 
                       onClick={() => setShowAgenda(false)}
-                      className="bg-primary text-white hover:bg-primary/90 gap-2"
+                      variant="outline"
+                      className="gap-2"
                     >
                       <X className="w-4 h-4" />
                       Fechar

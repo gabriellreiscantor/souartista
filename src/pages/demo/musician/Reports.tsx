@@ -77,7 +77,7 @@ const DemoMusicianReports = () => {
                     </div>
                     
                     <div className="flex flex-wrap gap-2">
-                      <Button onClick={() => handleExport('PDF')} className="flex items-center gap-2">
+                      <Button onClick={() => handleExport('PDF')} variant="outline" className="flex items-center gap-2">
                         <Download className="w-4 h-4" />
                         Exportar PDF
                       </Button>
