@@ -16,6 +16,7 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
+import logoImg from '@/assets/nova_logo.png';
 
 interface Show {
   id: string;
@@ -28,7 +29,7 @@ interface Show {
 }
 
 const ArtistReports = () => {
-  const { user } = useAuth();
+  const { user, userData, userRole } = useAuth();
   const { settings } = useReportVisibility();
   const [period, setPeriod] = useState('this-month');
   const [shows, setShows] = useState<Show[]>([]);
@@ -255,27 +256,28 @@ const ArtistReports = () => {
       const pageHeight = doc.internal.pageSize.getHeight();
       
       // Load and add logo
-      const logoImg = new Image();
-      logoImg.src = '/logo.png';
+      const img = new Image();
+      img.src = logoImg;
       await new Promise((resolve) => {
-        logoImg.onload = resolve;
+        img.onload = resolve;
       });
       
       // Header with logo and title
-      doc.addImage(logoImg, 'PNG', 15, 15, 30, 30);
+      doc.addImage(img, 'PNG', 15, 15, 30, 30);
       doc.setFontSize(24);
       doc.setTextColor(139, 92, 246); // Purple
       doc.text('Relatório Financeiro', 50, 25);
       
       doc.setFontSize(12);
       doc.setTextColor(100, 100, 100);
-      doc.text(getPeriodLabel(), 50, 35);
-      doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`, 50, 42);
+      doc.text(`${userRole === 'artist' ? 'Artista' : 'Músico'}: ${userData?.name || 'N/A'}`, 50, 32);
+      doc.text(getPeriodLabel(), 50, 39);
+      doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`, 50, 46);
       
       // Main statistics section
       doc.setFontSize(16);
       doc.setTextColor(0, 0, 0);
-      doc.text('Resumo Financeiro', 15, 60);
+      doc.text('Resumo Financeiro', 15, 64);
       
       const summaryData = [
         ['Total de Shows', totalShows.toString()],
@@ -287,7 +289,7 @@ const ArtistReports = () => {
       ];
       
       autoTable(doc, {
-        startY: 65,
+        startY: 69,
         head: [['Métrica', 'Valor']],
         body: summaryData,
         theme: 'grid',
@@ -343,7 +345,7 @@ const ArtistReports = () => {
       const showsTableFinalY = (doc as any).lastAutoTable.finalY || 200;
       if (showsTableFinalY > pageHeight - 80) {
         doc.addPage();
-        doc.addImage(logoImg, 'PNG', 15, 15, 20, 20);
+        doc.addImage(img, 'PNG', 15, 15, 20, 20);
       }
       
       // Top 5 sections
@@ -408,6 +410,7 @@ const ArtistReports = () => {
       // Summary sheet
       const summaryData = [
         ['RELATÓRIO FINANCEIRO'],
+        [`${userRole === 'artist' ? 'Artista' : 'Músico'}:`, userData?.name || 'N/A'],
         ['Período:', getPeriodLabel()],
         [`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`],
         [],
