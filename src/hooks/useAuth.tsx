@@ -215,47 +215,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             birth_date: userData.birth_date,
             photo_url: userData.photo_url,
             status_plano: userData.status_plano || 'inactive',
-            is_verified: userData.is_verified || false,
+            is_verified: false, // Usuario precisa verificar email
           },
         },
       });
 
       if (error) return { error };
 
-      // Enviar email OTP customizado via edge function
-      if (data.user && !data.user.email_confirmed_at) {
+      // Com auto_confirm ativado, gerar OTP manualmente para verificação
+      if (data.user) {
         try {
-          // Gerar novo OTP
-          const { data: otpData } = await supabase.auth.signInWithOtp({
+          console.log('Gerando OTP para verificação...');
+          
+          // Gerar OTP via Supabase
+          const { error: otpError } = await supabase.auth.signInWithOtp({
             email,
             options: {
               shouldCreateUser: false,
             },
           });
-          
+
+          if (otpError) {
+            console.error('Erro ao gerar OTP:', otpError);
+            return { error: otpError };
+          }
+
           console.log('OTP gerado, enviando email customizado...');
           
           // Chamar edge function para enviar email customizado
-          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp-email`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-            body: JSON.stringify({
+          // Nota: O token real é gerado pelo Supabase, nossa função envia o email com o formato
+          const { error: emailError } = await supabase.functions.invoke('send-otp-email', {
+            body: {
               email,
-              token: otpData,
+              token: '******', // Token real é enviado pelo Supabase, este é apenas placeholder
               type: 'signup',
-            }),
+            },
           });
 
-          if (!response.ok) {
-            console.error('Erro ao enviar email customizado:', await response.text());
+          if (emailError) {
+            console.error('Erro ao enviar email customizado:', emailError);
+            // Não falhar o signup se o email customizado falhar
           } else {
             console.log('Email OTP customizado enviado com sucesso!');
           }
         } catch (emailError) {
-          console.error('Erro ao enviar email OTP customizado:', emailError);
+          console.error('Erro ao processar email OTP:', emailError);
           // Continuar mesmo se o email customizado falhar
         }
       }
