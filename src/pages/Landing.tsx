@@ -44,9 +44,36 @@ const Landing = () => {
   if (showOnboarding) {
     return <Onboarding onComplete={() => setShowOnboarding(false)} />;
   }
-  return <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+  return <div className="min-h-screen flex flex-col relative overflow-hidden" style={{
+      background: 'linear-gradient(to bottom, #110016 0%, #080010 45%, #040008 100%)',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      touchAction: 'none',
+      overscrollBehavior: 'none',
+      WebkitOverflowScrolling: 'auto'
+    }}>
       {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-primary/10 pointer-events-none" />
+      <div className="absolute inset-0 opacity-[0.03]" style={{
+        backgroundImage: `
+          repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 60px,
+            #5A1E90 60px,
+            #5A1E90 61px
+          ),
+          repeating-linear-gradient(
+            -45deg,
+            transparent,
+            transparent 80px,
+            #5A1E90 80px,
+            #5A1E90 81px
+          )
+        `,
+      }} />
       
       {/* Content */}
       <div className="relative flex-1 flex flex-col items-center justify-center px-6 py-12">
@@ -63,12 +90,12 @@ const Landing = () => {
         </div>
 
         {/* Headline */}
-        <h1 className="text-4xl md:text-5xl font-heading font-bold text-center text-foreground mb-4 max-w-md animate-fade-in">
+        <h1 className="text-4xl md:text-5xl font-heading font-bold text-center text-white mb-4 max-w-md animate-fade-in">
           Suas finanças musicais, organizadas.
         </h1>
 
         {/* Subheadline */}
-        <p className="text-lg text-center text-muted-foreground mb-12 max-w-sm animate-fade-in">
+        <p className="text-lg text-center text-gray-300 mb-12 max-w-sm animate-fade-in">
           Cuidamos da parte chata e você cuida da música.
         </p>
 
@@ -83,7 +110,7 @@ const Landing = () => {
             Já tenho uma conta
           </Button>
 
-          <Button size="lg" variant="ghost" onClick={() => navigate('/demo')} className="w-full rounded-full text-lg font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50">
+          <Button size="lg" variant="ghost" onClick={() => navigate('/demo')} className="w-full rounded-full text-lg font-medium text-gray-300 hover:text-white hover:bg-white/10">
             <Play className="mr-2 w-5 h-5" />
             Ver Demonstração
           </Button>
@@ -92,14 +119,14 @@ const Landing = () => {
 
       {/* Footer */}
       <footer className="relative py-8 px-6 text-center space-y-2 animate-fade-in">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-gray-400">
           © 2025 SouArtista. Todos os direitos reservados.
         </p>
         <div className="flex justify-center gap-4 text-xs">
-          <Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors underline">
+          <Link to="/terms" className="text-gray-400 hover:text-white transition-colors underline">
             Termos de Uso
           </Link>
-          <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors underline">
+          <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors underline">
             Política de Privacidade
           </Link>
         </div>
