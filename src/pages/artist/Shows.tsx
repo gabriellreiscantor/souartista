@@ -535,13 +535,17 @@ const ArtistShows = () => {
     switch (showFilter) {
       case 'upcoming':
         // Apenas shows com data >= hoje
-        return shows.filter(show => new Date(show.date_local) >= today);
+        return shows.filter(show => {
+          const [year, month, day] = show.date_local.split('-').map(Number);
+          return new Date(year, month - 1, day) >= today;
+        });
       case 'thisWeek':
         // Shows desta semana
         const endOfWeek = new Date(today);
         endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
         return shows.filter(show => {
-          const d = new Date(show.date_local);
+          const [year, month, day] = show.date_local.split('-').map(Number);
+          const d = new Date(year, month - 1, day);
           return d >= today && d <= endOfWeek;
         });
       case 'lastWeek':
@@ -551,7 +555,8 @@ const ArtistShows = () => {
         const lastWeekEnd = new Date(lastWeekStart);
         lastWeekEnd.setDate(lastWeekStart.getDate() + 6);
         return shows.filter(show => {
-          const d = new Date(show.date_local);
+          const [year, month, day] = show.date_local.split('-').map(Number);
+          const d = new Date(year, month - 1, day);
           return d >= lastWeekStart && d <= lastWeekEnd;
         });
       case 'twoWeeksAgo':
@@ -561,7 +566,8 @@ const ArtistShows = () => {
         const twoWeeksAgoEnd = new Date(twoWeeksAgoStart);
         twoWeeksAgoEnd.setDate(twoWeeksAgoStart.getDate() + 6);
         return shows.filter(show => {
-          const d = new Date(show.date_local);
+          const [year, month, day] = show.date_local.split('-').map(Number);
+          const d = new Date(year, month - 1, day);
           return d >= twoWeeksAgoStart && d <= twoWeeksAgoEnd;
         });
       case 'thisMonth':
@@ -569,7 +575,8 @@ const ArtistShows = () => {
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
         return shows.filter(show => {
-          const d = new Date(show.date_local);
+          const [year, month, day] = show.date_local.split('-').map(Number);
+          const d = new Date(year, month - 1, day);
           return d >= startOfMonth && d <= endOfMonth;
         });
       case 'all':
@@ -1197,6 +1204,8 @@ const ArtistShows = () => {
                         const expenses = calculateShowExpenses(show);
                         const profit = calculateShowProfit(show);
                         const isExpanded = expandedShows.has(show.id);
+                        const [year, month, day] = show.date_local.split('-').map(Number);
+                        const showDate = new Date(year, month - 1, day);
                         return <div key={show.id} className="border-b last:border-b-0">
                                   <div className="grid grid-cols-[1fr,120px,120px,120px,80px] gap-4 p-4 items-center hover:bg-gray-50">
                                     <div className="flex items-center gap-2">
@@ -1206,9 +1215,12 @@ const ArtistShows = () => {
                                       <div>
                                         <div className="font-semibold text-gray-900">{show.venue_name}</div>
                                         <div className="text-sm text-gray-600">
-                                          {format(new Date(show.date_local), "dd 'de' MMMM 'de' yyyy", {
-                                    locale: ptBR
-                                  })} ⏰ {show.time_local}
+                                          {(() => {
+                                            const [year, month, day] = show.date_local.split('-').map(Number);
+                                            return format(new Date(year, month - 1, day), "dd 'de' MMMM 'de' yyyy", {
+                                              locale: ptBR
+                                            });
+                                          })()} ⏰ {show.time_local}
                                         </div>
                                       </div>
                                     </div>
@@ -1256,7 +1268,8 @@ const ArtistShows = () => {
                         const expenses = calculateShowExpenses(show);
                         const profit = calculateShowProfit(show);
                         const isExpanded = expandedShows.has(show.id);
-                        const showDate = new Date(show.date_local);
+                        const [year, month, day] = show.date_local.split('-').map(Number);
+                        const showDate = new Date(year, month - 1, day);
                         return <Card key={show.id} className="bg-white border border-gray-200 overflow-hidden">
                                   <div className="p-4 md:p-6">
                                     <div className="flex gap-3 md:gap-4">
