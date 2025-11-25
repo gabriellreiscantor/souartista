@@ -37,7 +37,7 @@ const DemoArtistShows = () => {
   const [showVenue, setShowVenue] = useState('');
   const [showCustomVenue, setShowCustomVenue] = useState('');
   const [showDate, setShowDate] = useState('');
-  const [showTime, setShowTime] = useState('');
+  const [showTime, setShowTime] = useState('20:00');
   const [showFee, setShowFee] = useState('');
   const [showDuration, setShowDuration] = useState('');
   const [teamMembers, setTeamMembers] = useState<Array<{musicianId?: string, name: string, cost: number}>>([]);
@@ -241,7 +241,7 @@ const DemoArtistShows = () => {
     setShowVenue('');
     setShowCustomVenue('');
     setShowDate('');
-    setShowTime('');
+    setShowTime('20:00');
     setShowFee('');
     setShowDuration('');
     setTeamMembers([]);
