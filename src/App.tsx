@@ -43,8 +43,21 @@ import NotFound from "./pages/NotFound";
 import DemoSelectRole from "./pages/DemoSelectRole";
 import DemoArtistDashboard from "./pages/demo/artist/Dashboard";
 import DemoArtistShows from "./pages/demo/artist/Shows";
+import DemoArtistCalendar from "./pages/demo/artist/Calendar";
+import DemoArtistReports from "./pages/demo/artist/Reports";
+import DemoArtistTransportation from "./pages/demo/artist/Transportation";
+import DemoArtistSupport from "./pages/demo/artist/Support";
+import DemoArtistProfile from "./pages/demo/artist/Profile";
+import DemoArtistSettings from "./pages/demo/artist/Settings";
 import DemoMusicianDashboard from "./pages/demo/musician/Dashboard";
 import DemoMusicianShows from "./pages/demo/musician/Shows";
+import DemoMusicianArtists from "./pages/demo/musician/Artists";
+import DemoMusicianCalendar from "./pages/demo/musician/Calendar";
+import DemoMusicianReports from "./pages/demo/musician/Reports";
+import DemoMusicianTransportation from "./pages/demo/musician/Transportation";
+import DemoMusicianSupport from "./pages/demo/musician/Support";
+import DemoMusicianProfile from "./pages/demo/musician/Profile";
+import DemoMusicianSettings from "./pages/demo/musician/Settings";
 
 const queryClient = new QueryClient();
 
@@ -95,8 +108,21 @@ const App = () => (
             <Route path="/demo" element={<DemoSelectRole />} />
             <Route path="/demo/artist/dashboard" element={<DemoArtistDashboard />} />
             <Route path="/demo/artist/shows" element={<DemoArtistShows />} />
+            <Route path="/demo/artist/calendar" element={<DemoArtistCalendar />} />
+            <Route path="/demo/artist/reports" element={<DemoArtistReports />} />
+            <Route path="/demo/artist/transportation" element={<DemoArtistTransportation />} />
+            <Route path="/demo/artist/support" element={<DemoArtistSupport />} />
+            <Route path="/demo/artist/profile" element={<DemoArtistProfile />} />
+            <Route path="/demo/artist/settings" element={<DemoArtistSettings />} />
             <Route path="/demo/musician/dashboard" element={<DemoMusicianDashboard />} />
             <Route path="/demo/musician/shows" element={<DemoMusicianShows />} />
+            <Route path="/demo/musician/artists" element={<DemoMusicianArtists />} />
+            <Route path="/demo/musician/calendar" element={<DemoMusicianCalendar />} />
+            <Route path="/demo/musician/reports" element={<DemoMusicianReports />} />
+            <Route path="/demo/musician/transportation" element={<DemoMusicianTransportation />} />
+            <Route path="/demo/musician/support" element={<DemoMusicianSupport />} />
+            <Route path="/demo/musician/profile" element={<DemoMusicianProfile />} />
+            <Route path="/demo/musician/settings" element={<DemoMusicianSettings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
