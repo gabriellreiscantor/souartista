@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { DemoBanner } from '@/components/DemoBanner';
+import { DemoLockedModal } from '@/components/DemoLockedModal';
 
 const DemoMusicianDashboard = () => {
   const navigate = useNavigate();
@@ -27,6 +28,19 @@ const DemoMusicianDashboard = () => {
   
   const [selectedPeriod, setSelectedPeriod] = useState<string>(defaultPeriod);
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
+  const [showLockedModal, setShowLockedModal] = useState(false);
+
+  const handlePeriodChange = (value: string) => {
+    setShowLockedModal(true);
+  };
+
+  const handleYearChange = (value: string) => {
+    if (value === '2024') {
+      setShowLockedModal(true);
+    } else {
+      setSelectedYear(value);
+    }
+  };
 
   const stats = {
     totalShows: 18,
@@ -135,11 +149,11 @@ const DemoMusicianDashboard = () => {
                   Gerencie seus freelas e cachês em um só lugar
                 </p>
               
-                <PeriodFilter 
-                  value={selectedPeriod} 
-                  onChange={setSelectedPeriod}
-                  className="mx-auto"
-                />
+              <PeriodFilter 
+                value={selectedPeriod} 
+                onChange={handlePeriodChange}
+                className="mx-auto"
+              />
               </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
@@ -203,7 +217,7 @@ const DemoMusicianDashboard = () => {
                     <h3 className="text-lg font-semibold text-gray-900">Cachês Mensais</h3>
                     <p className="text-sm text-gray-600">Receitas e despesas por mês</p>
                   </div>
-                  <Select value={selectedYear} onValueChange={setSelectedYear}>
+                  <Select value={selectedYear} onValueChange={handleYearChange}>
                     <SelectTrigger className="w-[120px] bg-white border-gray-300 text-gray-900">
                       <SelectValue />
                     </SelectTrigger>
@@ -351,6 +365,7 @@ const DemoMusicianDashboard = () => {
         
         <DemoMobileBottomNav role="musician" />
       </div>
+      <DemoLockedModal open={showLockedModal} onOpenChange={setShowLockedModal} />
     </SidebarProvider>
   );
 };
