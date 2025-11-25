@@ -26,33 +26,28 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { brazilStates, citiesByState, instruments } from '@/data/brazilLocations';
-
 interface Musician {
   id: string;
   name: string;
   instrument: string;
   default_fee: number;
 }
-
 interface Venue {
   id: string;
   name: string;
   address: string | null;
 }
-
 interface TeamMember {
   musicianId?: string;
   name: string;
   instrument: string;
   cost: number;
 }
-
 interface AdditionalExpense {
   type: string;
   description: string;
   cost: number;
 }
-
 interface Show {
   id: string;
   venue_name: string;
@@ -64,9 +59,12 @@ interface Show {
   expenses_other: AdditionalExpense[];
   team_musician_ids: string[];
 }
-
 const ArtistShows = () => {
-  const { user, userData, userRole } = useAuth();
+  const {
+    user,
+    userData,
+    userRole
+  } = useAuth();
   const isMobile = useIsMobile();
   const [shows, setShows] = useState<Show[]>([]);
   const [musicians, setMusicians] = useState<Musician[]>([]);
@@ -77,7 +75,7 @@ const ArtistShows = () => {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [showFilter, setShowFilter] = useState<string>('upcoming');
-  
+
   // Shows dialog
   const [showDialogOpen, setShowDialogOpen] = useState(false);
   const [editingShow, setEditingShow] = useState<Show | null>(null);
@@ -87,7 +85,7 @@ const ArtistShows = () => {
     date_local: '',
     time_local: '',
     fee: '',
-    is_private_event: false,
+    is_private_event: false
   });
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [additionalExpenses, setAdditionalExpenses] = useState<AdditionalExpense[]>([]);
@@ -99,7 +97,7 @@ const ArtistShows = () => {
     name: '',
     instrument: '',
     customInstrument: '',
-    default_fee: '',
+    default_fee: ''
   });
 
   // Venues dialog
@@ -109,38 +107,32 @@ const ArtistShows = () => {
     name: '',
     state: '',
     city: '',
-    customCity: '',
+    customCity: ''
   });
   const [availableCities, setAvailableCities] = useState<string[]>([]);
-
   useEffect(() => {
     if (user) {
       fetchAll();
     }
   }, [user]);
-
   const fetchAll = async () => {
     await Promise.all([fetchShows(), fetchMusicians(), fetchVenues()]);
   };
-
   const fetchShows = async () => {
     if (!user) return;
-    
     try {
-      const { data, error } = await supabase
-        .from('shows')
-        .select('*')
-        .eq('uid', user.id)
-        .order('date_local', { ascending: true });
-
+      const {
+        data,
+        error
+      } = await supabase.from('shows').select('*').eq('uid', user.id).order('date_local', {
+        ascending: true
+      });
       if (error) throw error;
-      
       const typedShows = (data || []).map(show => ({
         ...show,
-        expenses_team: (show.expenses_team as any) || [],
-        expenses_other: (show.expenses_other as any) || [],
+        expenses_team: show.expenses_team as any || [],
+        expenses_other: show.expenses_other as any || []
       })) as Show[];
-      
       setShows(typedShows);
       setLastUpdated(new Date());
     } catch (error: any) {
@@ -150,34 +142,30 @@ const ArtistShows = () => {
       setLoading(false);
     }
   };
-
   const fetchMusicians = async () => {
     if (!user) return;
-    
     try {
-      const { data, error } = await supabase
-        .from('musicians')
-        .select('*')
-        .eq('owner_uid', user.id)
-        .order('name', { ascending: true });
-
+      const {
+        data,
+        error
+      } = await supabase.from('musicians').select('*').eq('owner_uid', user.id).order('name', {
+        ascending: true
+      });
       if (error) throw error;
       setMusicians(data || []);
     } catch (error: any) {
       console.error('Error fetching musicians:', error);
     }
   };
-
   const fetchVenues = async () => {
     if (!user) return;
-    
     try {
-      const { data, error } = await supabase
-        .from('venues')
-        .select('*')
-        .eq('owner_uid', user.id)
-        .order('name', { ascending: true });
-
+      const {
+        data,
+        error
+      } = await supabase.from('venues').select('*').eq('owner_uid', user.id).order('name', {
+        ascending: true
+      });
       if (error) throw error;
       setVenues(data || []);
     } catch (error: any) {
@@ -189,21 +177,13 @@ const ArtistShows = () => {
   const handleShowSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-
     try {
-      const venueName = showFormData.is_private_event 
-        ? showFormData.custom_venue 
-        : venues.find(v => v.id === showFormData.venue_id)?.name || showFormData.custom_venue;
-
+      const venueName = showFormData.is_private_event ? showFormData.custom_venue : venues.find(v => v.id === showFormData.venue_id)?.name || showFormData.custom_venue;
       if (!venueName) {
         toast.error('Selecione ou digite o nome do local');
         return;
       }
-
-      const teamMusicianIds = teamMembers
-        .filter(m => m.musicianId)
-        .map(m => m.musicianId!);
-
+      const teamMusicianIds = teamMembers.filter(m => m.musicianId).map(m => m.musicianId!);
       const showData = {
         venue_name: venueName,
         date_local: showFormData.date_local,
@@ -213,35 +193,30 @@ const ArtistShows = () => {
         expenses_team: teamMembers,
         expenses_other: additionalExpenses,
         team_musician_ids: teamMusicianIds,
-        uid: user.id,
+        uid: user.id
       };
-
       if (editingShow) {
-        const { error } = await supabase
-          .from('shows')
-          .update({
-            ...showData,
-            expenses_team: showData.expenses_team as any,
-            expenses_other: showData.expenses_other as any,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', editingShow.id);
-
+        const {
+          error
+        } = await supabase.from('shows').update({
+          ...showData,
+          expenses_team: showData.expenses_team as any,
+          expenses_other: showData.expenses_other as any,
+          updated_at: new Date().toISOString()
+        }).eq('id', editingShow.id);
         if (error) throw error;
         toast.success('Show atualizado com sucesso!');
       } else {
-        const { error } = await supabase
-          .from('shows')
-          .insert({
-            ...showData,
-            expenses_team: showData.expenses_team as any,
-            expenses_other: showData.expenses_other as any,
-          });
-
+        const {
+          error
+        } = await supabase.from('shows').insert({
+          ...showData,
+          expenses_team: showData.expenses_team as any,
+          expenses_other: showData.expenses_other as any
+        });
         if (error) throw error;
         toast.success('Show cadastrado com sucesso!');
       }
-
       setShowDialogOpen(false);
       resetShowForm();
       fetchShows();
@@ -250,16 +225,12 @@ const ArtistShows = () => {
       toast.error('Erro ao salvar show');
     }
   };
-
   const handleShowDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este show?')) return;
-
     try {
-      const { error } = await supabase
-        .from('shows')
-        .delete()
-        .eq('id', id);
-
+      const {
+        error
+      } = await supabase.from('shows').delete().eq('id', id);
       if (error) throw error;
       toast.success('Show excluído com sucesso!');
       fetchShows();
@@ -268,7 +239,6 @@ const ArtistShows = () => {
       toast.error('Erro ao excluir show');
     }
   };
-
   const handleShowEdit = (show: Show) => {
     setEditingShow(show);
     setShowFormData({
@@ -277,13 +247,12 @@ const ArtistShows = () => {
       date_local: show.date_local,
       time_local: show.time_local,
       fee: show.fee.toString(),
-      is_private_event: show.is_private_event,
+      is_private_event: show.is_private_event
     });
     setTeamMembers(show.expenses_team || []);
     setAdditionalExpenses(show.expenses_other || []);
     setShowDialogOpen(true);
   };
-
   const resetShowForm = () => {
     setShowFormData({
       venue_id: '',
@@ -291,7 +260,7 @@ const ArtistShows = () => {
       date_local: '',
       time_local: '',
       fee: '',
-      is_private_event: false,
+      is_private_event: false
     });
     setTeamMembers([]);
     setAdditionalExpenses([]);
@@ -302,36 +271,27 @@ const ArtistShows = () => {
   const handleMusicianSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-
-    const finalInstrument = musicianFormData.instrument === 'Outro...' 
-      ? musicianFormData.customInstrument 
-      : musicianFormData.instrument;
-
+    const finalInstrument = musicianFormData.instrument === 'Outro...' ? musicianFormData.customInstrument : musicianFormData.instrument;
     try {
       const musicianData = {
         name: musicianFormData.name,
         instrument: finalInstrument,
         default_fee: parseFloat(musicianFormData.default_fee),
-        owner_uid: user.id,
+        owner_uid: user.id
       };
-
       if (editingMusician) {
-        const { error } = await supabase
-          .from('musicians')
-          .update(musicianData)
-          .eq('id', editingMusician.id);
-
+        const {
+          error
+        } = await supabase.from('musicians').update(musicianData).eq('id', editingMusician.id);
         if (error) throw error;
         toast.success('Músico atualizado com sucesso!');
       } else {
-        const { error } = await supabase
-          .from('musicians')
-          .insert(musicianData);
-
+        const {
+          error
+        } = await supabase.from('musicians').insert(musicianData);
         if (error) throw error;
         toast.success('Músico cadastrado com sucesso!');
       }
-
       setMusicianDialogOpen(false);
       resetMusicianForm();
       fetchMusicians();
@@ -340,31 +300,25 @@ const ArtistShows = () => {
       console.error(error);
     }
   };
-
   const handleMusicianEdit = (musician: Musician) => {
     setEditingMusician(musician);
-    
+
     // Check if instrument is in the list
     const isCustomInstrument = !instruments.includes(musician.instrument);
-    
     setMusicianFormData({
       name: musician.name,
       instrument: isCustomInstrument ? 'Outro...' : musician.instrument,
       customInstrument: isCustomInstrument ? musician.instrument : '',
-      default_fee: musician.default_fee.toString(),
+      default_fee: musician.default_fee.toString()
     });
     setMusicianDialogOpen(true);
   };
-
   const handleMusicianDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este músico?')) return;
-
     try {
-      const { error } = await supabase
-        .from('musicians')
-        .delete()
-        .eq('id', id);
-
+      const {
+        error
+      } = await supabase.from('musicians').delete().eq('id', id);
       if (error) throw error;
       toast.success('Músico excluído com sucesso!');
       fetchMusicians();
@@ -373,9 +327,13 @@ const ArtistShows = () => {
       console.error(error);
     }
   };
-
   const resetMusicianForm = () => {
-    setMusicianFormData({ name: '', instrument: '', customInstrument: '', default_fee: '' });
+    setMusicianFormData({
+      name: '',
+      instrument: '',
+      customInstrument: '',
+      default_fee: ''
+    });
     setEditingMusician(null);
   };
 
@@ -383,35 +341,28 @@ const ArtistShows = () => {
   const handleVenueSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-
     const finalCity = venueFormData.city === 'Outro (digitar)' ? venueFormData.customCity : venueFormData.city;
     const stateLabel = brazilStates.find(s => s.value === venueFormData.state)?.value || '';
     const address = finalCity && stateLabel ? `${finalCity}, ${stateLabel}` : null;
-
     try {
       const venueData = {
         name: venueFormData.name,
         address: address,
-        owner_uid: user.id,
+        owner_uid: user.id
       };
-
       if (editingVenue) {
-        const { error } = await supabase
-          .from('venues')
-          .update(venueData)
-          .eq('id', editingVenue.id);
-
+        const {
+          error
+        } = await supabase.from('venues').update(venueData).eq('id', editingVenue.id);
         if (error) throw error;
         toast.success('Local atualizado com sucesso!');
       } else {
-        const { error } = await supabase
-          .from('venues')
-          .insert(venueData);
-
+        const {
+          error
+        } = await supabase.from('venues').insert(venueData);
         if (error) throw error;
         toast.success('Local cadastrado com sucesso!');
       }
-
       setVenueDialogOpen(false);
       resetVenueForm();
       fetchVenues();
@@ -420,21 +371,19 @@ const ArtistShows = () => {
       console.error(error);
     }
   };
-
   const handleVenueEdit = (venue: Venue) => {
     setEditingVenue(venue);
-    
+
     // Parse address to extract city and state
     let city = '';
     let state = '';
     let customCity = '';
-    
     if (venue.address) {
       const parts = venue.address.split(', ');
       if (parts.length === 2) {
         city = parts[0];
         state = parts[1];
-        
+
         // Check if city is in the state's list
         const stateData = brazilStates.find(s => s.value === state);
         if (stateData) {
@@ -446,30 +395,23 @@ const ArtistShows = () => {
         }
       }
     }
-    
     setVenueFormData({
       name: venue.name,
       state: state,
       city: city,
-      customCity: customCity,
+      customCity: customCity
     });
-    
     if (state) {
       setAvailableCities(citiesByState[state] || []);
     }
-    
     setVenueDialogOpen(true);
   };
-
   const handleVenueDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este local?')) return;
-
     try {
-      const { error } = await supabase
-        .from('venues')
-        .delete()
-        .eq('id', id);
-
+      const {
+        error
+      } = await supabase.from('venues').delete().eq('id', id);
       if (error) throw error;
       toast.success('Local excluído com sucesso!');
       fetchVenues();
@@ -478,15 +420,23 @@ const ArtistShows = () => {
       console.error(error);
     }
   };
-
   const resetVenueForm = () => {
-    setVenueFormData({ name: '', state: '', city: '', customCity: '' });
+    setVenueFormData({
+      name: '',
+      state: '',
+      city: '',
+      customCity: ''
+    });
     setAvailableCities([]);
     setEditingVenue(null);
   };
-
   const handleStateChange = (value: string) => {
-    setVenueFormData({ ...venueFormData, state: value, city: '', customCity: '' });
+    setVenueFormData({
+      ...venueFormData,
+      state: value,
+      city: '',
+      customCity: ''
+    });
     setAvailableCities(citiesByState[value] || []);
   };
 
@@ -499,21 +449,22 @@ const ArtistShows = () => {
         musicianId: firstMusician.id,
         name: firstMusician.name,
         instrument: firstMusician.instrument,
-        cost: firstMusician.default_fee,
+        cost: firstMusician.default_fee
       }]);
     } else {
       // Se não houver músicos, adiciona um membro vazio
-      setTeamMembers([...teamMembers, { name: '', instrument: '', cost: 0 }]);
+      setTeamMembers([...teamMembers, {
+        name: '',
+        instrument: '',
+        cost: 0
+      }]);
     }
   };
-
   const removeTeamMember = (index: number) => {
     setTeamMembers(teamMembers.filter((_, i) => i !== index));
   };
-
   const updateTeamMember = (index: number, field: keyof TeamMember, value: any) => {
     const updated = [...teamMembers];
-    
     if (field === 'musicianId' && value) {
       const musician = musicians.find(m => m.id === value);
       if (musician) {
@@ -521,7 +472,7 @@ const ArtistShows = () => {
           musicianId: musician.id,
           name: musician.name,
           instrument: musician.instrument,
-          cost: musician.default_fee,
+          cost: musician.default_fee
         };
       }
     } else if (field === 'musicianId' && !value) {
@@ -529,42 +480,46 @@ const ArtistShows = () => {
       updated[index] = {
         name: '',
         instrument: '',
-        cost: updated[index].cost || 0,
+        cost: updated[index].cost || 0
       };
     } else {
-      updated[index] = { ...updated[index], [field]: value };
+      updated[index] = {
+        ...updated[index],
+        [field]: value
+      };
     }
-    
     setTeamMembers(updated);
   };
-
   const expensesSectionRef = useRef<HTMLDivElement>(null);
-
   const addExpense = () => {
-    setAdditionalExpenses([...additionalExpenses, { type: '', description: '', cost: 0 }]);
-    
+    setAdditionalExpenses([...additionalExpenses, {
+      type: '',
+      description: '',
+      cost: 0
+    }]);
+
     // Auto-scroll para a seção de despesas
     setTimeout(() => {
-      expensesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      expensesSectionRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest'
+      });
     }, 100);
   };
-
   const addAdditionalExpense = addExpense;
-
   const removeExpense = (index: number) => {
     setAdditionalExpenses(additionalExpenses.filter((_, i) => i !== index));
   };
-
   const removeAdditionalExpense = removeExpense;
-
   const updateExpense = (index: number, field: keyof AdditionalExpense, value: any) => {
     const updated = [...additionalExpenses];
-    updated[index] = { ...updated[index], [field]: value };
+    updated[index] = {
+      ...updated[index],
+      [field]: value
+    };
     setAdditionalExpenses(updated);
   };
-
   const updateAdditionalExpense = updateExpense;
-
   const toggleShowExpanded = (showId: string) => {
     const newExpanded = new Set(expandedShows);
     if (newExpanded.has(showId)) {
@@ -574,16 +529,13 @@ const ArtistShows = () => {
     }
     setExpandedShows(newExpanded);
   };
-
   const getFilteredShows = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
     switch (showFilter) {
       case 'upcoming':
         // Apenas shows com data >= hoje
         return shows.filter(show => new Date(show.date_local) >= today);
-      
       case 'thisWeek':
         // Shows desta semana
         const endOfWeek = new Date(today);
@@ -592,7 +544,6 @@ const ArtistShows = () => {
           const d = new Date(show.date_local);
           return d >= today && d <= endOfWeek;
         });
-      
       case 'lastWeek':
         // Shows da semana passada
         const lastWeekStart = new Date(today);
@@ -603,7 +554,6 @@ const ArtistShows = () => {
           const d = new Date(show.date_local);
           return d >= lastWeekStart && d <= lastWeekEnd;
         });
-      
       case 'twoWeeksAgo':
         // Shows de 2 semanas atrás
         const twoWeeksAgoStart = new Date(today);
@@ -614,7 +564,6 @@ const ArtistShows = () => {
           const d = new Date(show.date_local);
           return d >= twoWeeksAgoStart && d <= twoWeeksAgoEnd;
         });
-      
       case 'thisMonth':
         // Shows deste mês
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -623,15 +572,12 @@ const ArtistShows = () => {
           const d = new Date(show.date_local);
           return d >= startOfMonth && d <= endOfMonth;
         });
-      
       case 'all':
       default:
         return shows;
     }
   };
-
   const filteredShows = getFilteredShows();
-
   const calculateTotals = () => {
     const totalRevenue = filteredShows.reduce((sum, show) => sum + show.fee, 0);
     const totalExpenses = filteredShows.reduce((sum, show) => {
@@ -640,22 +586,21 @@ const ArtistShows = () => {
       return sum + teamCosts + otherCosts;
     }, 0);
     const netProfit = totalRevenue - totalExpenses;
-    
-    return { totalRevenue, totalExpenses, netProfit };
+    return {
+      totalRevenue,
+      totalExpenses,
+      netProfit
+    };
   };
-
   const calculateShowExpenses = (show: Show) => {
     const teamCosts = show.expenses_team.reduce((sum, member) => sum + member.cost, 0);
     const otherCosts = show.expenses_other.reduce((sum, expense) => sum + expense.cost, 0);
     return teamCosts + otherCosts;
   };
-
   const calculateShowProfit = (show: Show) => {
     return show.fee - calculateShowExpenses(show);
   };
-
-  return (
-    <SidebarProvider>
+  return <SidebarProvider>
       <div className="min-h-screen flex w-full bg-[#fafafa]">
         <ArtistSidebar />
         
@@ -675,10 +620,10 @@ const ArtistShows = () => {
           </header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6 scrollbar-hide" style={{
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            WebkitOverflowScrolling: 'touch'
-          }}>
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch'
+        }}>
             <div className="max-w-5xl mx-auto">
               <Tabs defaultValue="shows" className="w-full">
                 {/* Mobile tabs */}
@@ -743,8 +688,7 @@ const ArtistShows = () => {
                       </Select>
 
                       {/* Mobile/Desktop Modal - Only one renders based on screen size */}
-                      {isMobile ? (
-                        <Sheet open={showDialogOpen} onOpenChange={setShowDialogOpen}>
+                      {isMobile ? <Sheet open={showDialogOpen} onOpenChange={setShowDialogOpen}>
                           <SheetTrigger asChild>
                             <Button onClick={resetShowForm} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
                               <Plus className="w-5 h-5 mr-2" />
@@ -752,10 +696,10 @@ const ArtistShows = () => {
                             </Button>
                           </SheetTrigger>
                           <SheetContent side="bottom" className="h-[90vh] overflow-y-auto bg-white p-0 scrollbar-hide" style={{
-                            scrollbarWidth: 'none',
-                            msOverflowStyle: 'none',
-                            WebkitOverflowScrolling: 'touch'
-                          }}>
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none',
+                        WebkitOverflowScrolling: 'touch'
+                      }}>
                           <div className="p-6 pb-8">
                             <SheetHeader className="mb-4">
                               <SheetTitle className="text-gray-900 text-left">
@@ -767,87 +711,61 @@ const ArtistShows = () => {
                             </SheetHeader>
                             <form onSubmit={handleShowSubmit} className="space-y-4">
                               <div className="space-y-3">
-                                <Button
-                                  type="button"
-                                  variant={showFormData.is_private_event ? "default" : "outline"}
-                                  onClick={() => setShowFormData({ ...showFormData, is_private_event: !showFormData.is_private_event })}
-                                  className={showFormData.is_private_event ? "bg-primary hover:bg-primary/90 text-white w-full" : "bg-white hover:bg-gray-50 text-gray-900 w-full"}
-                                >
+                                <Button type="button" variant={showFormData.is_private_event ? "default" : "outline"} onClick={() => setShowFormData({
+                                ...showFormData,
+                                is_private_event: !showFormData.is_private_event
+                              })} className={showFormData.is_private_event ? "bg-primary hover:bg-primary/90 text-white w-full" : "bg-white hover:bg-gray-50 text-gray-900 w-full"}>
                                   Evento Particular
                                 </Button>
 
-                                {showFormData.is_private_event ? (
-                                <div>
+                                {showFormData.is_private_event ? <div>
                                     <Label htmlFor="custom_venue" className="text-gray-900 text-sm font-medium">Nome do local</Label>
-                                    <Input
-                                      id="custom_venue"
-                                      value={showFormData.custom_venue}
-                                      onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
-                                      placeholder="Ex: Casamento Ana e Pedro"
-                                      className="bg-white text-gray-900 mt-1.5 h-10"
-                                      required
-                                    />
-                                  </div>
-                                ) : (
-                                  <div>
+                                    <Input id="custom_venue" value={showFormData.custom_venue} onChange={e => setShowFormData({
+                                  ...showFormData,
+                                  custom_venue: e.target.value
+                                })} placeholder="Ex: Casamento Ana e Pedro" className="bg-white text-gray-900 mt-1.5 h-10" required />
+                                  </div> : <div>
                                     <Label htmlFor="venue_id" className="text-gray-900 text-sm font-medium">Nome do local</Label>
-                                    <Select value={showFormData.venue_id} onValueChange={(value) => setShowFormData({ ...showFormData, venue_id: value })}>
+                                    <Select value={showFormData.venue_id} onValueChange={value => setShowFormData({
+                                  ...showFormData,
+                                  venue_id: value
+                                })}>
                                       <SelectTrigger className="bg-white text-gray-900 mt-1.5 h-10">
                                         <SelectValue placeholder="Selecione um local" />
                                       </SelectTrigger>
                                       <SelectContent className="bg-white z-[100]">
-                                        {venues.length === 0 ? (
-                                          <div className="p-3 text-center">
+                                        {venues.length === 0 ? <div className="p-3 text-center">
                                             <p className="text-sm text-gray-500 break-words">Nenhum local cadastrado</p>
                                             <p className="text-xs text-gray-400 mt-1">Adicione em Locais</p>
-                                          </div>
-                                        ) : (
-                                          <>
-                                            {venues.map((venue) => (
-                                              <SelectItem key={venue.id} value={venue.id}>
+                                          </div> : <>
+                                            {venues.map(venue => <SelectItem key={venue.id} value={venue.id}>
                                                 {venue.name}
-                                              </SelectItem>
-                                            ))}
+                                              </SelectItem>)}
                                             <SelectItem value="custom">Outro local...</SelectItem>
-                                          </>
-                                        )}
+                                          </>}
                                       </SelectContent>
                                     </Select>
-                                    {showFormData.venue_id === 'custom' && (
-                                      <Input
-                                        className="mt-2 bg-white text-gray-900 h-10"
-                                        value={showFormData.custom_venue}
-                                        onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
-                                        placeholder="Digite o nome do local"
-                                        required
-                                      />
-                                    )}
-                                  </div>
-                                )}
+                                    {showFormData.venue_id === 'custom' && <Input className="mt-2 bg-white text-gray-900 h-10" value={showFormData.custom_venue} onChange={e => setShowFormData({
+                                  ...showFormData,
+                                  custom_venue: e.target.value
+                                })} placeholder="Digite o nome do local" required />}
+                                  </div>}
 
                                 <div className="space-y-3">
                                   <div>
                                     <Label htmlFor="date_local_mobile" className="text-gray-900 text-sm font-medium">Data do show</Label>
-                                    <Input
-                                      id="date_local_mobile"
-                                      type="date"
-                                      value={showFormData.date_local}
-                                      onChange={(e) => setShowFormData({ ...showFormData, date_local: e.target.value })}
-                                      className="bg-white text-gray-900 mt-1.5"
-                                      required
-                                    />
+                                    <Input id="date_local_mobile" type="date" value={showFormData.date_local} onChange={e => setShowFormData({
+                                    ...showFormData,
+                                    date_local: e.target.value
+                                  })} className="bg-white text-gray-900 mt-1.5" required />
                                   </div>
                                   
                                   <div>
                                     <Label htmlFor="time_local_mobile" className="text-gray-900 text-sm font-medium">Horário</Label>
-                                    <Input
-                                      id="time_local_mobile"
-                                      type="time"
-                                      value={showFormData.time_local}
-                                      onChange={(e) => setShowFormData({ ...showFormData, time_local: e.target.value })}
-                                      className="bg-white text-gray-900 mt-1.5"
-                                      required
-                                    />
+                                    <Input id="time_local_mobile" type="time" value={showFormData.time_local} onChange={e => setShowFormData({
+                                    ...showFormData,
+                                    time_local: e.target.value
+                                  })} className="bg-white text-gray-900 mt-1.5" required />
                                   </div>
                                 </div>
 
@@ -872,13 +790,10 @@ const ArtistShows = () => {
 
                                 <div>
                                   <Label htmlFor="fee_mobile" className="text-gray-900 text-sm font-medium">Cachê</Label>
-                                  <CurrencyInput
-                                    id="fee_mobile"
-                                    value={showFormData.fee}
-                                    onChange={(value) => setShowFormData({ ...showFormData, fee: value })}
-                                    className="bg-white text-gray-900 placeholder:text-gray-500 mt-1.5 h-10"
-                                    required
-                                  />
+                                  <CurrencyInput id="fee_mobile" value={showFormData.fee} onChange={value => setShowFormData({
+                                  ...showFormData,
+                                  fee: value
+                                })} className="bg-white text-gray-900 placeholder:text-gray-500 mt-1.5 h-10" required />
                                 </div>
                               </div>
 
@@ -894,63 +809,41 @@ const ArtistShows = () => {
                                   </Button>
                                 </div>
 
-                                {teamMembers.map((member, index) => (
-                                  <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
+                                {teamMembers.map((member, index) => <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
                                     <div className="flex items-center justify-between">
                                       <Label className="text-gray-900 text-xs">Membro</Label>
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => removeTeamMember(index)}
-                                        className="text-destructive hover:text-destructive h-7 w-7 p-0"
-                                      >
+                                      <Button type="button" variant="ghost" size="sm" onClick={() => removeTeamMember(index)} className="text-destructive hover:text-destructive h-7 w-7 p-0">
                                         <Trash2 className="w-3 h-3" />
                                       </Button>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-2">
-                                      <Select
-                                        value={member.musicianId || ''}
-                                        onValueChange={(value) => {
-                                          if (value === 'freelancer') {
-                                            updateTeamMember(index, 'musicianId', undefined);
-                                          } else {
-                                            updateTeamMember(index, 'musicianId', value);
-                                          }
-                                        }}
-                                      >
+                                      <Select value={member.musicianId || ''} onValueChange={value => {
+                                    if (value === 'freelancer') {
+                                      updateTeamMember(index, 'musicianId', undefined);
+                                    } else {
+                                      updateTeamMember(index, 'musicianId', value);
+                                    }
+                                  }}>
                                         <SelectTrigger className="bg-white text-gray-900 text-sm h-9">
                                           <SelectValue placeholder="Selecione" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-white z-[200]">
-                                          {musicians.length === 0 ? (
-                                            <div className="p-3 text-center">
+                                          {musicians.length === 0 ? <div className="p-3 text-center">
                                               <p className="text-sm text-gray-500 break-words">Nenhum músico cadastrado</p>
                                               <p className="text-xs text-gray-400 mt-1">Adicione em Músicos</p>
-                                            </div>
-                                          ) : (
-                                            <>
-                                              {musicians.map((m) => (
-                                                <SelectItem key={m.id} value={m.id} className="text-sm">
+                                            </div> : <>
+                                              {musicians.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">
                                                   {m.name}
-                                                </SelectItem>
-                                              ))}
+                                                </SelectItem>)}
                                               <SelectItem value="freelancer" className="text-sm">Freelancer</SelectItem>
-                                            </>
-                                          )}
+                                            </>}
                                         </SelectContent>
                                       </Select>
 
-                                      <CurrencyInput
-                                        value={member.cost || 0}
-                                        onChange={(value) => updateTeamMember(index, 'cost', parseFloat(value) || 0)}
-                                        className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9"
-                                        required
-                                      />
+                                      <CurrencyInput value={member.cost || 0} onChange={value => updateTeamMember(index, 'cost', parseFloat(value) || 0)} className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9" required />
                                     </div>
-                                  </div>
-                                ))}
+                                  </div>)}
                               </div>
 
                               <div className="space-y-3 pt-2">
@@ -965,45 +858,20 @@ const ArtistShows = () => {
                                   </Button>
                                 </div>
 
-                                {additionalExpenses.map((expense, index) => (
-                                  <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
+                                {additionalExpenses.map((expense, index) => <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
                                     <div className="flex items-center justify-between">
                                       <Label className="text-gray-900 text-xs">Despesa</Label>
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => removeExpense(index)}
-                                        className="text-destructive hover:text-destructive h-7 w-7 p-0"
-                                      >
+                                      <Button type="button" variant="ghost" size="sm" onClick={() => removeExpense(index)} className="text-destructive hover:text-destructive h-7 w-7 p-0">
                                         <Trash2 className="w-3 h-3" />
                                       </Button>
                                     </div>
 
                                     <div className="grid grid-cols-3 gap-2">
-                                      <Input
-                                        placeholder="Tipo"
-                                        value={expense.type}
-                                        onChange={(e) => updateExpense(index, 'type', e.target.value)}
-                                        className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9"
-                                        required
-                                      />
-                                      <Input
-                                        placeholder="Descrição"
-                                        value={expense.description}
-                                        onChange={(e) => updateExpense(index, 'description', e.target.value)}
-                                        className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9"
-                                        required
-                                      />
-                                      <CurrencyInput
-                                        value={expense.cost || 0}
-                                        onChange={(value) => updateExpense(index, 'cost', parseFloat(value) || 0)}
-                                        className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9"
-                                        required
-                                      />
+                                      <Input placeholder="Tipo" value={expense.type} onChange={e => updateExpense(index, 'type', e.target.value)} className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9" required />
+                                      <Input placeholder="Descrição" value={expense.description} onChange={e => updateExpense(index, 'description', e.target.value)} className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9" required />
+                                      <CurrencyInput value={expense.cost || 0} onChange={value => updateExpense(index, 'cost', parseFloat(value) || 0)} className="bg-white text-gray-900 placeholder:text-gray-500 text-sm h-9" required />
                                     </div>
-                                  </div>
-                                ))}
+                                  </div>)}
                               </div>
 
                               <div className="flex gap-3 pt-4 sticky bottom-0 bg-white pb-2">
@@ -1017,13 +885,13 @@ const ArtistShows = () => {
                             </form>
                           </div>
                         </SheetContent>
-                      </Sheet>
-                      ) : (
-                        <Button onClick={() => { resetShowForm(); setShowDialogOpen(true); }} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
+                      </Sheet> : <Button onClick={() => {
+                      resetShowForm();
+                      setShowDialogOpen(true);
+                    }} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
                           <Plus className="w-5 h-5 mr-2" />
                           Adicionar
-                        </Button>
-                      )}
+                        </Button>}
                     </Card>
 
                     {/* Desktop header */}
@@ -1036,20 +904,10 @@ const ArtistShows = () => {
                       </div>
                       
                       <div className="flex items-center gap-2">
-                        <Button
-                          variant={viewMode === 'list' ? 'default' : 'outline'}
-                          size="icon"
-                          onClick={() => setViewMode('list')}
-                          className={viewMode === 'list' ? 'bg-[#EAD6F5] text-gray-900 hover:bg-[#EAD6F5]' : 'bg-white text-gray-900'}
-                        >
+                        <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" onClick={() => setViewMode('list')} className={viewMode === 'list' ? 'bg-[#EAD6F5] text-gray-900 hover:bg-[#EAD6F5]' : 'bg-white text-gray-900'}>
                           <List className="w-4 h-4" />
                         </Button>
-                        <Button
-                          variant={viewMode === 'grid' ? 'default' : 'outline'}
-                          size="icon"
-                          onClick={() => setViewMode('grid')}
-                          className={viewMode === 'grid' ? 'bg-[#EAD6F5] text-gray-900 hover:bg-[#EAD6F5]' : 'bg-white text-gray-900'}
-                        >
+                        <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" onClick={() => setViewMode('grid')} className={viewMode === 'grid' ? 'bg-[#EAD6F5] text-gray-900 hover:bg-[#EAD6F5]' : 'bg-white text-gray-900'}>
                           <Grid3x3 className="w-4 h-4" />
                         </Button>
                         <Select value={showFilter} onValueChange={setShowFilter}>
@@ -1066,13 +924,13 @@ const ArtistShows = () => {
                             <SelectItem value="all" className="text-gray-900">Todos os Shows</SelectItem>
                           </SelectContent>
                         </Select>
-                        {isMobile ? (
-                          <Button onClick={() => { resetShowForm(); setShowDialogOpen(true); }} className="bg-primary hover:bg-primary/90 text-white">
+                        {isMobile ? <Button onClick={() => {
+                        resetShowForm();
+                        setShowDialogOpen(true);
+                      }} className="bg-primary hover:bg-primary/90 text-white">
                             <Plus className="w-4 h-4 mr-2" />
                             Adicionar
-                          </Button>
-                        ) : (
-                          <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
+                          </Button> : <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
                             <DialogTrigger asChild>
                               <Button onClick={resetShowForm} className="bg-primary hover:bg-primary/90 text-white">
                                 <Plus className="w-4 h-4 mr-2" />
@@ -1091,117 +949,92 @@ const ArtistShows = () => {
                               
                               <form onSubmit={handleShowSubmit} className="space-y-4">
                                 <div className="max-h-[70vh] overflow-y-auto scrollbar-hide px-1" style={{
-                                  scrollbarWidth: 'none',
-                                  msOverflowStyle: 'none',
-                                  WebkitOverflowScrolling: 'touch'
-                                }}>
+                              scrollbarWidth: 'none',
+                              msOverflowStyle: 'none',
+                              WebkitOverflowScrolling: 'touch'
+                            }}>
                                   <div className="space-y-6">
                                     <div className="space-y-4">
-                                      <Button
-                                        type="button"
-                                        variant={showFormData.is_private_event ? "default" : "outline"}
-                                        onClick={() => setShowFormData({ ...showFormData, is_private_event: !showFormData.is_private_event })}
-                                        className={showFormData.is_private_event ? "bg-primary hover:bg-primary/90 text-white" : "bg-white hover:bg-gray-50 text-gray-900"}
-                                      >
+                                      <Button type="button" variant={showFormData.is_private_event ? "default" : "outline"} onClick={() => setShowFormData({
+                                    ...showFormData,
+                                    is_private_event: !showFormData.is_private_event
+                                  })} className={showFormData.is_private_event ? "bg-primary hover:bg-primary/90 text-white" : "bg-white hover:bg-gray-50 text-gray-900"}>
                                         Evento Particular
                                       </Button>
 
-                                      {showFormData.is_private_event ? (
-                                        <div>
+                                      {showFormData.is_private_event ? <div>
                                           <Label htmlFor="custom_venue" className="text-gray-900">Nome do local</Label>
-                                          <Input
-                                            id="custom_venue"
-                                            value={showFormData.custom_venue}
-                                            onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
-                                            placeholder="Ex: Casamento Ana e Pedro"
-                                            className="bg-white text-gray-900"
-                                            required
-                                          />
-                                        </div>
-                                      ) : (
-                                        <div>
+                                          <Input id="custom_venue" value={showFormData.custom_venue} onChange={e => setShowFormData({
+                                      ...showFormData,
+                                      custom_venue: e.target.value
+                                    })} placeholder="Ex: Casamento Ana e Pedro" className="bg-white text-gray-900" required />
+                                        </div> : <div>
                                           <Label htmlFor="venue_id" className="text-gray-900">Nome do local</Label>
-                                          <Select value={showFormData.venue_id} onValueChange={(value) => setShowFormData({ ...showFormData, venue_id: value })}>
+                                          <Select value={showFormData.venue_id} onValueChange={value => setShowFormData({
+                                      ...showFormData,
+                                      venue_id: value
+                                    })}>
                                             <SelectTrigger className="bg-white text-gray-900">
                                               <SelectValue placeholder="Selecione um local" />
                                             </SelectTrigger>
                                             <SelectContent className="bg-white">
-                                              {venues.length === 0 ? (
-                                                <div className="p-3 text-center">
+                                              {venues.length === 0 ? <div className="p-3 text-center">
                                                   <p className="text-sm text-gray-500 break-words">Nenhum local cadastrado</p>
                                                   <p className="text-xs text-gray-400 mt-1">Adicione em Locais</p>
-                                                </div>
-                                              ) : (
-                                                <>
-                                                  {venues.map((venue) => (
-                                                    <SelectItem key={venue.id} value={venue.id}>
+                                                </div> : <>
+                                                  {venues.map(venue => <SelectItem key={venue.id} value={venue.id}>
                                                       {venue.name}
-                                                    </SelectItem>
-                                                  ))}
+                                                    </SelectItem>)}
                                                   <SelectItem value="custom">Outro local...</SelectItem>
-                                                </>
-                                              )}
+                                                </>}
                                             </SelectContent>
                                           </Select>
-                                          {showFormData.venue_id === 'custom' && (
-                                            <Input
-                                              className="mt-2 bg-white text-gray-900"
-                                              value={showFormData.custom_venue}
-                                              onChange={(e) => setShowFormData({ ...showFormData, custom_venue: e.target.value })}
-                                              placeholder="Digite o nome do local"
-                                              required
-                                            />
-                                          )}
-                                        </div>
-                                      )}
+                                          {showFormData.venue_id === 'custom' && <Input className="mt-2 bg-white text-gray-900" value={showFormData.custom_venue} onChange={e => setShowFormData({
+                                      ...showFormData,
+                                      custom_venue: e.target.value
+                                    })} placeholder="Digite o nome do local" required />}
+                                        </div>}
 
                                       <div className="grid grid-cols-3 gap-4">
                                         <div>
                                           <Label htmlFor="date_local" className="text-gray-900">Data do show</Label>
                                           <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                                             <PopoverTrigger asChild>
-                                              <Button
-                                                variant="outline"
-                                                className={cn(
-                                                  "w-full justify-start text-left font-normal bg-white text-gray-900",
-                                                  !showFormData.date_local && "text-gray-500"
-                                                )}
-                                              >
+                                              <Button variant="outline" className={cn("w-full justify-start text-left font-normal bg-white text-gray-900", !showFormData.date_local && "text-gray-500")}>
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
                                                 {showFormData.date_local ? (() => {
-                                                  const [year, month, day] = showFormData.date_local.split('-').map(Number);
-                                                  return format(new Date(year, month - 1, day), "dd/MM/yyyy", { locale: ptBR });
-                                                })() : "Selecione a data"}
+                                              const [year, month, day] = showFormData.date_local.split('-').map(Number);
+                                              return format(new Date(year, month - 1, day), "dd/MM/yyyy", {
+                                                locale: ptBR
+                                              });
+                                            })() : "Selecione a data"}
                                               </Button>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-auto p-0 bg-primary border-0" align="start">
-                                              <Calendar
-                                                mode="single"
-                                                selected={showFormData.date_local ? (() => {
-                                                  const [year, month, day] = showFormData.date_local.split('-').map(Number);
-                                                  return new Date(year, month - 1, day);
-                                                })() : undefined}
-                                                onSelect={(date) => {
-                                                  if (date) {
-                                                    const year = date.getFullYear();
-                                                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                                                    const day = String(date.getDate()).padStart(2, '0');
-                                                    setShowFormData({ ...showFormData, date_local: `${year}-${month}-${day}` });
-                                                    setCalendarOpen(false);
-                                                  }
-                                                }}
-                                                initialFocus
-                                                className="bg-primary text-white pointer-events-auto"
-                                              />
+                                              <Calendar mode="single" selected={showFormData.date_local ? (() => {
+                                            const [year, month, day] = showFormData.date_local.split('-').map(Number);
+                                            return new Date(year, month - 1, day);
+                                          })() : undefined} onSelect={date => {
+                                            if (date) {
+                                              const year = date.getFullYear();
+                                              const month = String(date.getMonth() + 1).padStart(2, '0');
+                                              const day = String(date.getDate()).padStart(2, '0');
+                                              setShowFormData({
+                                                ...showFormData,
+                                                date_local: `${year}-${month}-${day}`
+                                              });
+                                              setCalendarOpen(false);
+                                            }
+                                          }} initialFocus className="bg-primary text-white pointer-events-auto" />
                                             </PopoverContent>
                                           </Popover>
                                         </div>
                                         <div>
                                           <Label htmlFor="time_local" className="text-gray-900">Horário</Label>
-                                          <TimePicker
-                                            value={showFormData.time_local}
-                                            onChange={(time) => setShowFormData({ ...showFormData, time_local: time })}
-                                          />
+                                          <TimePicker value={showFormData.time_local} onChange={time => setShowFormData({
+                                        ...showFormData,
+                                        time_local: time
+                                      })} />
                                         </div>
                                         <div>
                                           <Label htmlFor="duration" className="text-gray-900">Duração de show</Label>
@@ -1233,15 +1066,10 @@ const ArtistShows = () => {
 
                                       <div>
                                         <Label htmlFor="fee" className="text-gray-900">Cachê (R$)</Label>
-                                        <Input
-                                          id="fee"
-                                          type="text"
-                                          value={showFormData.fee}
-                                          onChange={(e) => setShowFormData({ ...showFormData, fee: e.target.value })}
-                                          placeholder="R$ 0,00"
-                                          className="bg-white text-gray-900 placeholder:text-gray-500"
-                                          required
-                                        />
+                                        <Input id="fee" type="text" value={showFormData.fee} onChange={e => setShowFormData({
+                                      ...showFormData,
+                                      fee: e.target.value
+                                    })} placeholder="R$ 0,00" className="bg-white text-gray-900 placeholder:text-gray-500" required />
                                       </div>
                                     </div>
 
@@ -1257,65 +1085,41 @@ const ArtistShows = () => {
                                         </Button>
                                       </div>
 
-                                      {teamMembers.map((member, index) => (
-                                        <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+                                      {teamMembers.map((member, index) => <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
                                           <div className="flex items-center justify-between">
                                             <Label className="text-gray-900">Membro</Label>
-                                            <Button
-                                              type="button"
-                                              variant="ghost"
-                                              size="sm"
-                                              onClick={() => removeTeamMember(index)}
-                                              className="text-destructive hover:text-destructive"
-                                            >
+                                            <Button type="button" variant="ghost" size="sm" onClick={() => removeTeamMember(index)} className="text-destructive hover:text-destructive">
                                               <Trash2 className="w-4 h-4" />
                                             </Button>
                                           </div>
 
                                           <div className="grid grid-cols-2 gap-3">
-                                            <Select
-                                              value={member.musicianId || ''}
-                                              onValueChange={(value) => {
-                                                if (value === 'freelancer') {
-                                                  updateTeamMember(index, 'musicianId', undefined);
-                                                } else {
-                                                  updateTeamMember(index, 'musicianId', value);
-                                                }
-                                              }}
-                                            >
+                                            <Select value={member.musicianId || ''} onValueChange={value => {
+                                        if (value === 'freelancer') {
+                                          updateTeamMember(index, 'musicianId', undefined);
+                                        } else {
+                                          updateTeamMember(index, 'musicianId', value);
+                                        }
+                                      }}>
                                               <SelectTrigger className="bg-white text-gray-900">
                                                 <SelectValue placeholder="Selecione um músico" />
                                               </SelectTrigger>
                                               <SelectContent className="bg-white">
-                                                {musicians.length === 0 ? (
-                                                  <div className="p-3 text-center">
+                                                {musicians.length === 0 ? <div className="p-3 text-center">
                                                     <p className="text-sm text-gray-500 break-words">Nenhum músico cadastrado</p>
                                                     <p className="text-xs text-gray-400 mt-1">Adicione em Músicos</p>
-                                                  </div>
-                                                ) : (
-                                                  <>
-                                                    {musicians.map((m) => (
-                                                      <SelectItem key={m.id} value={m.id} className="text-gray-900">
+                                                  </div> : <>
+                                                    {musicians.map(m => <SelectItem key={m.id} value={m.id} className="text-gray-900">
                                                         {m.name} - {m.instrument}
-                                                      </SelectItem>
-                                                    ))}
+                                                      </SelectItem>)}
                                                     <SelectItem value="freelancer" className="text-gray-900">Freelancer</SelectItem>
-                                                  </>
-                                                )}
+                                                  </>}
                                               </SelectContent>
                                             </Select>
 
-                                            <Input
-                                              type="text"
-                                              placeholder="Custo (R$)"
-                                              value={member.cost || ''}
-                                              onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
-                                              className="bg-white text-gray-900 placeholder:text-gray-500"
-                                              required
-                                            />
+                                            <Input type="text" placeholder="Custo (R$)" value={member.cost || ''} onChange={e => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)} className="bg-white text-gray-900 placeholder:text-gray-500" required />
                                           </div>
-                                        </div>
-                                      ))}
+                                        </div>)}
                                     </div>
 
                                     <div className="space-y-4" ref={expensesSectionRef}>
@@ -1330,26 +1134,16 @@ const ArtistShows = () => {
                                         </Button>
                                       </div>
 
-                                      {additionalExpenses.map((expense, index) => (
-                                        <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+                                      {additionalExpenses.map((expense, index) => <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
                                           <div className="flex items-center justify-between">
                                             <Label className="text-gray-900">Despesa</Label>
-                                            <Button
-                                              type="button"
-                                              variant="ghost"
-                                              size="sm"
-                                              onClick={() => removeAdditionalExpense(index)}
-                                              className="text-destructive hover:text-destructive"
-                                            >
+                                            <Button type="button" variant="ghost" size="sm" onClick={() => removeAdditionalExpense(index)} className="text-destructive hover:text-destructive">
                                               <Trash2 className="w-4 h-4" />
                                             </Button>
                                           </div>
 
                                           <div className="grid grid-cols-3 gap-3">
-                                            <Select
-                                              value={expense.type}
-                                              onValueChange={(value) => updateAdditionalExpense(index, 'type', value)}
-                                            >
+                                            <Select value={expense.type} onValueChange={value => updateAdditionalExpense(index, 'type', value)}>
                                               <SelectTrigger className="bg-white text-gray-900">
                                                 <SelectValue placeholder="Tipo" />
                                               </SelectTrigger>
@@ -1362,26 +1156,11 @@ const ArtistShows = () => {
                                               </SelectContent>
                                             </Select>
 
-                                            <Input
-                                              type="text"
-                                              placeholder="Descrição"
-                                              value={expense.description}
-                                              onChange={(e) => updateAdditionalExpense(index, 'description', e.target.value)}
-                                              className="bg-white text-gray-900 placeholder:text-gray-500"
-                                              required
-                                            />
+                                            <Input type="text" placeholder="Descrição" value={expense.description} onChange={e => updateAdditionalExpense(index, 'description', e.target.value)} className="bg-white text-gray-900 placeholder:text-gray-500" required />
 
-                                            <Input
-                                              type="text"
-                                              placeholder="Custo (R$)"
-                                              value={expense.cost || ''}
-                                              onChange={(e) => updateAdditionalExpense(index, 'cost', parseFloat(e.target.value) || 0)}
-                                              className="bg-white text-gray-900 placeholder:text-gray-500"
-                                              required
-                                            />
+                                            <Input type="text" placeholder="Custo (R$)" value={expense.cost || ''} onChange={e => updateAdditionalExpense(index, 'cost', parseFloat(e.target.value) || 0)} className="bg-white text-gray-900 placeholder:text-gray-500" required />
                                           </div>
-                                        </div>
-                                      ))}
+                                        </div>)}
                                     </div>
                                   </div>
                                 </div>
@@ -1396,24 +1175,17 @@ const ArtistShows = () => {
                                 </div>
                               </form>
                             </DialogContent>
-                        </Dialog>
-                        )}
+                        </Dialog>}
                       </div>
                     </div>
 
-                    {loading ? (
-                      <div className="text-center py-12">
+                    {loading ? <div className="text-center py-12">
                         <p className="text-gray-500">Carregando...</p>
-                      </div>
-                    ) : filteredShows.length === 0 ? (
-                      <Card className="p-8 text-center bg-white border border-gray-200">
+                      </div> : filteredShows.length === 0 ? <Card className="p-8 text-center bg-white border border-gray-200">
                         <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                         <p className="text-gray-500">Nenhum show encontrado para o filtro selecionado.</p>
-                      </Card>
-                    ) : (
-                      <>
-                        {viewMode === 'list' ? (
-                          <div className="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden">
+                      </Card> : <>
+                        {viewMode === 'list' ? <div className="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden">
                             <div className="grid grid-cols-[1fr,120px,120px,120px,80px] gap-4 p-4 bg-gray-50 border-b text-sm font-medium text-gray-600">
                               <div>Data e Local</div>
                               <div className="text-center">Cachê</div>
@@ -1421,27 +1193,22 @@ const ArtistShows = () => {
                               <div className="text-center">Lucro</div>
                               <div className="text-center">Ações</div>
                             </div>
-                            {filteredShows.map((show) => {
-                              const expenses = calculateShowExpenses(show);
-                              const profit = calculateShowProfit(show);
-                              const isExpanded = expandedShows.has(show.id);
-                              
-                              return (
-                                <div key={show.id} className="border-b last:border-b-0">
+                            {filteredShows.map(show => {
+                        const expenses = calculateShowExpenses(show);
+                        const profit = calculateShowProfit(show);
+                        const isExpanded = expandedShows.has(show.id);
+                        return <div key={show.id} className="border-b last:border-b-0">
                                   <div className="grid grid-cols-[1fr,120px,120px,120px,80px] gap-4 p-4 items-center hover:bg-gray-50">
                                     <div className="flex items-center gap-2">
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-6 w-6"
-                                        onClick={() => toggleShowExpanded(show.id)}
-                                      >
+                                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => toggleShowExpanded(show.id)}>
                                         {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                                       </Button>
                                       <div>
                                         <div className="font-semibold text-gray-900">{show.venue_name}</div>
                                         <div className="text-sm text-gray-600">
-                                          {format(new Date(show.date_local), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })} ⏰ {show.time_local}
+                                          {format(new Date(show.date_local), "dd 'de' MMMM 'de' yyyy", {
+                                    locale: ptBR
+                                  })} ⏰ {show.time_local}
                                         </div>
                                       </div>
                                     </div>
@@ -1472,38 +1239,31 @@ const ArtistShows = () => {
                                       </DropdownMenu>
                                     </div>
                                   </div>
-                                  {isExpanded && show.expenses_team.length > 0 && (
-                                    <div className="px-4 pb-4 bg-[#F5F0FA]">
+                                  {isExpanded && show.expenses_team.length > 0 && <div className="px-4 pb-4 bg-[#F5F0FA]">
                                       <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 mb-2">
                                         <Users className="w-4 h-4" />
                                         Equipe
                                       </div>
-                                      {show.expenses_team.map((member, idx) => (
-                                        <div key={idx} className="flex justify-between text-sm text-gray-600 ml-6 mb-1">
+                                      {show.expenses_team.map((member, idx) => <div key={idx} className="flex justify-between text-sm text-gray-600 ml-6 mb-1">
                                           <span>{member.name} ({member.instrument})</span>
                                           <span>R$ {member.cost.toFixed(2).replace('.', ',')}</span>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <div className="grid gap-4 md:grid-cols-2">
-                            {filteredShows.map((show) => {
-                              const expenses = calculateShowExpenses(show);
-                              const profit = calculateShowProfit(show);
-                              const isExpanded = expandedShows.has(show.id);
-                              const showDate = new Date(show.date_local);
-                              
-                              return (
-                                <Card key={show.id} className="bg-white border border-gray-200 overflow-hidden">
+                                        </div>)}
+                                    </div>}
+                                </div>;
+                      })}
+                          </div> : <div className="grid gap-4 md:grid-cols-2">
+                            {filteredShows.map(show => {
+                        const expenses = calculateShowExpenses(show);
+                        const profit = calculateShowProfit(show);
+                        const isExpanded = expandedShows.has(show.id);
+                        const showDate = new Date(show.date_local);
+                        return <Card key={show.id} className="bg-white border border-gray-200 overflow-hidden">
                                   <div className="p-4 md:p-6">
                                     <div className="flex gap-3 md:gap-4">
                                       <div className="flex-shrink-0 w-16 text-center bg-[#F5F0FA] rounded-lg p-2 border-2 border-purple-200">
-                                        <div className="text-xs text-primary font-bold uppercase">{format(showDate, 'MMM', { locale: ptBR })}</div>
+                                        <div className="text-xs text-primary font-bold uppercase">{format(showDate, 'MMM', {
+                                    locale: ptBR
+                                  })}</div>
                                         <div className="text-3xl font-bold text-gray-900">{format(showDate, 'dd')}</div>
                                       </div>
                                       <div className="flex-1">
@@ -1511,7 +1271,9 @@ const ArtistShows = () => {
                                           <div>
                                             <h3 className="text-base md:text-lg font-bold text-gray-900">{show.venue_name}</h3>
                                             <p className="text-sm text-gray-600 flex items-center gap-1">
-                                              {format(showDate, "EEEE", { locale: ptBR })} • 
+                                              {format(showDate, "EEEE", {
+                                        locale: ptBR
+                                      })} • 
                                               <Clock className="w-3 h-3" />
                                               {show.time_local}
                                             </p>
@@ -1519,7 +1281,7 @@ const ArtistShows = () => {
                                           <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                               <Button variant="ghost" size="icon">
-                                                <MoreVertical className="h-4 w-4" />
+                                                <MoreVertical className="h-4 w-4 text-stone-950" />
                                               </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent className="bg-white z-50">
@@ -1553,8 +1315,7 @@ const ArtistShows = () => {
                                       </div>
                                     </div>
 
-                                    {show.expenses_team.length > 0 && (
-                                      <Collapsible open={isExpanded} onOpenChange={() => toggleShowExpanded(show.id)}>
+                                    {show.expenses_team.length > 0 && <Collapsible open={isExpanded} onOpenChange={() => toggleShowExpanded(show.id)}>
                                         <CollapsibleTrigger asChild>
                                           <Button variant="ghost" className="w-full mt-4 bg-[#F5F0FA] hover:bg-[#EAD6F5] text-primary font-semibold">
                                             Detalhes das Despesas
@@ -1567,22 +1328,17 @@ const ArtistShows = () => {
                                               <Users className="w-4 h-4" />
                                               Equipe
                                             </div>
-                                            {show.expenses_team.map((member, idx) => (
-                                              <div key={idx} className="flex justify-between text-sm text-gray-600 mb-1">
+                                            {show.expenses_team.map((member, idx) => <div key={idx} className="flex justify-between text-sm text-gray-600 mb-1">
                                                 <span className="text-gray-500">{member.name} ({member.instrument})</span>
                                                 <span className="font-medium">R$ {member.cost.toFixed(2).replace('.', ',')}</span>
-                                              </div>
-                                            ))}
+                                              </div>)}
                                           </div>
                                         </CollapsibleContent>
-                                      </Collapsible>
-                                    )}
+                                      </Collapsible>}
                                   </div>
-                                </Card>
-                              );
-                            })}
-                          </div>
-                        )}
+                                </Card>;
+                      })}
+                          </div>}
                         
                         {/* Financial summary - Mobile and Desktop */}
                         <Card className="p-4 md:p-6 bg-[#F5F0FA] border-0 mt-4">
@@ -1616,8 +1372,7 @@ const ArtistShows = () => {
                             </div>
                           </div>
                         </Card>
-                      </>
-                    )}
+                      </>}
                   </div>
                 </TabsContent>
 
@@ -1651,14 +1406,10 @@ const ArtistShows = () => {
                         <form onSubmit={handleVenueSubmit} className="space-y-4 mt-4">
                           <div>
                             <Label htmlFor="venue_name" className="text-gray-900 font-medium">Nome do Local/Bar</Label>
-                            <Input
-                              id="venue_name"
-                              value={venueFormData.name}
-                              onChange={(e) => setVenueFormData({ ...venueFormData, name: e.target.value })}
-                              placeholder="Ex: Bar do Zé"
-                              required
-                              className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-                            />
+                            <Input id="venue_name" value={venueFormData.name} onChange={e => setVenueFormData({
+                            ...venueFormData,
+                            name: e.target.value
+                          })} placeholder="Ex: Bar do Zé" required className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" />
                           </div>
                           
                           <div className="grid grid-cols-2 gap-4">
@@ -1669,59 +1420,43 @@ const ArtistShows = () => {
                                   <SelectValue placeholder="Selecione o estado" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-white max-h-[200px] z-50">
-                                  {brazilStates.map((state) => (
-                                    <SelectItem key={state.value} value={state.value} className="text-gray-900">
+                                  {brazilStates.map(state => <SelectItem key={state.value} value={state.value} className="text-gray-900">
                                       {state.label}
-                                    </SelectItem>
-                                  ))}
+                                    </SelectItem>)}
                                 </SelectContent>
                               </Select>
                             </div>
                             
                             <div>
                               <Label htmlFor="venue_city" className="text-gray-900 font-medium">Cidade</Label>
-                              <Select 
-                                value={venueFormData.city} 
-                                onValueChange={(value) => setVenueFormData({ ...venueFormData, city: value, customCity: '' })}
-                                disabled={!venueFormData.state}
-                                required
-                              >
+                              <Select value={venueFormData.city} onValueChange={value => setVenueFormData({
+                              ...venueFormData,
+                              city: value,
+                              customCity: ''
+                            })} disabled={!venueFormData.state} required>
                                 <SelectTrigger id="venue_city" className="mt-1.5 bg-white border-gray-300 text-gray-900">
                                   <SelectValue placeholder="Escolha um estado" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-white max-h-[200px] z-50">
-                                  {availableCities.map((city) => (
-                                    <SelectItem key={city} value={city} className="text-gray-900">
+                                  {availableCities.map(city => <SelectItem key={city} value={city} className="text-gray-900">
                                       {city}
-                                    </SelectItem>
-                                  ))}
+                                    </SelectItem>)}
                                   <SelectItem value="Outro (digitar)" className="text-gray-900">Outro (digitar)</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
                           </div>
 
-                          {venueFormData.city === 'Outro (digitar)' && (
-                            <div>
+                          {venueFormData.city === 'Outro (digitar)' && <div>
                               <Label htmlFor="venue_custom_city" className="text-gray-900 font-medium">Qual cidade?</Label>
-                              <Input
-                                id="venue_custom_city"
-                                value={venueFormData.customCity}
-                                onChange={(e) => setVenueFormData({ ...venueFormData, customCity: e.target.value })}
-                                placeholder="Digite o nome da cidade"
-                                required
-                                className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-                              />
-                            </div>
-                          )}
+                              <Input id="venue_custom_city" value={venueFormData.customCity} onChange={e => setVenueFormData({
+                            ...venueFormData,
+                            customCity: e.target.value
+                          })} placeholder="Digite o nome da cidade" required className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" />
+                            </div>}
 
                           <div className="flex gap-2 pt-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => setVenueDialogOpen(false)}
-                              className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
-                            >
+                            <Button type="button" variant="outline" onClick={() => setVenueDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
                               Cancelar
                             </Button>
                             <Button type="submit" className="flex-1 bg-primary text-white hover:bg-primary/90">
@@ -1733,18 +1468,14 @@ const ArtistShows = () => {
                     </Dialog>
                   </div>
 
-                  {venues.length === 0 ? (
-                    <Card className="p-8 text-center bg-white border border-gray-200">
+                  {venues.length === 0 ? <Card className="p-8 text-center bg-white border border-gray-200">
                       <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-500 mb-4">Nenhum local cadastrado</p>
                       <p className="text-sm text-gray-400">
                         Adicione os locais onde você costuma fazer shows
                       </p>
-                    </Card>
-                  ) : (
-                    <div className="grid gap-4">
-                      {venues.map((venue) => (
-                        <Card key={venue.id} className="p-4 bg-white border border-gray-200">
+                    </Card> : <div className="grid gap-4">
+                      {venues.map(venue => <Card key={venue.id} className="p-4 bg-white border border-gray-200">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                               <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
@@ -1752,9 +1483,7 @@ const ArtistShows = () => {
                               </div>
                               <div>
                                 <h3 className="font-semibold text-gray-900">{venue.name}</h3>
-                                {venue.address && (
-                                  <p className="text-sm text-gray-600">{venue.address}</p>
-                                )}
+                                {venue.address && <p className="text-sm text-gray-600">{venue.address}</p>}
                               </div>
                             </div>
                             <div className="flex gap-2">
@@ -1766,10 +1495,8 @@ const ArtistShows = () => {
                               </Button>
                             </div>
                           </div>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
+                        </Card>)}
+                    </div>}
                 </TabsContent>
 
                 {/* MÚSICOS E EQUIPE TAB */}
@@ -1798,11 +1525,12 @@ const ArtistShows = () => {
                         </DialogHeader>
                         <form onSubmit={handleMusicianSubmit} className="space-y-4 mt-4">
                           {/* Quick Freelancer Button */}
-                          <Button
-                            type="button"
-                            className="w-full bg-primary text-white hover:bg-primary/90"
-                            onClick={() => setMusicianFormData({ ...musicianFormData, name: 'Freelancer', instrument: 'Freelancer', customInstrument: '' })}
-                          >
+                          <Button type="button" className="w-full bg-primary text-white hover:bg-primary/90" onClick={() => setMusicianFormData({
+                          ...musicianFormData,
+                          name: 'Freelancer',
+                          instrument: 'Freelancer',
+                          customInstrument: ''
+                        })}>
                             <Users className="w-4 h-4 mr-2" />
                             Adicionar Freelancer Rápido
                           </Button>
@@ -1818,76 +1546,56 @@ const ArtistShows = () => {
 
                           <div>
                             <Label htmlFor="musician_name" className="text-gray-900 font-medium">Nome *</Label>
-                            <Input
-                              id="musician_name"
-                              value={musicianFormData.name}
-                              onChange={(e) => setMusicianFormData({ ...musicianFormData, name: e.target.value })}
-                              placeholder="Ex: João Silva"
-                              required
-                              disabled={musicianFormData.instrument === 'Freelancer'}
-                              className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                            />
+                            <Input id="musician_name" value={musicianFormData.name} onChange={e => setMusicianFormData({
+                            ...musicianFormData,
+                            name: e.target.value
+                          })} placeholder="Ex: João Silva" required disabled={musicianFormData.instrument === 'Freelancer'} className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed" />
                           </div>
                           <div>
                             <Label htmlFor="musician_instrument" className="text-gray-900 font-medium">Função/Instrumento *</Label>
-                            <Select 
-                              value={musicianFormData.instrument} 
-                              onValueChange={(value) => {
-                                if (value === 'Freelancer') {
-                                  setMusicianFormData({ ...musicianFormData, instrument: value, name: 'Freelancer', customInstrument: '' });
-                                } else {
-                                  setMusicianFormData({ ...musicianFormData, instrument: value, customInstrument: '' });
-                                }
-                              }}
-                              required
-                            >
+                            <Select value={musicianFormData.instrument} onValueChange={value => {
+                            if (value === 'Freelancer') {
+                              setMusicianFormData({
+                                ...musicianFormData,
+                                instrument: value,
+                                name: 'Freelancer',
+                                customInstrument: ''
+                              });
+                            } else {
+                              setMusicianFormData({
+                                ...musicianFormData,
+                                instrument: value,
+                                customInstrument: ''
+                              });
+                            }
+                          }} required>
                               <SelectTrigger id="musician_instrument" className="mt-1.5 bg-white border-gray-300 text-gray-900">
                                 <SelectValue placeholder="Selecione uma função" />
                               </SelectTrigger>
                               <SelectContent className="bg-white max-h-[200px] z-50">
-                                {instruments.map((instrument) => (
-                                  <SelectItem key={instrument} value={instrument} className="text-gray-900">
+                                {instruments.map(instrument => <SelectItem key={instrument} value={instrument} className="text-gray-900">
                                     {instrument}
-                                  </SelectItem>
-                                ))}
+                                  </SelectItem>)}
                               </SelectContent>
                             </Select>
                           </div>
                           
-                          {musicianFormData.instrument === 'Outro...' && (
-                            <div>
+                          {musicianFormData.instrument === 'Outro...' && <div>
                               <Label htmlFor="custom_instrument" className="text-gray-900 font-medium">Qual função?</Label>
-                              <Input
-                                id="custom_instrument"
-                                value={musicianFormData.customInstrument}
-                                onChange={(e) => setMusicianFormData({ ...musicianFormData, customInstrument: e.target.value })}
-                                placeholder="Digite a função/instrumento"
-                                required
-                                className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-                              />
-                            </div>
-                          )}
+                              <Input id="custom_instrument" value={musicianFormData.customInstrument} onChange={e => setMusicianFormData({
+                            ...musicianFormData,
+                            customInstrument: e.target.value
+                          })} placeholder="Digite a função/instrumento" required className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" />
+                            </div>}
                           <div>
                             <Label htmlFor="musician_fee" className="text-gray-900 font-medium">Cachê Padrão (R$) *</Label>
-                            <Input
-                              id="musician_fee"
-                              type="number"
-                              inputMode="numeric"
-                              step="0.01"
-                              value={musicianFormData.default_fee}
-                              onChange={(e) => setMusicianFormData({ ...musicianFormData, default_fee: e.target.value })}
-                              placeholder="0,00"
-                              required
-                              className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
-                            />
+                            <Input id="musician_fee" type="number" inputMode="numeric" step="0.01" value={musicianFormData.default_fee} onChange={e => setMusicianFormData({
+                            ...musicianFormData,
+                            default_fee: e.target.value
+                          })} placeholder="0,00" required className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" />
                           </div>
                           <div className="flex gap-2 pt-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => setMusicianDialogOpen(false)}
-                              className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
-                            >
+                            <Button type="button" variant="outline" onClick={() => setMusicianDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
                               Cancelar
                             </Button>
                             <Button type="submit" className="flex-1 bg-primary text-white hover:bg-primary/90">
@@ -1899,18 +1607,14 @@ const ArtistShows = () => {
                     </Dialog>
                   </div>
 
-                  {musicians.length === 0 ? (
-                    <Card className="p-8 text-center bg-white border border-gray-200">
+                  {musicians.length === 0 ? <Card className="p-8 text-center bg-white border border-gray-200">
                       <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-500 mb-4">Nenhum músico cadastrado</p>
                       <p className="text-sm text-gray-400">
                         Adicione músicos da sua equipe para facilitar o cadastro de shows
                       </p>
-                    </Card>
-                  ) : (
-                    <div className="grid gap-4">
-                      {musicians.map((musician) => (
-                        <Card key={musician.id} className="p-4 bg-white border border-gray-200">
+                    </Card> : <div className="grid gap-4">
+                      {musicians.map(musician => <Card key={musician.id} className="p-4 bg-white border border-gray-200">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                               <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
@@ -1933,10 +1637,8 @@ const ArtistShows = () => {
                               </Button>
                             </div>
                           </div>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
+                        </Card>)}
+                    </div>}
                 </TabsContent>
               </Tabs>
             </div>
@@ -1945,8 +1647,6 @@ const ArtistShows = () => {
         
         <MobileBottomNav role="artist" />
       </div>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 };
-
 export default ArtistShows;
