@@ -1302,10 +1302,12 @@ const ArtistShows = () => {
                                         <div className="text-sm text-gray-600">
                                           {(() => {
                                             const [year, month, day] = show.date_local.split('-').map(Number);
-                                            return format(new Date(year, month - 1, day), "dd 'de' MMMM 'de' yyyy", {
-                                              locale: ptBR
-                                            });
-                                          })()} ⏰ {show.time_local}
+                                            const date = new Date(year, month - 1, day);
+                                            const dayOfWeek = format(date, "EEEE", { locale: ptBR });
+                                            const capitalizedDay = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1);
+                                            return `${capitalizedDay}, ${format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}`;
+                                          })()}
+                                          {show.time_local && ` 🕐 ${show.time_local}`}
                                         </div>
                                       </div>
                                     </div>

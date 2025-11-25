@@ -1100,14 +1100,19 @@ const MusicianShows = () => {
                               const artist = artists.find(a => a.owner_uid === show.uid);
 
                               return <div key={show.id} className="grid grid-cols-[1fr,120px,120px,120px,80px] gap-4 p-4 border-b hover:bg-gray-50 items-center">
-                                  <div>
-                                    <div className="font-semibold text-gray-900">{show.venue_name}</div>
-                                    <div className="text-sm text-gray-600">
-                                      {format(showDate, "dd 'de' MMMM", { locale: ptBR })} • {show.time_local}
-                                    </div>
-                                    {artist && <div className="text-sm text-gray-600">{artist.name}</div>}
-                                    {myInstrument && <div className="text-sm text-gray-500">{myInstrument}</div>}
-                                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">{show.venue_name}</div>
+                    <div className="text-sm text-gray-600">
+                      {(() => {
+                        const dayOfWeek = format(showDate, "EEEE", { locale: ptBR });
+                        const capitalizedDay = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1);
+                        return `${capitalizedDay}, ${format(showDate, "dd 'de' MMMM", { locale: ptBR })}`;
+                      })()}
+                      {show.time_local && ` 🕐 ${show.time_local}`}
+                    </div>
+                    {artist && <div className="text-sm text-gray-600">{artist.name}</div>}
+                    {myInstrument && <div className="text-sm text-gray-500">{myInstrument}</div>}
+                  </div>
                                   <div className="text-center font-semibold text-green-600">
                                     R$ {myFee.toFixed(2).replace('.', ',')}
                                   </div>
