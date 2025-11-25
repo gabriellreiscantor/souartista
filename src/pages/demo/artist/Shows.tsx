@@ -111,7 +111,7 @@ export default function DemoArtistShows() {
                       <Button 
                         variant="outline" 
                         onClick={() => toast.info("Esta é uma demonstração. Para editar shows reais, crie sua conta!")}
-                        className="w-full sm:w-auto border-gray-300 text-gray-900 hover:bg-gray-100"
+                        className="w-full sm:w-auto"
                       >
                         Ver Detalhes
                       </Button>
