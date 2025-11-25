@@ -6,6 +6,7 @@ import { UserMenu } from '@/components/UserMenu';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -42,6 +43,10 @@ const ArtistVenues = () => {
     customCity: '',
   });
   const [availableCities, setAvailableCities] = useState<string[]>([]);
+  
+  // Delete confirmation states
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [venueToDelete, setVenueToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchVenues();
@@ -148,14 +153,19 @@ const ArtistVenues = () => {
     setDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este local?')) return;
+  const handleDelete = (id: string) => {
+    setVenueToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+  
+  const confirmDelete = async () => {
+    if (!venueToDelete) return;
 
     try {
       const { error } = await supabase
         .from('venues')
         .delete()
-        .eq('id', id);
+        .eq('id', venueToDelete);
 
       if (error) throw error;
       toast.success('Local excluído com sucesso!');
@@ -163,6 +173,9 @@ const ArtistVenues = () => {
     } catch (error: any) {
       toast.error('Erro ao excluir local');
       console.error(error);
+    } finally {
+      setDeleteConfirmOpen(false);
+      setVenueToDelete(null);
     }
   };
 
@@ -373,6 +386,23 @@ const ArtistVenues = () => {
         
         <MobileBottomNav role="artist" />
       </div>
+      
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent className="bg-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente este local.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </SidebarProvider>
   );
 };

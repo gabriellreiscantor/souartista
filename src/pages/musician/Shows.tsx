@@ -6,6 +6,7 @@ import { UserMenu } from '@/components/UserMenu';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
@@ -76,6 +77,10 @@ const MusicianShows = () => {
   const [expandedShows, setExpandedShows] = useState<Set<string>>(new Set());
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  // Delete confirmation states
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'show' | 'artist' | 'instrument' | 'venue' } | null>(null);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -312,18 +317,42 @@ const MusicianShows = () => {
       toast.error('Erro ao salvar show');
     }
   };
-  const handleShowDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este show?')) return;
+  const handleShowDelete = (id: string) => {
+    setItemToDelete({ id, type: 'show' });
+    setDeleteConfirmOpen(true);
+  };
+  
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    
     try {
-      const {
-        error
-      } = await supabase.from('shows').delete().eq('id', id);
-      if (error) throw error;
-      toast.success('Show excluído com sucesso!');
-      fetchShows();
+      if (itemToDelete.type === 'show') {
+        const { error } = await supabase.from('shows').delete().eq('id', itemToDelete.id);
+        if (error) throw error;
+        toast.success('Show excluído com sucesso!');
+        fetchShows();
+      } else if (itemToDelete.type === 'artist') {
+        const { error } = await supabase.from('artists').delete().eq('id', itemToDelete.id);
+        if (error) throw error;
+        toast.success('Artista excluído com sucesso!');
+        fetchArtists();
+      } else if (itemToDelete.type === 'instrument') {
+        const { error } = await supabase.from('musician_instruments').delete().eq('id', itemToDelete.id);
+        if (error) throw error;
+        toast.success('Instrumento excluído!');
+        fetchInstruments();
+      } else if (itemToDelete.type === 'venue') {
+        const { error } = await supabase.from('musician_venues').delete().eq('id', itemToDelete.id);
+        if (error) throw error;
+        toast.success('Local excluído!');
+        fetchVenues();
+      }
     } catch (error: any) {
-      console.error('Error deleting show:', error);
-      toast.error('Erro ao excluir show');
+      console.error('Error deleting:', error);
+      toast.error('Erro ao excluir');
+    } finally {
+      setDeleteConfirmOpen(false);
+      setItemToDelete(null);
     }
   };
   const handleShowEdit = (show: Show) => {
@@ -421,19 +450,9 @@ const MusicianShows = () => {
     });
     setArtistDialogOpen(true);
   };
-  const handleArtistDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este artista?')) return;
-    try {
-      const {
-        error
-      } = await supabase.from('artists').delete().eq('id', id);
-      if (error) throw error;
-      toast.success('Artista excluído com sucesso!');
-      fetchArtists();
-    } catch (error: any) {
-      toast.error('Erro ao excluir artista');
-      console.error(error);
-    }
+  const handleArtistDelete = (id: string) => {
+    setItemToDelete({ id, type: 'artist' });
+    setDeleteConfirmOpen(true);
   };
   const resetArtistForm = () => {
     setArtistFormData({
@@ -505,19 +524,9 @@ const MusicianShows = () => {
     });
     setInstrumentDialogOpen(true);
   };
-  const handleInstrumentDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este instrumento?')) return;
-    try {
-      const {
-        error
-      } = await supabase.from('musician_instruments').delete().eq('id', id);
-      if (error) throw error;
-      toast.success('Instrumento excluído!');
-      fetchInstruments();
-    } catch (error: any) {
-      toast.error('Erro ao excluir instrumento');
-      console.error(error);
-    }
+  const handleInstrumentDelete = (id: string) => {
+    setItemToDelete({ id, type: 'instrument' });
+    setDeleteConfirmOpen(true);
   };
   const resetInstrumentForm = () => {
     setInstrumentFormData({
@@ -611,19 +620,9 @@ const MusicianShows = () => {
     });
     setVenueDialogOpen(true);
   };
-  const handleVenueDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este local?')) return;
-    try {
-      const {
-        error
-      } = await supabase.from('musician_venues').delete().eq('id', id);
-      if (error) throw error;
-      toast.success('Local excluído!');
-      fetchVenues();
-    } catch (error: any) {
-      toast.error('Erro ao excluir local');
-      console.error(error);
-    }
+  const handleVenueDelete = (id: string) => {
+    setItemToDelete({ id, type: 'venue' });
+    setDeleteConfirmOpen(true);
   };
   const resetVenueForm = () => {
     setVenueFormData({
@@ -1527,6 +1526,23 @@ const MusicianShows = () => {
       </div>
       
       <MobileBottomNav role="musician" />
+      
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent className="bg-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente o item selecionado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
     </SidebarProvider>;
 };
