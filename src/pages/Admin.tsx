@@ -27,6 +27,7 @@ interface UserProfile {
   cpf: string | null;
   birth_date: string | null;
   status_plano: string;
+  plan_type: string | null;
   created_at: string;
   plan_purchased_at: string | null;
   last_seen_at: string | null;
@@ -79,6 +80,7 @@ export default function Admin() {
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [editName, setEditName] = useState('');
   const [editStatus, setEditStatus] = useState('');
+  const [editPlanType, setEditPlanType] = useState('');
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [searchId, setSearchId] = useState('');
@@ -316,15 +318,20 @@ export default function Admin() {
       const {
         error
       } = await supabase.from('profiles').update({
-        status_plano: editStatus
+        status_plano: editStatus,
+        plan_type: editPlanType || null
       }).eq('id', editingUser.id);
       if (error) throw error;
-      toast.success('Status atualizado com sucesso!');
+      toast.success('Plano atualizado com sucesso!');
       setShowStatusDialog(false);
       fetchUsers();
+      // Se estiver na busca, atualizar também
+      if (searchedUser?.id === editingUser.id) {
+        handleSearchUser();
+      }
     } catch (error) {
-      console.error('Erro ao atualizar status:', error);
-      toast.error('Erro ao atualizar status');
+      console.error('Erro ao atualizar plano:', error);
+      toast.error('Erro ao atualizar plano');
     }
   };
   const handleSearchUser = async () => {
@@ -1012,6 +1019,31 @@ export default function Admin() {
         {config.label}
       </Badge>;
   };
+
+  const getPlanTypeBadge = (planType: string | null) => {
+    if (!planType) return null;
+    
+    const planConfig = {
+      monthly: {
+        label: 'Mensal',
+        icon: '💳',
+        className: 'bg-blue-100 text-blue-800'
+      },
+      annual: {
+        label: 'Anual',
+        icon: '🌟',
+        className: 'bg-purple-100 text-purple-800'
+      }
+    };
+    
+    const config = planConfig[planType as keyof typeof planConfig];
+    if (!config) return null;
+    
+    return <Badge className={config.className}>
+        <span className="mr-1">{config.icon}</span>
+        {config.label}
+      </Badge>;
+  };
   const paginatedUsers = users.slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage);
   const totalPages = Math.ceil(users.length / usersPerPage);
 
@@ -1193,7 +1225,12 @@ export default function Admin() {
                                   </div>
                                 </td>
                                 <td className="p-2 md:p-3 hidden md:table-cell text-gray-700">{user.email}</td>
-                                <td className="p-2 md:p-3">{getStatusBadge(user.status_plano)}</td>
+                                <td className="p-2 md:p-3">
+                                  <div className="flex flex-wrap gap-1">
+                                    {getStatusBadge(user.status_plano)}
+                                    {getPlanTypeBadge(user.plan_type)}
+                                  </div>
+                                </td>
                                 <td className="p-2 md:p-3 hidden lg:table-cell">
                                   <div className="flex items-center gap-2">
                                     <span className="text-xs text-gray-600 font-mono">
@@ -1222,9 +1259,10 @@ export default function Admin() {
                                       <DropdownMenuItem className="hover:bg-gray-100" onClick={() => {
                                 setEditingUser(user);
                                 setEditStatus(user.status_plano);
+                                setEditPlanType(user.plan_type || '');
                                 setShowStatusDialog(true);
                               }}>
-                                        Alterar Status do Plano
+                                        Gerenciar Plano
                                       </DropdownMenuItem>
                                       <DropdownMenuItem className="hover:bg-gray-100" onClick={() => copyToClipboard(user.id)}>
                                         Copiar ID
@@ -1315,7 +1353,10 @@ export default function Admin() {
                             <CardContent className="space-y-3 text-sm">
                               <div className="flex flex-col sm:flex-row sm:items-center gap-1">
                                 <span className="font-medium text-gray-900 min-w-[140px]">Status do Plano:</span>
-                                <span>{getStatusBadge(searchedUser.status_plano)}</span>
+                                <span className="flex flex-wrap gap-1">
+                                  {getStatusBadge(searchedUser.status_plano)}
+                                  {getPlanTypeBadge(searchedUser.plan_type)}
+                                </span>
                               </div>
                               <div className="flex flex-col sm:flex-row sm:items-center gap-1">
                                 <span className="font-medium text-gray-900 min-w-[140px]">Role:</span>
@@ -2610,12 +2651,12 @@ export default function Admin() {
       <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
         <DialogContent className="bg-white text-gray-900">
           <DialogHeader>
-            <DialogTitle className="text-gray-900">Alterar Status do Plano</DialogTitle>
-            <DialogDescription className="text-gray-600">Selecione o novo status do plano.</DialogDescription>
+            <DialogTitle className="text-gray-900">Gerenciar Plano do Usuário</DialogTitle>
+            <DialogDescription className="text-gray-600">Configure o status e o tipo de plano.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="status" className="text-gray-900">Status</Label>
+              <Label htmlFor="status" className="text-gray-900">Status do Plano</Label>
               <Select value={editStatus} onValueChange={setEditStatus}>
                 <SelectTrigger className="bg-white text-gray-900 border-gray-200">
                   <SelectValue placeholder="Selecione o status" />
@@ -2625,6 +2666,20 @@ export default function Admin() {
                   <SelectItem value="ativo" className="hover:bg-gray-100">Ativo</SelectItem>
                   <SelectItem value="inativo" className="hover:bg-gray-100">Inativo</SelectItem>
                   <SelectItem value="cancelado" className="hover:bg-gray-100">Cancelado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="planType" className="text-gray-900">Tipo de Plano</Label>
+              <Select value={editPlanType} onValueChange={setEditPlanType}>
+                <SelectTrigger className="bg-white text-gray-900 border-gray-200">
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent className="bg-white text-gray-900 border border-gray-200">
+                  <SelectItem value="" className="hover:bg-gray-100">Nenhum</SelectItem>
+                  <SelectItem value="monthly" className="hover:bg-gray-100">💳 Mensal</SelectItem>
+                  <SelectItem value="annual" className="hover:bg-gray-100">🌟 Anual</SelectItem>
                 </SelectContent>
               </Select>
             </div>
