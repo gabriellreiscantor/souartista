@@ -4,6 +4,7 @@ import { DemoArtistSidebar } from '@/components/DemoArtistSidebar';
 import { DemoUserMenu } from '@/components/DemoUserMenu';
 import { DemoMobileBottomNav } from '@/components/DemoMobileBottomNav';
 import { DemoBanner } from '@/components/DemoBanner';
+import { DemoLockedModal } from '@/components/DemoLockedModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -25,6 +26,7 @@ const DemoArtistTransportation = () => {
   const [activeType, setActiveType] = useState<TransportType>('uber');
   const [rideValue, setRideValue] = useState('');
   const [rides, setRides] = useState<Ride[]>([]);
+  const [showLockedModal, setShowLockedModal] = useState(false);
   
   // Carro/Km Rodado state
   const [kmDistance, setKmDistance] = useState('');
@@ -121,9 +123,7 @@ const DemoArtistTransportation = () => {
   };
 
   const handleSave = () => {
-    toast.info('Modo Demo', {
-      description: 'Função disponível apenas na versão completa.'
-    });
+    setShowLockedModal(true);
   };
 
   const formatCurrency = (value: number) => {
@@ -198,9 +198,13 @@ const DemoArtistTransportation = () => {
                         <Input
                           type="text"
                           inputMode="decimal"
+                          pattern="[0-9]*[,]?[0-9]*"
                           placeholder="R$ 0,00"
                           value={rideValue}
-                          onChange={(e) => setRideValue(e.target.value)}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9,]/g, '');
+                            setRideValue(value);
+                          }}
                           className="bg-white border-gray-300 text-gray-900"
                         />
                       </div>
@@ -244,9 +248,13 @@ const DemoArtistTransportation = () => {
                           <Input
                             type="text"
                             inputMode="decimal"
+                            pattern="[0-9]*[,]?[0-9]*"
                             placeholder="Ex: 150"
                             value={kmDistance}
-                            onChange={(e) => setKmDistance(e.target.value)}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^0-9,]/g, '');
+                              setKmDistance(value);
+                            }}
                             className="bg-white border-gray-300 text-gray-900"
                           />
                         </div>
@@ -257,9 +265,13 @@ const DemoArtistTransportation = () => {
                           <Input
                             type="text"
                             inputMode="decimal"
+                            pattern="[0-9]*[,]?[0-9]*"
                             placeholder="Ex: 12"
                             value={kmConsumption}
-                            onChange={(e) => setKmConsumption(e.target.value)}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^0-9,]/g, '');
+                              setKmConsumption(value);
+                            }}
                             className="bg-white border-gray-300 text-gray-900"
                           />
                         </div>
@@ -270,9 +282,13 @@ const DemoArtistTransportation = () => {
                         <Input
                           type="text"
                           inputMode="decimal"
+                          pattern="[0-9]*[,]?[0-9]*"
                           placeholder="R$ 0,00"
                           value={fuelPrice}
-                          onChange={(e) => setFuelPrice(e.target.value)}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9,]/g, '');
+                            setFuelPrice(value);
+                          }}
                           className="bg-white border-gray-300 text-gray-900"
                         />
                       </div>
@@ -303,9 +319,13 @@ const DemoArtistTransportation = () => {
                         <Input
                           type="text"
                           inputMode="decimal"
+                          pattern="[0-9]*[,]?[0-9]*"
                           placeholder="R$ 0,00"
                           value={expenseValue}
-                          onChange={(e) => setExpenseValue(e.target.value)}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9,]/g, '');
+                            setExpenseValue(value);
+                          }}
                           className="bg-white border-gray-300 text-gray-900"
                         />
                       </div>
@@ -368,13 +388,23 @@ const DemoArtistTransportation = () => {
                       <p className="text-sm text-gray-600">Despesas de locomoção registradas neste mês.</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="icon" className="h-10 w-10 rounded-lg bg-primary text-white hover:bg-primary/90">
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        onClick={() => setShowLockedModal(true)}
+                        className="h-10 w-10 rounded-lg bg-primary text-white hover:bg-primary/90"
+                      >
                         <ChevronLeft className="w-4 h-4" />
                       </Button>
                       <Button className="bg-primary text-white hover:bg-primary/90">
                         Hoje
                       </Button>
-                      <Button variant="outline" size="icon" className="h-10 w-10 rounded-lg bg-primary text-white hover:bg-primary/90">
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        onClick={() => setShowLockedModal(true)}
+                        className="h-10 w-10 rounded-lg bg-primary text-white hover:bg-primary/90"
+                      >
                         <ChevronRight className="w-4 h-4" />
                       </Button>
                     </div>
@@ -421,6 +451,7 @@ const DemoArtistTransportation = () => {
           </main>
         </div>
         <DemoMobileBottomNav role="artist" />
+        <DemoLockedModal open={showLockedModal} onOpenChange={setShowLockedModal} />
       </div>
     </SidebarProvider>
   );

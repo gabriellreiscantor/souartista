@@ -1,5 +1,7 @@
 import { User, Settings, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { DemoLockedModal } from "@/components/DemoLockedModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +12,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { toast } from "sonner";
 
 interface DemoUserMenuProps {
   userName?: string;
@@ -19,21 +20,14 @@ interface DemoUserMenuProps {
 
 export function DemoUserMenu({ userName, userRole }: DemoUserMenuProps) {
   const navigate = useNavigate();
+  const [showLockedModal, setShowLockedModal] = useState(false);
 
-  const handleProfile = () => {
-    toast.info("Modo Demo", {
-      description: "Esta função está disponível apenas na versão completa."
-    });
-  };
-
-  const handleSettings = () => {
-    toast.info("Modo Demo", {
-      description: "Esta função está disponível apenas na versão completa."
-    });
+  const handleLocked = () => {
+    setShowLockedModal(true);
   };
 
   const handleLogout = () => {
-    navigate('/');
+    navigate('/login');
   };
 
   const getInitials = (name: string = "Demo User") => {
@@ -79,14 +73,14 @@ export function DemoUserMenu({ userName, userRole }: DemoUserMenuProps) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-gray-200" />
         <DropdownMenuItem 
-          onClick={handleProfile}
+          onClick={handleLocked}
           className="cursor-pointer hover:bg-gray-100 text-gray-900"
         >
           <User className="mr-2 h-4 w-4" />
           <span>Perfil</span>
         </DropdownMenuItem>
         <DropdownMenuItem 
-          onClick={handleSettings}
+          onClick={handleLocked}
           className="cursor-pointer hover:bg-gray-100 text-gray-900"
         >
           <Settings className="mr-2 h-4 w-4" />
@@ -101,6 +95,7 @@ export function DemoUserMenu({ userName, userRole }: DemoUserMenuProps) {
           <span>Sair do Demo</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
+      <DemoLockedModal open={showLockedModal} onOpenChange={setShowLockedModal} />
     </DropdownMenu>
   );
 }

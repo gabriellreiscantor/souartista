@@ -11,7 +11,7 @@ export function DemoBanner() {
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <AlertCircle className="h-4 w-4 text-yellow-900 flex-shrink-0" />
           <p className="text-[10px] md:text-sm font-medium text-yellow-900 leading-tight">
-            <span className="font-bold">Modo Demo</span> - Dados não são salvos
+            <span className="font-bold">Modo Demonstração</span> - Dados não são salvos
           </p>
         </div>
         <Button

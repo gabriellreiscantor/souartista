@@ -2,6 +2,8 @@ import { Music, Calendar, BarChart3, Car, LogOut, LayoutDashboard, Mic2, HelpCir
 import logo from '@/assets/logo.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { DemoLockedModal } from '@/components/DemoLockedModal';
 import {
   Sidebar,
   SidebarContent,
@@ -34,9 +36,15 @@ export function DemoMusicianSidebar() {
   const navigate = useNavigate();
   const currentPath = location.pathname;
   const collapsed = state === 'collapsed';
+  const [showLockedModal, setShowLockedModal] = useState(false);
 
   const handleSignOut = () => {
-    navigate('/');
+    navigate('/login');
+  };
+
+  const handleLockedClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowLockedModal(true);
   };
 
   const handleSidebarClick = (e: React.MouseEvent) => {
@@ -89,16 +97,9 @@ export function DemoMusicianSidebar() {
             <SidebarMenu>
               {settingsItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end
-                      className="hover:bg-sidebar-accent"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
+                  <SidebarMenuButton onClick={handleLockedClick}>
+                    <item.icon className="h-4 w-4" />
+                    {!collapsed && <span>{item.title}</span>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -114,6 +115,7 @@ export function DemoMusicianSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <DemoLockedModal open={showLockedModal} onOpenChange={setShowLockedModal} />
     </Sidebar>
   );
 }
