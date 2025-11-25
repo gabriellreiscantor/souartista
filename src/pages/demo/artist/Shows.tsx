@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Calendar as CalendarIcon, Clock, MapPin, Music2, Users, ChevronDown, ChevronUp, Pencil, Trash2, X } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -642,14 +643,11 @@ const DemoArtistShows = () => {
             
             <div className="space-y-2">
               <Label htmlFor="show-fee" className="text-gray-900 font-semibold">Cachê</Label>
-              <Input
+              <CurrencyInput
                 id="show-fee"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder="R$ 0,00"
                 value={showFee}
-                onChange={(e) => setShowFee(e.target.value)}
+                onChange={(value) => setShowFee(value)}
+                placeholder="0,00"
                 className="bg-white border-gray-300 text-gray-900"
               />
             </div>
@@ -703,13 +701,10 @@ const DemoArtistShows = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      placeholder="R$ 150,00"
+                    <CurrencyInput
+                      placeholder="150,00"
                       value={member.cost}
-                      onChange={(e) => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)}
+                      onChange={(value) => updateTeamMember(index, 'cost', parseFloat(value) || 0)}
                       className="bg-white border-gray-300 text-gray-900 text-sm h-9"
                     />
                   </div>
@@ -763,13 +758,10 @@ const DemoArtistShows = () => {
                       onChange={(e) => updateExpense(index, 'description', e.target.value)}
                       className="bg-white border-gray-300 text-gray-900 text-sm h-9"
                     />
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      placeholder="R$ 0,00"
+                    <CurrencyInput
+                      placeholder="0,00"
                       value={expense.cost}
-                      onChange={(e) => updateExpense(index, 'cost', parseFloat(e.target.value) || 0)}
+                      onChange={(value) => updateExpense(index, 'cost', parseFloat(value) || 0)}
                       className="bg-white border-gray-300 text-gray-900 text-sm h-9"
                     />
                   </div>
@@ -900,14 +892,11 @@ const DemoArtistShows = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="musician-fee" className="text-gray-900">Cachê Padrão</Label>
-              <Input
+              <CurrencyInput
                 id="musician-fee"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder="Ex: 150.00"
                 value={musicianFee}
-                onChange={(e) => setMusicianFee(e.target.value)}
+                onChange={(value) => setMusicianFee(value)}
+                placeholder="150,00"
                 className="bg-white border-gray-300 text-gray-900"
               />
             </div>

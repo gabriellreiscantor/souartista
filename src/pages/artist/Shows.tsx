@@ -1076,10 +1076,10 @@ const ArtistShows = () => {
 
                                       <div>
                                         <Label htmlFor="fee" className="text-gray-900">Cachê (R$)</Label>
-                                        <Input id="fee" type="text" value={showFormData.fee} onChange={e => setShowFormData({
+                                        <CurrencyInput id="fee" value={showFormData.fee} onChange={value => setShowFormData({
                                       ...showFormData,
-                                      fee: e.target.value
-                                    })} placeholder="R$ 0,00" className="bg-white text-gray-900 placeholder:text-gray-500" required />
+                                      fee: value
+                                    })} placeholder="0,00" className="bg-white text-gray-900 placeholder:text-gray-500" required />
                                       </div>
                                     </div>
 
@@ -1127,7 +1127,7 @@ const ArtistShows = () => {
                                               </SelectContent>
                                             </Select>
 
-                                            <Input type="text" placeholder="Custo (R$)" value={member.cost || ''} onChange={e => updateTeamMember(index, 'cost', parseFloat(e.target.value) || 0)} className="bg-white text-gray-900 placeholder:text-gray-500" required />
+                                            <CurrencyInput placeholder="Custo (R$)" value={member.cost || 0} onChange={value => updateTeamMember(index, 'cost', parseFloat(value) || 0)} className="bg-white text-gray-900 placeholder:text-gray-500" required />
                                           </div>
                                         </div>)}
                                     </div>
@@ -1168,7 +1168,7 @@ const ArtistShows = () => {
 
                                             <Input type="text" placeholder="Descrição" value={expense.description} onChange={e => updateAdditionalExpense(index, 'description', e.target.value)} className="bg-white text-gray-900 placeholder:text-gray-500" required />
 
-                                            <Input type="text" placeholder="Custo (R$)" value={expense.cost || ''} onChange={e => updateAdditionalExpense(index, 'cost', parseFloat(e.target.value) || 0)} className="bg-white text-gray-900 placeholder:text-gray-500" required />
+                                            <CurrencyInput placeholder="Custo (R$)" value={expense.cost || 0} onChange={value => updateAdditionalExpense(index, 'cost', parseFloat(value) || 0)} className="bg-white text-gray-900 placeholder:text-gray-500" required />
                                           </div>
                                         </div>)}
                                     </div>
@@ -1605,9 +1605,9 @@ const ArtistShows = () => {
                             </div>}
                           <div>
                             <Label htmlFor="musician_fee" className="text-gray-900 font-medium">Cachê Padrão (R$) *</Label>
-                            <Input id="musician_fee" type="number" inputMode="numeric" step="0.01" value={musicianFormData.default_fee} onChange={e => setMusicianFormData({
+                            <CurrencyInput id="musician_fee" value={musicianFormData.default_fee} onChange={value => setMusicianFormData({
                             ...musicianFormData,
-                            default_fee: e.target.value
+                            default_fee: value
                           })} placeholder="0,00" required className="mt-1.5 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400" />
                           </div>
                           <div className="flex gap-2 pt-2">
