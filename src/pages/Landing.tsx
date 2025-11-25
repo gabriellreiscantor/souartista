@@ -74,7 +74,7 @@ const Landing = () => {
 
         {/* Action buttons */}
         <div className="w-full max-w-sm space-y-4 animate-fade-in">
-          <Button size="lg" onClick={() => navigate('/register')} className="w-full rounded-full text-lg font-medium shadow-primary hover:scale-105 transition-transform">
+          <Button size="lg" onClick={() => navigate('/register')} className="w-full rounded-full text-lg font-medium shadow-primary hover:scale-105 transition-transform text-white hover:text-white">
             Criar minha conta agora
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
