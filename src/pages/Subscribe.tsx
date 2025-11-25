@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Check, Shield, Mail, Building2 } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const Subscribe = () => {
   const [billingCycle, setBillingCycle] = useState<'annual' | 'monthly'>('annual');
@@ -39,8 +40,20 @@ const Subscribe = () => {
   }, [user, navigate]);
 
   const handleSubscribe = async (plan: 'monthly' | 'annual') => {
-    await updateUserData({ status_plano: 'active' });
-    navigate('/app');
+    await updateUserData({ 
+      status_plano: 'ativo',
+      plan_type: plan,
+      plan_purchased_at: new Date().toISOString()
+    });
+    
+    toast.success('Plano ativado com sucesso!');
+    
+    const userRole = localStorage.getItem('userRole');
+    if (userRole === 'artist') {
+      navigate('/artist/dashboard');
+    } else {
+      navigate('/musician/dashboard');
+    }
   };
 
   const plans = {

@@ -11,6 +11,8 @@ interface UserData {
   birth_date?: string;
   photo_url?: string;
   status_plano?: string;
+  plan_type?: 'monthly' | 'annual' | null;
+  plan_purchased_at?: string;
   is_verified?: boolean;
 }
 

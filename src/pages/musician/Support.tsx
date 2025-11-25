@@ -9,9 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bell, Plus, MessageSquare, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Bell, Plus, MessageSquare, Clock, CheckCircle, XCircle, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { usePlanType } from '@/hooks/usePlanType';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -45,6 +46,7 @@ interface Response {
 
 const MusicianSupport = () => {
   const { user, userData } = useAuth();
+  const { isAnnualPlan } = usePlanType();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -256,13 +258,24 @@ const MusicianSupport = () => {
             WebkitOverflowScrolling: 'touch'
           }}>
             <div className="max-w-7xl mx-auto space-y-6">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">Central de Suporte</h2>
                   <p className="text-gray-600 mt-1">Gerencie seus tickets e obtenha ajuda</p>
                 </div>
                 
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <div className="flex items-center gap-3">
+                  {isAnnualPlan && (
+                    <Button
+                      onClick={() => window.open('https://wa.me/SEUNUMERO', '_blank')}
+                      className="bg-[#25D366] hover:bg-[#20BA5A] text-white"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Suporte WhatsApp
+                    </Button>
+                  )}
+                  
+                  <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
                     <Button className="bg-primary text-white hover:bg-primary/90">
                       <Plus className="w-4 h-4 mr-2" />
@@ -345,6 +358,7 @@ const MusicianSupport = () => {
                     </div>
                   </DialogContent>
                 </Dialog>
+                </div>
               </div>
 
               {/* Tickets List */}
