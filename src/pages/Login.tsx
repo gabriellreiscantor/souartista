@@ -88,7 +88,14 @@ const Login = () => {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{
-        background: 'linear-gradient(to bottom, #110016 0%, #080010 45%, #040008 100%)'
+        background: 'linear-gradient(to bottom, #110016 0%, #080010 45%, #040008 100%)',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        touchAction: 'none',
+        overscrollBehavior: 'none'
       }}>
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -100,7 +107,15 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden" style={{
-      background: 'linear-gradient(to bottom, #110016 0%, #080010 45%, #040008 100%)'
+      background: 'linear-gradient(to bottom, #110016 0%, #080010 45%, #040008 100%)',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      touchAction: 'none',
+      overscrollBehavior: 'none',
+      WebkitOverflowScrolling: 'auto'
     }}>
       {/* Linhas musicais abstratas - bem discretas */}
       <div className="absolute inset-0 opacity-[0.03]" style={{
