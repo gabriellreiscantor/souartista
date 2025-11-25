@@ -83,7 +83,7 @@ const Landing = () => {
             Já tenho uma conta
           </Button>
 
-          <Button size="lg" variant="ghost" onClick={() => navigate('/app')} className="w-full rounded-full text-lg font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50">
+          <Button size="lg" variant="ghost" onClick={() => navigate('/demo')} className="w-full rounded-full text-lg font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50">
             <Play className="mr-2 w-5 h-5" />
             Ver Demonstração
           </Button>

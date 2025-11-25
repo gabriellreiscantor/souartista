@@ -40,6 +40,11 @@ import ArtistTutorial from "./pages/artist/Tutorial";
 import MusicianTutorial from "./pages/musician/Tutorial";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import DemoSelectRole from "./pages/DemoSelectRole";
+import DemoArtistDashboard from "./pages/demo/artist/Dashboard";
+import DemoArtistShows from "./pages/demo/artist/Shows";
+import DemoMusicianDashboard from "./pages/demo/musician/Dashboard";
+import DemoMusicianShows from "./pages/demo/musician/Shows";
 
 const queryClient = new QueryClient();
 
@@ -86,6 +91,12 @@ const App = () => (
             <Route path="/musician/updates" element={<MusicianUpdates />} />
             <Route path="/musician/tutorial" element={<MusicianTutorial />} />
             <Route path="/admin" element={<Admin />} />
+            {/* Demo Routes */}
+            <Route path="/demo" element={<DemoSelectRole />} />
+            <Route path="/demo/artist/dashboard" element={<DemoArtistDashboard />} />
+            <Route path="/demo/artist/shows" element={<DemoArtistShows />} />
+            <Route path="/demo/musician/dashboard" element={<DemoMusicianDashboard />} />
+            <Route path="/demo/musician/shows" element={<DemoMusicianShows />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
