@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Music, Loader2 } from 'lucide-react';
+import { Music, Loader2, ArrowLeft, Home } from 'lucide-react';
 import logo from '@/assets/logo.png';
 
 const Login = () => {
@@ -117,6 +117,15 @@ const Login = () => {
       overscrollBehavior: 'none',
       WebkitOverflowScrolling: 'auto'
     }}>
+      {/* Botão Voltar para Home */}
+      <Link 
+        to="/" 
+        className="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all hover:scale-105"
+      >
+        <ArrowLeft className="w-4 h-4 text-white" />
+        <span className="text-white font-medium text-sm">Voltar</span>
+      </Link>
+
       {/* Linhas musicais abstratas - bem discretas */}
       <div className="absolute inset-0 opacity-[0.03]" style={{
         backgroundImage: `
