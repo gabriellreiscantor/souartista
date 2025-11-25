@@ -38,6 +38,45 @@ const DemoArtistTransportation = () => {
   const currentDate = new Date();
   const currentMonthYear = format(currentDate, "MMMM 'de' yyyy", { locale: ptBR });
 
+  // Demo locomotion history
+  const demoHistory = [
+    {
+      id: '1',
+      type: 'Uber',
+      date: `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-05`,
+      cost: 45.50,
+      description: 'Corrida para Casa de Shows Melodia'
+    },
+    {
+      id: '2',
+      type: 'Carro/Km Rodado',
+      date: `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-12`,
+      cost: 85.00,
+      description: 'Show em Pub e Lounge Estrela - 150km'
+    },
+    {
+      id: '3',
+      type: 'Uber',
+      date: `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-14`,
+      cost: 32.80,
+      description: 'Ida para Restaurante e Bar Acústico'
+    },
+    {
+      id: '4',
+      type: 'Van',
+      date: `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-18`,
+      cost: 250.00,
+      description: 'Aluguel de van para transporte de equipamentos'
+    },
+    {
+      id: '5',
+      type: 'Uber',
+      date: `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-22`,
+      cost: 28.90,
+      description: 'Retorno de show'
+    }
+  ];
+
   const transportTypes = [
     { id: 'uber', icon: Car, label: 'Uber' },
     { id: 'km', icon: Fuel, label: 'Carro/Km Rodado' },
@@ -169,7 +208,7 @@ const DemoArtistTransportation = () => {
                       <Button
                         onClick={addRide}
                         variant="outline"
-                        className="w-full border-gray-300 text-gray-900 hover:bg-gray-50"
+                        className="w-full border-gray-300 text-gray-900 hover:bg-gray-50 bg-white"
                       >
                         <PlusCircle className="w-4 h-4 mr-2" />
                         Adicionar Corrida
@@ -341,8 +380,40 @@ const DemoArtistTransportation = () => {
                     </div>
                   </div>
 
-                  <div className="border border-dashed border-gray-300 rounded-lg p-8 text-center">
-                    <p className="text-gray-500">Nenhuma despesa de locomoção registrada para este período.</p>
+                  <div className="space-y-3">
+                    {demoHistory.map((expense) => (
+                      <Card key={expense.id} className="bg-white border-gray-200">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-medium text-primary bg-purple-100 px-2 py-1 rounded">
+                                  {expense.type}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {format(new Date(expense.date), "dd 'de' MMMM", { locale: ptBR })}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-700">{expense.description}</p>
+                            </div>
+                            <div className="text-right ml-4">
+                              <p className="text-lg font-bold text-gray-900">
+                                R$ {expense.cost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    
+                    <div className="pt-2">
+                      <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <span className="font-semibold text-gray-900">Total do Mês</span>
+                        <span className="text-xl font-bold text-primary">
+                          R$ {demoHistory.reduce((sum, expense) => sum + expense.cost, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
