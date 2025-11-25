@@ -25,7 +25,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Sending OTP email to:", email);
 
     const emailResponse = await resend.emails.send({
-      from: "Nova <onboarding@resend.dev>",
+      from: "Nova <noreply@souartista.app>",
       to: [email],
       subject: "Seu código de verificação - Nova",
       html: `
