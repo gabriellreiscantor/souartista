@@ -59,7 +59,7 @@ export function UserMenu({ userName, userRole }: UserMenuProps) {
           <User className="w-5 h-5 text-purple-600" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-56 bg-white border-gray-200 text-gray-900">
         <DropdownMenuLabel>
           <div>
             <p className="font-medium">{userName || 'Minha Conta'}</p>

@@ -242,7 +242,7 @@ const ArtistVenues = () => {
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           placeholder="Ex: Bar do Zé"
                           required
-                          className="mt-1.5 bg-[#2d1b4e] border-[#2d1b4e] text-white placeholder:text-white/60"
+                          className="mt-1.5 bg-white text-gray-900 border-gray-300 placeholder:text-gray-400"
                         />
                       </div>
                       
@@ -250,7 +250,7 @@ const ArtistVenues = () => {
                         <div>
                           <Label htmlFor="state" className="text-gray-900 font-medium">Estado</Label>
                           <Select value={formData.state} onValueChange={handleStateChange} required>
-                            <SelectTrigger id="state" className="mt-1.5 bg-[#2d1b4e] border-[#2d1b4e] text-white">
+                            <SelectTrigger id="state" className="mt-1.5 bg-white text-gray-900 border-gray-300">
                               <SelectValue placeholder="Selecione o estado" />
                             </SelectTrigger>
                             <SelectContent className="bg-white max-h-[200px]">
@@ -271,7 +271,7 @@ const ArtistVenues = () => {
                             disabled={!formData.state}
                             required
                           >
-                            <SelectTrigger id="city" className="mt-1.5 bg-[#2d1b4e] border-[#2d1b4e] text-white">
+                            <SelectTrigger id="city" className="mt-1.5 bg-white text-gray-900 border-gray-300">
                               <SelectValue placeholder="Escolha um estado" />
                             </SelectTrigger>
                             <SelectContent className="bg-white max-h-[200px]">
@@ -295,7 +295,7 @@ const ArtistVenues = () => {
                             onChange={(e) => setFormData({ ...formData, customCity: e.target.value })}
                             placeholder="Digite o nome da cidade"
                             required
-                            className="mt-1.5 bg-[#2d1b4e] border-[#2d1b4e] text-white placeholder:text-white/60"
+                            className="mt-1.5 bg-white text-gray-900 border-gray-300 placeholder:text-gray-400"
                           />
                         </div>
                       )}
