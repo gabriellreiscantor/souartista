@@ -96,21 +96,25 @@ const DemoArtistReports = () => {
     .sort((a, b) => b.profit - a.profit)
     .slice(0, 5);
 
-  // Top 5 custos de equipe
+  // Top 5 custos de equipe (dados fictícios demo)
   const teamCosts = [
-    { name: 'Freelancer', cost: 3495 },
-    { name: 'Cristiano', cost: 375 },
-    { name: 'João Negão', cost: 300 }
+    { name: 'Carlos Batista', cost: 1800 },
+    { name: 'Marina Silva', cost: 850 },
+    { name: 'Roberto Santos', cost: 302 },
+    { name: 'Ana Paula', cost: 150 },
+    { name: 'Fernando Costa', cost: 100 }
   ];
 
-  // Top 5 locais por número de shows
-  const venuesByShowCount = [
-    { name: 'Pub 65', count: 3 },
-    { name: 'Ditado Popular', count: 2 },
-    { name: 'Tatu Bola', count: 1 },
-    { name: 'Raiznejo', count: 1 },
-    { name: 'SAPEZAL', count: 1 }
-  ];
+  // Top 5 locais por número de shows (baseado nos shows demo)
+  const venueCounts = demoShows.reduce((acc, show) => {
+    acc[show.venue_name] = (acc[show.venue_name] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const venuesByShowCount = Object.entries(venueCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
 
   const formatCurrency = (value: number) => {
     return value.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
