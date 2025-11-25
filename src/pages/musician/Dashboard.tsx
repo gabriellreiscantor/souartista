@@ -317,8 +317,18 @@ const MusicianDashboard = () => {
                   tenha controle total dos seus ganhos.
                 </p>
                 <div className="flex flex-wrap justify-center gap-4 pt-4">
-                  <Button className="bg-primary text-white hover:bg-primary/90">Adicionar Show</Button>
-                  <Button className="bg-primary text-white hover:bg-primary/90">Cadastrar Artista</Button>
+                  <Button 
+                    className="bg-primary text-white hover:bg-primary/90"
+                    onClick={() => navigate('/musician/shows')}
+                  >
+                    Adicionar Show
+                  </Button>
+                  <Button 
+                    className="bg-primary text-white hover:bg-primary/90"
+                    onClick={() => navigate('/musician/shows')}
+                  >
+                    Cadastrar Artista
+                  </Button>
                 </div>
               </div>
             </Card>

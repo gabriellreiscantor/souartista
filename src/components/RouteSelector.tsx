@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { Search, Link as LinkIcon } from 'lucide-react';
@@ -77,6 +77,9 @@ export function RouteSelector({ open, onOpenChange, onSelectRoute }: RouteSelect
       <DialogContent className="max-w-2xl max-h-[80vh] bg-white">
         <DialogHeader>
           <DialogTitle className="text-gray-900">Selecionar Página para Redirecionar</DialogTitle>
+          <DialogDescription>
+            Busque e selecione uma página do sistema para redirecionar o usuário.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
