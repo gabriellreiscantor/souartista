@@ -1277,7 +1277,7 @@ const ArtistShows = () => {
                         <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                         <p className="text-gray-500">Nenhum show encontrado para o filtro selecionado.</p>
                       </Card> : <>
-                        {viewMode === 'list' ? <div className="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        {viewMode === 'list' && !isMobile ? <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                             <div className="grid grid-cols-[1fr,120px,120px,120px,80px] gap-4 p-4 bg-gray-50 border-b text-sm font-medium text-gray-600">
                               <div>Data e Local</div>
                               <div className="text-center">Cachê</div>
