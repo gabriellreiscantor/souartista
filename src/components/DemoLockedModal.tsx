@@ -26,7 +26,7 @@ export function DemoLockedModal({ open, onOpenChange }: DemoLockedModalProps) {
             Recurso Bloqueado
           </DialogTitle>
           <DialogDescription className="text-center text-base text-gray-600">
-            Esta função está disponível apenas na versão completa do aplicativo.
+            Esta função está disponível apenas para a versão real do aplicativo. Você está na demo.
           </DialogDescription>
         </DialogHeader>
         
