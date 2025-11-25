@@ -223,7 +223,7 @@ const Register = () => {
       <div className="w-full max-w-md relative z-10">
         {/* Logo */}
         <div className="flex items-center justify-center mb-8 relative">
-          <img src={logo} alt="Sou Artista" className="h-24 w-auto relative z-10 drop-shadow-[0_0_25px_rgba(185,111,255,0.4)]" />
+          <img src={logo} alt="Sou Artista" className="h-32 w-auto relative z-10 drop-shadow-[0_0_25px_rgba(185,111,255,0.4)]" />
         </div>
 
         {/* Card com tema premium */}
