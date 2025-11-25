@@ -67,6 +67,29 @@ const DemoArtistShows = () => {
     }
   ];
 
+  const demoVenues = [
+    {
+      id: '1',
+      name: 'Bar e Restaurante Harmonia',
+      address: 'Goiânia - GO'
+    },
+    {
+      id: '2',
+      name: 'Casa de Shows Melodia',
+      address: 'Cuiabá - MT'
+    },
+    {
+      id: '3',
+      name: 'Pub e Lounge Estrela',
+      address: 'Goiânia - GO'
+    },
+    {
+      id: '4',
+      name: 'Restaurante e Bar Acústico',
+      address: 'Cuiabá - MT'
+    }
+  ];
+
   const toggleShowExpanded = (id: string) => {
     const newExpanded = new Set(expandedShows);
     if (newExpanded.has(id)) {
@@ -308,14 +331,30 @@ const DemoArtistShows = () => {
                 </TabsContent>
 
                 {/* LOCAIS E BARES TAB */}
-                <TabsContent value="venues" className="mt-0 md:mt-6">
-                  <Card className="p-8 text-center bg-white border border-gray-200">
-                    <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 mb-4">Modo Demo - Gerencie seus locais na versão completa</p>
-                    <Button onClick={handleDemoAction} variant="outline">
-                      Criar Conta para Gerenciar Locais
+                <TabsContent value="venues" className="mt-0 md:mt-6 space-y-4">
+                  <Card className="md:hidden bg-white border border-gray-200 p-4">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4">Locais e Bares</h2>
+                    <Button onClick={handleDemoAction} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
+                      <Plus className="w-5 h-5 mr-2" />
+                      Adicionar Local
                     </Button>
                   </Card>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {demoVenues.map((venue) => (
+                      <Card key={venue.id} className="bg-white border border-gray-200 p-4 md:p-6">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#F5F0FA] flex items-center justify-center border-2 border-purple-200">
+                            <MapPin className="w-6 h-6 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1">{venue.name}</h3>
+                            <p className="text-sm text-gray-600">{venue.address}</p>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
                 </TabsContent>
 
                 {/* MÚSICOS E EQUIPE TAB */}
