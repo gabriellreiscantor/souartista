@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -10,9 +11,12 @@ const corsHeaders = {
 
 interface OTPEmailRequest {
   email: string;
-  token: string;
-  type: "signup" | "magiclink";
 }
+
+// Generate a 6-digit OTP code
+const generateOTP = (): string => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -20,10 +24,44 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, token, type }: OTPEmailRequest = await req.json();
+    const { email }: OTPEmailRequest = await req.json();
 
-    console.log("Sending OTP email to:", email);
+    console.log("Generating OTP for:", email);
 
+    // Create Supabase client with service role
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    );
+
+    // Generate OTP code
+    const otpCode = generateOTP();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Save OTP to database
+    const { error: dbError } = await supabaseAdmin
+      .from('otp_codes')
+      .insert({
+        email,
+        code: otpCode,
+        expires_at: expiresAt.toISOString(),
+        used: false
+      });
+
+    if (dbError) {
+      console.error("Error saving OTP to database:", dbError);
+      throw new Error("Failed to save OTP code");
+    }
+
+    console.log("OTP saved to database, sending email...");
+
+    // Send email with OTP
     const emailResponse = await resend.emails.send({
       from: "Seu Artista <noreply@souartista.app>",
       to: [email],
@@ -71,7 +109,7 @@ const handler = async (req: Request): Promise<Response> => {
                                   Seu código de verificação
                                 </p>
                                 <p style="color: #B96FFF; font-size: 36px; font-weight: 700; margin: 0; letter-spacing: 8px; font-family: 'Courier New', monospace; text-shadow: 0 2px 4px rgba(185, 111, 255, 0.15);">
-                                  ${token}
+                                  ${otpCode}
                                 </p>
                               </div>
                             </td>
@@ -79,7 +117,7 @@ const handler = async (req: Request): Promise<Response> => {
                         </table>
 
                         <p style="color: #999999; font-size: 14px; line-height: 1.6; margin: 0;">
-                          Este código expira em 60 minutos. Se você não solicitou este código, pode ignorar este email com segurança.
+                          Este código expira em 10 minutos. Se você não solicitou este código, pode ignorar este email com segurança.
                         </p>
                       </td>
                     </tr>
@@ -104,7 +142,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify(emailResponse), {
+    return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
