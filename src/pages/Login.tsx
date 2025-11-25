@@ -137,7 +137,7 @@ const Login = () => {
         `,
       }} />
 
-      <div className="w-full max-w-md relative z-10">
+      <div className="w-full max-w-sm relative z-10">
         {/* Glow atrás da logo */}
         <div className="flex items-center justify-center mb-8 relative">
           <div className="absolute inset-0 flex items-center justify-center">
@@ -151,7 +151,7 @@ const Login = () => {
           <div className="absolute inset-0 bg-[#A66CFF] opacity-15 blur-[60px] rounded-3xl scale-105" />
           
           {/* Card */}
-          <div className="glass-card rounded-3xl p-8 space-y-6 relative z-10">
+          <div className="glass-card rounded-3xl p-6 space-y-5 relative z-10">
           <div className="text-center space-y-2">
             <h1 className="text-3xl font-heading font-bold">Bem-vindo de volta</h1>
             <p className="text-muted-foreground">Entre com sua conta para continuar</p>
