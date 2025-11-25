@@ -67,9 +67,8 @@ export function WeeklySchedule({
       } = await query;
       if (error) throw error;
       return (data || []).map(show => {
-        const expenses_team = (show.expenses_team as any) || [];
+        const expenses_team = show.expenses_team as any || [];
         const currentMusicianExpense = expenses_team.find((exp: any) => exp.musicianId === user.id);
-        
         return {
           ...show,
           expenses_team,
@@ -162,30 +161,20 @@ export function WeeklySchedule({
                         <Calendar className="w-4 h-4 text-primary" />
                         <span className="text-sm font-bold text-gray-900">{show.venue_name}</span>
                       </div>
-                      {userRole === 'musician' && (
-                        <div className="ml-6 space-y-0.5">
-                          {show.artist_name && (
-                            <p className="text-xs text-gray-600">
+                      {userRole === 'musician' && <div className="ml-6 space-y-0.5">
+                          {show.artist_name && <p className="text-xs text-gray-600">
                               <span className="font-medium">Artista:</span> {show.artist_name}
-                            </p>
-                          )}
-                          {show.time_local && (
-                            <p className="text-xs text-gray-600">
+                            </p>}
+                          {show.time_local && <p className="text-xs text-gray-600">
                               <span className="font-medium">Horário:</span> {show.time_local}
-                            </p>
-                          )}
-                          {show.duration_hours && (
-                            <p className="text-xs text-gray-600">
+                            </p>}
+                          {show.duration_hours && <p className="text-xs text-gray-600">
                               <span className="font-medium">Duração:</span> {show.duration_hours}h
-                            </p>
-                          )}
-                          {show.musician_instrument && (
-                            <p className="text-xs text-gray-600">
+                            </p>}
+                          {show.musician_instrument && <p className="text-xs text-gray-600">
                               <span className="font-medium">Instrumento:</span> {show.musician_instrument}
-                            </p>
-                          )}
-                        </div>
-                      )}
+                            </p>}
+                        </div>}
                     </div>)}
                 </div>
               </div>
@@ -226,7 +215,7 @@ export function WeeklySchedule({
         </div>
         <div className="flex items-center justify-between pt-2 border-t border-gray-200">
           <span className="text-sm font-semibold text-gray-900">Seu Lucro (Semana)</span>
-          <span className="text-xl font-bold text-[#ad5af2]">
+          <span className="text-xl font-bold text-[#1e52f1]">
             R$ {profit.toLocaleString('pt-BR', {
             minimumFractionDigits: 2
           })}
