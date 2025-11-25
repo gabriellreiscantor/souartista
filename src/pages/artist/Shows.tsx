@@ -255,7 +255,7 @@ const ArtistShows = () => {
       venue_id: '',
       custom_venue: show.venue_name,
       date_local: show.date_local,
-      time_local: show.time_local,
+      time_local: show.time_local || '20:00',
       fee: show.fee.toString(),
       is_private_event: show.is_private_event
     });

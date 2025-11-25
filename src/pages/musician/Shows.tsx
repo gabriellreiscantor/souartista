@@ -341,7 +341,7 @@ const MusicianShows = () => {
       venue_id: matchingVenue?.id || '',
       custom_venue: show.venue_name,
       date_local: show.date_local,
-      time_local: show.time_local,
+      time_local: show.time_local || '20:00',
       fee: myEntry?.cost.toString() || show.fee.toString(),
       instrument_id: matchingInstrument?.id || '',
       duration: '4h',
