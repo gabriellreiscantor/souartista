@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Music, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logo from "@/assets/nova_logo.png";
+import logo from "@/assets/logo.png";
 
 export default function DemoSelectRole() {
   const navigate = useNavigate();
