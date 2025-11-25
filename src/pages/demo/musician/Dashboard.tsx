@@ -126,7 +126,7 @@ const DemoMusicianDashboard = () => {
             <div className="p-4 md:p-6">
               <div className="mb-6 md:mb-8 text-center">
                 <h2 className="text-2xl md:text-3xl font-bold mb-2 text-gray-900">
-                  Olá, meu músico Carlos Demo! 👋
+                  Olá, meu músico! 👋
                 </h2>
                 <p className="text-sm md:text-base text-gray-600 mb-4">
                   Gerencie seus freelas e cachês em um só lugar
