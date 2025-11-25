@@ -199,27 +199,72 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string, userData: Partial<UserData>) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    // Send all user data in user_metadata - the database trigger will handle profile creation
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          name: userData.name || '',
-          cpf: userData.cpf,
-          phone: userData.phone,
-          birth_date: userData.birth_date,
-          photo_url: userData.photo_url,
-          status_plano: userData.status_plano || 'inactive',
-          is_verified: userData.is_verified || false,
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      // Send all user data in user_metadata - the database trigger will handle profile creation
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            name: userData.name || '',
+            cpf: userData.cpf,
+            phone: userData.phone,
+            birth_date: userData.birth_date,
+            photo_url: userData.photo_url,
+            status_plano: userData.status_plano || 'inactive',
+            is_verified: userData.is_verified || false,
+          },
         },
-      },
-    });
+      });
 
-    return { error };
+      if (error) return { error };
+
+      // Enviar email OTP customizado via edge function
+      if (data.user && !data.user.email_confirmed_at) {
+        try {
+          // Gerar novo OTP
+          const { data: otpData } = await supabase.auth.signInWithOtp({
+            email,
+            options: {
+              shouldCreateUser: false,
+            },
+          });
+          
+          console.log('OTP gerado, enviando email customizado...');
+          
+          // Chamar edge function para enviar email customizado
+          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp-email`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({
+              email,
+              token: otpData,
+              type: 'signup',
+            }),
+          });
+
+          if (!response.ok) {
+            console.error('Erro ao enviar email customizado:', await response.text());
+          } else {
+            console.log('Email OTP customizado enviado com sucesso!');
+          }
+        } catch (emailError) {
+          console.error('Erro ao enviar email OTP customizado:', emailError);
+          // Continuar mesmo se o email customizado falhar
+        }
+      }
+
+      return { error: null };
+    } catch (error: any) {
+      console.error('Erro no signup:', error);
+      return { error };
+    }
   };
 
   const verifyOtp = async (email: string, token: string) => {
