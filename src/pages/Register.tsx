@@ -62,11 +62,16 @@ const Register = () => {
   const [verifying, setVerifying] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
 
-  // Redireciona automaticamente se já estiver logado
+  // Redireciona para /select-role apenas se usuário estiver autenticado E email verificado
   useEffect(() => {
     if (!authLoading && user && session) {
-      console.log('[Register] User already authenticated, redirecting to /app');
-      navigate('/app');
+      // Verifica se o email foi confirmado
+      if (user.email_confirmed_at) {
+        console.log('[Register] User authenticated and email verified, redirecting to /select-role');
+        navigate('/select-role');
+      } else {
+        console.log('[Register] User authenticated but email not verified yet');
+      }
     }
   }, [user, session, authLoading, navigate]);
 
