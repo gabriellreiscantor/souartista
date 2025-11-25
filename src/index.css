@@ -9,27 +9,27 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Light theme with dark purple design */
-    --background: 278 69% 10%;
-    --foreground: 0 0% 98%;
+    /* Light theme */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
 
-    --card: 273 20% 12%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 278 69% 10%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
     --primary: 273 85% 65%;
-    --primary-foreground: 278 69% 10%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 273 20% 18%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 273 15% 20%;
-    --muted-foreground: 273 10% 65%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 273 85% 65%;
-    --accent-foreground: 273 20% 10%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
@@ -38,13 +38,13 @@ All colors MUST be HSL.
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
-    --warning-foreground: 278 69% 10%;
+    --warning-foreground: 0 0% 100%;
 
     --info: 207 90% 54%;
-    --info-foreground: 278 69% 10%;
+    --info-foreground: 0 0% 100%;
 
-    --border: 273 20% 20%;
-    --input: 273 20% 20%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
     --ring: 273 85% 65%;
 
     --radius: 0.75rem;
