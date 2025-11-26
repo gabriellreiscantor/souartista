@@ -204,6 +204,57 @@ const Subscribe = () => {
     }
   };
 
+  const handleManualPaymentCheck = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error('Você precisa estar logado.');
+        return;
+      }
+
+      setIsCheckingPayment(true);
+      toast.loading('Verificando pagamento...');
+
+      const { data, error } = await supabase.functions.invoke('check-payment-status', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      toast.dismiss();
+
+      if (error) {
+        console.error('Error checking payment:', error);
+        throw error;
+      }
+
+      if (data.paid) {
+        setShowPixDialog(false);
+        toast.success(data.message);
+        
+        await refetchUserData();
+        
+        const userRole = localStorage.getItem('userRole');
+        setTimeout(() => {
+          if (userRole === 'artist') {
+            navigate('/artist/dashboard', { replace: true });
+          } else if (userRole === 'musician') {
+            navigate('/musician/dashboard', { replace: true });
+          }
+        }, 1500);
+      } else {
+        toast.info(data.message);
+      }
+    } catch (error: any) {
+      console.error('Error checking payment:', error);
+      toast.dismiss();
+      toast.error(error.message || 'Erro ao verificar pagamento. Tente novamente.');
+    } finally {
+      setIsCheckingPayment(false);
+    }
+  };
+
   const plans = {
     monthly: {
       price: 'R$ 5,00',
@@ -503,10 +554,19 @@ const Subscribe = () => {
                 <p className="text-sm font-mono break-all text-black">{pixData?.code}</p>
               </div>
 
-              <Button onClick={copyPixCode} className="w-full">
-                <Copy className="w-4 h-4 mr-2" />
-                Copiar Código PIX
-              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button onClick={copyPixCode} variant="outline" className="w-full">
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copiar Código
+                </Button>
+                <Button 
+                  onClick={handleManualPaymentCheck} 
+                  className="w-full"
+                  disabled={isCheckingPayment}
+                >
+                  {isCheckingPayment ? 'Verificando...' : 'Verificar Pagamento'}
+                </Button>
+              </div>
             </div>
 
             {/* Instructions */}
