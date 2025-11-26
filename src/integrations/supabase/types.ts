@@ -374,6 +374,38 @@ export type Database = {
         }
         Relationships: []
       }
+      show_notification_logs: {
+        Row: {
+          id: string
+          notification_type: string
+          sent_at: string
+          show_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          notification_type: string
+          sent_at?: string
+          show_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          notification_type?: string
+          sent_at?: string
+          show_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "show_notification_logs_show_id_fkey"
+            columns: ["show_id"]
+            isOneToOne: false
+            referencedRelation: "shows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shows: {
         Row: {
           created_at: string
