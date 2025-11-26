@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 const Subscribe = () => {
   const [billingCycle, setBillingCycle] = useState<'annual' | 'monthly'>('annual');
   const [showContactDialog, setShowContactDialog] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'PIX' | 'CREDIT_CARD'>('PIX');
   const { updateUserData, user } = useAuth();
   const navigate = useNavigate();
 
@@ -51,7 +52,7 @@ const Subscribe = () => {
       toast.loading('Processando sua assinatura...');
 
       const { data, error } = await supabase.functions.invoke('create-asaas-subscription', {
-        body: { planType: plan },
+        body: { planType: plan, paymentMethod },
       });
 
       if (error) {
@@ -78,9 +79,9 @@ const Subscribe = () => {
 
   const plans = {
     monthly: {
-      price: 'R$ 29,90',
+      price: 'R$ 1,00',
       period: '/mês',
-      total: '',
+      total: '(Preço de teste)',
       features: [
         'Gerenciamento de shows ilimitado',
         'Controle financeiro completo',
@@ -90,10 +91,10 @@ const Subscribe = () => {
       ]
     },
     annual: {
-      price: 'R$ 19,90',
-      period: '/mês',
-      total: 'Cobrado R$ 238,80 anualmente',
-      savings: 'Economize R$ 120,00 por ano!',
+      price: 'R$ 2,00',
+      period: '/ano',
+      total: 'Cobrado R$ 2,00 anualmente (Preço de teste)',
+      savings: '',
       features: [
         'Gerenciamento de shows ilimitado',
         'Controle financeiro completo',
@@ -142,7 +143,7 @@ const Subscribe = () => {
         </Card>
 
         {/* Billing Toggle */}
-        <div className="flex justify-center mb-8">
+        <div className="flex flex-col items-center gap-6 mb-8">
           <div className="inline-flex items-center gap-3 bg-muted/50 rounded-full p-1.5">
             <button
               onClick={() => setBillingCycle('monthly')}
@@ -167,6 +168,35 @@ const Subscribe = () => {
                 -33%
               </span>
             </button>
+          </div>
+
+          {/* Payment Method Selector */}
+          <div className="w-full max-w-md">
+            <label className="block text-sm font-medium text-foreground mb-3 text-center">
+              Método de Pagamento
+            </label>
+            <div className="inline-flex items-center gap-3 bg-muted/50 rounded-full p-1.5 w-full">
+              <button
+                onClick={() => setPaymentMethod('PIX')}
+                className={`flex-1 px-6 py-2.5 rounded-full transition-all font-medium ${
+                  paymentMethod === 'PIX'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                PIX
+              </button>
+              <button
+                onClick={() => setPaymentMethod('CREDIT_CARD')}
+                className={`flex-1 px-6 py-2.5 rounded-full transition-all font-medium ${
+                  paymentMethod === 'CREDIT_CARD'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Cartão de Crédito
+              </button>
+            </div>
           </div>
         </div>
 
