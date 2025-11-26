@@ -111,11 +111,26 @@ serve(async (req) => {
     const billingType = paymentMethod; // PIX or CREDIT_CARD
     const cycle = planType === 'monthly' ? 'MONTHLY' : 'YEARLY';
     
+    // Calculate next due date - trial de 7 dias para cartão, imediato para PIX
+    const today = new Date();
+    let nextDueDate: string;
+
+    if (billingType === 'CREDIT_CARD') {
+      // Trial de 7 dias para cartão
+      const trialEndDate = new Date(today);
+      trialEndDate.setDate(trialEndDate.getDate() + 7);
+      nextDueDate = trialEndDate.toISOString().split('T')[0];
+    } else {
+      // PIX: cobrança imediata (hoje)
+      nextDueDate = today.toISOString().split('T')[0];
+    }
+    
     const subscriptionPayload: any = {
       customer: customerId,
       billingType,
       cycle,
       value: amount,
+      nextDueDate,
       description: `Plano ${planType === 'monthly' ? 'Mensal' : 'Anual'} - ${BUSINESS_CONFIG.name}`,
     };
 

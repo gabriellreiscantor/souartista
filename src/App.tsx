@@ -32,6 +32,8 @@ import ArtistProfile from "./pages/artist/Profile";
 import MusicianProfile from "./pages/musician/Profile";
 import ArtistSettings from "./pages/artist/Settings";
 import MusicianSettings from "./pages/musician/Settings";
+import ArtistSubscription from "./pages/artist/Subscription";
+import MusicianSubscription from "./pages/musician/Subscription";
 import ArtistTerms from "./pages/artist/Terms";
 import MusicianTerms from "./pages/musician/Terms";
 import ArtistPrivacy from "./pages/artist/Privacy";
@@ -90,6 +92,7 @@ const App = () => (
             <Route path="/artist/support" element={<ArtistSupport />} />
             <Route path="/artist/profile" element={<ArtistProfile />} />
             <Route path="/artist/settings" element={<ArtistSettings />} />
+            <Route path="/artist/subscription" element={<ArtistSubscription />} />
             <Route path="/artist/terms" element={<ArtistTerms />} />
             <Route path="/artist/privacy" element={<ArtistPrivacy />} />
             <Route path="/artist/updates" element={<ArtistUpdates />} />
@@ -103,6 +106,7 @@ const App = () => (
             <Route path="/musician/support" element={<MusicianSupport />} />
             <Route path="/musician/profile" element={<MusicianProfile />} />
             <Route path="/musician/settings" element={<MusicianSettings />} />
+            <Route path="/musician/subscription" element={<MusicianSubscription />} />
             <Route path="/musician/terms" element={<MusicianTerms />} />
             <Route path="/musician/privacy" element={<MusicianPrivacy />} />
             <Route path="/musician/updates" element={<MusicianUpdates />} />

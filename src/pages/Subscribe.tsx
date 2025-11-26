@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Check, Shield, Mail, Building2, Copy, QrCode } from 'lucide-react';
+import { Check, Shield, Mail, Building2, Copy, QrCode, AlertCircle, CheckCircle2 } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -313,13 +313,38 @@ const Subscribe = () => {
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Shield className="w-5 h-5 text-primary" />
             </div>
-            <div>
-              <h3 className="text-lg font-heading font-bold mb-2">
-                Teste por 7 dias, sem compromisso!
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Você não será cobrado hoje. É necessário um cartão de crédito para iniciar, mas você pode cancelar a qualquer momento durante o período de teste sem custos.
-              </p>
+            <div className="space-y-3">
+              {paymentMethod === 'CREDIT_CARD' ? (
+                <>
+                  <div>
+                    <h3 className="text-lg font-heading font-bold mb-2">
+                      Teste por 7 dias, sem compromisso!
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Seu cartão será validado hoje, mas a primeira cobrança só acontecerá em 7 dias. Cancele a qualquer momento durante o período de teste sem custos.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-primary">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <span className="font-medium">Primeira cobrança em 7 dias</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <h3 className="text-lg font-heading font-bold mb-2">
+                      Pagamento via PIX
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Com PIX, o acesso é liberado imediatamente após a confirmação do pagamento.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-amber-600">
+                    <AlertCircle className="h-5 w-5" />
+                    <span className="font-medium">PIX: cobrança imediata (sem período de teste)</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </Card>
@@ -480,7 +505,10 @@ const Subscribe = () => {
         </div>
 
         <p className="text-center text-sm text-muted-foreground">
-          Todos os planos incluem 7 dias de teste grátis. Cancele quando quiser.
+          {paymentMethod === 'CREDIT_CARD' 
+            ? 'Todos os planos com cartão incluem 7 dias de teste grátis. Cancele quando quiser.'
+            : 'Com PIX, o acesso é liberado imediatamente após o pagamento. Cancele quando quiser.'
+          }
         </p>
       </div>
 
