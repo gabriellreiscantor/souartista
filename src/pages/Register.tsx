@@ -169,28 +169,93 @@ const Register = () => {
 
     setLoading(true);
 
-    const { error } = await signUp(formData.email, formData.password, {
-      name: formData.name,
-      cpf: formData.cpf,
-      birth_date: formData.birthDate,
-      phone: formData.phone,
-    });
+    try {
+      // Verificar se o e-mail já existe
+      const { data: emailExists } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('email', formData.email.toLowerCase())
+        .maybeSingle();
 
-    if (error) {
-      toast({
-        title: 'Erro ao criar conta',
-        description: error.message,
-        variant: 'destructive',
+      if (emailExists) {
+        setLoading(false);
+        toast({
+          title: 'E-mail já cadastrado',
+          description: 'Este e-mail já possui uma conta. Esqueceu sua senha?',
+          variant: 'destructive',
+          action: (
+            <button
+              onClick={() => navigate('/reset-password')}
+              className="text-sm underline hover:no-underline"
+            >
+              Redefinir senha
+            </button>
+          ),
+        });
+        return;
+      }
+
+      // Verificar se o CPF já existe (removendo formatação)
+      const cleanCpf = formData.cpf.replace(/\D/g, '');
+      const { data: cpfExists } = await supabase
+        .from('profiles')
+        .select('cpf')
+        .eq('cpf', cleanCpf)
+        .maybeSingle();
+
+      if (cpfExists) {
+        setLoading(false);
+        toast({
+          title: 'CPF já cadastrado',
+          description: 'Este CPF já está registrado no sistema.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Criar a conta
+      const { error } = await signUp(formData.email, formData.password, {
+        name: formData.name,
+        cpf: cleanCpf,
+        birth_date: formData.birthDate,
+        phone: formData.phone,
       });
-      setLoading(false);
-    } else {
-      // Armazena email e vai para etapa 4 (OTP)
-      setRegisteredEmail(formData.email);
-      setStep(4);
-      setResendTimer(60);
+
+      if (error) {
+        // Melhorar mensagens de erro comuns do Supabase
+        let errorMessage = error.message;
+        
+        if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+          errorMessage = 'Este e-mail já está cadastrado. Faça login ou recupere sua senha.';
+        } else if (error.message.includes('password')) {
+          errorMessage = 'A senha deve ter no mínimo 6 caracteres com letras e números.';
+        } else if (error.message.includes('email')) {
+          errorMessage = 'Por favor, insira um e-mail válido.';
+        }
+
+        toast({
+          title: 'Erro ao criar conta',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+        setLoading(false);
+      } else {
+        // Armazena email e vai para etapa 4 (OTP)
+        setRegisteredEmail(formData.email);
+        setStep(4);
+        setResendTimer(60);
+        toast({
+          title: 'Código enviado!',
+          description: 'Verifique seu e-mail',
+        });
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Erro no cadastro:', error);
       toast({
-        title: 'Código enviado!',
-        description: 'Verifique seu e-mail',
+        title: 'Erro inesperado',
+        description: 'Não foi possível completar o cadastro. Tente novamente.',
+        variant: 'destructive',
       });
       setLoading(false);
     }
