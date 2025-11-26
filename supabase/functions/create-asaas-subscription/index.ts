@@ -30,10 +30,14 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { planType } = await req.json();
+    const { planType, paymentMethod } = await req.json();
 
     if (!planType || !['monthly', 'annual'].includes(planType)) {
       throw new Error('Invalid plan type');
+    }
+
+    if (!paymentMethod || !['PIX', 'CREDIT_CARD'].includes(paymentMethod)) {
+      throw new Error('Invalid payment method. Use PIX or CREDIT_CARD');
     }
 
     // Get user profile
@@ -47,10 +51,10 @@ serve(async (req) => {
       throw new Error('User profile not found');
     }
 
-    // Plan prices
+    // Plan prices (TEST PRICES - remember to change back later!)
     const prices = {
-      monthly: 29.90,
-      annual: 238.80
+      monthly: 1.00,
+      annual: 2.00
     };
 
     const amount = prices[planType as keyof typeof prices];
@@ -94,7 +98,7 @@ serve(async (req) => {
     }
 
     // Create subscription in Asaas
-    const billingType = 'BOLETO'; // Can be changed to PIX, CREDIT_CARD, etc.
+    const billingType = paymentMethod; // PIX or CREDIT_CARD
     const cycle = planType === 'monthly' ? 'MONTHLY' : 'YEARLY';
     
     const subscriptionResponse = await fetch('https://api.asaas.com/v3/subscriptions', {
