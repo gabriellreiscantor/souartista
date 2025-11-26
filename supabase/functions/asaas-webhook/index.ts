@@ -119,7 +119,8 @@ serve(async (req) => {
         break;
       }
 
-      case 'SUBSCRIPTION_CANCELLED': {
+      case 'SUBSCRIPTION_DELETED':
+      case 'SUBSCRIPTION_INACTIVATED': {
         if (subscription?.id) {
           const { data: existingSubscription } = await supabase
             .from('subscriptions')
