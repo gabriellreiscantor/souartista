@@ -8,13 +8,68 @@ import { useReportVisibility } from '@/hooks/useReportVisibility';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Bell, FileText, Shield, MessageCircle, Rocket, BookOpen } from 'lucide-react';
+import { Bell, FileText, Shield, MessageCircle, Rocket, BookOpen, Trash2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 
 const MusicianSettings = () => {
-  const { userData } = useAuth();
+  const { userData, signOut } = useAuth();
   const navigate = useNavigate();
   const { settings, updateSettings } = useReportVisibility();
+  const { toast } = useToast();
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'excluir minha conta') {
+      toast({
+        title: "Erro",
+        description: "Digite 'excluir minha conta' para confirmar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.functions.invoke('delete-account');
+      
+      if (error) throw error;
+
+      toast({
+        title: "Conta excluída",
+        description: "Sua conta foi excluída com sucesso.",
+      });
+
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir sua conta. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+      setDeleteConfirmText('');
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -172,6 +227,70 @@ const MusicianSettings = () => {
                     </div>
                   </button>
                 </div>
+              </Card>
+
+              {/* Excluir Conta */}
+              <Card className="p-6 bg-white border-red-200">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Zona de Perigo</h3>
+                <p className="text-gray-600 text-sm mb-6">
+                  A exclusão da conta é permanente e não pode ser desfeita.
+                </p>
+
+                <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="w-full">
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Excluir Conta
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="bg-white">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="text-red-600 text-xl">⚠️ ATENÇÃO: Ação Irreversível</AlertDialogTitle>
+                      <AlertDialogDescription className="space-y-4">
+                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                          <p className="font-bold text-red-900 mb-2">
+                            Ao excluir sua conta, TODOS os seus dados serão perdidos PERMANENTEMENTE:
+                          </p>
+                          <ul className="text-sm text-red-800 space-y-1 ml-4">
+                            <li>• Todos os seus shows cadastrados</li>
+                            <li>• Artistas com quem você trabalhou</li>
+                            <li>• Locais e informações de venues</li>
+                            <li>• Despesas de locomoção registradas</li>
+                            <li>• Sua assinatura ativa (sem reembolso)</li>
+                            <li>• Configurações e preferências</li>
+                            <li>• Relatórios e histórico financeiro</li>
+                          </ul>
+                          <p className="font-bold text-red-900 mt-3">
+                            Esta ação NÃO PODE ser desfeita. Seus dados não poderão ser recuperados.
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          <p className="font-semibold text-gray-900">
+                            Digite "excluir minha conta" para confirmar:
+                          </p>
+                          <Input
+                            value={deleteConfirmText}
+                            onChange={(e) => setDeleteConfirmText(e.target.value)}
+                            placeholder="excluir minha conta"
+                            className="w-full"
+                          />
+                        </div>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={() => setDeleteConfirmText('')}>
+                        Cancelar
+                      </AlertDialogCancel>
+                      <Button
+                        variant="destructive"
+                        onClick={handleDeleteAccount}
+                        disabled={deleteConfirmText !== 'excluir minha conta' || isDeleting}
+                      >
+                        {isDeleting ? 'Excluindo...' : 'Excluir Permanentemente'}
+                      </Button>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </Card>
             </div>
           </main>

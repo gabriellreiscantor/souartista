@@ -4,6 +4,7 @@ import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useNativePlatform } from '@/hooks/useNativePlatform';
 
 import {
   Sidebar,
@@ -42,6 +43,12 @@ export function ArtistSidebar() {
   const currentPath = location.pathname;
   const collapsed = state === 'collapsed';
   const { isAdmin } = useAdmin();
+  const { isIOS, isNative } = useNativePlatform();
+
+  // Filter out Assinatura on iOS native
+  const filteredSettingsItems = isIOS && isNative 
+    ? settingsItems.filter(item => item.url !== '/artist/subscription')
+    : settingsItems;
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -122,7 +129,7 @@ export function ArtistSidebar() {
         <SidebarGroup className={isAdmin ? "" : "mt-auto border-t border-sidebar-border pt-4"}>
           <SidebarGroupContent>
             <SidebarMenu>
-              {settingsItems.map((item) => (
+              {filteredSettingsItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink

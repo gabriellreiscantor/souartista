@@ -55,6 +55,8 @@ serve(async (req) => {
     console.log('Subscription canceled:', cancelData);
 
     // Update subscription status in database
+    // NOTE: We only mark as 'canceled' but keep status_plano as 'ativo'
+    // User will continue to have access until next_due_date
     const { error: updateError } = await supabase
       .from('subscriptions')
       .update({ status: 'canceled' })
@@ -66,18 +68,8 @@ serve(async (req) => {
       throw new Error('Failed to update subscription status');
     }
 
-    // Update user profile
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({ 
-        status_plano: 'canceled',
-        plan_type: null 
-      })
-      .eq('id', user.id);
-
-    if (profileError) {
-      console.error('Profile update error:', profileError);
-    }
+    // DO NOT update profile status_plano yet - user keeps access until next_due_date
+    // The status_plano will be updated to 'inactive' when next_due_date passes
 
     return new Response(
       JSON.stringify({
