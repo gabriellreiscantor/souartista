@@ -16,18 +16,18 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Executar função que verifica e envia notificações de PIX
-    const { error } = await supabaseAdmin.rpc('check_and_notify_pix_due');
+    // Executar função que verifica e envia notificações de PIX e Cartão
+    const { error } = await supabaseAdmin.rpc('check_and_notify_payments');
 
     if (error) {
-      console.error('Error running check_and_notify_pix_due:', error);
+      console.error('Error running check_and_notify_payments:', error);
       throw error;
     }
 
-    console.log('✅ PIX notifications check completed successfully');
+    console.log('✅ Payment notifications check completed successfully');
 
     return new Response(
-      JSON.stringify({ success: true, message: 'PIX notifications checked' }),
+      JSON.stringify({ success: true, message: 'Payment notifications checked' }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 

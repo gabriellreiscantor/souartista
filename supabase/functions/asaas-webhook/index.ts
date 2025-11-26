@@ -56,6 +56,16 @@ serve(async (req) => {
               })
               .eq('id', existingSubscription.user_id);
 
+            // Create success notification
+            await supabase
+              .from('notifications')
+              .insert({
+                title: '✅ Pagamento confirmado!',
+                message: 'Seu pagamento foi confirmado com sucesso. Obrigado por manter sua assinatura ativa!',
+                link: '/artist/subscription',
+                created_by: existingSubscription.user_id,
+              });
+
             console.log('Subscription activated:', subscription.id);
           }
         }
@@ -88,6 +98,25 @@ serve(async (req) => {
                 status_plano: 'inactive',
               })
               .eq('id', existingSubscription.user_id);
+
+            // Create notification (different for credit card vs PIX)
+            const notificationData = payment.billingType === 'CREDIT_CARD' 
+              ? {
+                  title: '❌ Cartão de crédito recusado',
+                  message: 'Não conseguimos processar seu cartão de crédito. Atualize seus dados de pagamento para não perder o acesso.',
+                  link: '/artist/subscription',
+                  created_by: existingSubscription.user_id,
+                }
+              : {
+                  title: '❌ Pagamento vencido',
+                  message: 'Seu pagamento PIX está vencido. Realize o pagamento para manter seu acesso.',
+                  link: '/artist/subscription',
+                  created_by: existingSubscription.user_id,
+                };
+
+            await supabase
+              .from('notifications')
+              .insert(notificationData);
 
             console.log('Subscription expired:', subscription.id);
           }
@@ -138,6 +167,20 @@ serve(async (req) => {
                 updated_at: new Date().toISOString(),
               })
               .eq('id', existingSubscription.id);
+
+            // Notify user about cancellation
+            const nextDueDate = existingSubscription.next_due_date 
+              ? new Date(existingSubscription.next_due_date).toLocaleDateString('pt-BR')
+              : 'a data de renovação';
+
+            await supabase
+              .from('notifications')
+              .insert({
+                title: 'ℹ️ Assinatura cancelada',
+                message: `Sua assinatura foi cancelada. Você manterá acesso às funcionalidades premium até ${nextDueDate}.`,
+                link: '/artist/subscription',
+                created_by: existingSubscription.user_id,
+              });
 
             console.log('Subscription marked as canceled:', subscription.id);
             console.log('User will maintain access until next_due_date:', existingSubscription.next_due_date);
