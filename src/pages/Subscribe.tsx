@@ -19,7 +19,8 @@ const Subscribe = () => {
   const [showCreditCardDialog, setShowCreditCardDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingPlanType, setPendingPlanType] = useState<'monthly' | 'annual' | null>(null);
-  const { updateUserData, user } = useAuth();
+  const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+  const { refetchUserData, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,6 +46,53 @@ const Subscribe = () => {
 
     checkUserStatus();
   }, [user, navigate]);
+
+  // Poll for payment confirmation when PIX dialog is open
+  useEffect(() => {
+    if (!showPixDialog || !user) return;
+
+    setIsCheckingPayment(true);
+    
+    const checkPaymentStatus = async () => {
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('status_plano, plan_type')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.status_plano === 'ativo') {
+          setIsCheckingPayment(false);
+          setShowPixDialog(false);
+          toast.success('Pagamento confirmado! Redirecionando...');
+          
+          await refetchUserData();
+          
+          const userRole = localStorage.getItem('userRole');
+          setTimeout(() => {
+            if (userRole === 'artist') {
+              navigate('/artist/dashboard', { replace: true });
+            } else if (userRole === 'musician') {
+              navigate('/musician/dashboard', { replace: true });
+            }
+          }, 1500);
+        }
+      } catch (error) {
+        console.error('Error checking payment status:', error);
+      }
+    };
+
+    // Check immediately
+    checkPaymentStatus();
+
+    // Then check every 3 seconds
+    const interval = setInterval(checkPaymentStatus, 3000);
+
+    return () => {
+      clearInterval(interval);
+      setIsCheckingPayment(false);
+    };
+  }, [showPixDialog, user, navigate, refetchUserData]);
 
   const handleSubscribe = async (plan: 'monthly' | 'annual') => {
     try {
@@ -471,6 +519,16 @@ const Subscribe = () => {
                 <li>Confirme o pagamento</li>
               </ol>
             </div>
+
+            {/* Payment status indicator */}
+            {isCheckingPayment && (
+              <div className="flex items-center justify-center gap-2 p-3 rounded-lg bg-primary/10 border border-primary/20">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                <p className="text-sm text-primary font-medium">
+                  Verificando pagamento...
+                </p>
+              </div>
+            )}
 
             <p className="text-xs text-muted-foreground text-center">
               Após o pagamento, você será notificado e seu plano será ativado automaticamente.
