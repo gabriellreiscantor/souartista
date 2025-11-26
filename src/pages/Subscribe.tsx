@@ -78,7 +78,7 @@ const Subscribe = () => {
 
   const plans = {
     monthly: {
-      price: 'R$ 49,90',
+      price: 'R$ 29,90',
       period: '/mês',
       total: '',
       features: [
@@ -90,10 +90,10 @@ const Subscribe = () => {
       ]
     },
     annual: {
-      price: 'R$ 41,58',
+      price: 'R$ 19,90',
       period: '/mês',
-      total: 'Cobrado R$ 499,00 anualmente',
-      savings: 'Economize R$ 99,80 por ano!',
+      total: 'Cobrado R$ 238,80 anualmente',
+      savings: 'Economize R$ 120,00 por ano!',
       features: [
         'Gerenciamento de shows ilimitado',
         'Controle financeiro completo',

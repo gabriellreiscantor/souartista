@@ -49,8 +49,8 @@ serve(async (req) => {
 
     // Plan prices
     const prices = {
-      monthly: 49.90,
-      annual: 499.00
+      monthly: 29.90,
+      annual: 238.80
     };
 
     const amount = prices[planType as keyof typeof prices];
