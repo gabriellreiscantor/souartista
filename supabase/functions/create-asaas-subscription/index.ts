@@ -30,7 +30,7 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { planType, paymentMethod } = await req.json();
+    const { planType, paymentMethod, creditCardData } = await req.json();
 
     if (!planType || !['monthly', 'annual'].includes(planType)) {
       throw new Error('Invalid plan type');
@@ -101,19 +101,39 @@ serve(async (req) => {
     const billingType = paymentMethod; // PIX or CREDIT_CARD
     const cycle = planType === 'monthly' ? 'MONTHLY' : 'YEARLY';
     
+    const subscriptionPayload: any = {
+      customer: customerId,
+      billingType,
+      cycle,
+      value: amount,
+      description: `Plano ${planType === 'monthly' ? 'Mensal' : 'Anual'} - SouArtista`,
+    };
+
+    // Para cartão de crédito, adicionar dados do cartão
+    if (billingType === 'CREDIT_CARD' && creditCardData) {
+      subscriptionPayload.creditCard = {
+        holderName: creditCardData.holderName,
+        number: creditCardData.number.replace(/\s/g, ''),
+        expiryMonth: creditCardData.expiryMonth,
+        expiryYear: creditCardData.expiryYear,
+        ccv: creditCardData.ccv,
+      };
+      
+      subscriptionPayload.creditCardHolderInfo = {
+        name: creditCardData.holderName,
+        cpfCnpj: creditCardData.holderCpf.replace(/\D/g, ''),
+        postalCode: creditCardData.postalCode.replace(/\D/g, ''),
+        addressNumber: creditCardData.addressNumber,
+      };
+    }
+    
     const subscriptionResponse = await fetch('https://api.asaas.com/v3/subscriptions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'access_token': asaasApiKey,
       },
-      body: JSON.stringify({
-        customer: customerId,
-        billingType,
-        cycle,
-        value: amount,
-        description: `Plano ${planType === 'monthly' ? 'Mensal' : 'Anual'} - SouArtista`,
-      }),
+      body: JSON.stringify(subscriptionPayload),
     });
 
     if (!subscriptionResponse.ok) {
