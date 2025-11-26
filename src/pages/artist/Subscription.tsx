@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ArtistSidebar } from '@/components/ArtistSidebar';
+import { MobileBottomNav } from '@/components/MobileBottomNav';
+import { UserMenu } from '@/components/UserMenu';
+import { NotificationBell } from '@/components/NotificationBell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const Subscription = () => {
-  const { userData, user } = useAuth();
+  const { userData, user, userRole } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [canceling, setCanceling] = useState(false);
@@ -106,13 +109,26 @@ const Subscription = () => {
   if (loading) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="flex min-h-screen w-full bg-[#fafafa]">
           <ArtistSidebar />
-          <main className="flex-1 p-6">
-            <div className="flex items-center justify-center h-full">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          </main>
+          <div className="flex-1 flex flex-col">
+            <header className="h-16 border-b border-gray-200 bg-white flex items-center px-6 justify-between">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <h1 className="text-xl font-semibold text-gray-900">Assinatura</h1>
+              </div>
+              <div className="flex items-center gap-3">
+                <NotificationBell />
+                <UserMenu userName={userData?.name} userRole={userRole} />
+              </div>
+            </header>
+            <main className="flex-1 p-6 pb-20">
+              <div className="flex items-center justify-center h-full">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            </main>
+          </div>
+          <MobileBottomNav role="artist" />
         </div>
       </SidebarProvider>
     );
@@ -120,17 +136,23 @@ const Subscription = () => {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full bg-[#fafafa]">
         <ArtistSidebar />
-        <main className="flex-1 p-6">
-          <div className="max-w-4xl mx-auto space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Gerenciar Assinatura</h1>
-              <p className="text-muted-foreground mt-2">
-                Visualize e gerencie sua assinatura do SouArtista
-              </p>
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <header className="h-16 border-b border-gray-200 bg-white flex items-center px-6 justify-between">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+              <h1 className="text-xl font-semibold text-gray-900">Assinatura</h1>
             </div>
+            <div className="flex items-center gap-3">
+              <NotificationBell />
+              <UserMenu userName={userData?.name} userRole={userRole} />
+            </div>
+          </header>
 
+          <main className="flex-1 p-6 pb-20 md:pb-6">
+            <div className="max-w-4xl mx-auto space-y-6">
             {!subscription ? (
               <Card>
                 <CardHeader>
@@ -230,8 +252,10 @@ const Subscription = () => {
                 )}
               </>
             )}
-          </div>
-        </main>
+            </div>
+          </main>
+        </div>
+        <MobileBottomNav role="artist" />
       </div>
 
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
