@@ -1,4 +1,4 @@
-import { LayoutDashboard, Music, Calendar, BarChart3, Truck, HelpCircle, User, Settings, LogOut, MapPin, Shield } from 'lucide-react';
+import { LayoutDashboard, Music, Calendar, BarChart3, Truck, HelpCircle, User, Settings, LogOut, MapPin, Shield, CreditCard } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -26,6 +26,7 @@ const mainItems = [
 ];
 
 const settingsItems = [
+  { title: 'Assinatura', url: '/artist/subscription', icon: CreditCard },
   { title: 'Suporte', url: '/artist/support', icon: HelpCircle },
   { title: 'Perfil', url: '/artist/profile', icon: User },
   { title: 'Ajustes', url: '/artist/settings', icon: Settings },
