@@ -48,11 +48,11 @@ export const ImageEditor = ({ open, onOpenChange, imageFile, onSave }: ImageEdit
 
     const canvas = document.createElement('canvas');
     
-    // Criar escala baseada no zoom e nas dimensões naturais
-    const scaleX = (image.naturalWidth / image.width) * zoom;
-    const scaleY = (image.naturalHeight / image.height) * zoom;
+    // Scale based on natural dimensions (zoom is only visual, doesn't affect crop calculation)
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
     
-    // Calcular crop em pixels com zoom aplicado
+    // Calculate crop in pixels
     const pixelCrop: PixelCrop = {
       unit: 'px',
       x: (crop.x / 100) * image.width * scaleX,
@@ -69,7 +69,7 @@ export const ImageEditor = ({ open, onOpenChange, imageFile, onSave }: ImageEdit
       throw new Error('No 2d context');
     }
 
-    // Desenhar a imagem com o zoom aplicado
+    // Draw the cropped image
     ctx.drawImage(
       image,
       pixelCrop.x,
@@ -95,7 +95,7 @@ export const ImageEditor = ({ open, onOpenChange, imageFile, onSave }: ImageEdit
         0.95
       );
     });
-  }, [crop, zoom]);
+  }, [crop]);
 
   const handleSave = async () => {
     try {
