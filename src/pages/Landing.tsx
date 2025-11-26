@@ -45,16 +45,16 @@ const Landing = () => {
     return <Onboarding onComplete={() => setShowOnboarding(false)} />;
   }
   return <div className="min-h-screen flex flex-col relative overflow-hidden" style={{
-      background: '#1E082B',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      touchAction: 'none',
-      overscrollBehavior: 'none',
-      WebkitOverflowScrolling: 'auto'
-    }}>
+    background: '#1E082B',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    touchAction: 'none',
+    overscrollBehavior: 'none',
+    WebkitOverflowScrolling: 'auto'
+  }}>
       {/* Glow central suave e sutil */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="w-[600px] h-[600px] bg-[#B96FFF] opacity-[0.08] blur-[120px] rounded-full" />
@@ -62,11 +62,11 @@ const Landing = () => {
       
       {/* Vignette nas bordas */}
       <div className="absolute inset-0 pointer-events-none" style={{
-        background: 'radial-gradient(circle at center, transparent 0%, rgba(30, 8, 43, 0.6) 100%)'
-      }} />
+      background: 'radial-gradient(circle at center, transparent 0%, rgba(30, 8, 43, 0.6) 100%)'
+    }} />
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: `
+      backgroundImage: `
           repeating-linear-gradient(
             45deg,
             transparent,
@@ -81,8 +81,8 @@ const Landing = () => {
             #5A1E90 80px,
             #5A1E90 81px
           )
-        `,
-      }} />
+        `
+    }} />
       
       {/* Content */}
       <div className="relative flex-1 flex flex-col items-center justify-center px-6 py-12">
@@ -100,7 +100,7 @@ const Landing = () => {
 
         {/* Headline */}
         <h1 className="text-4xl md:text-5xl font-heading font-bold text-center text-white mb-4 max-w-md animate-fade-in">
-          Suas finanças musicais, organizadas.
+          Suas finanças musicais e agendas organizadas.
         </h1>
 
         {/* Subheadline */}
