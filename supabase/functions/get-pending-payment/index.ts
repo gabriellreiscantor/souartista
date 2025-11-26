@@ -12,13 +12,24 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
+    // Create Supabase client with Service Role for privileged access
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    // Get user from JWT token
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Missing authorization header' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+    
     if (userError || !user) {
       console.error('Error getting user:', userError);
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -30,7 +41,7 @@ serve(async (req) => {
     console.log('🔍 Fetching pending payment for user:', user.id);
 
     // Buscar subscription do usuário
-    const { data: subscription, error: subError } = await supabaseClient
+    const { data: subscription, error: subError } = await supabaseAdmin
       .from('subscriptions')
       .select('*')
       .eq('user_id', user.id)
