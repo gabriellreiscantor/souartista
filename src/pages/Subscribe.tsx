@@ -79,9 +79,9 @@ const Subscribe = () => {
 
   const plans = {
     monthly: {
-      price: 'R$ 1,00',
+      price: 'R$ 5,00',
       period: '/mês',
-      total: '(Preço de teste)',
+      total: '(Preço de teste - mínimo Asaas)',
       features: [
         'Gerenciamento de shows ilimitado',
         'Controle financeiro completo',
@@ -91,9 +91,9 @@ const Subscribe = () => {
       ]
     },
     annual: {
-      price: 'R$ 2,00',
+      price: 'R$ 10,00',
       period: '/ano',
-      total: 'Cobrado R$ 2,00 anualmente (Preço de teste)',
+      total: 'Cobrado R$ 10,00 anualmente (Preço de teste)',
       savings: '',
       features: [
         'Gerenciamento de shows ilimitado',
