@@ -24,6 +24,7 @@ export const ImageEditor = ({ open, onOpenChange, imageFile, onSave }: ImageEdit
   const [zoom, setZoom] = useState(1);
   const [imageSrc, setImageSrc] = useState<string>('');
   const imgRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget;
@@ -46,9 +47,12 @@ export const ImageEditor = ({ open, onOpenChange, imageFile, onSave }: ImageEdit
     }
 
     const canvas = document.createElement('canvas');
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
     
+    // Criar escala baseada no zoom e nas dimensões naturais
+    const scaleX = (image.naturalWidth / image.width) * zoom;
+    const scaleY = (image.naturalHeight / image.height) * zoom;
+    
+    // Calcular crop em pixels com zoom aplicado
     const pixelCrop: PixelCrop = {
       unit: 'px',
       x: (crop.x / 100) * image.width * scaleX,
@@ -65,6 +69,7 @@ export const ImageEditor = ({ open, onOpenChange, imageFile, onSave }: ImageEdit
       throw new Error('No 2d context');
     }
 
+    // Desenhar a imagem com o zoom aplicado
     ctx.drawImage(
       image,
       pixelCrop.x,
@@ -90,7 +95,7 @@ export const ImageEditor = ({ open, onOpenChange, imageFile, onSave }: ImageEdit
         0.95
       );
     });
-  }, [crop]);
+  }, [crop, zoom]);
 
   const handleSave = async () => {
     try {
@@ -140,26 +145,31 @@ export const ImageEditor = ({ open, onOpenChange, imageFile, onSave }: ImageEdit
           </div>
 
           {/* Image Crop Area */}
-          <div className="relative flex justify-center items-center bg-gray-100 rounded-lg p-4 min-h-[400px]">
+          <div 
+            ref={containerRef}
+            className="relative flex justify-center items-center bg-gray-100 rounded-lg p-4 min-h-[400px] overflow-hidden"
+          >
             {imageSrc && (
-              <ReactCrop
-                crop={crop}
-                onChange={(c) => setCrop(c)}
-                aspect={1}
-                circularCrop
-              >
-                <img
-                  ref={imgRef}
-                  src={imageSrc}
-                  alt="Crop preview"
-                  onLoad={onImageLoad}
-                  style={{
-                    transform: `scale(${zoom})`,
-                    maxHeight: '500px',
-                    maxWidth: '100%'
-                  }}
-                />
-              </ReactCrop>
+              <div style={{ transform: `scale(${zoom})`, transformOrigin: 'center' }}>
+                <ReactCrop
+                  crop={crop}
+                  onChange={(c) => setCrop(c)}
+                  aspect={1}
+                  circularCrop
+                >
+                  <img
+                    ref={imgRef}
+                    src={imageSrc}
+                    alt="Crop preview"
+                    onLoad={onImageLoad}
+                    style={{
+                      maxHeight: '500px',
+                      maxWidth: '100%',
+                      display: 'block'
+                    }}
+                  />
+                </ReactCrop>
+              </div>
             )}
           </div>
         </div>

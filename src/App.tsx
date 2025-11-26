@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
+import { usePixNotificationChecker } from "./hooks/usePixNotificationChecker";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -66,6 +67,76 @@ import DemoMusicianSettings from "./pages/demo/musician/Settings";
 
 const queryClient = new QueryClient();
 
+const AppRoutes = () => {
+  usePixNotificationChecker(); // Verifica notificações PIX periodicamente
+  
+  return (
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/complete-profile" element={<CompleteProfile />} />
+      <Route path="/select-role" element={<SelectRole />} />
+      <Route path="/subscribe" element={<Subscribe />} />
+      <Route path="/app" element={<AppHub />} />
+      <Route path="/artist/dashboard" element={<ArtistDashboard />} />
+      <Route path="/artist/shows" element={<ArtistShows />} />
+      <Route path="/artist/musicians" element={<ArtistMusicians />} />
+      <Route path="/artist/venues" element={<ArtistVenues />} />
+      <Route path="/artist/calendar" element={<ArtistCalendar />} />
+      <Route path="/artist/reports" element={<ArtistReports />} />
+      <Route path="/artist/transportation" element={<ArtistTransportation />} />
+      <Route path="/artist/support" element={<ArtistSupport />} />
+      <Route path="/artist/profile" element={<ArtistProfile />} />
+      <Route path="/artist/settings" element={<ArtistSettings />} />
+      <Route path="/artist/subscription" element={<ArtistSubscription />} />
+      <Route path="/artist/terms" element={<ArtistTerms />} />
+      <Route path="/artist/privacy" element={<ArtistPrivacy />} />
+      <Route path="/artist/updates" element={<ArtistUpdates />} />
+      <Route path="/artist/tutorial" element={<ArtistTutorial />} />
+      <Route path="/musician/dashboard" element={<MusicianDashboard />} />
+      <Route path="/musician/shows" element={<MusicianShows />} />
+      <Route path="/musician/artists" element={<MusicianArtists />} />
+      <Route path="/musician/calendar" element={<MusicianCalendar />} />
+      <Route path="/musician/reports" element={<MusicianReports />} />
+      <Route path="/musician/transportation" element={<MusicianTransportation />} />
+      <Route path="/musician/support" element={<MusicianSupport />} />
+      <Route path="/musician/profile" element={<MusicianProfile />} />
+      <Route path="/musician/settings" element={<MusicianSettings />} />
+      <Route path="/musician/subscription" element={<MusicianSubscription />} />
+      <Route path="/musician/terms" element={<MusicianTerms />} />
+      <Route path="/musician/privacy" element={<MusicianPrivacy />} />
+      <Route path="/musician/updates" element={<MusicianUpdates />} />
+      <Route path="/musician/tutorial" element={<MusicianTutorial />} />
+      <Route path="/admin" element={<Admin />} />
+      {/* Demo Routes */}
+      <Route path="/demo" element={<DemoSelectRole />} />
+      <Route path="/demo/artist/dashboard" element={<DemoArtistDashboard />} />
+      <Route path="/demo/artist/shows" element={<DemoArtistShows />} />
+      <Route path="/demo/artist/calendar" element={<DemoArtistCalendar />} />
+      <Route path="/demo/artist/reports" element={<DemoArtistReports />} />
+      <Route path="/demo/artist/transportation" element={<DemoArtistTransportation />} />
+      <Route path="/demo/artist/support" element={<DemoArtistSupport />} />
+      <Route path="/demo/artist/profile" element={<DemoArtistProfile />} />
+      <Route path="/demo/artist/settings" element={<DemoArtistSettings />} />
+      <Route path="/demo/musician/dashboard" element={<DemoMusicianDashboard />} />
+      <Route path="/demo/musician/shows" element={<DemoMusicianShows />} />
+      <Route path="/demo/musician/artists" element={<DemoMusicianArtists />} />
+      <Route path="/demo/musician/calendar" element={<DemoMusicianCalendar />} />
+      <Route path="/demo/musician/reports" element={<DemoMusicianReports />} />
+      <Route path="/demo/musician/transportation" element={<DemoMusicianTransportation />} />
+      <Route path="/demo/musician/support" element={<DemoMusicianSupport />} />
+      <Route path="/demo/musician/profile" element={<DemoMusicianProfile />} />
+      <Route path="/demo/musician/settings" element={<DemoMusicianSettings />} />
+      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -73,69 +144,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/complete-profile" element={<CompleteProfile />} />
-            <Route path="/select-role" element={<SelectRole />} />
-            <Route path="/subscribe" element={<Subscribe />} />
-            <Route path="/app" element={<AppHub />} />
-            <Route path="/artist/dashboard" element={<ArtistDashboard />} />
-            <Route path="/artist/shows" element={<ArtistShows />} />
-            <Route path="/artist/musicians" element={<ArtistMusicians />} />
-            <Route path="/artist/venues" element={<ArtistVenues />} />
-            <Route path="/artist/calendar" element={<ArtistCalendar />} />
-            <Route path="/artist/reports" element={<ArtistReports />} />
-            <Route path="/artist/transportation" element={<ArtistTransportation />} />
-            <Route path="/artist/support" element={<ArtistSupport />} />
-            <Route path="/artist/profile" element={<ArtistProfile />} />
-            <Route path="/artist/settings" element={<ArtistSettings />} />
-            <Route path="/artist/subscription" element={<ArtistSubscription />} />
-            <Route path="/artist/terms" element={<ArtistTerms />} />
-            <Route path="/artist/privacy" element={<ArtistPrivacy />} />
-            <Route path="/artist/updates" element={<ArtistUpdates />} />
-            <Route path="/artist/tutorial" element={<ArtistTutorial />} />
-            <Route path="/musician/dashboard" element={<MusicianDashboard />} />
-            <Route path="/musician/shows" element={<MusicianShows />} />
-            <Route path="/musician/artists" element={<MusicianArtists />} />
-            <Route path="/musician/calendar" element={<MusicianCalendar />} />
-            <Route path="/musician/reports" element={<MusicianReports />} />
-            <Route path="/musician/transportation" element={<MusicianTransportation />} />
-            <Route path="/musician/support" element={<MusicianSupport />} />
-            <Route path="/musician/profile" element={<MusicianProfile />} />
-            <Route path="/musician/settings" element={<MusicianSettings />} />
-            <Route path="/musician/subscription" element={<MusicianSubscription />} />
-            <Route path="/musician/terms" element={<MusicianTerms />} />
-            <Route path="/musician/privacy" element={<MusicianPrivacy />} />
-            <Route path="/musician/updates" element={<MusicianUpdates />} />
-            <Route path="/musician/tutorial" element={<MusicianTutorial />} />
-            <Route path="/admin" element={<Admin />} />
-            {/* Demo Routes */}
-            <Route path="/demo" element={<DemoSelectRole />} />
-            <Route path="/demo/artist/dashboard" element={<DemoArtistDashboard />} />
-            <Route path="/demo/artist/shows" element={<DemoArtistShows />} />
-            <Route path="/demo/artist/calendar" element={<DemoArtistCalendar />} />
-            <Route path="/demo/artist/reports" element={<DemoArtistReports />} />
-            <Route path="/demo/artist/transportation" element={<DemoArtistTransportation />} />
-            <Route path="/demo/artist/support" element={<DemoArtistSupport />} />
-            <Route path="/demo/artist/profile" element={<DemoArtistProfile />} />
-            <Route path="/demo/artist/settings" element={<DemoArtistSettings />} />
-            <Route path="/demo/musician/dashboard" element={<DemoMusicianDashboard />} />
-            <Route path="/demo/musician/shows" element={<DemoMusicianShows />} />
-            <Route path="/demo/musician/artists" element={<DemoMusicianArtists />} />
-            <Route path="/demo/musician/calendar" element={<DemoMusicianCalendar />} />
-            <Route path="/demo/musician/reports" element={<DemoMusicianReports />} />
-            <Route path="/demo/musician/transportation" element={<DemoMusicianTransportation />} />
-            <Route path="/demo/musician/support" element={<DemoMusicianSupport />} />
-            <Route path="/demo/musician/profile" element={<DemoMusicianProfile />} />
-            <Route path="/demo/musician/settings" element={<DemoMusicianSettings />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppRoutes />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
