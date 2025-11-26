@@ -147,29 +147,28 @@ export const ImageEditor = ({ open, onOpenChange, imageFile, onSave }: ImageEdit
           {/* Image Crop Area */}
           <div 
             ref={containerRef}
-            className="relative flex justify-center items-center bg-gray-100 rounded-lg p-4 min-h-[400px] overflow-hidden"
+            className="relative flex justify-center items-center bg-gray-100 rounded-lg p-4 min-h-[400px] overflow-auto"
           >
             {imageSrc && (
-              <div style={{ transform: `scale(${zoom})`, transformOrigin: 'center' }}>
-                <ReactCrop
-                  crop={crop}
-                  onChange={(c) => setCrop(c)}
-                  aspect={1}
-                  circularCrop
-                >
-                  <img
-                    ref={imgRef}
-                    src={imageSrc}
-                    alt="Crop preview"
-                    onLoad={onImageLoad}
-                    style={{
-                      maxHeight: '500px',
-                      maxWidth: '100%',
-                      display: 'block'
-                    }}
-                  />
-                </ReactCrop>
-              </div>
+              <ReactCrop
+                crop={crop}
+                onChange={(c) => setCrop(c)}
+                aspect={1}
+                circularCrop
+              >
+                <img
+                  ref={imgRef}
+                  src={imageSrc}
+                  alt="Crop preview"
+                  onLoad={onImageLoad}
+                  style={{
+                    maxHeight: `${500 * zoom}px`,
+                    maxWidth: `${100 * zoom}%`,
+                    display: 'block',
+                    transition: 'all 0.2s ease'
+                  }}
+                />
+              </ReactCrop>
             )}
           </div>
         </div>
