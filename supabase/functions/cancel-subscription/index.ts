@@ -55,11 +55,11 @@ serve(async (req) => {
     console.log('Subscription canceled:', cancelData);
 
     // Update subscription status in database
-    // NOTE: We only mark as 'canceled' but keep status_plano as 'ativo'
+    // NOTE: We only mark as 'cancelled' but keep status_plano as 'ativo'
     // User will continue to have access until next_due_date
     const { error: updateError } = await supabase
       .from('subscriptions')
-      .update({ status: 'canceled' })
+      .update({ status: 'cancelled' })
       .eq('asaas_subscription_id', subscriptionId)
       .eq('user_id', user.id);
 
