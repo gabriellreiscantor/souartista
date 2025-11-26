@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ArtistSidebar } from '@/components/ArtistSidebar';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
@@ -10,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { AlertCircle, CheckCircle2, CreditCard, Calendar, DollarSign, Loader2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, CreditCard, Calendar, DollarSign, Loader2, HelpCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { 
@@ -27,6 +28,7 @@ import {
 const Subscription = () => {
   const { userData, user, userRole } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [canceling, setCanceling] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -118,6 +120,15 @@ const Subscription = () => {
                 <h1 className="text-xl font-semibold text-gray-900">Assinatura</h1>
               </div>
               <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/artist/support')}
+                  className="gap-2"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  <span className="hidden sm:inline">Ajuda</span>
+                </Button>
                 <NotificationBell />
                 <UserMenu userName={userData?.name} userRole={userRole} />
               </div>
@@ -146,6 +157,15 @@ const Subscription = () => {
               <h1 className="text-xl font-semibold text-gray-900">Assinatura</h1>
             </div>
             <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/artist/support')}
+                className="gap-2"
+              >
+                <HelpCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Ajuda</span>
+              </Button>
               <NotificationBell />
               <UserMenu userName={userData?.name} userRole={userRole} />
             </div>
@@ -154,13 +174,13 @@ const Subscription = () => {
           <main className="flex-1 p-6 pb-20 md:pb-6">
             <div className="max-w-4xl mx-auto space-y-6">
             {!subscription ? (
-              <Card>
+              <Card className="bg-white">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5 text-muted-foreground" />
+                  <CardTitle className="flex items-center gap-2 text-gray-900">
+                    <AlertCircle className="h-5 w-5 text-gray-500" />
                     Nenhuma assinatura ativa
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-gray-600">
                     Você não possui uma assinatura ativa no momento.
                   </CardDescription>
                 </CardHeader>
@@ -172,10 +192,10 @@ const Subscription = () => {
               </Card>
             ) : (
               <>
-                <Card>
+                <Card className="bg-white">
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle>Status da Assinatura</CardTitle>
+                      <CardTitle className="text-gray-900">Status da Assinatura</CardTitle>
                       {getStatusBadge(subscription.status)}
                     </div>
                   </CardHeader>
@@ -184,16 +204,16 @@ const Subscription = () => {
                       <div className="flex items-start gap-3">
                         <CreditCard className="h-5 w-5 text-primary mt-0.5" />
                         <div>
-                          <p className="text-sm font-medium text-muted-foreground">Plano</p>
-                          <p className="text-lg font-semibold">Plano {getPlanName(subscription.plan_type)}</p>
+                          <p className="text-sm font-medium text-gray-600">Plano</p>
+                          <p className="text-lg font-semibold text-gray-900">Plano {getPlanName(subscription.plan_type)}</p>
                         </div>
                       </div>
 
                       <div className="flex items-start gap-3">
                         <DollarSign className="h-5 w-5 text-primary mt-0.5" />
                         <div>
-                          <p className="text-sm font-medium text-muted-foreground">Valor</p>
-                          <p className="text-lg font-semibold">
+                          <p className="text-sm font-medium text-gray-600">Valor</p>
+                          <p className="text-lg font-semibold text-gray-900">
                             R$ {subscription.amount.toFixed(2).replace('.', ',')}
                           </p>
                         </div>
@@ -202,8 +222,8 @@ const Subscription = () => {
                       <div className="flex items-start gap-3">
                         <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
                         <div>
-                          <p className="text-sm font-medium text-muted-foreground">Método de Pagamento</p>
-                          <p className="text-lg font-semibold">
+                          <p className="text-sm font-medium text-gray-600">Método de Pagamento</p>
+                          <p className="text-lg font-semibold text-gray-900">
                             {getPaymentMethodName(subscription.payment_method)}
                           </p>
                         </div>
@@ -213,8 +233,8 @@ const Subscription = () => {
                         <div className="flex items-start gap-3">
                           <Calendar className="h-5 w-5 text-primary mt-0.5" />
                           <div>
-                            <p className="text-sm font-medium text-muted-foreground">Próxima Cobrança</p>
-                            <p className="text-lg font-semibold">
+                            <p className="text-sm font-medium text-gray-600">Próxima Cobrança</p>
+                            <p className="text-lg font-semibold text-gray-900">
                               {format(new Date(subscription.next_due_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                             </p>
                           </div>
@@ -225,11 +245,12 @@ const Subscription = () => {
                 </Card>
 
                 {subscription.status === 'active' && (
-                  <Card>
+                  <Card className="bg-white">
                     <CardHeader>
-                      <CardTitle>Cancelar Assinatura</CardTitle>
-                      <CardDescription>
-                        Ao cancelar, você perderá acesso aos recursos premium ao final do período atual.
+                      <CardTitle className="text-gray-900">Cancelar Assinatura</CardTitle>
+                      <CardDescription className="text-gray-600">
+                        Ao cancelar, você perderá acesso aos recursos premium ao final do período atual. 
+                        Seus dados permanecerão salvos e você poderá reativar sua assinatura quando quiser.
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -259,12 +280,19 @@ const Subscription = () => {
       </div>
 
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-white">
           <AlertDialogHeader>
-            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação cancelará sua assinatura. Você perderá acesso aos recursos premium ao final do período atual.
-              Esta ação não pode ser desfeita.
+            <AlertDialogTitle className="text-gray-900">Tem certeza que deseja cancelar?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600 space-y-2">
+              <p>
+                Ao cancelar, você perderá acesso aos recursos premium ao final do período atual.
+              </p>
+              <p className="font-medium text-gray-700">
+                ✓ Seus dados permanecerão salvos e seguros
+              </p>
+              <p className="font-medium text-gray-700">
+                ✓ Você pode reativar sua assinatura a qualquer momento
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
