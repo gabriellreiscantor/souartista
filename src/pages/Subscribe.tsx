@@ -8,6 +8,7 @@ import { Check, Shield, Mail, Building2, Copy, QrCode } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { CreditCardForm, CreditCardData } from '@/components/CreditCardForm';
 
 const Subscribe = () => {
   const [billingCycle, setBillingCycle] = useState<'annual' | 'monthly'>('annual');
@@ -15,6 +16,9 @@ const Subscribe = () => {
   const [showPixDialog, setShowPixDialog] = useState(false);
   const [pixData, setPixData] = useState<{ code: string; image: string } | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'PIX' | 'CREDIT_CARD'>('PIX');
+  const [showCreditCardDialog, setShowCreditCardDialog] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [pendingPlanType, setPendingPlanType] = useState<'monthly' | 'annual' | null>(null);
   const { updateUserData, user } = useAuth();
   const navigate = useNavigate();
 
@@ -51,7 +55,15 @@ const Subscribe = () => {
         return;
       }
 
-      toast.loading('Processando sua assinatura...');
+      // Se for cartão de crédito, abrir o modal do formulário
+      if (paymentMethod === 'CREDIT_CARD') {
+        setPendingPlanType(plan);
+        setShowCreditCardDialog(true);
+        return;
+      }
+
+      // Se for PIX, processar diretamente
+      toast.loading('Gerando QR Code PIX...');
 
       const { data, error } = await supabase.functions.invoke('create-asaas-subscription', {
         body: { planType: plan, paymentMethod },
@@ -64,21 +76,13 @@ const Subscribe = () => {
         throw error;
       }
 
-      if (data.success) {
-        toast.success('Assinatura criada com sucesso!');
-        
-        if (data.billingType === 'PIX' && data.pixQrCode) {
-          // Show PIX modal with QR Code
-          setPixData({
-            code: data.pixQrCode,
-            image: data.pixQrCodeImage,
-          });
-          setShowPixDialog(true);
-        } else if (data.invoiceUrl) {
-          // Open credit card payment URL in new tab
-          window.open(data.invoiceUrl, '_blank');
-          toast.info('Complete o pagamento na nova aba.');
-        }
+      if (data.success && data.billingType === 'PIX' && data.pixQrCode) {
+        setPixData({
+          code: data.pixQrCode,
+          image: data.pixQrCodeImage,
+        });
+        setShowPixDialog(true);
+        toast.success('QR Code PIX gerado!');
       } else {
         throw new Error('Failed to create subscription');
       }
@@ -86,6 +90,62 @@ const Subscribe = () => {
       console.error('Error subscribing:', error);
       toast.dismiss();
       toast.error('Erro ao criar assinatura. Tente novamente.');
+    }
+  };
+
+  const handleCreditCardSubmit = async (creditCardData: CreditCardData) => {
+    if (!pendingPlanType) return;
+
+    setIsProcessing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error('Você precisa estar logado.');
+        return;
+      }
+
+      toast.loading('Processando pagamento...');
+
+      const { data, error } = await supabase.functions.invoke('create-asaas-subscription', {
+        body: { 
+          planType: pendingPlanType, 
+          paymentMethod: 'CREDIT_CARD',
+          creditCardData 
+        }
+      });
+
+      toast.dismiss();
+
+      if (error) {
+        console.error('Error processing payment:', error);
+        throw error;
+      }
+
+      if (data.success) {
+        setShowCreditCardDialog(false);
+        toast.success('Pagamento processado com sucesso!');
+        
+        // Redirecionar para dashboard após 2 segundos
+        setTimeout(() => {
+          const userRole = localStorage.getItem('userRole');
+          if (userRole === 'artist') {
+            navigate('/artist/dashboard');
+          } else if (userRole === 'musician') {
+            navigate('/musician/dashboard');
+          } else {
+            navigate('/app');
+          }
+        }, 2000);
+      } else {
+        throw new Error('Payment processing failed');
+      }
+    } catch (error: any) {
+      console.error('Error processing payment:', error);
+      toast.dismiss();
+      toast.error(error.message || 'Erro ao processar pagamento. Tente novamente.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -420,6 +480,23 @@ const Subscribe = () => {
           <Button onClick={() => setShowPixDialog(false)} className="w-full">
             Fechar
           </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Credit Card Payment Dialog */}
+      <Dialog open={showCreditCardDialog} onOpenChange={setShowCreditCardDialog}>
+        <DialogContent className="sm:max-w-lg dark bg-background border-border">
+          <DialogHeader>
+            <DialogTitle>Pagamento com Cartão de Crédito</DialogTitle>
+            <DialogDescription>
+              Preencha os dados do cartão para finalizar sua assinatura
+            </DialogDescription>
+          </DialogHeader>
+          
+          <CreditCardForm 
+            onSubmit={handleCreditCardSubmit}
+            isLoading={isProcessing}
+          />
         </DialogContent>
       </Dialog>
     </div>
