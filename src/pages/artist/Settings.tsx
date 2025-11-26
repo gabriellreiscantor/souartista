@@ -251,14 +251,27 @@ const ArtistSettings = () => {
                       Excluir Conta
                     </Button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent>
+                  <AlertDialogContent className="bg-white">
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Tem certeza absoluta?</AlertDialogTitle>
+                      <AlertDialogTitle className="text-red-600 text-xl">⚠️ ATENÇÃO: Ação Irreversível</AlertDialogTitle>
                       <AlertDialogDescription className="space-y-4">
-                        <p>
-                          Esta ação não pode ser desfeita. Isso irá excluir permanentemente sua conta
-                          e remover todos os seus dados de nossos servidores.
-                        </p>
+                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                          <p className="font-bold text-red-900 mb-2">
+                            Ao excluir sua conta, TODOS os seus dados serão perdidos PERMANENTEMENTE:
+                          </p>
+                          <ul className="text-sm text-red-800 space-y-1 ml-4">
+                            <li>• Todos os seus shows cadastrados</li>
+                            <li>• Seus músicos e equipe</li>
+                            <li>• Locais e venues salvos</li>
+                            <li>• Despesas de locomoção registradas</li>
+                            <li>• Sua assinatura ativa (sem reembolso)</li>
+                            <li>• Configurações e preferências</li>
+                            <li>• Relatórios e histórico financeiro</li>
+                          </ul>
+                          <p className="font-bold text-red-900 mt-3">
+                            Esta ação NÃO PODE ser desfeita. Seus dados não poderão ser recuperados.
+                          </p>
+                        </div>
                         <div className="space-y-2">
                           <p className="font-semibold text-gray-900">
                             Digite "excluir minha conta" para confirmar:
