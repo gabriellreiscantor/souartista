@@ -158,15 +158,15 @@ serve(async (req) => {
             .maybeSingle();
 
           if (existingSubscription) {
-            // Only update subscription status to 'canceled'
-            // DO NOT update status_plano immediately - user keeps access until next_due_date
-            await supabase
-              .from('subscriptions')
-              .update({
-                status: 'canceled',
-                updated_at: new Date().toISOString(),
-              })
-              .eq('id', existingSubscription.id);
+          // Only update subscription status to 'cancelled'
+          // DO NOT update status_plano immediately - user keeps access until next_due_date
+          await supabase
+            .from('subscriptions')
+            .update({
+              status: 'cancelled',
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', existingSubscription.id);
 
             // Notify user about cancellation
             const nextDueDate = existingSubscription.next_due_date 
