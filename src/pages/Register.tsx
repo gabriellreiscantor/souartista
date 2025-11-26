@@ -420,27 +420,27 @@ const Register = () => {
           <div className="absolute inset-0 bg-[#B96FFF] opacity-10 blur-[50px] rounded-3xl" />
           
           {/* Card */}
-          <div className="relative z-10 rounded-3xl p-6 space-y-4 border border-[#B96FFF]/20" style={{
+          <div className="relative z-10 rounded-3xl p-4 space-y-3 border border-[#B96FFF]/20" style={{
             background: 'rgba(42, 23, 56, 0.85)',
             backdropFilter: 'blur(20px)',
             boxShadow: '0 8px 32px 0 rgba(185, 111, 255, 0.15)'
           }}>
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="text-center space-y-2">
-              <h1 className="text-3xl font-heading font-bold text-white">Criar conta</h1>
+              <h1 className="text-2xl font-heading font-bold text-white">Criar conta</h1>
               <p className="text-[#C8BAD4]">Etapa {step} de 4</p>
             </div>
             
             <Progress value={progress} className="h-2" />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             {step === 1 && (
               <>
                 {/* Avatar Upload */}
                 <div className="flex flex-col items-center space-y-2 mb-2">
                   <div className="relative">
-                    <Avatar className="w-20 h-20 border-2 border-[#B96FFF]">
+                    <Avatar className="w-16 h-16 border-2 border-[#B96FFF]">
                       <AvatarImage src={photoPreview} />
                       <AvatarFallback className="bg-[#1B0D29] text-[#B96FFF] text-2xl">
                         <Camera className="w-8 h-8" />
