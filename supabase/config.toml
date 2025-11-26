@@ -2,3 +2,6 @@ project_id = "wjutvzmnvemrplpwbkyf"
 
 [functions.import-firebase-shows]
 verify_jwt = true
+
+[functions.asaas-webhook]
+verify_jwt = false
