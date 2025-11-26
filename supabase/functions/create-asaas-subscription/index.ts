@@ -123,6 +123,62 @@ serve(async (req) => {
     }
 
     const subscriptionData = await subscriptionResponse.json();
+    console.log('Subscription created:', subscriptionData);
+
+    // Get payments for this subscription
+    const paymentsResponse = await fetch(`https://api.asaas.com/v3/subscriptions/${subscriptionData.id}/payments`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'access_token': asaasApiKey,
+      },
+    });
+
+    if (!paymentsResponse.ok) {
+      const errorData = await paymentsResponse.text();
+      console.error('Failed to fetch payments:', errorData);
+      throw new Error('Failed to fetch subscription payments');
+    }
+
+    const paymentsData = await paymentsResponse.json();
+    console.log('Payments data:', paymentsData);
+
+    const firstPayment = paymentsData.data?.[0];
+    if (!firstPayment) {
+      console.error('No payment found for subscription');
+      throw new Error('No payment found for subscription');
+    }
+
+    let paymentInfo: any = {
+      paymentId: firstPayment.id,
+      billingType,
+    };
+
+    // For PIX, get QR Code
+    if (billingType === 'PIX') {
+      const pixResponse = await fetch(`https://api.asaas.com/v3/payments/${firstPayment.id}/pixQrCode`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'access_token': asaasApiKey,
+        },
+      });
+
+      if (!pixResponse.ok) {
+        const errorData = await pixResponse.text();
+        console.error('Failed to fetch PIX QR Code:', errorData);
+        throw new Error('Failed to fetch PIX QR Code');
+      }
+
+      const pixData = await pixResponse.json();
+      console.log('PIX QR Code obtained successfully');
+      
+      paymentInfo.pixQrCode = pixData.payload;
+      paymentInfo.pixQrCodeImage = pixData.encodedImage;
+    } else {
+      // For credit card, use invoice URL
+      paymentInfo.invoiceUrl = firstPayment.invoiceUrl;
+    }
 
     // Save subscription in database
     const { error: insertError } = await supabase
@@ -147,8 +203,7 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         subscriptionId: subscriptionData.id,
-        paymentUrl: subscriptionData.invoiceUrl,
-        billingType,
+        ...paymentInfo,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

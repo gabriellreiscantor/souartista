@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Check, Shield, Mail, Building2 } from 'lucide-react';
+import { Check, Shield, Mail, Building2, Copy, QrCode } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 const Subscribe = () => {
   const [billingCycle, setBillingCycle] = useState<'annual' | 'monthly'>('annual');
   const [showContactDialog, setShowContactDialog] = useState(false);
+  const [showPixDialog, setShowPixDialog] = useState(false);
+  const [pixData, setPixData] = useState<{ code: string; image: string } | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'PIX' | 'CREDIT_CARD'>('PIX');
   const { updateUserData, user } = useAuth();
   const navigate = useNavigate();
@@ -55,25 +57,42 @@ const Subscribe = () => {
         body: { planType: plan, paymentMethod },
       });
 
+      toast.dismiss();
+
       if (error) {
         console.error('Error creating subscription:', error);
         throw error;
       }
 
-      if (data.success && data.paymentUrl) {
-        toast.success('Assinatura criada! Redirecionando para pagamento...');
+      if (data.success) {
+        toast.success('Assinatura criada com sucesso!');
         
-        // Open payment URL in new tab
-        window.open(data.paymentUrl, '_blank');
-        
-        // Show instructions
-        toast.info('Complete o pagamento na nova aba. Você será notificado quando o pagamento for confirmado.');
+        if (data.billingType === 'PIX' && data.pixQrCode) {
+          // Show PIX modal with QR Code
+          setPixData({
+            code: data.pixQrCode,
+            image: data.pixQrCodeImage,
+          });
+          setShowPixDialog(true);
+        } else if (data.invoiceUrl) {
+          // Open credit card payment URL in new tab
+          window.open(data.invoiceUrl, '_blank');
+          toast.info('Complete o pagamento na nova aba.');
+        }
       } else {
         throw new Error('Failed to create subscription');
       }
     } catch (error) {
       console.error('Error subscribing:', error);
+      toast.dismiss();
       toast.error('Erro ao criar assinatura. Tente novamente.');
+    }
+  };
+
+  const copyPixCode = () => {
+    if (pixData?.code) {
+      navigator.clipboard.writeText(pixData.code);
+      toast.success('Código PIX copiado!');
     }
   };
 
@@ -337,6 +356,68 @@ const Subscribe = () => {
           </div>
 
           <Button onClick={() => setShowContactDialog(false)} className="w-full">
+            Fechar
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* PIX Payment Dialog */}
+      <Dialog open={showPixDialog} onOpenChange={setShowPixDialog}>
+        <DialogContent className="sm:max-w-lg dark bg-background border-border">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <QrCode className="w-5 h-5 text-primary" />
+              Pagamento via PIX
+            </DialogTitle>
+            <DialogDescription>
+              Escaneie o QR Code ou copie o código para pagar
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex flex-col gap-6 py-4">
+            {/* QR Code Image */}
+            {pixData?.image && (
+              <div className="flex justify-center">
+                <div className="p-4 bg-white rounded-lg">
+                  <img 
+                    src={`data:image/png;base64,${pixData.image}`} 
+                    alt="QR Code PIX" 
+                    className="w-64 h-64"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* PIX Code */}
+            <div className="space-y-3">
+              <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
+                <p className="text-xs font-medium mb-2 text-muted-foreground">Código PIX (Copia e Cola)</p>
+                <p className="text-sm font-mono break-all">{pixData?.code}</p>
+              </div>
+
+              <Button onClick={copyPixCode} className="w-full" variant="outline">
+                <Copy className="w-4 h-4 mr-2" />
+                Copiar Código PIX
+              </Button>
+            </div>
+
+            {/* Instructions */}
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Como pagar:</p>
+              <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
+                <li>Abra o app do seu banco</li>
+                <li>Escolha "Pagar com PIX"</li>
+                <li>Escaneie o QR Code ou cole o código</li>
+                <li>Confirme o pagamento</li>
+              </ol>
+            </div>
+
+            <p className="text-xs text-muted-foreground text-center">
+              Após o pagamento, você será notificado e seu plano será ativado automaticamente.
+            </p>
+          </div>
+
+          <Button onClick={() => setShowPixDialog(false)} className="w-full">
             Fechar
           </Button>
         </DialogContent>
