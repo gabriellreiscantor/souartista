@@ -443,11 +443,11 @@ const Register = () => {
                     <Avatar className="w-16 h-16 border-2 border-[#B96FFF]">
                       <AvatarImage src={photoPreview} />
                       <AvatarFallback className="bg-[#1B0D29] text-[#B96FFF] text-2xl">
-                        <Camera className="w-6 h-6" />
+                        <Camera className="w-8 h-8" />
                       </AvatarFallback>
                     </Avatar>
                     <label htmlFor="photo-upload" className="absolute bottom-0 right-0 bg-[#B96FFF] rounded-full p-2 cursor-pointer hover:bg-[#A15EEF] transition-colors">
-                      <Camera className="w-4 h-4 text-white" />
+                      <Camera className="w-3 h-3 text-white" />
                       <input
                         id="photo-upload"
                         type="file"
