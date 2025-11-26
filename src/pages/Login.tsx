@@ -56,15 +56,24 @@ const Login = () => {
 
       clearTimeout(timeoutId);
 
-      if (error) {
-        console.error('[Login] Login error:', error);
-        toast({
-          title: 'Erro ao fazer login',
-          description: error.message || 'Verifique suas credenciais e tente novamente',
-          variant: 'destructive',
-        });
-        setLoading(false);
-      } else {
+    if (error) {
+      // Melhorar mensagens de erro do login
+      let errorMessage = error.message;
+      
+      if (error.message.includes('Invalid login credentials') || error.message.includes('invalid credentials')) {
+        errorMessage = 'E-mail ou senha incorretos. Verifique suas credenciais.';
+      } else if (error.message.includes('Email not confirmed')) {
+        errorMessage = 'Por favor, verifique seu e-mail antes de fazer login.';
+      }
+
+      console.error('[Login] Login error:', error);
+      toast({
+        title: 'Erro ao fazer login',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      setLoading(false);
+    } else {
         console.log('[Login] Login successful, redirecting to /app');
         toast({
           title: 'Login realizado!',
@@ -200,6 +209,11 @@ const Login = () => {
                 disabled={loading}
                 className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
               />
+              <div className="flex justify-end">
+                <Link to="/reset-password" className="text-xs text-[#B96FFF] hover:underline">
+                  Esqueceu a senha?
+                </Link>
+              </div>
             </div>
 
             <Button 
