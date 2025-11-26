@@ -7,12 +7,13 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, CreditCard, Calendar, DollarSign, AlertCircle, HelpCircle, ExternalLink, QrCode, Copy } from 'lucide-react';
+import { Loader2, CreditCard, Calendar, DollarSign, AlertCircle, HelpCircle, ExternalLink, QrCode, Copy, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useNativePlatform } from '@/hooks/useNativePlatform';
+import { useLastSeen } from '@/hooks/useLastSeen';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +38,7 @@ const MusicianSubscription = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { isIOS, isNative } = useNativePlatform();
+  useLastSeen(); // Atualizar last_seen_at
   const [loading, setLoading] = useState(true);
   const [canceling, setCanceling] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -291,6 +293,49 @@ const MusicianSubscription = () => {
                 </Card>
               ) : (
                 <>
+                  {/* Warning Card - 7 days before due date (PIX only, no pending payment yet) */}
+                  {subscription.payment_method === 'PIX' && 
+                   !pendingPayment && 
+                   subscription.status === 'active' && 
+                   subscription.next_due_date && 
+                   getDaysRemaining(subscription.next_due_date) <= 7 && 
+                   getDaysRemaining(subscription.next_due_date) > 0 && (
+                    <Card className="border-blue-500 bg-blue-50">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-blue-800">
+                          <Clock className="h-5 w-5" />
+                          Pagamento se aproxima
+                        </CardTitle>
+                        <CardDescription className="text-blue-700">
+                          Seu próximo pagamento vence em {getDaysRemaining(subscription.next_due_date)} dias
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="p-3 bg-blue-100 border border-blue-200 rounded-lg">
+                          <p className="text-sm text-blue-900">
+                            <strong>Fique atento!</strong><br />
+                            Seu pagamento PIX vence em <strong>{formatDate(subscription.next_due_date)}</strong>.
+                            O QR Code para pagamento estará disponível em breve.
+                          </p>
+                        </div>
+                        <Button 
+                          onClick={fetchPendingPayment}
+                          disabled={loadingPayment}
+                          className="w-full"
+                        >
+                          {loadingPayment ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Verificando...
+                            </>
+                          ) : (
+                            'Verificar Pagamento'
+                          )}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )}
+
                   {/* Pending PIX Payment Card */}
                   {subscription.payment_method === 'PIX' && pendingPayment && (
                     <Card className={`${pendingPayment.status === 'OVERDUE' ? 'border-red-500 bg-red-50' : 'border-yellow-500 bg-yellow-50'}`}>
