@@ -40,25 +40,45 @@ const Subscribe = () => {
   }, [user, navigate]);
 
   const handleSubscribe = async (plan: 'monthly' | 'annual') => {
-    await updateUserData({ 
-      status_plano: 'ativo',
-      plan_type: plan,
-      plan_purchased_at: new Date().toISOString()
-    });
-    
-    toast.success('Plano ativado com sucesso!');
-    
-    const userRole = localStorage.getItem('userRole');
-    if (userRole === 'artist') {
-      navigate('/artist/dashboard');
-    } else {
-      navigate('/musician/dashboard');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error('Você precisa estar logado para assinar um plano.');
+        return;
+      }
+
+      toast.loading('Processando sua assinatura...');
+
+      const { data, error } = await supabase.functions.invoke('create-asaas-subscription', {
+        body: { planType: plan },
+      });
+
+      if (error) {
+        console.error('Error creating subscription:', error);
+        throw error;
+      }
+
+      if (data.success && data.paymentUrl) {
+        toast.success('Assinatura criada! Redirecionando para pagamento...');
+        
+        // Open payment URL in new tab
+        window.open(data.paymentUrl, '_blank');
+        
+        // Show instructions
+        toast.info('Complete o pagamento na nova aba. Você será notificado quando o pagamento for confirmado.');
+      } else {
+        throw new Error('Failed to create subscription');
+      }
+    } catch (error) {
+      console.error('Error subscribing:', error);
+      toast.error('Erro ao criar assinatura. Tente novamente.');
     }
   };
 
   const plans = {
     monthly: {
-      price: 'R$ 29,90',
+      price: 'R$ 49,90',
       period: '/mês',
       total: '',
       features: [
@@ -70,10 +90,10 @@ const Subscribe = () => {
       ]
     },
     annual: {
-      price: 'R$ 19,99',
+      price: 'R$ 41,58',
       period: '/mês',
-      total: 'Cobrado R$ 239,88 anualmente',
-      savings: 'Economize R$ 119,00 por ano!',
+      total: 'Cobrado R$ 499,00 anualmente',
+      savings: 'Economize R$ 99,80 por ano!',
       features: [
         'Gerenciamento de shows ilimitado',
         'Controle financeiro completo',
