@@ -117,6 +117,15 @@ const ArtistSubscription = () => {
     return method === 'CREDIT_CARD' ? 'Cartão de Crédito' : 'PIX';
   };
 
+  const getDaysRemaining = (dateString: string) => {
+    if (!dateString) return 0;
+    const today = new Date();
+    const targetDate = new Date(dateString);
+    const diffTime = targetDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+
   if (loading) {
     return (
       <SidebarProvider>
@@ -124,23 +133,14 @@ const ArtistSubscription = () => {
           <ArtistSidebar />
           <div className="flex-1 flex flex-col">
             <header className="h-16 border-b border-gray-200 bg-white flex items-center px-6 justify-between">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <h1 className="text-xl font-semibold text-gray-900">Assinatura</h1>
-              </div>
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/artist/support')}
-                  className="gap-2"
-                >
-                  <HelpCircle className="h-4 w-4" />
-                  <span className="hidden sm:inline">Ajuda</span>
-                </Button>
-                <NotificationBell />
-                <UserMenu userName={userData?.name} userRole="artist" />
-              </div>
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+              <h1 className="text-xl font-semibold text-gray-900">Assinatura</h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <NotificationBell />
+              <UserMenu userName={userData?.name} userRole="artist" />
+            </div>
             </header>
             <main className="flex-1 p-6 pb-20">
               <div className="flex items-center justify-center h-full">
@@ -165,15 +165,6 @@ const ArtistSubscription = () => {
               <h1 className="text-xl font-semibold text-gray-900">Assinatura</h1>
             </div>
             <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/artist/support')}
-                className="gap-2"
-              >
-                <HelpCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">Ajuda</span>
-              </Button>
               <NotificationBell />
               <UserMenu userName={userData?.name} userRole="artist" />
             </div>
@@ -269,7 +260,10 @@ const ArtistSubscription = () => {
                                 {subscription.status === 'canceled' ? 'Acesso até' : 'Próxima Cobrança'}
                               </p>
                               <p className="text-lg font-semibold text-gray-900">
-                                {formatDate(subscription.next_due_date)}
+                                {subscription.status === 'canceled' 
+                                  ? `Faltam ${getDaysRemaining(subscription.next_due_date)} dias (${formatDate(subscription.next_due_date)})`
+                                  : `Em ${getDaysRemaining(subscription.next_due_date)} dias (${formatDate(subscription.next_due_date)})`
+                                }
                               </p>
                             </div>
                           </div>
@@ -340,6 +334,28 @@ const ArtistSubscription = () => {
                           </AlertDialogContent>
                         </AlertDialog>
                       )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Card de Ajuda */}
+                  <Card className="bg-white">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-gray-900">
+                        <HelpCircle className="h-5 w-5 text-primary" />
+                        Precisa de ajuda?
+                      </CardTitle>
+                      <CardDescription className="text-gray-600">
+                        Nossa equipe está pronta para te ajudar com qualquer dúvida sobre assinatura.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button 
+                        onClick={() => navigate('/artist/support')}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        Falar com Suporte
+                      </Button>
                     </CardContent>
                   </Card>
                 </>

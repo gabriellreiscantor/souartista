@@ -77,6 +77,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUserData(null);
       }
 
+      // Check for expired canceled subscriptions and update status_plano if needed
+      try {
+        const { data: subscription } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (subscription && subscription.status === 'canceled' && subscription.next_due_date) {
+          const today = new Date();
+          const dueDate = new Date(subscription.next_due_date);
+          
+          // If next_due_date has passed, update status_plano to inactive
+          if (today > dueDate && profile?.status_plano === 'ativo') {
+            console.log('[useAuth] Subscription expired, updating status_plano to inactive');
+            await supabase
+              .from('profiles')
+              .update({ status_plano: 'inactive' })
+              .eq('id', userId);
+            
+            // Refetch profile to get updated data
+            const { data: updatedProfile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', userId)
+              .maybeSingle();
+            
+            if (updatedProfile) {
+              setUserData(updatedProfile as UserData);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('[useAuth] Error checking subscription expiration:', error);
+      }
+
       // Fetch user role with timeout
       const rolePromise = supabase
         .from('user_roles')
