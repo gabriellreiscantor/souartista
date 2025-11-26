@@ -20,7 +20,7 @@ const Subscribe = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingPlanType, setPendingPlanType] = useState<'monthly' | 'annual' | null>(null);
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
-  const { refetchUserData, user } = useAuth();
+  const { refetchUserData, user, userRole } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,18 +34,22 @@ const Subscribe = () => {
         .single();
 
       if (profile?.status_plano === 'ativo') {
-        const userRole = localStorage.getItem('userRole');
+        // Usa userRole do contexto primeiro, depois localStorage, depois fallback
+        const role = userRole || localStorage.getItem('userRole');
         
-        if (userRole === 'artist') {
+        if (role === 'artist') {
           navigate('/artist/dashboard', { replace: true });
-        } else if (userRole === 'musician') {
+        } else if (role === 'musician') {
           navigate('/musician/dashboard', { replace: true });
+        } else {
+          // Fallback para AppHub que redireciona corretamente
+          navigate('/app', { replace: true });
         }
       }
     };
 
     checkUserStatus();
-  }, [user, navigate]);
+  }, [user, userRole, navigate]);
 
   // Poll for payment confirmation when PIX dialog is open
   useEffect(() => {
