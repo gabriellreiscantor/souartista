@@ -115,7 +115,7 @@ const Landing = () => {
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
 
-          <Button size="lg" variant="secondary" onClick={() => navigate('/login')} className="w-full rounded-full text-lg font-medium bg-white text-foreground hover:bg-white/90">
+          <Button size="lg" variant="outline" onClick={() => navigate('/login')} className="w-full rounded-full text-lg font-medium border-primary/30 text-primary hover:bg-primary/10">
             Já tenho uma conta
           </Button>
 
