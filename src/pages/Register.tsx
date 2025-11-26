@@ -367,9 +367,9 @@ const Register = () => {
       left: 0,
       right: 0,
       bottom: 0,
-      touchAction: 'pan-y',
+      touchAction: 'none',
       overscrollBehavior: 'contain',
-      overflow: 'auto'
+      overflow: 'hidden'
     }}>
       {/* Glow central suave e sutil */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -411,8 +411,8 @@ const Register = () => {
 
       <div className="w-full max-w-md relative z-10">
         {/* Logo */}
-        <div className="flex items-center justify-center mb-8 relative">
-          <img src={logo} alt="Sou Artista" className="h-32 w-auto relative z-10 drop-shadow-[0_0_25px_rgba(185,111,255,0.4)]" />
+        <div className="flex items-center justify-center mb-4 relative">
+          <img src={logo} alt="Sou Artista" className="h-20 w-auto relative z-10 drop-shadow-[0_0_25px_rgba(185,111,255,0.4)]" />
         </div>
 
         {/* Card com tema premium */}
@@ -420,7 +420,7 @@ const Register = () => {
           <div className="absolute inset-0 bg-[#B96FFF] opacity-10 blur-[50px] rounded-3xl" />
           
           {/* Card */}
-          <div className="relative z-10 rounded-3xl p-8 space-y-6 border border-[#B96FFF]/20" style={{
+          <div className="relative z-10 rounded-3xl p-6 space-y-4 border border-[#B96FFF]/20" style={{
             background: 'rgba(42, 23, 56, 0.85)',
             backdropFilter: 'blur(20px)',
             boxShadow: '0 8px 32px 0 rgba(185, 111, 255, 0.15)'
@@ -438,9 +438,9 @@ const Register = () => {
             {step === 1 && (
               <>
                 {/* Avatar Upload */}
-                <div className="flex flex-col items-center space-y-2 mb-4">
+                <div className="flex flex-col items-center space-y-2 mb-2">
                   <div className="relative">
-                    <Avatar className="w-24 h-24 border-2 border-[#B96FFF]">
+                    <Avatar className="w-20 h-20 border-2 border-[#B96FFF]">
                       <AvatarImage src={photoPreview} />
                       <AvatarFallback className="bg-[#1B0D29] text-[#B96FFF] text-2xl">
                         <Camera className="w-8 h-8" />
