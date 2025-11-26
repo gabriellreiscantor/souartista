@@ -1,6 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// ========================================
+// CONFIGURAÇÃO DO NEGÓCIO - ALTERAR AQUI
+// ========================================
+const BUSINESS_CONFIG = {
+  name: 'SouArtista',
+  // Quando tiver CNPJ, adicione aqui:
+  // cnpj: '00.000.000/0001-00',
+  // razaoSocial: 'SouArtista Tecnologia LTDA',
+};
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -106,7 +116,7 @@ serve(async (req) => {
       billingType,
       cycle,
       value: amount,
-      description: `Plano ${planType === 'monthly' ? 'Mensal' : 'Anual'} - SouArtista`,
+      description: `Plano ${planType === 'monthly' ? 'Mensal' : 'Anual'} - ${BUSINESS_CONFIG.name}`,
     };
 
     // Para cartão de crédito, adicionar dados do cartão
