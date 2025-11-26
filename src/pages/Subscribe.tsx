@@ -423,7 +423,7 @@ const Subscribe = () => {
 
       {/* PIX Payment Dialog */}
       <Dialog open={showPixDialog} onOpenChange={setShowPixDialog}>
-        <DialogContent className="sm:max-w-lg dark bg-background border-border">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <QrCode className="w-5 h-5 text-primary" />
@@ -450,9 +450,9 @@ const Subscribe = () => {
 
             {/* PIX Code */}
             <div className="space-y-3">
-              <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                <p className="text-xs font-medium mb-2 text-muted-foreground">Código PIX (Copia e Cola)</p>
-                <p className="text-sm font-mono break-all">{pixData?.code}</p>
+              <div className="p-4 rounded-lg bg-white">
+                <p className="text-xs font-medium mb-2 text-primary">Código PIX (Copia e Cola)</p>
+                <p className="text-sm font-mono break-all text-black">{pixData?.code}</p>
               </div>
 
               <Button onClick={copyPixCode} className="w-full" variant="outline">
