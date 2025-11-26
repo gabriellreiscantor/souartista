@@ -51,10 +51,10 @@ serve(async (req) => {
       throw new Error('User profile not found');
     }
 
-    // Plan prices (TEST PRICES - remember to change back later!)
+    // Plan prices (TEST PRICES - Asaas minimum is R$ 5.00)
     const prices = {
-      monthly: 1.00,
-      annual: 2.00
+      monthly: 5.00,
+      annual: 10.00
     };
 
     const amount = prices[planType as keyof typeof prices];
