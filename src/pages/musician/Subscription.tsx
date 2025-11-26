@@ -7,7 +7,7 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, CreditCard, Calendar, DollarSign, AlertCircle, HelpCircle, ExternalLink } from 'lucide-react';
+import { Loader2, CreditCard, Calendar, DollarSign, AlertCircle, HelpCircle, ExternalLink, QrCode, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -24,6 +24,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const MusicianSubscription = () => {
   const { userData } = useAuth();
@@ -34,10 +41,20 @@ const MusicianSubscription = () => {
   const [canceling, setCanceling] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [subscription, setSubscription] = useState<any>(null);
+  const [pendingPayment, setPendingPayment] = useState<any>(null);
+  const [loadingPayment, setLoadingPayment] = useState(false);
+  const [showPixDialog, setShowPixDialog] = useState(false);
+  const [checkingPayment, setCheckingPayment] = useState(false);
 
   useEffect(() => {
     fetchSubscription();
   }, [userData]);
+
+  useEffect(() => {
+    if (subscription?.payment_method === 'PIX' && subscription?.status === 'active') {
+      fetchPendingPayment();
+    }
+  }, [subscription]);
 
   const fetchSubscription = async () => {
     if (!userData?.id) return;
@@ -124,6 +141,67 @@ const MusicianSubscription = () => {
     const diffTime = targetDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays > 0 ? diffDays : 0;
+  };
+
+  const fetchPendingPayment = async () => {
+    setLoadingPayment(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('get-pending-payment');
+      
+      if (error) throw error;
+      
+      setPendingPayment(data?.pendingPayment || null);
+    } catch (error) {
+      console.error('Error fetching pending payment:', error);
+    } finally {
+      setLoadingPayment(false);
+    }
+  };
+
+  const handleCheckPayment = async () => {
+    setCheckingPayment(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('check-payment-status', {
+        body: { paymentId: pendingPayment.id }
+      });
+
+      if (error) throw error;
+
+      if (data.status === 'CONFIRMED' || data.status === 'RECEIVED') {
+        toast({
+          title: "Pagamento confirmado!",
+          description: "Seu pagamento foi confirmado com sucesso.",
+        });
+        setShowPixDialog(false);
+        setPendingPayment(null);
+        await fetchSubscription();
+      } else {
+        toast({
+          title: "Pagamento ainda não confirmado",
+          description: "Aguarde alguns instantes e tente novamente.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error checking payment:', error);
+      toast({
+        title: "Erro ao verificar pagamento",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
+    } finally {
+      setCheckingPayment(false);
+    }
+  };
+
+  const copyPixCode = () => {
+    if (pendingPayment?.qrCode) {
+      navigator.clipboard.writeText(pendingPayment.qrCode);
+      toast({
+        title: "Código copiado!",
+        description: "O código PIX foi copiado para a área de transferência.",
+      });
+    }
   };
 
   if (loading) {
@@ -213,6 +291,41 @@ const MusicianSubscription = () => {
                 </Card>
               ) : (
                 <>
+                  {/* Pending PIX Payment Card */}
+                  {subscription.payment_method === 'PIX' && pendingPayment && (
+                    <Card className={`${pendingPayment.status === 'OVERDUE' ? 'border-red-500 bg-red-50' : 'border-yellow-500 bg-yellow-50'}`}>
+                      <CardHeader>
+                        <CardTitle className={`flex items-center gap-2 ${pendingPayment.status === 'OVERDUE' ? 'text-red-800' : 'text-yellow-800'}`}>
+                          <AlertCircle className="h-5 w-5" />
+                          {pendingPayment.status === 'OVERDUE' ? 'Pagamento Atrasado' : 'Pagamento Pendente'}
+                        </CardTitle>
+                        <CardDescription className={pendingPayment.status === 'OVERDUE' ? 'text-red-700' : 'text-yellow-700'}>
+                          {pendingPayment.status === 'OVERDUE' 
+                            ? 'Seu pagamento está atrasado! Pague agora para não perder acesso.'
+                            : `Seu próximo pagamento vence em ${getDaysRemaining(pendingPayment.dueDate)} dias`
+                          }
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className={`font-semibold ${pendingPayment.status === 'OVERDUE' ? 'text-red-900' : 'text-yellow-900'}`}>
+                            Valor: R$ {pendingPayment.value.toFixed(2).replace('.', ',')}
+                          </span>
+                          <span className={`text-sm ${pendingPayment.status === 'OVERDUE' ? 'text-red-700' : 'text-yellow-700'}`}>
+                            Vencimento: {formatDate(pendingPayment.dueDate)}
+                          </span>
+                        </div>
+                        <Button 
+                          onClick={() => setShowPixDialog(true)}
+                          className={`w-full ${pendingPayment.status === 'OVERDUE' ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                        >
+                          <QrCode className="w-4 h-4 mr-2" />
+                          {pendingPayment.status === 'OVERDUE' ? 'Pagar Agora' : 'Pagar com PIX'}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )}
+
                   <Card className="bg-white">
                     <CardHeader>
                       <div className="flex items-center justify-between">
@@ -365,6 +478,69 @@ const MusicianSubscription = () => {
         </div>
         <MobileBottomNav role="musician" />
       </div>
+
+      {/* PIX Payment Dialog */}
+      <Dialog open={showPixDialog} onOpenChange={setShowPixDialog}>
+        <DialogContent className="bg-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">Pagar com PIX</DialogTitle>
+            <DialogDescription className="text-gray-600">
+              Escaneie o QR Code ou copie o código para pagar
+            </DialogDescription>
+          </DialogHeader>
+          
+          {pendingPayment && (
+            <div className="space-y-4">
+              <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg">
+                <img 
+                  src={`data:image/png;base64,${pendingPayment.encodedImage}`} 
+                  alt="QR Code PIX" 
+                  className="w-64 h-64"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-700">Código PIX (Copia e Cola)</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={pendingPayment.qrCode}
+                    readOnly
+                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50"
+                  />
+                  <Button onClick={copyPixCode} variant="outline" size="icon">
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Valor:</strong> R$ {pendingPayment.value.toFixed(2).replace('.', ',')}
+                </p>
+                <p className="text-sm text-blue-800">
+                  <strong>Vencimento:</strong> {formatDate(pendingPayment.dueDate)}
+                </p>
+              </div>
+
+              <Button 
+                onClick={handleCheckPayment} 
+                disabled={checkingPayment}
+                className="w-full"
+              >
+                {checkingPayment ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Verificando...
+                  </>
+                ) : (
+                  'Já paguei, verificar'
+                )}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 };
