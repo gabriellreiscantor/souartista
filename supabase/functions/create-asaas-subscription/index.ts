@@ -244,6 +244,24 @@ serve(async (req) => {
       throw new Error('Failed to save subscription');
     }
 
+    // For credit card, grant immediate access (trial period)
+    if (billingType === 'CREDIT_CARD') {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          status_plano: 'ativo',
+          plan_type: planType,
+          plan_purchased_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
+
+      if (profileError) {
+        console.error('Error updating profile for trial access:', profileError);
+      } else {
+        console.log('✅ Trial access granted immediately for credit card user');
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
