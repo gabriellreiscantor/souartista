@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Mail, Phone, Camera, LogOut, Bell } from 'lucide-react';
+import { User, Mail, Phone, Camera, LogOut, Bell, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -96,6 +96,34 @@ const ArtistProfile = () => {
     } catch (error) {
       console.error('Error uploading photo:', error);
       toast.error('Erro ao fazer upload da foto');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    try {
+      setUploading(true);
+      
+      // Remover do storage
+      const fileName = `${user?.id}/profile.jpg`;
+      await supabase.storage
+        .from('profile-photos')
+        .remove([fileName]);
+
+      // Atualizar no banco
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ photo_url: null })
+        .eq('id', user?.id);
+
+      if (updateError) throw updateError;
+
+      setPhotoUrl('');
+      toast.success('Foto removida com sucesso!');
+    } catch (error) {
+      console.error('Error removing photo:', error);
+      toast.error('Erro ao remover foto');
     } finally {
       setUploading(false);
     }
@@ -206,6 +234,18 @@ const ArtistProfile = () => {
                     />
                   </label>
                 </div>
+                {photoUrl && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleRemovePhoto}
+                    disabled={uploading}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Remover Imagem
+                  </Button>
+                )}
                 <div className="text-center">
                   <h2 className="text-2xl font-bold text-gray-950">Seu Perfil</h2>
                   <p className="text-muted-foreground">Gerencie suas informações de conta.</p>
