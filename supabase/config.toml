@@ -17,3 +17,6 @@ verify_jwt = true
 
 [functions.get-pending-payment]
 verify_jwt = true
+
+[functions.check-show-reminders]
+verify_jwt = false
