@@ -326,6 +326,7 @@ export type Database = {
           cpf: string | null
           created_at: string
           email: string
+          fcm_token: string | null
           id: string
           is_verified: boolean | null
           last_seen_at: string | null
@@ -342,6 +343,7 @@ export type Database = {
           cpf?: string | null
           created_at?: string
           email: string
+          fcm_token?: string | null
           id: string
           is_verified?: boolean | null
           last_seen_at?: string | null
@@ -358,6 +360,7 @@ export type Database = {
           cpf?: string | null
           created_at?: string
           email?: string
+          fcm_token?: string | null
           id?: string
           is_verified?: boolean | null
           last_seen_at?: string | null

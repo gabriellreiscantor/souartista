@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import { usePixNotificationChecker } from "./hooks/usePixNotificationChecker";
+import { usePushNotifications } from "./hooks/usePushNotifications";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -69,6 +70,7 @@ const queryClient = new QueryClient();
 
 const AppRoutes = () => {
   usePixNotificationChecker(); // Verifica notificações PIX periodicamente
+  usePushNotifications(); // Inicializa push notifications nativas
   
   return (
     <Routes>
