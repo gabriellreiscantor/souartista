@@ -455,7 +455,7 @@ const Subscribe = () => {
                 <p className="text-sm font-mono break-all text-black">{pixData?.code}</p>
               </div>
 
-              <Button onClick={copyPixCode} className="w-full" variant="outline">
+              <Button onClick={copyPixCode} className="w-full">
                 <Copy className="w-4 h-4 mr-2" />
                 Copiar Código PIX
               </Button>
