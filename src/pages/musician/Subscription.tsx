@@ -115,8 +115,8 @@ const MusicianSubscription = () => {
         return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Ativa</Badge>;
       case 'pending':
         return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pendente</Badge>;
-      case 'canceled':
-        return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">Cancelada</Badge>;
+      case 'cancelled':
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Cancelada</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -415,10 +415,10 @@ const MusicianSubscription = () => {
                             <Calendar className="h-5 w-5 text-primary mt-0.5" />
                             <div>
                               <p className="text-sm font-medium text-gray-600">
-                                {subscription.status === 'canceled' ? 'Acesso até' : 'Próxima Cobrança'}
+                                {subscription.status === 'cancelled' ? 'Acesso até' : 'Próxima Cobrança'}
                               </p>
                               <p className="text-lg font-semibold text-gray-900">
-                                {subscription.status === 'canceled' 
+                                {subscription.status === 'cancelled' 
                                   ? `Faltam ${getDaysRemaining(subscription.next_due_date)} dias (${formatDate(subscription.next_due_date)})`
                                   : `Em ${getDaysRemaining(subscription.next_due_date)} dias (${formatDate(subscription.next_due_date)})`
                                 }
@@ -430,34 +430,46 @@ const MusicianSubscription = () => {
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-white">
-                    <CardHeader>
-                      <CardTitle className="text-gray-900">Cancelar Assinatura</CardTitle>
-                      <CardDescription className="text-gray-600">
-                        {subscription.status === 'canceled' 
-                          ? `Sua assinatura foi cancelada. Você pode continuar usando até ${formatDate(subscription.next_due_date)}.`
-                          : 'Seus dados permanecerão salvos e você poderá reativar sua assinatura quando quiser.'
-                        }
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {subscription.status === 'canceled' ? (
-                        <div className="space-y-4">
-                          <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                            <p className="text-sm text-orange-800">
-                              <strong>Assinatura Cancelada</strong><br />
-                              Você manterá acesso premium até <strong>{formatDate(subscription.next_due_date)}</strong>.
-                              Após essa data, você perderá acesso às funcionalidades premium.
-                            </p>
-                          </div>
-                          <Button 
-                            onClick={() => navigate('/subscribe')} 
-                            className="w-full"
-                          >
-                            Reativar Assinatura
-                          </Button>
+                  {/* Cancelled Subscription Info Card */}
+                  {subscription.status === 'cancelled' && (
+                    <Card className="border-red-500 bg-red-50">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-red-800">
+                          <AlertCircle className="h-5 w-5" />
+                          Assinatura Cancelada
+                        </CardTitle>
+                        <CardDescription className="text-red-700">
+                          Você poderá usar o Sou Artista até o fim do período pago
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="p-4 bg-red-100 border border-red-200 rounded-lg">
+                          <p className="text-sm text-red-900">
+                            <strong>Acesso garantido até:</strong><br />
+                            <span className="text-lg font-bold">{formatDate(subscription.next_due_date)}</span><br />
+                            <span className="text-base">Faltam <strong>{getDaysRemaining(subscription.next_due_date)} dias</strong> de acesso</span>
+                          </p>
                         </div>
-                      ) : (
+                        <div className="p-3 bg-white border border-red-200 rounded-lg">
+                          <p className="text-sm text-gray-700">
+                            💡 <strong>Quer assinar novamente?</strong><br />
+                            Aguarde o término do período atual e você poderá criar uma nova assinatura.
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Cancel Subscription Card - Only show if not cancelled */}
+                  {subscription.status !== 'cancelled' && (
+                    <Card className="bg-white">
+                      <CardHeader>
+                        <CardTitle className="text-gray-900">Cancelar Assinatura</CardTitle>
+                        <CardDescription className="text-gray-600">
+                          Seus dados permanecerão salvos e você poderá reativar sua assinatura quando quiser.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
                         <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
                           <AlertDialogTrigger asChild>
                             <Button variant="destructive" className="w-full">
@@ -491,9 +503,9 @@ const MusicianSubscription = () => {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
-                      )}
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Card de Ajuda */}
                   <Card className="bg-white">
