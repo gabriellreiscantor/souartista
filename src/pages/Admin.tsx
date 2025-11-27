@@ -94,7 +94,9 @@ export default function Admin() {
   const [googleTax, setGoogleTax] = useState(30);
   const [appleTax, setAppleTax] = useState(15);
   const [activeUsersCount, setActiveUsersCount] = useState(0);
+  const [cancelledUsersCount, setCancelledUsersCount] = useState(0);
   const [savingTax, setSavingTax] = useState(false);
+  const [syncingPayments, setSyncingPayments] = useState(false);
 
   // Estados para Notificações
   const [notificationTitle, setNotificationTitle] = useState('');
@@ -300,13 +302,13 @@ export default function Admin() {
         count: 'exact',
         head: true
       });
-      // Usuários com plano = subscriptions criadas (pending ou active)
+      // Usuários com plano = profiles com status_plano = 'ativo'
       const {
         count: usersWithPlan
-      } = await supabase.from('subscriptions').select('*', {
+      } = await supabase.from('profiles').select('*', {
         count: 'exact',
         head: true
-      }).in('status', ['pending', 'active']);
+      }).eq('status_plano', 'ativo');
       const {
         count: feedbackTotal
       } = await supabase.from('user_feedback').select('*', {
@@ -540,12 +542,22 @@ export default function Admin() {
 
   const fetchFinancialData = async () => {
     try {
-      // Usuários Ativos = subscriptions com pagamento CONFIRMADO (receita real)
-      const { count } = await supabase
+      // Usuários Ativos (Receita) = profiles com status_plano='ativo' E plan_purchased_at não null
+      // Isso garante que não contamos trials que ainda não pagaram
+      const { count: activeCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('status_plano', 'ativo')
+        .not('plan_purchased_at', 'is', null);
+
+      // Contar usuários cancelados
+      const { count: cancelledCount } = await supabase
         .from('subscriptions')
         .select('*', { count: 'exact', head: true })
-        .eq('status', 'active');
-      setActiveUsersCount(count || 0);
+        .eq('status', 'cancelled');
+
+      setActiveUsersCount(activeCount || 0);
+      setCancelledUsersCount(cancelledCount || 0);
 
       // Carregar taxas salvas
       const savedGoogleTax = localStorage.getItem('admin_google_tax');
@@ -571,6 +583,26 @@ export default function Admin() {
       toast.error('Erro ao salvar taxas');
     } finally {
       setTimeout(() => setSavingTax(false), 500);
+    }
+  };
+
+  const handleSyncPayments = async () => {
+    setSyncingPayments(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-asaas-payments');
+      
+      if (error) throw error;
+      
+      toast.success(`Sincronização concluída! ${data.synced} subscriptions atualizadas.`);
+      
+      // Recarregar dados
+      await fetchFinancialData();
+      await fetchStats();
+    } catch (error) {
+      console.error('Erro ao sincronizar pagamentos:', error);
+      toast.error('Erro ao sincronizar pagamentos. Tente novamente.');
+    } finally {
+      setSyncingPayments(false);
     }
   };
 
@@ -2336,17 +2368,45 @@ export default function Admin() {
                   </CardContent>
                 </Card>
 
+                {/* Sincronização Asaas */}
+                <Card className="bg-white border-gray-200">
+                  <CardHeader>
+                    <CardTitle className="text-gray-900">🔄 Sincronização de Pagamentos</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <p className="text-sm text-gray-600">
+                        Sincronize manualmente os pagamentos com a Asaas para atualizar o status das subscriptions e receita.
+                      </p>
+                      <Button 
+                        onClick={handleSyncPayments} 
+                        disabled={syncingPayments}
+                        className="w-full md:w-auto"
+                      >
+                        {syncingPayments ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            Sincronizando...
+                          </>
+                        ) : (
+                          '🔄 Sincronizar com Asaas'
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Resumo Financeiro */}
                 <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
                   <CardHeader>
                     <CardTitle className="text-gray-900">💰 Resumo de Receita Mensal</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
                       <div className="p-4 bg-white rounded-lg border border-gray-200">
                         <p className="text-xs text-gray-600 mb-1">Usuários Ativos</p>
                         <p className="text-2xl font-bold text-purple-600">{activeUsersCount}</p>
-                        <p className="text-xs text-gray-500 mt-1">Pagamentos confirmados</p>
+                        <p className="text-xs text-gray-500 mt-1">Com pagamento confirmado</p>
                       </div>
 
                       <div className="p-4 bg-white rounded-lg border border-gray-200">
@@ -2354,7 +2414,13 @@ export default function Admin() {
                         <p className="text-2xl font-bold text-green-600">
                           R$ {(activeUsersCount * 29.90).toFixed(2)}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">R$ 29,90 × {activeUsersCount} ativos</p>
+                        <p className="text-xs text-gray-500 mt-1">R$ 29,90 × {activeUsersCount} pagos</p>
+                      </div>
+
+                      <div className="p-4 bg-white rounded-lg border border-gray-200">
+                        <p className="text-xs text-gray-600 mb-1">Cancelados</p>
+                        <p className="text-2xl font-bold text-red-600">{cancelledUsersCount}</p>
+                        <p className="text-xs text-gray-500 mt-1">Subscriptions canceladas</p>
                       </div>
 
                       <div className="p-4 bg-white rounded-lg border border-gray-200">
