@@ -46,10 +46,11 @@ export function NotificationBell() {
     if (!user) return;
 
     try {
-      // Buscar notificações
+      // Buscar notificações: broadcast (user_id IS NULL) OR specific to this user
       const { data: notifData, error: notifError } = await supabase
         .from('notifications')
         .select('*')
+        .or(`user_id.is.null,user_id.eq.${user.id}`)
         .order('created_at', { ascending: false })
         .limit(10);
 

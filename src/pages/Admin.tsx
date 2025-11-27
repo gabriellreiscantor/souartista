@@ -291,14 +291,33 @@ export default function Admin() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const {
-        data,
-        error
-      } = await supabase.from('profiles').select('*').order('created_at', {
-        ascending: false
-      });
-      if (error) throw error;
-      setUsers(data || []);
+      
+      // Buscar profiles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (profilesError) throw profilesError;
+      
+      // Buscar roles de todos os usuários
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+      
+      if (rolesError) throw rolesError;
+      
+      // Mapear roles por user_id
+      const rolesMap = new Map<string, string>();
+      rolesData?.forEach(r => rolesMap.set(r.user_id, r.role));
+      
+      // Combinar profiles com roles
+      const usersWithRoles = (profiles || []).map(profile => ({
+        ...profile,
+        role: rolesMap.get(profile.id)
+      }));
+      
+      setUsers(usersWithRoles);
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);
       toast.error('Erro ao carregar usuários');
@@ -1262,6 +1281,7 @@ export default function Admin() {
                             <tr className="border-b bg-gray-50 border-gray-200">
                               <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900">Nome</th>
                               <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900 hidden md:table-cell">Email</th>
+                              <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900 hidden lg:table-cell">Role</th>
                               <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900">Status</th>
                               <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900 hidden sm:table-cell">Cancelado</th>
                               <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900 hidden lg:table-cell">ID</th>
@@ -1277,6 +1297,15 @@ export default function Admin() {
                                   </div>
                                 </td>
                                 <td className="p-2 md:p-3 hidden md:table-cell text-gray-700">{user.email}</td>
+                                <td className="p-2 md:p-3 hidden lg:table-cell">
+                                  {user.role ? (
+                                    <Badge className={user.role === 'artist' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}>
+                                      {user.role === 'artist' ? '🎸 Artista' : '🎵 Músico'}
+                                    </Badge>
+                                  ) : (
+                                    <span className="text-xs text-gray-400">-</span>
+                                  )}
+                                </td>
                                 <td className="p-2 md:p-3">
                                   <div className="flex flex-wrap gap-1">
                                     {getStatusBadge(user.status_plano)}

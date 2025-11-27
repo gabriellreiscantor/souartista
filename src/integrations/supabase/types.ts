@@ -274,6 +274,7 @@ export type Database = {
           link: string | null
           message: string
           title: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -282,6 +283,7 @@ export type Database = {
           link?: string | null
           message: string
           title: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -290,6 +292,7 @@ export type Database = {
           link?: string | null
           message?: string
           title?: string
+          user_id?: string | null
         }
         Relationships: []
       }
