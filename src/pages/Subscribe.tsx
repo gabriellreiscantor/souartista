@@ -9,75 +9,77 @@ import logo from '@/assets/logo.png';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { CreditCardForm, CreditCardData } from '@/components/CreditCardForm';
-
 const Subscribe = () => {
   const [billingCycle, setBillingCycle] = useState<'annual' | 'monthly'>('annual');
   const [showContactDialog, setShowContactDialog] = useState(false);
   const [showPixDialog, setShowPixDialog] = useState(false);
-  const [pixData, setPixData] = useState<{ code: string; image: string } | null>(null);
+  const [pixData, setPixData] = useState<{
+    code: string;
+    image: string;
+  } | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'PIX' | 'CREDIT_CARD'>('PIX');
   const [showCreditCardDialog, setShowCreditCardDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingPlanType, setPendingPlanType] = useState<'monthly' | 'annual' | null>(null);
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
-  const { refetchUserData, user, userRole } = useAuth();
+  const {
+    refetchUserData,
+    user,
+    userRole
+  } = useAuth();
   const navigate = useNavigate();
-
   useEffect(() => {
     const checkUserStatus = async () => {
       if (!user) return;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('status_plano')
-        .eq('id', user.id)
-        .single();
-
+      const {
+        data: profile
+      } = await supabase.from('profiles').select('status_plano').eq('id', user.id).single();
       if (profile?.status_plano === 'ativo') {
         // Usa userRole do contexto primeiro, depois localStorage, depois fallback
         const role = userRole || localStorage.getItem('userRole');
-        
         if (role === 'artist') {
-          navigate('/artist/dashboard', { replace: true });
+          navigate('/artist/dashboard', {
+            replace: true
+          });
         } else if (role === 'musician') {
-          navigate('/musician/dashboard', { replace: true });
+          navigate('/musician/dashboard', {
+            replace: true
+          });
         } else {
           // Fallback para AppHub que redireciona corretamente
-          navigate('/app', { replace: true });
+          navigate('/app', {
+            replace: true
+          });
         }
       }
     };
-
     checkUserStatus();
   }, [user, userRole, navigate]);
 
   // Poll for payment confirmation when PIX dialog is open
   useEffect(() => {
     if (!showPixDialog || !user) return;
-
     setIsCheckingPayment(true);
-    
     const checkPaymentStatus = async () => {
       try {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('status_plano, plan_type')
-          .eq('id', user.id)
-          .single();
-
+        const {
+          data: profile
+        } = await supabase.from('profiles').select('status_plano, plan_type').eq('id', user.id).single();
         if (profile?.status_plano === 'ativo') {
           setIsCheckingPayment(false);
           setShowPixDialog(false);
           toast.success('Pagamento confirmado! Redirecionando...');
-          
           await refetchUserData();
-          
           const userRole = localStorage.getItem('userRole');
           setTimeout(() => {
             if (userRole === 'artist') {
-              navigate('/artist/dashboard', { replace: true });
+              navigate('/artist/dashboard', {
+                replace: true
+              });
             } else if (userRole === 'musician') {
-              navigate('/musician/dashboard', { replace: true });
+              navigate('/musician/dashboard', {
+                replace: true
+              });
             }
           }, 1500);
         }
@@ -91,17 +93,18 @@ const Subscribe = () => {
 
     // Then check every 3 seconds
     const interval = setInterval(checkPaymentStatus, 3000);
-
     return () => {
       clearInterval(interval);
       setIsCheckingPayment(false);
     };
   }, [showPixDialog, user, navigate, refetchUserData]);
-
   const handleSubscribe = async (plan: 'monthly' | 'annual') => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       if (!session) {
         toast.error('Você precisa estar logado para assinar um plano.');
         return;
@@ -116,22 +119,24 @@ const Subscribe = () => {
 
       // Se for PIX, processar diretamente
       toast.loading('Gerando QR Code PIX...');
-
-      const { data, error } = await supabase.functions.invoke('create-asaas-subscription', {
-        body: { planType: plan, paymentMethod },
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('create-asaas-subscription', {
+        body: {
+          planType: plan,
+          paymentMethod
+        }
       });
-
       toast.dismiss();
-
       if (error) {
         console.error('Error creating subscription:', error);
         throw error;
       }
-
       if (data.success && data.billingType === 'PIX' && data.pixQrCode) {
         setPixData({
           code: data.pixQrCode,
-          image: data.pixQrCodeImage,
+          image: data.pixQrCodeImage
         });
         setShowPixDialog(true);
         toast.success('QR Code PIX gerado!');
@@ -144,40 +149,39 @@ const Subscribe = () => {
       toast.error('Erro ao criar assinatura. Tente novamente.');
     }
   };
-
   const handleCreditCardSubmit = async (creditCardData: CreditCardData) => {
     if (!pendingPlanType) return;
-
     setIsProcessing(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       if (!session) {
         toast.error('Você precisa estar logado.');
         return;
       }
-
       toast.loading('Processando pagamento...');
-
-      const { data, error } = await supabase.functions.invoke('create-asaas-subscription', {
-        body: { 
-          planType: pendingPlanType, 
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('create-asaas-subscription', {
+        body: {
+          planType: pendingPlanType,
           paymentMethod: 'CREDIT_CARD',
-          creditCardData 
+          creditCardData
         }
       });
-
       toast.dismiss();
-
       if (error) {
         console.error('Error processing payment:', error);
         throw error;
       }
-
       if (data.success) {
         setShowCreditCardDialog(false);
         toast.success('Pagamento processado com sucesso!');
-        
+
         // Redirecionar para dashboard após 2 segundos
         setTimeout(() => {
           const userRole = localStorage.getItem('userRole');
@@ -200,51 +204,52 @@ const Subscribe = () => {
       setIsProcessing(false);
     }
   };
-
   const copyPixCode = () => {
     if (pixData?.code) {
       navigator.clipboard.writeText(pixData.code);
       toast.success('Código PIX copiado!');
     }
   };
-
   const handleManualPaymentCheck = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       if (!session) {
         toast.error('Você precisa estar logado.');
         return;
       }
-
       setIsCheckingPayment(true);
       toast.loading('Verificando pagamento...');
-
-      const { data, error } = await supabase.functions.invoke('check-payment-status', {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('check-payment-status', {
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+          Authorization: `Bearer ${session.access_token}`
+        }
       });
-
       toast.dismiss();
-
       if (error) {
         console.error('Error checking payment:', error);
         throw error;
       }
-
       if (data.paid) {
         setShowPixDialog(false);
         toast.success(data.message);
-        
         await refetchUserData();
-        
         const userRole = localStorage.getItem('userRole');
         setTimeout(() => {
           if (userRole === 'artist') {
-            navigate('/artist/dashboard', { replace: true });
+            navigate('/artist/dashboard', {
+              replace: true
+            });
           } else if (userRole === 'musician') {
-            navigate('/musician/dashboard', { replace: true });
+            navigate('/musician/dashboard', {
+              replace: true
+            });
           }
         }, 1500);
       } else {
@@ -258,39 +263,22 @@ const Subscribe = () => {
       setIsCheckingPayment(false);
     }
   };
-
   const plans = {
     monthly: {
       price: 'R$ 5,00',
       period: '/mês',
       total: '(Preço de teste - mínimo Asaas)',
-      features: [
-        'Gerenciamento de shows ilimitado',
-        'Controle financeiro completo',
-        'Gestão de equipe e músicos',
-        'Relatórios detalhados',
-        'Suporte prioritário via tickets',
-      ]
+      features: ['Gerenciamento de shows ilimitado', 'Controle financeiro completo', 'Gestão de equipe e músicos', 'Relatórios detalhados', 'Suporte prioritário via tickets']
     },
     annual: {
       price: 'R$ 10,00',
       period: '/ano',
       total: 'Cobrado R$ 10,00 anualmente (Preço de teste)',
       savings: '',
-      features: [
-        'Gerenciamento de shows ilimitado',
-        'Controle financeiro completo',
-        'Gestão de equipe e músicos',
-        'Relatórios detalhados',
-        'Suporte prioritário via tickets',
-        'Pague uma vez, use o ano todo',
-        'Suporte premium via WhatsApp',
-      ]
+      features: ['Gerenciamento de shows ilimitado', 'Controle financeiro completo', 'Gestão de equipe e músicos', 'Relatórios detalhados', 'Suporte prioritário via tickets', 'Pague uma vez, use o ano todo', 'Suporte premium via WhatsApp']
     }
   };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-background via-primary/5 to-primary/10">
+  return <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-background via-primary/5 to-primary/10">
       <div className="w-full max-w-6xl">
         {/* Logo */}
         <div className="flex items-center justify-center mb-8">
@@ -314,8 +302,7 @@ const Subscribe = () => {
               <Shield className="w-5 h-5 text-primary" />
             </div>
             <div className="space-y-3">
-              {paymentMethod === 'CREDIT_CARD' ? (
-                <>
+              {paymentMethod === 'CREDIT_CARD' ? <>
                   <div>
                     <h3 className="text-lg font-heading font-bold mb-2">
                       Teste por 7 dias, sem compromisso!
@@ -328,9 +315,7 @@ const Subscribe = () => {
                     <CheckCircle2 className="h-5 w-5" />
                     <span className="font-medium">Primeira cobrança em 7 dias</span>
                   </div>
-                </>
-              ) : (
-                <>
+                </> : <>
                   <div>
                     <h3 className="text-lg font-heading font-bold mb-2">
                       Pagamento via PIX
@@ -343,8 +328,7 @@ const Subscribe = () => {
                     <AlertCircle className="h-5 w-5" />
                     <span className="font-medium">PIX: cobrança imediata (sem período de teste)</span>
                   </div>
-                </>
-              )}
+                </>}
             </div>
           </div>
         </Card>
@@ -352,24 +336,10 @@ const Subscribe = () => {
         {/* Billing Toggle */}
         <div className="flex flex-col items-center gap-6 mb-8">
           <div className="inline-flex items-center gap-3 bg-muted/50 rounded-full p-1.5">
-            <button
-              onClick={() => setBillingCycle('monthly')}
-              className={`px-6 py-2.5 rounded-full transition-all font-medium ${
-                billingCycle === 'monthly'
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
+            <button onClick={() => setBillingCycle('monthly')} className={`px-6 py-2.5 rounded-full transition-all font-medium ${billingCycle === 'monthly' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
               Mensal
             </button>
-            <button
-              onClick={() => setBillingCycle('annual')}
-              className={`px-6 py-2.5 rounded-full transition-all font-medium relative ${
-                billingCycle === 'annual'
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
+            <button onClick={() => setBillingCycle('annual')} className={`px-6 py-2.5 rounded-full transition-all font-medium relative ${billingCycle === 'annual' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
               Anual
               <span className="absolute -top-2 -right-2 text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow-md">
                 -33%
@@ -383,24 +353,10 @@ const Subscribe = () => {
               Método de Pagamento
             </label>
             <div className="inline-flex items-center gap-3 bg-muted/50 rounded-full p-1.5 w-full">
-              <button
-                onClick={() => setPaymentMethod('PIX')}
-                className={`flex-1 px-6 py-2.5 rounded-full transition-all font-medium ${
-                  paymentMethod === 'PIX'
-                    ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
+              <button onClick={() => setPaymentMethod('PIX')} className={`flex-1 px-6 py-2.5 rounded-full transition-all font-medium ${paymentMethod === 'PIX' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
                 PIX
               </button>
-              <button
-                onClick={() => setPaymentMethod('CREDIT_CARD')}
-                className={`flex-1 px-6 py-2.5 rounded-full transition-all font-medium ${
-                  paymentMethod === 'CREDIT_CARD'
-                    ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
+              <button onClick={() => setPaymentMethod('CREDIT_CARD')} className={`flex-1 px-6 py-2.5 rounded-full transition-all font-medium ${paymentMethod === 'CREDIT_CARD' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
                 Cartão de Crédito
               </button>
             </div>
@@ -410,11 +366,7 @@ const Subscribe = () => {
         {/* Plans Grid */}
         <div className="grid md:grid-cols-2 gap-4 lg:gap-6 max-w-5xl mx-auto mb-6">
           {/* Monthly Plan */}
-          <Card className={`glass-card rounded-2xl p-6 transition-all ${
-            billingCycle === 'monthly' 
-              ? 'border-2 border-primary shadow-lg opacity-100' 
-              : 'border border-border/30 opacity-50'
-          }`}>
+          <Card className={`glass-card rounded-2xl p-6 transition-all ${billingCycle === 'monthly' ? 'border-2 border-primary shadow-lg opacity-100' : 'border border-border/30 opacity-50'}`}>
             <div className="mb-4">
               <h3 className="text-xl font-heading font-bold mb-1">Plano Mensal</h3>
               <p className="text-xs text-muted-foreground mb-3">
@@ -429,35 +381,22 @@ const Subscribe = () => {
             </div>
 
             <ul className="space-y-2 mb-6">
-              {plans.monthly.features.map((feature, idx) => (
-                <Feature key={idx} text={feature} />
-              ))}
+              {plans.monthly.features.map((feature, idx) => <Feature key={idx} text={feature} />)}
             </ul>
 
-            <Button
-              variant={billingCycle === 'monthly' ? 'default' : 'outline'}
-              className="w-full h-11"
-              onClick={() => handleSubscribe('monthly')}
-              disabled={billingCycle !== 'monthly'}
-            >
+            <Button variant={billingCycle === 'monthly' ? 'default' : 'outline'} className="w-full h-11" onClick={() => handleSubscribe('monthly')} disabled={billingCycle !== 'monthly'}>
               Selecionar Plano Mensal
             </Button>
           </Card>
 
           {/* Annual Plan */}
-          <Card className={`glass-card rounded-2xl p-6 transition-all relative ${
-            billingCycle === 'annual' 
-              ? 'border-2 border-primary shadow-lg opacity-100' 
-              : 'border border-border/30 opacity-50'
-          }`}>
+          <Card className={`glass-card rounded-2xl p-6 transition-all relative ${billingCycle === 'annual' ? 'border-2 border-primary shadow-lg opacity-100' : 'border border-border/30 opacity-50'}`}>
             {/* Badge */}
-            {billingCycle === 'annual' && (
-              <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
+            {billingCycle === 'annual' && <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
                 <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium shadow-md">
                   ⭐ Mais Popular
                 </span>
-              </div>
-            )}
+              </div>}
 
             <div className="mb-4 mt-3">
               <h3 className="text-xl font-heading font-bold mb-1">Plano Anual</h3>
@@ -475,17 +414,10 @@ const Subscribe = () => {
             </div>
 
             <ul className="space-y-2 mb-6">
-              {plans.annual.features.map((feature, idx) => (
-                <Feature key={idx} text={feature} />
-              ))}
+              {plans.annual.features.map((feature, idx) => <Feature key={idx} text={feature} />)}
             </ul>
 
-            <Button
-              variant={billingCycle === 'annual' ? 'default' : 'outline'}
-              className="w-full h-11"
-              onClick={() => handleSubscribe('annual')}
-              disabled={billingCycle !== 'annual'}
-            >
+            <Button variant={billingCycle === 'annual' ? 'default' : 'outline'} className="w-full h-11" onClick={() => handleSubscribe('annual')} disabled={billingCycle !== 'annual'}>
               Selecionar Plano Anual
             </Button>
           </Card>
@@ -495,20 +427,14 @@ const Subscribe = () => {
         <div className="text-center mb-8">
           <p className="text-sm text-muted-foreground">
             Precisa de mais? Tem uma produtora?{' '}
-            <button 
-              onClick={() => setShowContactDialog(true)}
-              className="text-primary hover:underline font-medium"
-            >
+            <button onClick={() => setShowContactDialog(true)} className="text-primary hover:underline font-medium">
               Entre em contato.
             </button>
           </p>
         </div>
 
         <p className="text-center text-sm text-muted-foreground">
-          {paymentMethod === 'CREDIT_CARD' 
-            ? 'Todos os planos com cartão incluem 7 dias de teste grátis. Cancele quando quiser.'
-            : 'Com PIX, o acesso é liberado imediatamente após o pagamento. Cancele quando quiser.'
-          }
+          {paymentMethod === 'CREDIT_CARD' ? 'Todos os planos com cartão incluem 7 dias de teste grátis. Cancele quando quiser.' : 'Com PIX, o acesso é liberado imediatamente após o pagamento. Cancele quando quiser.'}
         </p>
       </div>
 
@@ -532,10 +458,7 @@ const Subscribe = () => {
               </div>
               <div>
                 <p className="text-sm font-medium mb-1">Email de Contato</p>
-                <a 
-                  href="mailto:contato@souartista.app" 
-                  className="text-sm text-primary hover:underline font-medium"
-                >
+                <a href="mailto:contato@souartista.app" className="text-sm text-primary hover:underline font-medium">
                   contato@souartista.app
                 </a>
               </div>
@@ -567,17 +490,11 @@ const Subscribe = () => {
           
           <div className="flex flex-col gap-6 py-4">
             {/* QR Code Image */}
-            {pixData?.image && (
-              <div className="flex justify-center">
+            {pixData?.image && <div className="flex justify-center">
                 <div className="p-4 bg-white rounded-lg">
-                  <img 
-                    src={`data:image/png;base64,${pixData.image}`} 
-                    alt="QR Code PIX" 
-                    className="w-64 h-64"
-                  />
+                  <img src={`data:image/png;base64,${pixData.image}`} alt="QR Code PIX" className="w-64 h-64" />
                 </div>
-              </div>
-            )}
+              </div>}
 
             {/* PIX Code */}
             <div className="space-y-3">
@@ -587,15 +504,11 @@ const Subscribe = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <Button onClick={copyPixCode} variant="outline" className="w-full">
+                <Button onClick={copyPixCode} variant="outline" className="w-full border-primary bg-primary text-secondary-foreground">
                   <Copy className="w-4 h-4 mr-2" />
                   Copiar Código
                 </Button>
-                <Button 
-                  onClick={handleManualPaymentCheck} 
-                  className="w-full"
-                  disabled={isCheckingPayment}
-                >
+                <Button onClick={handleManualPaymentCheck} disabled={isCheckingPayment} className="w-full text-secondary-foreground">
                   {isCheckingPayment ? 'Verificando...' : 'Verificar Pagamento'}
                 </Button>
               </div>
@@ -613,21 +526,19 @@ const Subscribe = () => {
             </div>
 
             {/* Payment status indicator */}
-            {isCheckingPayment && (
-              <div className="flex items-center justify-center gap-2 p-3 rounded-lg bg-primary/10 border border-primary/20">
+            {isCheckingPayment && <div className="flex items-center justify-center gap-2 p-3 rounded-lg bg-primary/10 border border-primary/20">
                 <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                 <p className="text-sm text-primary font-medium">
                   Verificando pagamento...
                 </p>
-              </div>
-            )}
+              </div>}
 
             <p className="text-xs text-muted-foreground text-center">
               Após o pagamento, você será notificado e seu plano será ativado automaticamente.
             </p>
           </div>
 
-          <Button onClick={() => setShowPixDialog(false)} className="w-full">
+          <Button onClick={() => setShowPixDialog(false)} className="w-full text-secondary-foreground">
             Fechar
           </Button>
         </DialogContent>
@@ -643,23 +554,19 @@ const Subscribe = () => {
             </DialogDescription>
           </DialogHeader>
           
-          <CreditCardForm 
-            onSubmit={handleCreditCardSubmit}
-            isLoading={isProcessing}
-          />
+          <CreditCardForm onSubmit={handleCreditCardSubmit} isLoading={isProcessing} />
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 };
-
-const Feature = ({ text }: { text: string }) => (
-  <li className="flex items-start gap-2">
+const Feature = ({
+  text
+}: {
+  text: string;
+}) => <li className="flex items-start gap-2">
     <div className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
       <Check className="w-2.5 h-2.5 text-primary" />
     </div>
     <span className="text-xs leading-relaxed">{text}</span>
-  </li>
-);
-
+  </li>;
 export default Subscribe;
