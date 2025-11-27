@@ -46,6 +46,15 @@ export function NotificationBell() {
     if (!user) return;
 
     try {
+      // Buscar created_at do usuário
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('created_at')
+        .eq('id', user.id)
+        .single();
+
+      const userCreatedAt = profileData?.created_at;
+
       // Buscar notificações: broadcast (user_id IS NULL) OR specific to this user
       const { data: notifData, error: notifError } = await supabase
         .from('notifications')
@@ -55,6 +64,20 @@ export function NotificationBell() {
         .limit(10);
 
       if (notifError) throw notifError;
+
+      // Filtrar notificações broadcast antigas (criadas antes do cadastro do usuário)
+      const filteredNotifs = (notifData || []).filter(n => {
+        // Se for notificação específica para o usuário, sempre incluir
+        if (n.user_id === user.id) return true;
+        
+        // Se for broadcast E usuário tem created_at, filtrar por data
+        if (!n.user_id && userCreatedAt) {
+          return new Date(n.created_at) >= new Date(userCreatedAt);
+        }
+        
+        // Caso padrão: incluir
+        return true;
+      });
 
       // Buscar quais foram lidas pelo usuário
       const { data: readsData, error: readsError } = await supabase
@@ -79,7 +102,7 @@ export function NotificationBell() {
       setHiddenNotificationIds(hiddenIds);
       
       // Filtrar notificações ocultas
-      const visibleNotifications = (notifData || []).filter(n => !hiddenIds.has(n.id));
+      const visibleNotifications = filteredNotifs.filter(n => !hiddenIds.has(n.id));
       setNotifications(visibleNotifications);
       
       // Contar não lidas (apenas das visíveis)

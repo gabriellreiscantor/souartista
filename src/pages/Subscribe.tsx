@@ -22,6 +22,8 @@ const Subscribe = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingPlanType, setPendingPlanType] = useState<'monthly' | 'annual' | null>(null);
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [nextChargeDate, setNextChargeDate] = useState<string | null>(null);
   const {
     refetchUserData,
     user,
@@ -180,19 +182,8 @@ const Subscribe = () => {
       }
       if (data.success) {
         setShowCreditCardDialog(false);
-        toast.success('Pagamento processado com sucesso!');
-
-        // Redirecionar para dashboard após 2 segundos
-        setTimeout(() => {
-          const userRole = localStorage.getItem('userRole');
-          if (userRole === 'artist') {
-            navigate('/artist/dashboard');
-          } else if (userRole === 'musician') {
-            navigate('/musician/dashboard');
-          } else {
-            navigate('/app');
-          }
-        }, 2000);
+        setNextChargeDate(data.nextDueDate || null);
+        setShowSuccessDialog(true);
       } else {
         throw new Error('Payment processing failed');
       }
@@ -570,6 +561,57 @@ const Subscribe = () => {
           </DialogHeader>
           
           <CreditCardForm onSubmit={handleCreditCardSubmit} isLoading={isProcessing} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="sm:max-w-md bg-white border-primary/20">
+          <DialogHeader>
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
+            </div>
+            <DialogTitle className="text-center text-2xl">Pagamento Validado!</DialogTitle>
+            <DialogDescription className="text-center space-y-3 pt-4">
+              <p className="text-base">
+                Seu cartão foi validado com sucesso! Você está no período de teste de 7 dias.
+              </p>
+              {nextChargeDate && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-900">
+                    <strong>Primeira cobrança:</strong><br />
+                    {new Date(nextChargeDate).toLocaleDateString('pt-BR', { 
+                      day: '2-digit', 
+                      month: 'long', 
+                      year: 'numeric' 
+                    })}
+                  </p>
+                </div>
+              )}
+              <p className="text-sm text-muted-foreground">
+                Cancele a qualquer momento durante o período de teste sem custos.
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 mt-4">
+            <Button 
+              className="flex-1" 
+              onClick={() => {
+                const userRole = localStorage.getItem('userRole');
+                if (userRole === 'artist') {
+                  navigate('/artist/dashboard');
+                } else if (userRole === 'musician') {
+                  navigate('/musician/dashboard');
+                } else {
+                  navigate('/app');
+                }
+              }}
+            >
+              Ir para Dashboard
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>;

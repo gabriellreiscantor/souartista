@@ -7,7 +7,7 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, CreditCard, Calendar, DollarSign, AlertCircle, HelpCircle, ExternalLink, QrCode, Copy, Clock } from 'lucide-react';
+import { Loader2, CreditCard, Calendar, DollarSign, AlertCircle, HelpCircle, ExternalLink, QrCode, Copy, Clock, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -336,7 +336,7 @@ const ArtistSubscription = () => {
                     </Card>
                   )}
 
-                  {/* Pending PIX Payment Card */}
+                   {/* Pending PIX Payment Card */}
                   {subscription.payment_method === 'PIX' && pendingPayment && (
                     <Card className={`${pendingPayment.status === 'OVERDUE' ? 'border-red-500 bg-red-50' : 'border-yellow-500 bg-yellow-50'}`}>
                       <CardHeader>
@@ -367,6 +367,36 @@ const ArtistSubscription = () => {
                           <QrCode className="w-4 h-4 mr-2" />
                           {pendingPayment.status === 'OVERDUE' ? 'Pagar Agora' : 'Pagar com PIX'}
                         </Button>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Credit Card Trial Period Info */}
+                  {subscription.payment_method === 'CREDIT_CARD' && 
+                   subscription.status === 'pending' && 
+                   subscription.next_due_date &&
+                   getDaysRemaining(subscription.next_due_date) > 0 && (
+                    <Card className="border-green-500 bg-green-50">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-green-800">
+                          <CheckCircle2 className="h-5 w-5" />
+                          Período de Teste Ativo
+                        </CardTitle>
+                        <CardDescription className="text-green-700">
+                          Você está no período de teste de 7 dias
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="p-3 bg-green-100 border border-green-200 rounded-lg">
+                          <p className="text-sm text-green-900">
+                            <strong>Aproveite todos os recursos!</strong><br />
+                            Sua primeira cobrança será em <strong>{getDaysRemaining(subscription.next_due_date)} dias</strong> ({formatDate(subscription.next_due_date)}).
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-green-800">
+                          <AlertCircle className="h-4 w-4" />
+                          <span>Cancele a qualquer momento sem custos durante o período de teste.</span>
+                        </div>
                       </CardContent>
                     </Card>
                   )}
