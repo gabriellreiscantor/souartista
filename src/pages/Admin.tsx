@@ -108,12 +108,11 @@ export default function Admin() {
   const [showRouteSelector, setShowRouteSelector] = useState(false);
 
   // Estados para Push Mobile
-  const [pushUserId, setPushUserId] = useState('');
   const [pushTitle, setPushTitle] = useState('');
   const [pushMessage, setPushMessage] = useState('');
   const [pushLink, setPushLink] = useState('');
   const [sendingPush, setSendingPush] = useState(false);
-  const [pushUserSearch, setPushUserSearch] = useState('');
+  const [pushUserSearch, setPushUserSearch] = useState('todos');
 
   // Estados para Contatos WhatsApp
   const [contacts, setContacts] = useState<any[]>([]);
@@ -2156,57 +2155,17 @@ export default function Admin() {
                   <CardHeader>
                     <CardTitle className="text-gray-900">📱 Enviar Push Notification</CardTitle>
                     <p className="text-sm text-gray-500 mt-2">
-                      Envie notificações push para usuários específicos no app mobile
+                      Envie notificações push em massa para usuários do app mobile
                     </p>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {/* Buscar usuário */}
-                      <div className="space-y-2">
-                        <Label className="text-gray-900">Buscar Usuário</Label>
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Buscar por nome ou email..."
-                            value={pushUserSearch}
-                            onChange={e => setPushUserSearch(e.target.value)}
-                            className="bg-white text-gray-900 border-gray-200 flex-1"
-                          />
-                        </div>
-                        
-                        {/* Lista de usuários filtrados */}
-                        {pushUserSearch && (
-                          <div className="mt-2 max-h-[200px] overflow-y-auto border border-gray-200 rounded-md">
-                            {users
-                              .filter(u => 
-                                u.name.toLowerCase().includes(pushUserSearch.toLowerCase()) ||
-                                u.email.toLowerCase().includes(pushUserSearch.toLowerCase())
-                              )
-                              .slice(0, 10)
-                              .map(u => (
-                                <div
-                                  key={u.id}
-                                  onClick={() => {
-                                    setPushUserId(u.id);
-                                    setPushUserSearch(u.name);
-                                  }}
-                                  className={`p-3 cursor-pointer hover:bg-gray-50 border-b last:border-b-0 ${
-                                    pushUserId === u.id ? 'bg-purple-50' : ''
-                                  }`}
-                                >
-                                  <p className="font-medium text-gray-900">{u.name}</p>
-                                  <p className="text-xs text-gray-600">{u.email}</p>
-                                </div>
-                              ))}
-                          </div>
-                        )}
-                      </div>
-
                       {/* Título */}
                       <div className="space-y-2">
                         <Label htmlFor="push-title" className="text-gray-900">Título</Label>
                         <Input
                           id="push-title"
-                          placeholder="Ex: Nova mensagem para você"
+                          placeholder="Ex: Nova atualização disponível"
                           value={pushTitle}
                           onChange={e => setPushTitle(e.target.value)}
                           className="bg-white text-gray-900 border-gray-200"
@@ -2237,58 +2196,114 @@ export default function Admin() {
                         />
                       </div>
 
-                      {/* Preview do usuário selecionado */}
-                      {pushUserId && (
-                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                          <p className="text-sm text-gray-700">
-                            <span className="font-medium">Enviar para:</span>{' '}
-                            {users.find(u => u.id === pushUserId)?.name}
-                          </p>
-                        </div>
-                      )}
+                      {/* Filtro de destinatários */}
+                      <div className="space-y-2">
+                        <Label htmlFor="push-filter" className="text-gray-900">Destinatários</Label>
+                        <Select value={pushUserSearch} onValueChange={setPushUserSearch}>
+                          <SelectTrigger className="bg-white text-gray-900 border-gray-200">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white text-gray-900 border border-gray-200">
+                            <SelectItem value="todos">Todos os usuários</SelectItem>
+                            <SelectItem value="artistas">Apenas Artistas</SelectItem>
+                            <SelectItem value="musicos">Apenas Músicos</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
                       {/* Botão de envio */}
                       <Button
                         onClick={async () => {
-                          if (!pushUserId || !pushTitle.trim() || !pushMessage.trim()) {
-                            toast.error('Preencha usuário, título e mensagem');
+                          if (!pushTitle.trim() || !pushMessage.trim()) {
+                            toast.error('Preencha título e mensagem');
                             return;
                           }
 
                           try {
                             setSendingPush(true);
 
-                            const { error } = await supabase.functions.invoke('create-notification', {
-                              body: {
-                                title: pushTitle,
-                                message: pushMessage,
-                                link: pushLink || null,
-                                userId: pushUserId,
+                            // Buscar usuários com FCM token
+                            let query = supabase
+                              .from('profiles')
+                              .select('id, name, fcm_token')
+                              .not('fcm_token', 'is', null);
+
+                            // Filtrar por role se necessário
+                            if (pushUserSearch === 'artistas' || pushUserSearch === 'musicos') {
+                              const role = pushUserSearch === 'artistas' ? 'artist' : 'musician';
+                              const { data: roleUsers } = await supabase
+                                .from('user_roles')
+                                .select('user_id')
+                                .eq('role', role);
+                              
+                              if (roleUsers && roleUsers.length > 0) {
+                                const userIds = roleUsers.map(r => r.user_id);
+                                query = query.in('id', userIds);
                               }
-                            });
+                            }
 
-                            if (error) throw error;
+                            const { data: targetUsers, error: fetchError } = await query;
 
-                            toast.success('Push notification enviada!');
+                            if (fetchError) throw fetchError;
+
+                            if (!targetUsers || targetUsers.length === 0) {
+                              toast.error('Nenhum usuário com FCM token encontrado');
+                              return;
+                            }
+
+                            console.log(`📱 Enviando push para ${targetUsers.length} usuários...`);
+
+                            // Enviar push para cada usuário
+                            let successCount = 0;
+                            let errorCount = 0;
+
+                            for (const user of targetUsers) {
+                              try {
+                                const { error } = await supabase.functions.invoke('create-notification', {
+                                  body: {
+                                    title: pushTitle,
+                                    message: pushMessage,
+                                    link: pushLink || null,
+                                    userId: user.id,
+                                  }
+                                });
+
+                                if (error) {
+                                  console.error(`Erro ao enviar para ${user.name}:`, error);
+                                  errorCount++;
+                                } else {
+                                  successCount++;
+                                }
+                              } catch (err) {
+                                console.error(`Erro ao enviar para ${user.name}:`, err);
+                                errorCount++;
+                              }
+                            }
+
+                            if (successCount > 0) {
+                              toast.success(`✅ ${successCount} push notifications enviadas!`);
+                            }
+                            if (errorCount > 0) {
+                              toast.error(`⚠️ ${errorCount} falhas no envio`);
+                            }
+
                             setPushTitle('');
                             setPushMessage('');
                             setPushLink('');
-                            setPushUserId('');
-                            setPushUserSearch('');
                           } catch (error) {
                             console.error('Erro ao enviar push:', error);
-                            toast.error('Erro ao enviar notificação');
+                            toast.error('Erro ao enviar notificações');
                           } finally {
                             setSendingPush(false);
                           }
                         }}
-                        disabled={sendingPush || !pushUserId}
+                        disabled={sendingPush}
                         className="w-full text-slate-50"
                       >
                         {sendingPush ? (
                           <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Enviando...</>
                         ) : (
-                          <><Send className="w-4 h-4 mr-2" /> Enviar Push Notification</>
+                          <><Send className="w-4 h-4 mr-2" /> Enviar Push Notifications</>
                         )}
                       </Button>
                     </div>
