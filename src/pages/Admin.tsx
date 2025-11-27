@@ -113,6 +113,8 @@ export default function Admin() {
   const [pushLink, setPushLink] = useState('');
   const [sendingPush, setSendingPush] = useState(false);
   const [pushUserSearch, setPushUserSearch] = useState('todos');
+  const [fcmUsersCount, setFcmUsersCount] = useState(0);
+  const [loadingFcmCount, setLoadingFcmCount] = useState(false);
 
   // Estados para Contatos WhatsApp
   const [contacts, setContacts] = useState<any[]>([]);
@@ -186,7 +188,7 @@ export default function Admin() {
       } else if (currentTab === 'notificacoes') {
         fetchNotifications();
       } else if (currentTab === 'push-mobile') {
-        fetchUsers(); // Para ter lista de usuários disponível
+        fetchFcmUsersCount();
       } else if (currentTab === 'contatos') {
         fetchContacts();
       } else if (currentTab === 'logs') {
@@ -440,6 +442,46 @@ export default function Admin() {
   };
 
   // Funções para Financeiro Global
+  // Buscar contagem de usuários com FCM token
+  const fetchFcmUsersCount = async () => {
+    try {
+      setLoadingFcmCount(true);
+      
+      let query = supabase
+        .from('profiles')
+        .select('id, fcm_token', { count: 'exact', head: true })
+        .not('fcm_token', 'is', null);
+
+      // Filtrar por role se necessário
+      if (pushUserSearch === 'artistas' || pushUserSearch === 'musicos') {
+        const role = pushUserSearch === 'artistas' ? 'artist' : 'musician';
+        const { data: roleUsers } = await supabase
+          .from('user_roles')
+          .select('user_id')
+          .eq('role', role);
+        
+        if (roleUsers && roleUsers.length > 0) {
+          const userIds = roleUsers.map(r => r.user_id);
+          query = query.in('id', userIds);
+        } else {
+          setFcmUsersCount(0);
+          return;
+        }
+      }
+
+      const { count, error } = await query;
+
+      if (error) throw error;
+      
+      setFcmUsersCount(count || 0);
+    } catch (error) {
+      console.error('Erro ao buscar contagem FCM:', error);
+      setFcmUsersCount(0);
+    } finally {
+      setLoadingFcmCount(false);
+    }
+  };
+
   const fetchFinancialData = async () => {
     try {
       const {
@@ -2153,13 +2195,90 @@ export default function Admin() {
             {currentTab === 'push-mobile' && <div className="space-y-6">
                 <Card className="bg-white border-gray-200">
                   <CardHeader>
-                    <CardTitle className="text-gray-900">📱 Enviar Push Notification</CardTitle>
-                    <p className="text-sm text-gray-500 mt-2">
-                      Envie notificações push em massa para usuários do app mobile
-                    </p>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <div className="flex-1">
+                        <CardTitle className="text-gray-900">📱 Enviar Push Notification</CardTitle>
+                        <p className="text-sm text-gray-500 mt-2">
+                          Envie notificações push em massa para usuários do app mobile
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {loadingFcmCount ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                        ) : (
+                          <>
+                            {fcmUsersCount > 0 ? (
+                              <Badge className="bg-green-100 text-green-800 border-green-200">
+                                ✓ {fcmUsersCount} com app instalado
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                                ⚠ Nenhum usuário com app
+                              </Badge>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
+                      {/* Status Info */}
+                      {fcmUsersCount === 0 && !loadingFcmCount && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                          <div className="flex gap-3">
+                            <div className="text-yellow-600 mt-0.5">⚠️</div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-yellow-900 mb-1">
+                                Nenhum usuário instalou o app mobile ainda
+                              </p>
+                              <p className="text-xs text-yellow-700">
+                                Após instalarem o APK e aceitarem notificações, eles aparecerão aqui.
+                                A notificação ainda será salva e ficará visível no app web.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {fcmUsersCount > 0 && !loadingFcmCount && (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <div className="flex gap-3">
+                            <div className="text-green-600 mt-0.5">✓</div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-green-900">
+                                {fcmUsersCount} usuário(s) receberão esta notificação push
+                              </p>
+                              <p className="text-xs text-green-700 mt-1">
+                                Todos os demais verão a notificação no sino do app web
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Filtro de destinatários */}
+                      <div className="space-y-2">
+                        <Label htmlFor="push-filter" className="text-gray-900">Destinatários</Label>
+                        <Select 
+                          value={pushUserSearch} 
+                          onValueChange={(value) => {
+                            setPushUserSearch(value);
+                            // Atualizar contagem quando mudar filtro
+                            setTimeout(() => fetchFcmUsersCount(), 100);
+                          }}
+                        >
+                          <SelectTrigger className="bg-white text-gray-900 border-gray-200">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white text-gray-900 border border-gray-200">
+                            <SelectItem value="todos">Todos os usuários</SelectItem>
+                            <SelectItem value="artistas">Apenas Artistas</SelectItem>
+                            <SelectItem value="musicos">Apenas Músicos</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
                       {/* Título */}
                       <div className="space-y-2">
                         <Label htmlFor="push-title" className="text-gray-900">Título</Label>
@@ -2196,21 +2315,6 @@ export default function Admin() {
                         />
                       </div>
 
-                      {/* Filtro de destinatários */}
-                      <div className="space-y-2">
-                        <Label htmlFor="push-filter" className="text-gray-900">Destinatários</Label>
-                        <Select value={pushUserSearch} onValueChange={setPushUserSearch}>
-                          <SelectTrigger className="bg-white text-gray-900 border-gray-200">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-white text-gray-900 border border-gray-200">
-                            <SelectItem value="todos">Todos os usuários</SelectItem>
-                            <SelectItem value="artistas">Apenas Artistas</SelectItem>
-                            <SelectItem value="musicos">Apenas Músicos</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
                       {/* Botão de envio */}
                       <Button
                         onClick={async () => {
@@ -2222,11 +2326,10 @@ export default function Admin() {
                           try {
                             setSendingPush(true);
 
-                            // Buscar usuários com FCM token
-                            let query = supabase
+                            // Buscar TODOS os usuários elegíveis (com ou sem FCM token)
+                            let allUsersQuery = supabase
                               .from('profiles')
-                              .select('id, name, fcm_token')
-                              .not('fcm_token', 'is', null);
+                              .select('id, name');
 
                             // Filtrar por role se necessário
                             if (pushUserSearch === 'artistas' || pushUserSearch === 'musicos') {
@@ -2238,61 +2341,114 @@ export default function Admin() {
                               
                               if (roleUsers && roleUsers.length > 0) {
                                 const userIds = roleUsers.map(r => r.user_id);
-                                query = query.in('id', userIds);
+                                allUsersQuery = allUsersQuery.in('id', userIds);
                               }
                             }
 
-                            const { data: targetUsers, error: fetchError } = await query;
+                            const { data: allUsers, error: fetchError } = await allUsersQuery;
 
                             if (fetchError) throw fetchError;
 
-                            if (!targetUsers || targetUsers.length === 0) {
-                              toast.error('Nenhum usuário com FCM token encontrado');
+                            if (!allUsers || allUsers.length === 0) {
+                              toast.error('Nenhum usuário encontrado');
                               return;
                             }
 
-                            console.log(`📱 Enviando push para ${targetUsers.length} usuários...`);
+                            console.log(`📱 Criando notificação para ${allUsers.length} usuários...`);
 
-                            // Enviar push para cada usuário
-                            let successCount = 0;
-                            let errorCount = 0;
+                            // Criar uma notificação global no banco
+                            const { data: notification, error: notifError } = await supabase
+                              .from('notifications')
+                              .insert({
+                                title: pushTitle,
+                                message: pushMessage,
+                                link: pushLink || null,
+                                created_by: null, // Notificação global
+                              })
+                              .select()
+                              .single();
 
-                            for (const user of targetUsers) {
-                              try {
-                                const { error } = await supabase.functions.invoke('create-notification', {
-                                  body: {
-                                    title: pushTitle,
-                                    message: pushMessage,
-                                    link: pushLink || null,
-                                    userId: user.id,
-                                  }
-                                });
+                            if (notifError) throw notifError;
 
-                                if (error) {
-                                  console.error(`Erro ao enviar para ${user.name}:`, error);
-                                  errorCount++;
-                                } else {
-                                  successCount++;
-                                }
-                              } catch (err) {
-                                console.error(`Erro ao enviar para ${user.name}:`, err);
-                                errorCount++;
+                            console.log('✅ Notificação criada no banco:', notification.id);
+
+                            // Agora buscar usuários COM FCM token para enviar push
+                            let fcmQuery = supabase
+                              .from('profiles')
+                              .select('id, name, fcm_token')
+                              .not('fcm_token', 'is', null);
+
+                            if (pushUserSearch === 'artistas' || pushUserSearch === 'musicos') {
+                              const role = pushUserSearch === 'artistas' ? 'artist' : 'musician';
+                              const { data: roleUsers } = await supabase
+                                .from('user_roles')
+                                .select('user_id')
+                                .eq('role', role);
+                              
+                              if (roleUsers && roleUsers.length > 0) {
+                                const userIds = roleUsers.map(r => r.user_id);
+                                fcmQuery = fcmQuery.in('id', userIds);
                               }
                             }
 
-                            if (successCount > 0) {
-                              toast.success(`✅ ${successCount} push notifications enviadas!`);
+                            const { data: fcmUsers } = await fcmQuery;
+
+                            let pushSuccessCount = 0;
+                            let pushErrorCount = 0;
+
+                            // Enviar push apenas para quem tem FCM token
+                            if (fcmUsers && fcmUsers.length > 0) {
+                              console.log(`📤 Enviando push para ${fcmUsers.length} usuários com app instalado...`);
+
+                              for (const user of fcmUsers) {
+                                try {
+                                  const { error } = await supabase.functions.invoke('send-push-notification', {
+                                    body: {
+                                      userId: user.id,
+                                      title: pushTitle,
+                                      body: pushMessage,
+                                      link: pushLink || null,
+                                    }
+                                  });
+
+                                  if (error) {
+                                    console.error(`Erro ao enviar push para ${user.name}:`, error);
+                                    pushErrorCount++;
+                                  } else {
+                                    pushSuccessCount++;
+                                  }
+                                } catch (err) {
+                                  console.error(`Erro ao enviar push para ${user.name}:`, err);
+                                  pushErrorCount++;
+                                }
+                              }
                             }
-                            if (errorCount > 0) {
-                              toast.error(`⚠️ ${errorCount} falhas no envio`);
+
+                            // Mensagem de sucesso detalhada
+                            const webOnlyUsers = allUsers.length - (fcmUsers?.length || 0);
+                            if (pushSuccessCount > 0) {
+                              toast.success(
+                                `✅ Notificação enviada! ${pushSuccessCount} via push mobile, ${webOnlyUsers} via web app`,
+                                { duration: 5000 }
+                              );
+                            } else {
+                              toast.success(
+                                `✅ Notificação salva! Visível para ${allUsers.length} usuário(s) no app web`,
+                                { duration: 5000 }
+                              );
+                            }
+
+                            if (pushErrorCount > 0) {
+                              toast.error(`⚠️ ${pushErrorCount} push(es) falharam (notificação web ainda funcionará)`);
                             }
 
                             setPushTitle('');
                             setPushMessage('');
                             setPushLink('');
+                            await fetchFcmUsersCount();
                           } catch (error) {
-                            console.error('Erro ao enviar push:', error);
-                            toast.error('Erro ao enviar notificações');
+                            console.error('Erro ao enviar notificação:', error);
+                            toast.error('Erro ao enviar notificação');
                           } finally {
                             setSendingPush(false);
                           }
@@ -2303,7 +2459,7 @@ export default function Admin() {
                         {sendingPush ? (
                           <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Enviando...</>
                         ) : (
-                          <><Send className="w-4 h-4 mr-2" /> Enviar Push Notifications</>
+                          <><Send className="w-4 h-4 mr-2" /> Enviar Notificação</>
                         )}
                       </Button>
                     </div>
