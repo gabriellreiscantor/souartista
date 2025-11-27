@@ -1221,7 +1221,8 @@ export default function Admin() {
                             <tr className="border-b bg-gray-50 border-gray-200">
                               <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900">Nome</th>
                               <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900 hidden md:table-cell">Email</th>
-                              <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900">Plano</th>
+                              <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900">Status</th>
+                              <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900 hidden sm:table-cell">Cancelado</th>
                               <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900 hidden lg:table-cell">ID</th>
                               <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900">Ações</th>
                             </tr>
@@ -1240,6 +1241,15 @@ export default function Admin() {
                                     {getStatusBadge(user.status_plano)}
                                     {getPlanTypeBadge(user.plan_type)}
                                   </div>
+                                </td>
+                                <td className="p-2 md:p-3 hidden sm:table-cell">
+                                  {user.status_plano === 'cancelado' ? (
+                                    <Badge className="bg-red-100 text-red-800 font-semibold">
+                                      ✕ SIM
+                                    </Badge>
+                                  ) : (
+                                    <span className="text-xs text-gray-500">Não</span>
+                                  )}
                                 </td>
                                 <td className="p-2 md:p-3 hidden lg:table-cell">
                                   <div className="flex items-center gap-2">
