@@ -107,6 +107,14 @@ export default function Admin() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showRouteSelector, setShowRouteSelector] = useState(false);
 
+  // Estados para Push Mobile
+  const [pushUserId, setPushUserId] = useState('');
+  const [pushTitle, setPushTitle] = useState('');
+  const [pushMessage, setPushMessage] = useState('');
+  const [pushLink, setPushLink] = useState('');
+  const [sendingPush, setSendingPush] = useState(false);
+  const [pushUserSearch, setPushUserSearch] = useState('');
+
   // Estados para Contatos WhatsApp
   const [contacts, setContacts] = useState<any[]>([]);
   const [contactFilter, setContactFilter] = useState('todos');
@@ -178,6 +186,8 @@ export default function Admin() {
         fetchFinancialData();
       } else if (currentTab === 'notificacoes') {
         fetchNotifications();
+      } else if (currentTab === 'push-mobile') {
+        fetchUsers(); // Para ter lista de usuários disponível
       } else if (currentTab === 'contatos') {
         fetchContacts();
       } else if (currentTab === 'logs') {
@@ -2126,6 +2136,151 @@ export default function Admin() {
                                 {notif.link}
                               </a>}
                           </div>)}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>}
+
+            {currentTab === 'push-mobile' && <div className="space-y-6">
+                <Card className="bg-white border-gray-200">
+                  <CardHeader>
+                    <CardTitle className="text-gray-900">📱 Enviar Push Notification</CardTitle>
+                    <p className="text-sm text-gray-500 mt-2">
+                      Envie notificações push para usuários específicos no app mobile
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {/* Buscar usuário */}
+                      <div className="space-y-2">
+                        <Label className="text-gray-900">Buscar Usuário</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Buscar por nome ou email..."
+                            value={pushUserSearch}
+                            onChange={e => setPushUserSearch(e.target.value)}
+                            className="bg-white text-gray-900 border-gray-200 flex-1"
+                          />
+                        </div>
+                        
+                        {/* Lista de usuários filtrados */}
+                        {pushUserSearch && (
+                          <div className="mt-2 max-h-[200px] overflow-y-auto border border-gray-200 rounded-md">
+                            {users
+                              .filter(u => 
+                                u.name.toLowerCase().includes(pushUserSearch.toLowerCase()) ||
+                                u.email.toLowerCase().includes(pushUserSearch.toLowerCase())
+                              )
+                              .slice(0, 10)
+                              .map(u => (
+                                <div
+                                  key={u.id}
+                                  onClick={() => {
+                                    setPushUserId(u.id);
+                                    setPushUserSearch(u.name);
+                                  }}
+                                  className={`p-3 cursor-pointer hover:bg-gray-50 border-b last:border-b-0 ${
+                                    pushUserId === u.id ? 'bg-purple-50' : ''
+                                  }`}
+                                >
+                                  <p className="font-medium text-gray-900">{u.name}</p>
+                                  <p className="text-xs text-gray-600">{u.email}</p>
+                                </div>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Título */}
+                      <div className="space-y-2">
+                        <Label htmlFor="push-title" className="text-gray-900">Título</Label>
+                        <Input
+                          id="push-title"
+                          placeholder="Ex: Nova mensagem para você"
+                          value={pushTitle}
+                          onChange={e => setPushTitle(e.target.value)}
+                          className="bg-white text-gray-900 border-gray-200"
+                        />
+                      </div>
+
+                      {/* Mensagem */}
+                      <div className="space-y-2">
+                        <Label htmlFor="push-message" className="text-gray-900">Mensagem</Label>
+                        <Textarea
+                          id="push-message"
+                          placeholder="Escreva sua mensagem aqui..."
+                          value={pushMessage}
+                          onChange={e => setPushMessage(e.target.value)}
+                          className="bg-white text-gray-900 border-gray-200 min-h-[100px]"
+                        />
+                      </div>
+
+                      {/* Link */}
+                      <div className="space-y-2">
+                        <Label htmlFor="push-link" className="text-gray-900">Link (Opcional)</Label>
+                        <Input
+                          id="push-link"
+                          placeholder="/artist/dashboard ou URL externa"
+                          value={pushLink}
+                          onChange={e => setPushLink(e.target.value)}
+                          className="bg-white text-gray-900 border-gray-200"
+                        />
+                      </div>
+
+                      {/* Preview do usuário selecionado */}
+                      {pushUserId && (
+                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                          <p className="text-sm text-gray-700">
+                            <span className="font-medium">Enviar para:</span>{' '}
+                            {users.find(u => u.id === pushUserId)?.name}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Botão de envio */}
+                      <Button
+                        onClick={async () => {
+                          if (!pushUserId || !pushTitle.trim() || !pushMessage.trim()) {
+                            toast.error('Preencha usuário, título e mensagem');
+                            return;
+                          }
+
+                          try {
+                            setSendingPush(true);
+
+                            const { error } = await supabase.functions.invoke('create-notification', {
+                              body: {
+                                title: pushTitle,
+                                message: pushMessage,
+                                link: pushLink || null,
+                                userId: pushUserId,
+                              }
+                            });
+
+                            if (error) throw error;
+
+                            toast.success('Push notification enviada!');
+                            setPushTitle('');
+                            setPushMessage('');
+                            setPushLink('');
+                            setPushUserId('');
+                            setPushUserSearch('');
+                          } catch (error) {
+                            console.error('Erro ao enviar push:', error);
+                            toast.error('Erro ao enviar notificação');
+                          } finally {
+                            setSendingPush(false);
+                          }
+                        }}
+                        disabled={sendingPush || !pushUserId}
+                        className="w-full text-slate-50"
+                      >
+                        {sendingPush ? (
+                          <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Enviando...</>
+                        ) : (
+                          <><Send className="w-4 h-4 mr-2" /> Enviar Push Notification</>
+                        )}
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
