@@ -96,7 +96,7 @@ export default function Admin() {
   const [activeUsersCount, setActiveUsersCount] = useState(0);
   const [cancelledUsersCount, setCancelledUsersCount] = useState(0);
   const [savingTax, setSavingTax] = useState(false);
-  const [syncingPayments, setSyncingPayments] = useState(false);
+  
 
   // Estados para Notificações
   const [notificationTitle, setNotificationTitle] = useState('');
@@ -586,25 +586,6 @@ export default function Admin() {
     }
   };
 
-  const handleSyncPayments = async () => {
-    setSyncingPayments(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('sync-asaas-payments');
-      
-      if (error) throw error;
-      
-      toast.success(`Sincronização concluída! ${data.synced} subscriptions atualizadas.`);
-      
-      // Recarregar dados
-      await fetchFinancialData();
-      await fetchStats();
-    } catch (error) {
-      console.error('Erro ao sincronizar pagamentos:', error);
-      toast.error('Erro ao sincronizar pagamentos. Tente novamente.');
-    } finally {
-      setSyncingPayments(false);
-    }
-  };
 
   // Funções para Notificações
   const fetchNotifications = async () => {
@@ -2363,34 +2344,6 @@ export default function Admin() {
                       <Button onClick={handleSaveTax} disabled={savingTax} className="w-full md:w-auto">
                         {savingTax ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                         Salvar Configuração
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Sincronização Asaas */}
-                <Card className="bg-white border-gray-200">
-                  <CardHeader>
-                    <CardTitle className="text-gray-900">🔄 Sincronização de Pagamentos</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <p className="text-sm text-gray-600">
-                        Sincronize manualmente os pagamentos com a Asaas para atualizar o status das subscriptions e receita.
-                      </p>
-                      <Button 
-                        onClick={handleSyncPayments} 
-                        disabled={syncingPayments}
-                        className="w-full md:w-auto"
-                      >
-                        {syncingPayments ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                            Sincronizando...
-                          </>
-                        ) : (
-                          '🔄 Sincronizar com Asaas'
-                        )}
                       </Button>
                     </div>
                   </CardContent>
