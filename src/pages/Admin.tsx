@@ -300,12 +300,13 @@ export default function Admin() {
         count: 'exact',
         head: true
       });
+      // Usuários com plano = subscriptions criadas (pending ou active)
       const {
         count: usersWithPlan
       } = await supabase.from('subscriptions').select('*', {
         count: 'exact',
         head: true
-      }).eq('status', 'active');
+      }).in('status', ['pending', 'active']);
       const {
         count: feedbackTotal
       } = await supabase.from('user_feedback').select('*', {
@@ -539,7 +540,7 @@ export default function Admin() {
 
   const fetchFinancialData = async () => {
     try {
-      // Contar usuários com plano ativo (subscriptions com status='active')
+      // Usuários Ativos = subscriptions com pagamento CONFIRMADO (receita real)
       const { count } = await supabase
         .from('subscriptions')
         .select('*', { count: 'exact', head: true })
@@ -2345,6 +2346,7 @@ export default function Admin() {
                       <div className="p-4 bg-white rounded-lg border border-gray-200">
                         <p className="text-xs text-gray-600 mb-1">Usuários Ativos</p>
                         <p className="text-2xl font-bold text-purple-600">{activeUsersCount}</p>
+                        <p className="text-xs text-gray-500 mt-1">Pagamentos confirmados</p>
                       </div>
 
                       <div className="p-4 bg-white rounded-lg border border-gray-200">
@@ -2352,7 +2354,7 @@ export default function Admin() {
                         <p className="text-2xl font-bold text-green-600">
                           R$ {(activeUsersCount * 29.90).toFixed(2)}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">R$ 29,90 × {activeUsersCount}</p>
+                        <p className="text-xs text-gray-500 mt-1">R$ 29,90 × {activeUsersCount} ativos</p>
                       </div>
 
                       <div className="p-4 bg-white rounded-lg border border-gray-200">
