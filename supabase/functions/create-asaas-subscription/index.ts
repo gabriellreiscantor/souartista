@@ -228,6 +228,14 @@ serve(async (req) => {
     }
 
     // Save subscription in database
+    // For credit card, calculate the first charge date (7 days from now)
+    let nextDueDateToSave = subscriptionData.nextDueDate;
+    if (billingType === 'CREDIT_CARD') {
+      const firstChargeDate = new Date();
+      firstChargeDate.setDate(firstChargeDate.getDate() + 7);
+      nextDueDateToSave = firstChargeDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+    }
+
     const { error: insertError } = await supabase
       .from('subscriptions')
       .insert({
@@ -238,7 +246,7 @@ serve(async (req) => {
         status: 'pending',
         amount,
         payment_method: billingType,
-        next_due_date: subscriptionData.nextDueDate,
+        next_due_date: nextDueDateToSave,
       });
 
     if (insertError) {
@@ -268,6 +276,7 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         subscriptionId: subscriptionData.id,
+        nextDueDate: billingType === 'CREDIT_CARD' ? nextDueDateToSave : subscriptionData.nextDueDate,
         ...paymentInfo,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

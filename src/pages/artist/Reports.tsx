@@ -514,9 +514,7 @@ const ArtistReports = () => {
             </div>
             
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="rounded-full hidden md:flex">
-                <Bell className="w-5 h-5 text-gray-900" />
-              </Button>
+              <NotificationBell />
               <UserMenu />
             </div>
           </header>

@@ -2352,6 +2352,9 @@ export default function Admin() {
                             return;
                           }
 
+                          // Prevenir cliques duplos
+                          if (sendingPush) return;
+
                           try {
                             setSendingPush(true);
 
