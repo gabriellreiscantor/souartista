@@ -168,6 +168,8 @@ export default function Admin() {
   const [feedbackList, setFeedbackList] = useState<any[]>([]);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [feedbackFilter, setFeedbackFilter] = useState('all');
+  const [usersWithPlanCount, setUsersWithPlanCount] = useState(0);
+  const [feedbackCount, setFeedbackCount] = useState(0);
   
   const usersPerPage = 50;
   useEffect(() => {
@@ -298,12 +300,26 @@ export default function Admin() {
         count: 'exact',
         head: true
       });
+      const {
+        count: usersWithPlan
+      } = await supabase.from('subscriptions').select('*', {
+        count: 'exact',
+        head: true
+      }).eq('status', 'active');
+      const {
+        count: feedbackTotal
+      } = await supabase.from('user_feedback').select('*', {
+        count: 'exact',
+        head: true
+      });
       setStats({
         totalUsers: usersCount || 0,
         totalArtists: artistsCount || 0,
         totalMusicians: musiciansCount || 0,
         totalTickets: ticketsCount || 0
       });
+      setUsersWithPlanCount(usersWithPlan || 0);
+      setFeedbackCount(feedbackTotal || 0);
     } catch (error) {
       console.error('Erro ao buscar estatísticas:', error);
     }
@@ -523,12 +539,11 @@ export default function Admin() {
 
   const fetchFinancialData = async () => {
     try {
-      const {
-        count
-      } = await supabase.from('profiles').select('*', {
-        count: 'exact',
-        head: true
-      }).eq('status_plano', 'ativo');
+      // Contar usuários com plano ativo (subscriptions com status='active')
+      const { count } = await supabase
+        .from('subscriptions')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'active');
       setActiveUsersCount(count || 0);
 
       // Carregar taxas salvas
@@ -581,16 +596,51 @@ export default function Admin() {
     }
     try {
       setSendingNotification(true);
-      const {
-        error
-      } = await supabase.from('notifications').insert({
-        title: notificationTitle,
-        message: notificationMessage,
-        link: notificationLink || null,
-        created_by: user?.id
-      });
-      if (error) throw error;
-      toast.success('Notificação enviada com sucesso!');
+
+      // Se for "Todos os usuários" → broadcast (user_id: null, target_role: null)
+      if (notificationFilter === 'todos') {
+        const { error } = await supabase.from('notifications').insert({
+          title: notificationTitle,
+          message: notificationMessage,
+          link: notificationLink || null,
+          user_id: null,
+          target_role: null,
+          created_by: user?.id
+        });
+        if (error) throw error;
+        toast.success('Notificação enviada para todos os usuários!');
+      } else {
+        // Se for role específica → buscar usuários e criar notificação individual
+        const role = notificationFilter === 'artistas' ? 'artist' : 'musician';
+        
+        const { data: roleUsers, error: roleError } = await supabase
+          .from('user_roles')
+          .select('user_id')
+          .eq('role', role);
+        
+        if (roleError) throw roleError;
+
+        if (!roleUsers || roleUsers.length === 0) {
+          toast.error(`Nenhum ${notificationFilter} encontrado`);
+          return;
+        }
+
+        // Criar notificação individual para cada usuário
+        const notifications = roleUsers.map(u => ({
+          title: notificationTitle,
+          message: notificationMessage,
+          link: notificationLink || null,
+          user_id: u.user_id,
+          target_role: role,
+          created_by: user?.id
+        }));
+
+        const { error } = await supabase.from('notifications').insert(notifications);
+        if (error) throw error;
+        
+        toast.success(`Notificação enviada para ${roleUsers.length} ${notificationFilter}!`);
+      }
+
       setNotificationTitle('');
       setNotificationMessage('');
       setNotificationLink('');
@@ -1436,6 +1486,24 @@ export default function Admin() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-gray-900">{stats.totalTickets}</div>
+                </CardContent>
+              </Card>
+              <Card className="bg-white border-gray-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-700">Usuários com Plano</CardTitle>
+                  <Users className="h-4 w-4 text-green-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600">{usersWithPlanCount}</div>
+                </CardContent>
+              </Card>
+              <Card className="bg-white border-gray-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-700">Total de Feedback</CardTitle>
+                  <MessageCircle className="h-4 w-4 text-purple-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-purple-600">{feedbackCount}</div>
                 </CardContent>
               </Card>
             </div>
@@ -2368,6 +2436,16 @@ export default function Admin() {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Dialog RouteSelector para Notificações */}
+                <RouteSelector
+                  open={showRouteSelector}
+                  onOpenChange={setShowRouteSelector}
+                  onSelectRoute={(route) => {
+                    setNotificationLink(route);
+                    setShowRouteSelector(false);
+                  }}
+                />
 
                 {/* Histórico */}
                 <Card className="bg-white border-gray-200">

@@ -55,11 +55,20 @@ export function NotificationBell() {
 
       const userCreatedAt = profileData?.created_at;
 
-      // Buscar notificações: broadcast (user_id IS NULL) OR specific to this user
+      // Buscar role do usuário
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+
+      const userRole = roleData?.role;
+
+      // Buscar notificações: specific to this user OR broadcast matching role OR broadcast for all
       const { data: notifData, error: notifError } = await supabase
         .from('notifications')
         .select('*')
-        .or(`user_id.is.null,user_id.eq.${user.id}`)
+        .or(`user_id.eq.${user.id},and(user_id.is.null,target_role.eq.${userRole}),and(user_id.is.null,target_role.is.null)`)
         .order('created_at', { ascending: false })
         .limit(10);
 

@@ -306,6 +306,7 @@ export type Database = {
           id: string
           link: string | null
           message: string
+          target_role: string | null
           title: string
           user_id: string | null
         }
@@ -315,6 +316,7 @@ export type Database = {
           id?: string
           link?: string | null
           message: string
+          target_role?: string | null
           title: string
           user_id?: string | null
         }
@@ -324,6 +326,7 @@ export type Database = {
           id?: string
           link?: string | null
           message?: string
+          target_role?: string | null
           title?: string
           user_id?: string | null
         }
