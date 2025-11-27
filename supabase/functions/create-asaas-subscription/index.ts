@@ -149,7 +149,7 @@ serve(async (req) => {
         email: profile.email,
         phone: profile.phone,
         cpfCnpj: creditCardData.holderCpf.replace(/\D/g, ''),
-        postalCode: '00000000',
+        postalCode: creditCardData.postalCode.replace(/\D/g, ''),
         addressNumber: '0',
       };
     }

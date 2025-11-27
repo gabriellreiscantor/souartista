@@ -16,6 +16,7 @@ export interface CreditCardData {
   expiryYear: string;
   ccv: string;
   holderCpf: string;
+  postalCode: string;
 }
 
 export function CreditCardForm({ onSubmit, isLoading }: CreditCardFormProps) {
@@ -26,6 +27,7 @@ export function CreditCardForm({ onSubmit, isLoading }: CreditCardFormProps) {
     expiryYear: "",
     ccv: "",
     holderCpf: "",
+    postalCode: "",
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof CreditCardData, string>>>({});
@@ -112,6 +114,8 @@ export function CreditCardForm({ onSubmit, isLoading }: CreditCardFormProps) {
       formattedValue = formatCardNumber(value.replace(/\D/g, "").slice(0, 19));
     } else if (field === "holderCpf") {
       formattedValue = formatCPF(value.slice(0, 14));
+    } else if (field === "postalCode") {
+      formattedValue = formatCEP(value.slice(0, 9));
     } else if (field === "expiryMonth") {
       formattedValue = value.replace(/\D/g, "").slice(0, 2);
     } else if (field === "expiryYear") {
@@ -154,6 +158,11 @@ export function CreditCardForm({ onSubmit, isLoading }: CreditCardFormProps) {
 
     if (!validateCPF(formData.holderCpf)) {
       newErrors.holderCpf = "CPF inválido";
+    }
+
+    const cleanedCEP = formData.postalCode.replace(/\D/g, "");
+    if (!cleanedCEP || cleanedCEP.length !== 8) {
+      newErrors.postalCode = "CEP inválido (8 dígitos)";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -259,6 +268,20 @@ export function CreditCardForm({ onSubmit, isLoading }: CreditCardFormProps) {
         />
         {errors.holderCpf && (
           <p className="text-sm text-destructive">{errors.holderCpf}</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="postalCode">CEP</Label>
+        <Input
+          id="postalCode"
+          placeholder="00000-000"
+          value={formData.postalCode}
+          onChange={(e) => handleChange("postalCode", e.target.value)}
+          disabled={isLoading}
+        />
+        {errors.postalCode && (
+          <p className="text-sm text-destructive">{errors.postalCode}</p>
         )}
       </div>
 
