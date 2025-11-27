@@ -6,64 +6,63 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Sparkles, Bug, Zap } from 'lucide-react';
+import { ArrowLeft, Sparkles, Bug, Zap, Loader2 } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState } from 'react';
+
 const MusicianUpdates = () => {
-  const {
-    userData
-  } = useAuth();
+  const { userData } = useAuth();
   const navigate = useNavigate();
-  const updates = [{
-    version: '1.2.0',
-    date: '15 de Janeiro, 2025',
-    type: 'feature',
-    items: ['Nova página de Ajustes com controles de visibilidade', 'Seleção de tema claro/escuro', 'Editor de fotos de perfil com zoom e corte']
-  }, {
-    version: '1.1.0',
-    date: '10 de Janeiro, 2025',
-    type: 'improvement',
-    items: ['Melhorias na performance do dashboard', 'Interface redesenhada para melhor usabilidade', 'Novos gráficos de relatórios financeiros']
-  }, {
-    version: '1.0.5',
-    date: '05 de Janeiro, 2025',
-    type: 'bugfix',
-    items: ['Correção de erro ao salvar shows', 'Ajuste no cálculo de despesas de locomoção', 'Melhorias na navegação mobile']
-  }];
+  const [updates, setUpdates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUpdates();
+  }, []);
+
+  const fetchUpdates = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('app_updates')
+        .select('*')
+        .eq('is_published', true)
+        .order('release_date', { ascending: false });
+
+      if (error) throw error;
+      setUpdates(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar atualizações:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getIcon = (type: string) => {
     switch (type) {
-      case 'feature':
+      case 'Novidades':
         return <Sparkles className="w-5 h-5 text-purple-600" />;
-      case 'improvement':
+      case 'Melhorias':
         return <Zap className="w-5 h-5 text-blue-600" />;
-      case 'bugfix':
+      case 'Correções':
         return <Bug className="w-5 h-5 text-green-600" />;
       default:
         return <Sparkles className="w-5 h-5" />;
     }
   };
+
   const getBadgeColor = (type: string) => {
     switch (type) {
-      case 'feature':
+      case 'Novidades':
         return 'bg-purple-100 text-purple-700';
-      case 'improvement':
+      case 'Melhorias':
         return 'bg-blue-100 text-blue-700';
-      case 'bugfix':
+      case 'Correções':
         return 'bg-green-100 text-green-700';
       default:
         return 'bg-gray-100 text-gray-700';
-    }
-  };
-  const getTypeName = (type: string) => {
-    switch (type) {
-      case 'feature':
-        return 'Novidades';
-      case 'improvement':
-        return 'Melhorias';
-      case 'bugfix':
-        return 'Correções';
-      default:
-        return 'Atualização';
     }
   };
   return <SidebarProvider>
@@ -97,28 +96,45 @@ const MusicianUpdates = () => {
               </div>
 
               <div className="space-y-6">
-                {updates.map((update, index) => <Card key={index} className="p-6 text-slate-50">
-                    <div className="flex items-start gap-4">
-                      <div className="mt-1">{getIcon(update.type)}</div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-xl font-bold text-gray-900">
-                            Versão {update.version}
-                          </h3>
-                          <Badge className={getBadgeColor(update.type)}>
-                            {getTypeName(update.type)}
-                          </Badge>
+                {loading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin" />
+                  </div>
+                ) : updates.length === 0 ? (
+                  <Card className="p-6">
+                    <p className="text-center text-muted-foreground">
+                      Nenhuma atualização disponível no momento.
+                    </p>
+                  </Card>
+                ) : (
+                  updates.map((update, index) => (
+                    <Card key={index} className="p-6 text-slate-50">
+                      <div className="flex items-start gap-4">
+                        <div className="mt-1">{getIcon(update.title)}</div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-xl font-bold text-gray-900">
+                              Versão {update.version}
+                            </h3>
+                            <Badge className={getBadgeColor(update.title)}>
+                              {update.title}
+                            </Badge>
+                          </div>
+                          <p className="text-sm mb-4 text-red-50">
+                            {new Date(update.release_date).toLocaleDateString('pt-BR', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric'
+                            })}
+                          </p>
+                          <div className="text-red-50 whitespace-pre-line">
+                            {update.description}
+                          </div>
                         </div>
-                        <p className="text-sm mb-4 text-red-50">{update.date}</p>
-                        <ul className="space-y-2">
-                          {update.items.map((item, itemIndex) => <li key={itemIndex} className="flex items-start gap-2">
-                              <span className="text-primary mt-1">•</span>
-                              <span className="text-red-50">{item}</span>
-                            </li>)}
-                        </ul>
                       </div>
-                    </div>
-                  </Card>)}
+                    </Card>
+                  ))
+                )}
               </div>
             </div>
           </main>

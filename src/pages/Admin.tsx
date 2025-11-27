@@ -153,6 +153,17 @@ export default function Admin() {
   const [importing, setImporting] = useState(false);
   const [importReport, setImportReport] = useState<any>(null);
   
+  // Estados para Atualizações
+  const [appUpdates, setAppUpdates] = useState<any[]>([]);
+  const [loadingUpdates, setLoadingUpdates] = useState(false);
+  const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+  const [editingUpdate, setEditingUpdate] = useState<any | null>(null);
+  const [updateVersion, setUpdateVersion] = useState('');
+  const [updateTitle, setUpdateTitle] = useState('');
+  const [updateDescription, setUpdateDescription] = useState('');
+  const [updateIsPublished, setUpdateIsPublished] = useState(true);
+  const [savingUpdate, setSavingUpdate] = useState(false);
+  
   const usersPerPage = 50;
   useEffect(() => {
     if (!adminLoading && !isAdmin && user) {
@@ -203,6 +214,8 @@ export default function Admin() {
         setImportFile(null);
         setImportData(null);
         setImportReport(null);
+      } else if (currentTab === 'atualizacoes') {
+        fetchAppUpdates();
       }
     }
   }, [isAdmin, currentTab]);
@@ -597,6 +610,106 @@ export default function Admin() {
       console.error('Erro ao remover notificação:', error);
       toast.error('Erro ao remover notificação');
     }
+  };
+
+  // Funções para Atualizações
+  const fetchAppUpdates = async () => {
+    try {
+      setLoadingUpdates(true);
+      const { data, error } = await supabase
+        .from('app_updates')
+        .select('*')
+        .order('release_date', { ascending: false });
+      
+      if (error) throw error;
+      setAppUpdates(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar atualizações:', error);
+      toast.error('Erro ao carregar atualizações');
+    } finally {
+      setLoadingUpdates(false);
+    }
+  };
+
+  const handleSaveUpdate = async () => {
+    if (!updateVersion.trim() || !updateTitle.trim() || !updateDescription.trim()) {
+      toast.error('Preencha todos os campos obrigatórios');
+      return;
+    }
+
+    try {
+      setSavingUpdate(true);
+      
+      if (editingUpdate) {
+        // Atualizar
+        const { error } = await supabase
+          .from('app_updates')
+          .update({
+            version: updateVersion,
+            title: updateTitle,
+            description: updateDescription,
+            is_published: updateIsPublished
+          })
+          .eq('id', editingUpdate.id);
+        
+        if (error) throw error;
+        toast.success('Atualização editada com sucesso!');
+      } else {
+        // Criar nova
+        const { error } = await supabase
+          .from('app_updates')
+          .insert({
+            version: updateVersion,
+            title: updateTitle,
+            description: updateDescription,
+            is_published: updateIsPublished,
+            created_by: user?.id
+          });
+        
+        if (error) throw error;
+        toast.success('Atualização criada com sucesso!');
+      }
+
+      setShowUpdateDialog(false);
+      setEditingUpdate(null);
+      setUpdateVersion('');
+      setUpdateTitle('');
+      setUpdateDescription('');
+      setUpdateIsPublished(true);
+      fetchAppUpdates();
+    } catch (error) {
+      console.error('Erro ao salvar atualização:', error);
+      toast.error('Erro ao salvar atualização');
+    } finally {
+      setSavingUpdate(false);
+    }
+  };
+
+  const handleDeleteUpdate = async (id: string) => {
+    if (!confirm('Tem certeza que deseja deletar esta atualização?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('app_updates')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      toast.success('Atualização removida com sucesso!');
+      fetchAppUpdates();
+    } catch (error) {
+      console.error('Erro ao remover atualização:', error);
+      toast.error('Erro ao remover atualização');
+    }
+  };
+
+  const handleEditUpdate = (update: any) => {
+    setEditingUpdate(update);
+    setUpdateVersion(update.version);
+    setUpdateTitle(update.title);
+    setUpdateDescription(update.description);
+    setUpdateIsPublished(update.is_published);
+    setShowUpdateDialog(true);
   };
 
   // Funções para Contatos WhatsApp
