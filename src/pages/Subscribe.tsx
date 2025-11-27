@@ -457,7 +457,7 @@ const Subscribe = () => {
                 <Mail className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-medium mb-1">Email de Contato</p>
+                <p className="text-sm font-medium mb-1 text-secondary-foreground">Email de Contato</p>
                 <a href="mailto:contato@souartista.app" className="text-sm text-primary hover:underline font-medium">
                   contato@souartista.app
                 </a>
