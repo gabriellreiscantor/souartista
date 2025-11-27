@@ -63,6 +63,7 @@ serve(async (req) => {
                 title: '✅ Pagamento confirmado!',
                 message: 'Seu pagamento foi confirmado com sucesso. Obrigado por manter sua assinatura ativa!',
                 link: '/artist/subscription',
+                user_id: existingSubscription.user_id,
                 created_by: existingSubscription.user_id,
               });
 
@@ -105,12 +106,14 @@ serve(async (req) => {
                   title: '❌ Cartão de crédito recusado',
                   message: 'Não conseguimos processar seu cartão de crédito. Atualize seus dados de pagamento para não perder o acesso.',
                   link: '/artist/subscription',
+                  user_id: existingSubscription.user_id,
                   created_by: existingSubscription.user_id,
                 }
               : {
                   title: '❌ Pagamento vencido',
                   message: 'Seu pagamento PIX está vencido. Realize o pagamento para manter seu acesso.',
                   link: '/artist/subscription',
+                  user_id: existingSubscription.user_id,
                   created_by: existingSubscription.user_id,
                 };
 
@@ -179,6 +182,7 @@ serve(async (req) => {
                 title: 'ℹ️ Assinatura cancelada',
                 message: `Sua assinatura foi cancelada. Você manterá acesso às funcionalidades premium até ${nextDueDate}.`,
                 link: '/artist/subscription',
+                user_id: existingSubscription.user_id,
                 created_by: existingSubscription.user_id,
               });
 

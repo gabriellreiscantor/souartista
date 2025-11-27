@@ -2,24 +2,27 @@ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * Hook para executar verificação de notificações PIX periodicamente
+ * Hook para executar verificação de notificações PIX e assinaturas expiradas periodicamente
  * Executa a cada 1 hora
  */
 export const usePixNotificationChecker = () => {
   useEffect(() => {
-    const checkPixNotifications = async () => {
+    const checkNotifications = async () => {
       try {
-        await supabase.functions.invoke('check-pix-notifications');
+        await Promise.all([
+          supabase.functions.invoke('check-pix-notifications'),
+          supabase.functions.invoke('check-expired-subscriptions'),
+        ]);
       } catch (error) {
-        console.error('Error checking PIX notifications:', error);
+        console.error('Error checking notifications:', error);
       }
     };
 
     // Executar imediatamente ao montar
-    checkPixNotifications();
+    checkNotifications();
 
     // Executar a cada 1 hora
-    const interval = setInterval(checkPixNotifications, 60 * 60 * 1000);
+    const interval = setInterval(checkNotifications, 60 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, []);
