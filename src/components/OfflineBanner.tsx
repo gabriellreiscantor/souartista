@@ -5,8 +5,17 @@ import { Button } from '@/components/ui/button';
 export const OfflineBanner = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
+  const [isReconnecting, setIsReconnecting] = useState(false);
+
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
+    const handleOnline = () => {
+      setIsReconnecting(true);
+      // Aguardar 1.5 segundos antes de recarregar para garantir conexão estável
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    };
+    
     const handleOffline = () => setIsOnline(false);
 
     window.addEventListener('online', handleOnline);
@@ -54,23 +63,28 @@ export const OfflineBanner = () => {
 
         {/* Title */}
         <h1 className="text-3xl md:text-4xl font-heading font-bold text-white mb-4 animate-fade-in">
-          Sem conexão
+          {isReconnecting ? 'Reconectando...' : 'Sem conexão'}
         </h1>
 
         {/* Message */}
         <p className="text-lg text-gray-300 mb-8 animate-fade-in">
-          Você está offline. Verifique sua conexão com a internet e tente novamente.
+          {isReconnecting 
+            ? 'Sua conexão foi restabelecida. Recarregando...'
+            : 'Você está offline. Verifique sua conexão com a internet e tente novamente.'
+          }
         </p>
 
         {/* Action Button */}
-        <Button 
-          size="lg" 
-          onClick={handleRefresh}
-          className="rounded-full text-lg font-medium shadow-primary hover:scale-105 transition-transform animate-fade-in"
-        >
-          <RefreshCw className="mr-2 w-5 h-5" />
-          Tentar novamente
-        </Button>
+        {!isReconnecting && (
+          <Button 
+            size="lg" 
+            onClick={handleRefresh}
+            className="rounded-full text-lg font-medium shadow-primary hover:scale-105 transition-transform animate-fade-in"
+          >
+            <RefreshCw className="mr-2 w-5 h-5" />
+            Tentar novamente
+          </Button>
+        )}
 
         {/* Additional info */}
         <p className="text-sm text-gray-400 mt-6 animate-fade-in">
