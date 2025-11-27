@@ -1,4 +1,4 @@
-import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones, Download } from 'lucide-react';
+import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones, Download, Smartphone } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -24,6 +24,7 @@ const mainItems = [
   { title: 'Financeiro Global', url: '/admin?tab=financeiro', icon: DollarSign },
   { title: 'Suporte', url: '/admin?tab=suporte', icon: Headphones },
   { title: 'Notificações', url: '/admin?tab=notificacoes', icon: Bell },
+  { title: 'Push Mobile', url: '/admin?tab=push-mobile', icon: Smartphone },
   { title: 'Contatos WhatsApp', url: '/admin?tab=contatos', icon: MessageCircle },
   { title: 'Logs do Sistema', url: '/admin?tab=logs', icon: FileText },
 ];
