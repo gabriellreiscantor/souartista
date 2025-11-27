@@ -7,9 +7,14 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('🔔 ASAAS WEBHOOK CALLED - Method:', req.method, 'URL:', req.url);
+  
   if (req.method === 'OPTIONS') {
+    console.log('🔔 Handling OPTIONS request');
     return new Response(null, { headers: corsHeaders });
   }
+
+  console.log('🔔 Processing webhook request...');
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -18,7 +23,11 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const payload = await req.json();
-    console.log('Asaas webhook received:', JSON.stringify(payload, null, 2));
+    console.log('🔔 Asaas webhook payload received:');
+    console.log('🔔 Event:', payload.event);
+    console.log('🔔 Subscription ID:', payload.subscription?.id);
+    console.log('🔔 Payment ID:', payload.payment?.id);
+    console.log('🔔 Full payload:', JSON.stringify(payload, null, 2));
 
     const event = payload.event;
     const payment = payload.payment;
