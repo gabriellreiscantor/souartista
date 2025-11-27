@@ -16,8 +16,6 @@ export interface CreditCardData {
   expiryYear: string;
   ccv: string;
   holderCpf: string;
-  postalCode: string;
-  addressNumber: string;
 }
 
 export function CreditCardForm({ onSubmit, isLoading }: CreditCardFormProps) {
@@ -28,8 +26,6 @@ export function CreditCardForm({ onSubmit, isLoading }: CreditCardFormProps) {
     expiryYear: "",
     ccv: "",
     holderCpf: "",
-    postalCode: "",
-    addressNumber: "",
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof CreditCardData, string>>>({});
@@ -110,12 +106,12 @@ export function CreditCardForm({ onSubmit, isLoading }: CreditCardFormProps) {
   const handleChange = (field: keyof CreditCardData, value: string) => {
     let formattedValue = value;
 
-    if (field === "number") {
+    if (field === "holderName") {
+      formattedValue = value.toUpperCase();
+    } else if (field === "number") {
       formattedValue = formatCardNumber(value.replace(/\D/g, "").slice(0, 19));
     } else if (field === "holderCpf") {
       formattedValue = formatCPF(value.slice(0, 14));
-    } else if (field === "postalCode") {
-      formattedValue = formatCEP(value.slice(0, 9));
     } else if (field === "expiryMonth") {
       formattedValue = value.replace(/\D/g, "").slice(0, 2);
     } else if (field === "expiryYear") {
@@ -158,15 +154,6 @@ export function CreditCardForm({ onSubmit, isLoading }: CreditCardFormProps) {
 
     if (!validateCPF(formData.holderCpf)) {
       newErrors.holderCpf = "CPF inválido";
-    }
-
-    const cep = formData.postalCode.replace(/\D/g, "");
-    if (cep.length !== 8) {
-      newErrors.postalCode = "CEP inválido";
-    }
-
-    if (!formData.addressNumber.trim()) {
-      newErrors.addressNumber = "Número do endereço é obrigatório";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -273,36 +260,6 @@ export function CreditCardForm({ onSubmit, isLoading }: CreditCardFormProps) {
         {errors.holderCpf && (
           <p className="text-sm text-destructive">{errors.holderCpf}</p>
         )}
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="postalCode">CEP</Label>
-          <Input
-            id="postalCode"
-            placeholder="00000-000"
-            value={formData.postalCode}
-            onChange={(e) => handleChange("postalCode", e.target.value)}
-            disabled={isLoading}
-          />
-          {errors.postalCode && (
-            <p className="text-sm text-destructive">{errors.postalCode}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="addressNumber">Número</Label>
-          <Input
-            id="addressNumber"
-            placeholder="123"
-            value={formData.addressNumber}
-            onChange={(e) => handleChange("addressNumber", e.target.value)}
-            disabled={isLoading}
-          />
-          {errors.addressNumber && (
-            <p className="text-sm text-destructive">{errors.addressNumber}</p>
-          )}
-        </div>
       </div>
 
       <Button type="submit" className="w-full" disabled={isLoading}>

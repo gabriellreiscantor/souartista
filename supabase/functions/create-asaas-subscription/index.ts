@@ -146,9 +146,11 @@ serve(async (req) => {
       
       subscriptionPayload.creditCardHolderInfo = {
         name: creditCardData.holderName,
+        email: profile.email,
+        phone: profile.phone,
         cpfCnpj: creditCardData.holderCpf.replace(/\D/g, ''),
-        postalCode: creditCardData.postalCode.replace(/\D/g, ''),
-        addressNumber: creditCardData.addressNumber,
+        postalCode: '00000000',
+        addressNumber: '0',
       };
     }
     
