@@ -1,4 +1,4 @@
-import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones, Download, Smartphone, Sparkles } from 'lucide-react';
+import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones, Download, Smartphone, Sparkles, MessageSquare } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -27,6 +27,7 @@ const mainItems = [
   { title: 'Push Mobile', url: '/admin?tab=push-mobile', icon: Smartphone },
   { title: 'Contatos WhatsApp', url: '/admin?tab=contatos', icon: MessageCircle },
   { title: 'Atualizações', url: '/admin?tab=atualizacoes', icon: Sparkles },
+  { title: 'Feedback', url: '/admin?tab=feedback', icon: MessageSquare },
   { title: 'Logs do Sistema', url: '/admin?tab=logs', icon: FileText },
 ];
 

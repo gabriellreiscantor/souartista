@@ -163,6 +163,11 @@ export default function Admin() {
   const [updateDescription, setUpdateDescription] = useState('');
   const [updateIsPublished, setUpdateIsPublished] = useState(true);
   const [savingUpdate, setSavingUpdate] = useState(false);
+
+  // Estados para Feedback
+  const [feedbackList, setFeedbackList] = useState<any[]>([]);
+  const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const [feedbackFilter, setFeedbackFilter] = useState('all');
   
   const usersPerPage = 50;
   useEffect(() => {
@@ -216,6 +221,8 @@ export default function Admin() {
         setImportReport(null);
       } else if (currentTab === 'atualizacoes') {
         fetchAppUpdates();
+      } else if (currentTab === 'feedback') {
+        fetchFeedback();
       }
     }
   }, [isAdmin, currentTab]);
@@ -710,6 +717,66 @@ export default function Admin() {
     setUpdateDescription(update.description);
     setUpdateIsPublished(update.is_published);
     setShowUpdateDialog(true);
+  };
+
+  // Funções para Feedback
+  const fetchFeedback = async () => {
+    try {
+      setLoadingFeedback(true);
+      const { data, error } = await supabase
+        .from('user_feedback')
+        .select(`
+          *,
+          profile:profiles!user_id(name, email)
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setFeedbackList(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar feedback:', error);
+      toast.error('Erro ao carregar feedback');
+    } finally {
+      setLoadingFeedback(false);
+    }
+  };
+
+  const handleUpdateFeedbackStatus = async (feedbackId: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_feedback')
+        .update({
+          status,
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: user?.id
+        })
+        .eq('id', feedbackId);
+      
+      if (error) throw error;
+      toast.success('Status atualizado com sucesso!');
+      fetchFeedback();
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+      toast.error('Erro ao atualizar status');
+    }
+  };
+
+  const handleDeleteFeedback = async (feedbackId: string) => {
+    if (!confirm('Tem certeza que deseja deletar este feedback?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('user_feedback')
+        .delete()
+        .eq('id', feedbackId);
+      
+      if (error) throw error;
+      toast.success('Feedback removido com sucesso!');
+      fetchFeedback();
+    } catch (error) {
+      console.error('Erro ao remover feedback:', error);
+      toast.error('Erro ao remover feedback');
+    }
   };
 
   // Funções para Contatos WhatsApp
@@ -2914,6 +2981,198 @@ export default function Admin() {
                 </CardContent>
               </Card>}
 
+            {/* Atualizações */}
+            {currentTab === 'atualizacoes' && (
+              <Card className="bg-white border-gray-200">
+                <CardHeader>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                      <CardTitle className="text-gray-900">✨ Gerenciar Atualizações</CardTitle>
+                      <p className="text-sm text-gray-500 mt-1">Adicione ou edite atualizações exibidas aos usuários</p>
+                    </div>
+                    <Button onClick={() => {
+                      setEditingUpdate(null);
+                      setUpdateVersion('');
+                      setUpdateTitle('');
+                      setUpdateDescription('');
+                      setUpdateIsPublished(true);
+                      setShowUpdateDialog(true);
+                    }}>
+                      + Nova Atualização
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {loadingUpdates ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {appUpdates.map((update) => (
+                        <Card key={update.id} className="bg-white border-gray-200">
+                          <CardContent className="p-4">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <h3 className="font-semibold text-gray-900">Versão {update.version}</h3>
+                                  <Badge className={update.is_published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                                    {update.is_published ? 'Publicado' : 'Rascunho'}
+                                  </Badge>
+                                  <Badge className="bg-blue-100 text-blue-800">{update.title}</Badge>
+                                </div>
+                                <p className="text-sm text-gray-700 whitespace-pre-line">{update.description}</p>
+                                <p className="text-xs text-gray-500 mt-2">
+                                  {new Date(update.release_date).toLocaleDateString('pt-BR', {
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric'
+                                  })}
+                                </p>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button variant="outline" size="sm" onClick={() => handleEditUpdate(update)}>
+                                  Editar
+                                </Button>
+                                <Button variant="destructive" size="sm" onClick={() => handleDeleteUpdate(update.id)}>
+                                  Deletar
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                      {appUpdates.length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          Nenhuma atualização cadastrada
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Feedback dos Usuários */}
+            {currentTab === 'feedback' && (
+              <Card className="bg-white border-gray-200">
+                <CardHeader>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                      <CardTitle className="text-gray-900">💬 Feedback dos Usuários</CardTitle>
+                      <p className="text-sm text-gray-500 mt-1">Sugestões e críticas enviadas pelos usuários</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Select value={feedbackFilter} onValueChange={setFeedbackFilter}>
+                        <SelectTrigger className="bg-white text-gray-900 border-gray-200 w-[150px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white text-gray-900">
+                          <SelectItem value="all">Todos</SelectItem>
+                          <SelectItem value="pending">Pendentes</SelectItem>
+                          <SelectItem value="reviewed">Revisados</SelectItem>
+                          <SelectItem value="implemented">Implementados</SelectItem>
+                          <SelectItem value="dismissed">Descartados</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button onClick={fetchFeedback} variant="outline" size="sm" disabled={loadingFeedback}>
+                        {loadingFeedback ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        Atualizar
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {loadingFeedback ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {feedbackList
+                        .filter(fb => feedbackFilter === 'all' || fb.status === feedbackFilter)
+                        .map((feedback) => {
+                          const getStatusColor = (status: string) => {
+                            switch (status) {
+                              case 'pending': return 'bg-yellow-100 text-yellow-800';
+                              case 'reviewed': return 'bg-blue-100 text-blue-800';
+                              case 'implemented': return 'bg-green-100 text-green-800';
+                              case 'dismissed': return 'bg-gray-100 text-gray-800';
+                              default: return 'bg-gray-100 text-gray-800';
+                            }
+                          };
+
+                          const getStatusLabel = (status: string) => {
+                            switch (status) {
+                              case 'pending': return 'Pendente';
+                              case 'reviewed': return 'Revisado';
+                              case 'implemented': return 'Implementado';
+                              case 'dismissed': return 'Descartado';
+                              default: return status;
+                            }
+                          };
+
+                          return (
+                            <Card key={feedback.id} className="bg-white border-gray-200">
+                              <CardContent className="p-4">
+                                <div className="space-y-3">
+                                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
+                                    <div className="flex-1">
+                                      <h3 className="font-semibold text-gray-900">{feedback.title}</h3>
+                                      <p className="text-sm text-gray-600 mt-1">
+                                        Por: {feedback.profile?.name} ({feedback.profile?.email})
+                                      </p>
+                                    </div>
+                                    <Badge className={getStatusColor(feedback.status)}>
+                                      {getStatusLabel(feedback.status)}
+                                    </Badge>
+                                  </div>
+                                  
+                                  <p className="text-sm text-gray-700 whitespace-pre-line">{feedback.message}</p>
+                                  
+                                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    <span>Enviado em: {new Date(feedback.created_at).toLocaleDateString('pt-BR')}</span>
+                                  </div>
+
+                                  <div className="flex gap-2 pt-2 border-t border-gray-200">
+                                    <Select
+                                      value={feedback.status}
+                                      onValueChange={(value) => handleUpdateFeedbackStatus(feedback.id, value)}
+                                    >
+                                      <SelectTrigger className="bg-white text-gray-900 border-gray-200 w-[150px]">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent className="bg-white text-gray-900">
+                                        <SelectItem value="pending">Pendente</SelectItem>
+                                        <SelectItem value="reviewed">Revisado</SelectItem>
+                                        <SelectItem value="implemented">Implementado</SelectItem>
+                                        <SelectItem value="dismissed">Descartado</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => handleDeleteFeedback(feedback.id)}
+                                    >
+                                      Deletar
+                                    </Button>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      {feedbackList.filter(fb => feedbackFilter === 'all' || fb.status === feedbackFilter).length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          Nenhum feedback encontrado
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             {/* Logs do Sistema */}
             {currentTab === 'logs' && <div className="space-y-6">
                 {/* Seção 1: Atividades de Usuários */}
@@ -3246,6 +3505,54 @@ export default function Admin() {
                   Enviar Resposta
                 </>
               )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Atualização */}
+      <Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
+        <DialogContent className="bg-white text-gray-900 max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">
+              {editingUpdate ? 'Editar Atualização' : 'Nova Atualização'}
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              Crie ou edite uma atualização que será exibida aos usuários
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="update-version" className="text-gray-900">Versão *</Label>
+              <Input id="update-version" placeholder="Ex: 1.2.0" value={updateVersion} onChange={e => setUpdateVersion(e.target.value)} className="bg-white text-gray-900 border-gray-200" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="update-title" className="text-gray-900">Tipo *</Label>
+              <Select value={updateTitle} onValueChange={setUpdateTitle}>
+                <SelectTrigger className="bg-white text-gray-900 border-gray-200">
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent className="bg-white text-gray-900">
+                  <SelectItem value="Novidades">✨ Novidades</SelectItem>
+                  <SelectItem value="Melhorias">⚡ Melhorias</SelectItem>
+                  <SelectItem value="Correções">🐛 Correções</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="update-description" className="text-gray-900">Descrição *</Label>
+              <Textarea id="update-description" placeholder="Digite cada atualização em uma linha..." value={updateDescription} onChange={e => setUpdateDescription(e.target.value)} className="bg-white text-gray-900 border-gray-200 min-h-[150px]" />
+            </div>
+            <div className="flex items-center space-x-2">
+              <input type="checkbox" id="update-published" checked={updateIsPublished} onChange={e => setUpdateIsPublished(e.target.checked)} className="rounded" />
+              <Label htmlFor="update-published" className="text-gray-900 cursor-pointer">Publicar imediatamente</Label>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowUpdateDialog(false)}>Cancelar</Button>
+            <Button onClick={handleSaveUpdate} disabled={savingUpdate}>
+              {savingUpdate ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              {editingUpdate ? 'Salvar' : 'Criar'}
             </Button>
           </div>
         </DialogContent>

@@ -4,6 +4,7 @@ import { ArtistSidebar } from '@/components/ArtistSidebar';
 import { UserMenu } from '@/components/UserMenu';
 import { NotificationBell } from '@/components/NotificationBell';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
+import { FeedbackForm } from '@/components/FeedbackForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -327,6 +328,11 @@ const ArtistProfile = () => {
                   <LogOut className="w-4 h-4 mr-2" />
                   Sair
                 </Button>
+              </div>
+
+              {/* Feedback Section */}
+              <div className="mt-6">
+                <FeedbackForm />
               </div>
             </div>
           </main>
