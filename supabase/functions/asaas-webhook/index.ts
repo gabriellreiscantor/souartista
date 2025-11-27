@@ -56,7 +56,7 @@ serve(async (req) => {
               })
               .eq('id', existingSubscription.user_id);
 
-            // Create success notification
+            // Create success notification (USER-SPECIFIC)
             await supabase
               .from('notifications')
               .insert({
@@ -100,7 +100,7 @@ serve(async (req) => {
               })
               .eq('id', existingSubscription.user_id);
 
-            // Create notification (different for credit card vs PIX)
+            // Create notification (USER-SPECIFIC - different for credit card vs PIX)
             const notificationData = payment.billingType === 'CREDIT_CARD' 
               ? {
                   title: '❌ Cartão de crédito recusado',
@@ -171,7 +171,7 @@ serve(async (req) => {
             })
             .eq('id', existingSubscription.id);
 
-            // Notify user about cancellation
+            // Notify user about cancellation (USER-SPECIFIC)
             const nextDueDate = existingSubscription.next_due_date 
               ? new Date(existingSubscription.next_due_date).toLocaleDateString('pt-BR')
               : 'a data de renovação';

@@ -68,6 +68,17 @@ serve(async (req) => {
       throw new Error('Failed to update subscription status');
     }
 
+    // Create cancellation notification (USER-SPECIFIC)
+    await supabase
+      .from('notifications')
+      .insert({
+        title: 'ℹ️ Assinatura cancelada',
+        message: 'Sua assinatura foi cancelada com sucesso. Você manterá acesso até o fim do período pago.',
+        link: '/artist/subscription',
+        user_id: user.id,
+        created_by: user.id,
+      });
+
     // DO NOT update profile status_plano yet - user keeps access until next_due_date
     // The status_plano will be updated to 'inactive' when next_due_date passes
 
