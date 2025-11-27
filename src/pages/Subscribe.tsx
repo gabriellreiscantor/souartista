@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Check, Shield, Mail, Building2, Copy, QrCode, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Check, Shield, Mail, Building2, Copy, QrCode, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -280,6 +280,18 @@ const Subscribe = () => {
   };
   return <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-background via-primary/5 to-primary/10">
       <div className="w-full max-w-6xl">
+        {/* Back Button */}
+        <div className="mb-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/')}
+            className="hover:bg-primary/10"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        </div>
+        
         {/* Logo */}
         <div className="flex items-center justify-center mb-8">
           <img src={logo} alt="Sou Artista" className="h-12 md:h-16 w-auto" />

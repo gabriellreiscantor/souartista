@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ArtistSidebar } from '@/components/ArtistSidebar';
 import { UserMenu } from '@/components/UserMenu';
+import { NotificationBell } from '@/components/NotificationBell';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -245,9 +246,7 @@ const ArtistSupport = () => {
             </div>
             
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="rounded-full hidden md:flex">
-                <Bell className="w-5 h-5 text-gray-900" />
-              </Button>
+              <NotificationBell />
               <UserMenu userName={userData?.name} userRole="artist" />
             </div>
           </header>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ArtistSidebar } from '@/components/ArtistSidebar';
 import { UserMenu } from '@/components/UserMenu';
+import { NotificationBell } from '@/components/NotificationBell';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

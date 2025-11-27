@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ArtistSidebar } from '@/components/ArtistSidebar';
 import { UserMenu } from '@/components/UserMenu';
+import { NotificationBell } from '@/components/NotificationBell';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { useAuth } from '@/hooks/useAuth';
 import { useReportVisibility } from '@/hooks/useReportVisibility';
@@ -91,9 +92,7 @@ const ArtistSettings = () => {
               <h1 className="text-xl font-semibold text-black">Ajustes</h1>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Bell className="w-5 h-5 text-gray-900" />
-              </Button>
+              <NotificationBell />
               <UserMenu userName={userData?.name} userRole="artist" />
             </div>
           </header>

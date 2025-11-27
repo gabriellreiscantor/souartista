@@ -120,14 +120,14 @@ Deno.serve(async (req) => {
               break;
           }
 
-          // Cria notificação
+          // Cria notificação user-specific
           const { error: notifError } = await supabase
             .from('notifications')
             .insert({
               title,
               message,
               link: show.uid === userId ? '/artist/shows' : '/musician/shows',
-              created_by: userId,
+              user_id: userId, // Notificação específica para este usuário
             });
 
           if (notifError) {
