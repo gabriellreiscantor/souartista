@@ -147,9 +147,19 @@ Deno.serve(async (req) => {
     if (!fcmResponse.ok) {
       console.error('FCM error:', fcmResult);
       
-      // If token is invalid, remove it from database
-      if (fcmResult.error?.code === 'INVALID_ARGUMENT' || fcmResult.error?.code === 'NOT_FOUND') {
-        console.log('Invalid token, removing from database');
+      // Check for invalid/expired token errors
+      const errorCode = fcmResult.error?.code;
+      const errorStatus = fcmResult.error?.status;
+      const isUnregistered = fcmResult.error?.details?.some(
+        (d: any) => d.errorCode === 'UNREGISTERED'
+      );
+
+      if (errorCode === 404 || 
+          errorCode === 400 ||
+          errorStatus === 'NOT_FOUND' || 
+          errorStatus === 'INVALID_ARGUMENT' ||
+          isUnregistered) {
+        console.log('🗑️ Invalid/expired FCM token, removing from database for user:', userId);
         await supabaseAdmin
           .from('profiles')
           .update({ fcm_token: null })
