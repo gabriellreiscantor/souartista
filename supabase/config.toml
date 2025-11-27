@@ -6,6 +6,9 @@ verify_jwt = true
 [functions.check-pix-notifications]
 verify_jwt = false
 
+[functions.check-expired-subscriptions]
+verify_jwt = false
+
 [functions.asaas-webhook]
 verify_jwt = false
 
@@ -20,3 +23,6 @@ verify_jwt = true
 
 [functions.check-show-reminders]
 verify_jwt = false
+
+[functions.send-push-notification]
+verify_jwt = true
