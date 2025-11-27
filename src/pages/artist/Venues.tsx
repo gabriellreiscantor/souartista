@@ -10,7 +10,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bell, Plus, Pencil, Trash2, MapPin } from 'lucide-react';
+import { Plus, Pencil, Trash2, MapPin } from 'lucide-react';
+import { NotificationBell } from '@/components/NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -207,10 +208,8 @@ const ArtistVenues = () => {
               <h1 className="text-xl font-semibold text-gray-900">Locais e Bares</h1>
             </div>
             
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Bell className="w-5 h-5 text-gray-900" />
-              </Button>
+            <div className="flex items-center gap-4">
+              <NotificationBell />
               <UserMenu userName={userData?.name} userRole={userRole} />
             </div>
           </header>

@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Plus, Pencil, Trash2, Mic2, Music, Sparkles } from 'lucide-react';
+import { Plus, Pencil, Trash2, Mic2, Music, Sparkles } from 'lucide-react';
+import { NotificationBell } from '@/components/NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -180,9 +181,7 @@ const MusicianArtists = () => {
             </div>
             
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Bell className="w-5 h-5 text-gray-900" />
-              </Button>
+              <NotificationBell />
               <UserMenu userName={userData?.name} userRole={userRole} />
             </div>
           </header>

@@ -3,10 +3,12 @@ import { Button } from '@/components/ui/button';
 import { useNavigate, Link } from 'react-router-dom';
 import { DollarSign, Loader2, ArrowRight, Play } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
 import Onboarding from '@/components/Onboarding';
 import logo from '@/assets/logo.png';
 const Landing = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const {
     user,
     session,
@@ -14,13 +16,13 @@ const Landing = () => {
   } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
 
-  // Check if user has completed onboarding
+  // Check if user has completed onboarding (only for mobile)
   useEffect(() => {
     const hasCompleted = localStorage.getItem('hasCompletedOnboarding');
-    if (!hasCompleted) {
+    if (!hasCompleted && isMobile) {
       setShowOnboarding(true);
     }
-  }, []);
+  }, [isMobile]);
 
   // Redirect authenticated users
   useEffect(() => {

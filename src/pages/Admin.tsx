@@ -2139,7 +2139,7 @@ export default function Admin() {
                 {/* Formulário de Envio */}
                 <Card className="bg-white border-gray-200">
                   <CardHeader>
-                    <CardTitle className="text-gray-900">📢 Enviar Notificação</CardTitle>
+                    <CardTitle className="text-gray-900">📢 Enviar Broadcast</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -2192,7 +2192,7 @@ export default function Admin() {
                 {/* Histórico */}
                 <Card className="bg-white border-gray-200">
                   <CardHeader>
-                    <CardTitle className="text-gray-900">Histórico de Notificações</CardTitle>
+                    <CardTitle className="text-gray-900">Histórico de Broadcasts</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">

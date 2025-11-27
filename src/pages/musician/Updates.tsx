@@ -6,7 +6,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Bell, ArrowLeft, Sparkles, Bug, Zap } from 'lucide-react';
+import { ArrowLeft, Sparkles, Bug, Zap } from 'lucide-react';
+import { NotificationBell } from '@/components/NotificationBell';
 import { useNavigate } from 'react-router-dom';
 const MusicianUpdates = () => {
   const {
@@ -79,9 +80,7 @@ const MusicianUpdates = () => {
               <h1 className="text-xl font-semibold text-black">Atualizações</h1>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Bell className="w-5 h-5 text-gray-900" />
-              </Button>
+              <NotificationBell />
               <UserMenu userName={userData?.name} userRole="musician" />
             </div>
           </header>

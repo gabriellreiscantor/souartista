@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Mail, Phone, Camera, LogOut, Bell, Trash2 } from 'lucide-react';
+import { User, Mail, Phone, Camera, LogOut, Trash2 } from 'lucide-react';
+import { NotificationBell } from '@/components/NotificationBell';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -220,9 +221,7 @@ const MusicianProfile = () => {
               <h1 className="text-xl font-semibold text-black">Perfil</h1>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Bell className="w-5 h-5 text-gray-900" />
-              </Button>
+              <NotificationBell />
               <UserMenu userName={userData?.name} userRole="musician" />
             </div>
           </header>

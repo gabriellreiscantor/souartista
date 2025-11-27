@@ -5,7 +5,8 @@ import { UserMenu } from '@/components/UserMenu';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Bell, Music2, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Music2, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { NotificationBell } from '@/components/NotificationBell';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { format, addMonths, subMonths } from 'date-fns';
@@ -106,9 +107,7 @@ const MusicianCalendar = () => {
             </div>
             
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="rounded-full hidden md:flex">
-                <Bell className="w-5 h-5 text-gray-900" />
-              </Button>
+              <NotificationBell />
               <UserMenu userName={userData?.name} userRole={userRole} />
             </div>
           </header>
