@@ -32,6 +32,39 @@ export type Database = {
         }
         Relationships: []
       }
+      app_updates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          is_published: boolean
+          release_date: string
+          title: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          is_published?: boolean
+          release_date?: string
+          title: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          is_published?: boolean
+          release_date?: string
+          title?: string
+          version?: string
+        }
+        Relationships: []
+      }
       artists: {
         Row: {
           created_at: string
@@ -322,6 +355,53 @@ export type Database = {
           used?: boolean
         }
         Relationships: []
+      }
+      payment_history: {
+        Row: {
+          amount: number
+          asaas_payment_id: string | null
+          created_at: string
+          due_date: string
+          id: string
+          payment_date: string
+          payment_method: string | null
+          status: string
+          subscription_id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          asaas_payment_id?: string | null
+          created_at?: string
+          due_date: string
+          id?: string
+          payment_date: string
+          payment_method?: string | null
+          status: string
+          subscription_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          asaas_payment_id?: string | null
+          created_at?: string
+          due_date?: string
+          id?: string
+          payment_date?: string
+          payment_method?: string | null
+          status?: string
+          subscription_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_history_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

@@ -4,6 +4,7 @@ import { ArtistSidebar } from '@/components/ArtistSidebar';
 import { UserMenu } from '@/components/UserMenu';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { NotificationBell } from '@/components/NotificationBell';
+import { PaymentHistory } from '@/components/PaymentHistory';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -535,6 +536,11 @@ const ArtistSubscription = () => {
                         </AlertDialog>
                       </CardContent>
                     </Card>
+                  )}
+
+                  {/* Histórico de Pagamentos */}
+                  {subscription && (
+                    <PaymentHistory subscription_id={subscription.id} />
                   )}
 
                   {/* Card de Ajuda */}
