@@ -285,7 +285,10 @@ const Subscribe = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate('/')}
+            onClick={async () => {
+              await supabase.auth.signOut();
+              navigate('/');
+            }}
             className="hover:bg-primary/10"
           >
             <ArrowLeft className="h-5 w-5" />

@@ -5,7 +5,8 @@ import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Bell, ArrowLeft, Calendar, Users, DollarSign, BarChart3, Car, MapPin } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, DollarSign, BarChart3, Car, MapPin } from 'lucide-react';
+import { NotificationBell } from '@/components/NotificationBell';
 import { useNavigate } from 'react-router-dom';
 const ArtistTutorial = () => {
   const {
@@ -57,9 +58,7 @@ const ArtistTutorial = () => {
               <h1 className="text-xl font-semibold text-black">Tutorial</h1>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Bell className="w-5 h-5 text-gray-900" />
-              </Button>
+              <NotificationBell />
               <UserMenu userName={userData?.name} userRole="artist" />
             </div>
           </header>

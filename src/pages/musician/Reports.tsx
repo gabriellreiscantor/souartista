@@ -6,7 +6,8 @@ import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bell, Music2, DollarSign, TrendingDown, TrendingUp, TrendingUpIcon, FileText, Building2, Car, Download } from 'lucide-react';
+import { Music2, DollarSign, TrendingDown, TrendingUp, TrendingUpIcon, FileText, Building2, Car, Download } from 'lucide-react';
+import { NotificationBell } from '@/components/NotificationBell';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useReportVisibility } from '@/hooks/useReportVisibility';
@@ -469,9 +470,7 @@ const MusicianReports = () => {
             </div>
             
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="rounded-full hidden md:flex">
-                <Bell className="w-5 h-5 text-gray-900" />
-              </Button>
+              <NotificationBell />
               <UserMenu userName={userData?.name} userRole={userRole} />
             </div>
           </header>

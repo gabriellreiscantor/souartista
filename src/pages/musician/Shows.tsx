@@ -16,7 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { TimePicker } from '@/components/ui/time-picker';
-import { Bell, Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2, ChevronDown, ChevronUp, Users, TrendingDown, ArrowUpRight, Guitar, Calendar as CalendarIcon, LayoutGrid, List } from 'lucide-react';
+import { Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2, ChevronDown, ChevronUp, Users, TrendingDown, ArrowUpRight, Guitar, Calendar as CalendarIcon, LayoutGrid, List } from 'lucide-react';
+import { NotificationBell } from '@/components/NotificationBell';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { supabase } from '@/integrations/supabase/client';
@@ -701,9 +702,7 @@ const MusicianShows = () => {
             </div>
             
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Bell className="w-5 h-5 text-gray-900" />
-              </Button>
+              <NotificationBell />
               <UserMenu userName={userData?.name} userRole={userRole} />
             </div>
           </header>

@@ -8,7 +8,8 @@ import { useReportVisibility } from '@/hooks/useReportVisibility';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Bell, FileText, Shield, MessageCircle, Rocket, BookOpen, Trash2 } from 'lucide-react';
+import { FileText, Shield, MessageCircle, Rocket, BookOpen, Trash2 } from 'lucide-react';
+import { NotificationBell } from '@/components/NotificationBell';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -83,9 +84,7 @@ const MusicianSettings = () => {
               <h1 className="text-xl font-semibold text-black">Ajustes</h1>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Bell className="w-5 h-5 text-gray-900" />
-              </Button>
+              <NotificationBell />
               <UserMenu userName={userData?.name} userRole="musician" />
             </div>
           </header>
