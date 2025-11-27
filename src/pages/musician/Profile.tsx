@@ -3,6 +3,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { MusicianSidebar } from '@/components/MusicianSidebar';
 import { UserMenu } from '@/components/UserMenu';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
+import { FeedbackForm } from '@/components/FeedbackForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -384,14 +385,19 @@ const MusicianProfile = () => {
                   </DialogContent>
                 </Dialog>
 
-                <Button 
-                  variant="destructive" 
+                <Button
+                  variant="destructive"
                   className="w-full"
                   onClick={handleLogout}
                 >
                   <LogOut className="w-4 h-4 mr-2" />
                   Sair
                 </Button>
+              </div>
+
+              {/* Feedback Section */}
+              <div className="mt-6">
+                <FeedbackForm />
               </div>
             </div>
           </main>
