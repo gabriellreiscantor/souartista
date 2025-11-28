@@ -14,8 +14,8 @@ const DemoMusicianArtists = () => {
   const [showLockedModal, setShowLockedModal] = useState(false);
 
   const demoArtists = [
-    { id: '1', name: 'Gabriell Reis', shows_count: 1, total_earned: 480 },
-    { id: '2', name: 'Gusttavo Lima', shows_count: 1, total_earned: 500 }
+    { id: '1', name: 'Gabriell Reis', shows_count: 1, total_earned: 350 },
+    { id: '2', name: 'Gusttavo Lima', shows_count: 1, total_earned: 350 }
   ];
 
   const formatCurrency = (value: number) => {
@@ -56,23 +56,23 @@ const DemoMusicianArtists = () => {
                   <h2 className="text-2xl font-bold text-gray-900">Meus Artistas</h2>
                   <span className="text-sm font-semibold text-primary">{demoArtists.length} artistas</span>
                 </div>
-                <p className="text-sm text-gray-600">Gerencie sua rede de parceiros musicais</p>
+                <p className="text-sm text-gray-600">Artistas com quem você trabalhou</p>
               </div>
 
               <Button 
                 onClick={() => setShowLockedModal(true)}
-                className="w-full bg-primary hover:bg-primary/90 text-white mb-6 h-12 text-base font-semibold"
+                className="w-full bg-gray-300 hover:bg-gray-400 text-gray-600 mb-6 h-12 text-base font-semibold cursor-not-allowed"
+                disabled
               >
                 <Plus className="w-5 h-5 mr-2" />
-                Novo Artista
+                Artistas são adicionados automaticamente
               </Button>
 
               <div className="space-y-4">
                 {demoArtists.map((artist) => (
                   <Card 
                     key={artist.id} 
-                    className="p-4 bg-white border-2 border-primary hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => setShowLockedModal(true)}
+                    className="p-4 bg-white border-2 border-primary hover:shadow-lg transition-shadow"
                   >
                     <div className="flex items-start gap-4">
                       <div className="w-14 h-14 rounded-xl bg-primary flex items-center justify-center flex-shrink-0">
