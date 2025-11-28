@@ -164,6 +164,18 @@ Deno.serve(async (req) => {
           .from('profiles')
           .update({ fcm_token: null })
           .eq('id', userId);
+        
+        // Return success since we handled the invalid token
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: 'Invalid FCM token removed from database. User will receive a new token on next app launch.' 
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200 
+          }
+        );
       }
       
       throw new Error('Failed to send push notification');
