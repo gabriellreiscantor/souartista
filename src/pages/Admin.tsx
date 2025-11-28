@@ -116,6 +116,7 @@ export default function Admin() {
   const [pushLinkCategory, setPushLinkCategory] = useState<'none' | 'artist' | 'musician'>('none');
   const [sendingPush, setSendingPush] = useState(false);
   const [pushUserSearch, setPushUserSearch] = useState('todos');
+  const [pushPlatformFilter, setPushPlatformFilter] = useState('all');
   const [fcmUsersCount, setFcmUsersCount] = useState(0);
   const [loadingFcmCount, setLoadingFcmCount] = useState(false);
 
@@ -540,9 +541,14 @@ export default function Admin() {
       setLoadingFcmCount(true);
       
       let query = supabase
-        .from('profiles')
-        .select('id, fcm_token', { count: 'exact', head: true })
+        .from('user_devices')
+        .select('user_id', { count: 'exact', head: true })
         .not('fcm_token', 'is', null);
+
+      // Filtrar por plataforma se especificado
+      if (pushPlatformFilter !== 'all') {
+        query = query.eq('platform', pushPlatformFilter);
+      }
 
       // Filtrar por role se necessário
       if (pushUserSearch === 'artistas' || pushUserSearch === 'musicos') {
@@ -554,7 +560,7 @@ export default function Admin() {
         
         if (roleUsers && roleUsers.length > 0) {
           const userIds = roleUsers.map(r => r.user_id);
-          query = query.in('id', userIds);
+          query = query.in('user_id', userIds);
         } else {
           setFcmUsersCount(0);
           return;
@@ -2621,6 +2627,28 @@ export default function Admin() {
                         </Select>
                       </div>
 
+                      {/* Filtro de plataforma */}
+                      <div className="space-y-2">
+                        <Label htmlFor="push-platform" className="text-gray-900">Plataforma</Label>
+                        <Select 
+                          value={pushPlatformFilter} 
+                          onValueChange={(value) => {
+                            setPushPlatformFilter(value);
+                            // Atualizar contagem quando mudar filtro
+                            setTimeout(() => fetchFcmUsersCount(), 100);
+                          }}
+                        >
+                          <SelectTrigger className="bg-white text-gray-900 border-gray-200">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white text-gray-900 border border-gray-200">
+                            <SelectItem value="all">Todas as plataformas</SelectItem>
+                            <SelectItem value="ios">📱 Somente iOS</SelectItem>
+                            <SelectItem value="android">🤖 Somente Android</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
                       {/* Título */}
                       <div className="space-y-2">
                         <Label htmlFor="push-title" className="text-gray-900">Título</Label>
@@ -2750,11 +2778,16 @@ export default function Admin() {
 
                             console.log('✅ Notificação criada no banco:', notification.id);
 
-                            // Agora buscar usuários COM FCM token para enviar push
-                            let fcmQuery = supabase
-                              .from('profiles')
-                              .select('id, name, fcm_token')
+                            // Agora buscar dispositivos COM FCM token para enviar push
+                            let devicesQuery = supabase
+                              .from('user_devices')
+                              .select('id, user_id, fcm_token, platform, device_name')
                               .not('fcm_token', 'is', null);
+
+                            // Filtrar por plataforma
+                            if (pushPlatformFilter !== 'all') {
+                              devicesQuery = devicesQuery.eq('platform', pushPlatformFilter);
+                            }
 
                             if (pushUserSearch === 'artistas' || pushUserSearch === 'musicos') {
                               const role = pushUserSearch === 'artistas' ? 'artist' : 'musician';
@@ -2765,45 +2798,51 @@ export default function Admin() {
                               
                               if (roleUsers && roleUsers.length > 0) {
                                 const userIds = roleUsers.map(r => r.user_id);
-                                fcmQuery = fcmQuery.in('id', userIds);
+                                devicesQuery = devicesQuery.in('user_id', userIds);
                               }
                             }
 
-                            const { data: fcmUsers } = await fcmQuery;
+                            const { data: devices } = await devicesQuery;
 
                             let pushSuccessCount = 0;
                             let pushErrorCount = 0;
 
-                            // Enviar push apenas para quem tem FCM token
-                            if (fcmUsers && fcmUsers.length > 0) {
-                              console.log(`📤 Enviando push para ${fcmUsers.length} usuários com app instalado...`);
+                            // Enviar push para todos os dispositivos
+                            if (devices && devices.length > 0) {
+                              console.log(`📤 Enviando push para ${devices.length} dispositivo(s)...`);
 
-                              for (const user of fcmUsers) {
+                              // Agrupar dispositivos por usuário para evitar múltiplas chamadas
+                              const uniqueUserIds = [...new Set(devices.map(d => d.user_id))];
+
+                              for (const userId of uniqueUserIds) {
                                 try {
-                                  const { error } = await supabase.functions.invoke('send-push-notification', {
+                                  const { data, error } = await supabase.functions.invoke('send-push-notification', {
                                     body: {
-                                      userId: user.id,
+                                      userId: userId,
                                       title: pushTitle,
                                       body: pushMessage,
                                       link: pushLink || null,
+                                      platform: pushPlatformFilter
                                     }
                                   });
 
                                   if (error) {
-                                    console.error(`Erro ao enviar push para ${user.name}:`, error);
+                                    console.error(`Erro ao enviar push para usuário ${userId}:`, error);
                                     pushErrorCount++;
                                   } else {
-                                    pushSuccessCount++;
+                                    pushSuccessCount += data?.sent || 0;
+                                    pushErrorCount += data?.failed || 0;
                                   }
                                 } catch (err) {
-                                  console.error(`Erro ao enviar push para ${user.name}:`, err);
+                                  console.error(`Erro ao enviar push para usuário ${userId}:`, err);
                                   pushErrorCount++;
                                 }
                               }
                             }
 
                             // Mensagem de sucesso detalhada
-                            const webOnlyUsers = allUsers.length - (fcmUsers?.length || 0);
+                            const devicesCount = devices?.length || 0;
+                            const webOnlyUsers = allUsers.length - [...new Set(devices?.map(d => d.user_id) || [])].length;
                             if (pushSuccessCount > 0) {
                               toast.success(
                                 `✅ Notificação enviada! ${pushSuccessCount} via push mobile, ${webOnlyUsers} via web app`,
