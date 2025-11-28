@@ -1,6 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.83.0';
+import jsPDF from "https://esm.sh/jspdf@2.5.2";
+import autoTable from "https://esm.sh/jspdf-autotable@3.8.4";
+import * as XLSX from "https://esm.sh/xlsx@0.18.5";
+import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -14,6 +18,84 @@ interface ReportRequest {
   format: 'pdf' | 'xlsx';
   userRole: 'artist' | 'musician';
 }
+
+const formatCurrency = (value: number) => {
+  return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
+const getPeriodLabel = (period: string) => {
+  const labels: Record<string, string> = {
+    'this-month': 'Este Mês',
+    'last-month': 'Mês Passado',
+    'this-year': 'Este Ano',
+    'last-year': 'Ano Passado',
+    'all-time': 'Todo o Período'
+  };
+  return labels[period] || period;
+};
+
+const generatePDF = (shows: any[], profile: any, period: string, userRole: string, totals: any) => {
+  const doc = new jsPDF.jsPDF();
+  
+  // Header
+  doc.setFontSize(20);
+  doc.text('Relatório Financeiro', 14, 20);
+  doc.setFontSize(12);
+  doc.text(`${userRole === 'artist' ? 'Artista' : 'Músico'}: ${profile.name}`, 14, 30);
+  doc.text(`Período: ${getPeriodLabel(period)}`, 14, 38);
+  
+  // Resumo financeiro
+  doc.text(`Total de Shows: ${totals.totalShows}`, 14, 50);
+  doc.text(`Receita: R$ ${formatCurrency(totals.totalRevenue)}`, 14, 58);
+  doc.text(`Despesas: R$ ${formatCurrency(totals.totalExpenses)}`, 14, 66);
+  doc.text(`Lucro Líquido: R$ ${formatCurrency(totals.totalProfit)}`, 14, 74);
+  
+  // Tabela de shows
+  autoTable(doc, {
+    startY: 85,
+    head: [['#', 'Data', 'Local', 'Cachê', 'Despesas', 'Lucro']],
+    body: shows.map((show, i) => [
+      i + 1,
+      new Date(show.date_local).toLocaleDateString('pt-BR'),
+      show.venue_name,
+      `R$ ${formatCurrency(Number(show.fee))}`,
+      `R$ ${formatCurrency(show.totalExpenses || 0)}`,
+      `R$ ${formatCurrency(show.profit || 0)}`
+    ])
+  });
+  
+  return doc.output('arraybuffer');
+};
+
+const generateXLSX = (shows: any[], profile: any, period: string, userRole: string, totals: any) => {
+  const summaryData = [
+    ['Relatório Financeiro'],
+    [`${userRole === 'artist' ? 'Artista' : 'Músico'}: ${profile.name}`],
+    [`Período: ${getPeriodLabel(period)}`],
+    [],
+    ['Resumo'],
+    ['Total de Shows', totals.totalShows],
+    ['Receita', `R$ ${formatCurrency(totals.totalRevenue)}`],
+    ['Despesas', `R$ ${formatCurrency(totals.totalExpenses)}`],
+    ['Lucro Líquido', `R$ ${formatCurrency(totals.totalProfit)}`],
+    [],
+    ['#', 'Data', 'Local', 'Cachê', 'Despesas', 'Lucro'],
+    ...shows.map((show, i) => [
+      i + 1,
+      new Date(show.date_local).toLocaleDateString('pt-BR'),
+      show.venue_name,
+      Number(show.fee),
+      show.totalExpenses || 0,
+      show.profit || 0
+    ])
+  ];
+  
+  const ws = XLSX.utils.aoa_to_sheet(summaryData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Relatório');
+  
+  return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+};
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -169,20 +251,59 @@ const handler = async (req: Request): Promise<Response> => {
     const totalProfit = totalRevenue - totalExpenses;
     const averageTicket = totalShows > 0 ? totalProfit / totalShows : 0;
 
-    // Build show details HTML
-    const showsHTML = shows.slice(0, 20).map((show, index) => {
-      const showDate = new Date(show.date_local).toLocaleDateString('pt-BR');
-      return `
-        <tr style="border-bottom: 1px solid #e5e7eb;">
-          <td style="padding: 12px; text-align: left;">${index + 1}</td>
-          <td style="padding: 12px; text-align: left;">${showDate}</td>
-          <td style="padding: 12px; text-align: left;">${show.venue_name}</td>
-          <td style="padding: 12px; text-align: right;">R$ ${formatCurrency(Number(show.fee))}</td>
-        </tr>
-      `;
-    }).join('');
+    // Prepare shows with calculated expenses data for PDF/XLSX
+    const showsWithData = shows.map(show => {
+      let showExpenses = 0;
+      let showProfit = 0;
 
-    // Send email with HTML report
+      if (userRole === 'artist') {
+        const teamExp = Array.isArray(show.expenses_team) 
+          ? show.expenses_team.reduce((s: number, e: any) => s + (Number(e.cost) || 0), 0) 
+          : 0;
+        const otherExp = Array.isArray(show.expenses_other)
+          ? show.expenses_other.reduce((s: number, e: any) => s + (Number(e.cost) || Number(e.amount) || 0), 0)
+          : 0;
+        const locoExp = locomotionExpenses.find(exp => exp.show_id === show.id);
+        showExpenses = teamExp + otherExp + (locoExp ? Number(locoExp.cost) : 0);
+        showProfit = Number(show.fee) - showExpenses;
+      } else {
+        if (Array.isArray(show.expenses_team)) {
+          const myEntry = show.expenses_team.find((e: any) => e.musicianId === user.id);
+          if (myEntry) {
+            showProfit = Number(myEntry.cost) || 0;
+          }
+        }
+      }
+
+      return {
+        ...show,
+        totalExpenses: showExpenses,
+        profit: showProfit
+      };
+    });
+
+    const totals = {
+      totalShows,
+      totalRevenue,
+      totalExpenses,
+      totalProfit
+    };
+
+    // Generate file based on format
+    let attachmentContent: string;
+    let attachmentFilename: string;
+
+    if (format === 'pdf') {
+      const pdfBuffer = generatePDF(showsWithData, profile, period, userRole, totals);
+      attachmentContent = base64Encode(pdfBuffer as ArrayBuffer);
+      attachmentFilename = `relatorio-${period}-${new Date().toISOString().split('T')[0]}.pdf`;
+    } else {
+      const xlsxBuffer = generateXLSX(showsWithData, profile, period, userRole, totals);
+      attachmentContent = base64Encode(xlsxBuffer as ArrayBuffer);
+      attachmentFilename = `relatorio-${period}-${new Date().toISOString().split('T')[0]}.xlsx`;
+    }
+
+    // Send email with attachment
     const { data, error } = await resend.emails.send({
       from: 'Sou Artista <onboarding@resend.dev>',
       to: [profile.email],
@@ -190,82 +311,48 @@ const handler = async (req: Request): Promise<Response> => {
       html: `
         <!DOCTYPE html>
         <html>
-        <head>
-          <meta charset="utf-8">
-          <style>
-            body { font-family: Arial, sans-serif; color: #1f2937; max-width: 800px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); color: white; padding: 30px; border-radius: 10px; margin-bottom: 30px; }
-            .header h1 { margin: 0; font-size: 32px; }
-            .header p { margin: 10px 0 0 0; opacity: 0.9; }
-            .summary { background: #f9fafb; border-left: 4px solid #8B5CF6; padding: 20px; margin-bottom: 30px; border-radius: 5px; }
-            .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
-            .summary-row:last-child { border-bottom: none; }
-            .summary-label { font-weight: 600; color: #4b5563; }
-            .summary-value { font-weight: 700; color: #1f2937; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-            th { background: #8B5CF6; color: white; padding: 15px; text-align: left; }
-            .footer { margin-top: 40px; padding-top: 20px; border-top: 2px solid #e5e7eb; color: #6b7280; font-size: 14px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>📊 Relatório Financeiro</h1>
-            <p>${userRole === 'artist' ? 'Artista' : 'Músico'}: ${profile.name}</p>
-            <p>Período: ${getPeriodLabel(period)}</p>
-          </div>
-
-          <div class="summary">
-            <h2 style="margin-top: 0; color: #8B5CF6;">Resumo Financeiro</h2>
-            <div class="summary-row">
-              <span class="summary-label">Total de Shows:</span>
-              <span class="summary-value">${totalShows}</span>
+          <head>
+            <meta charset="UTF-8">
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+              .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px; text-align: center; margin-bottom: 30px; }
+              .content { background: #f9fafb; padding: 30px; border-radius: 8px; }
+              .footer { text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1 style="margin: 0;">📊 Seu Relatório Está Pronto!</h1>
+              </div>
+              
+              <div class="content">
+                <p>Olá, <strong>${profile.name}</strong>!</p>
+                <p>Seu relatório financeiro do período <strong>${getPeriodLabel(period)}</strong> está anexado neste email.</p>
+                <p><strong>Resumo:</strong></p>
+                <ul>
+                  <li>Total de Shows: ${totalShows}</li>
+                  <li>Receita Total: R$ ${formatCurrency(totalRevenue)}</li>
+                  <li>Despesas Totais: R$ ${formatCurrency(totalExpenses)}</li>
+                  <li>Lucro Líquido: R$ ${formatCurrency(totalProfit)}</li>
+                </ul>
+                <p>O arquivo <strong>${format.toUpperCase()}</strong> está anexado para você baixar e consultar.</p>
+              </div>
+              
+              <div class="footer">
+                <p>Sou Artista - Organize suas apresentações 🎵</p>
+              </div>
             </div>
-            <div class="summary-row">
-              <span class="summary-label">${userRole === 'artist' ? 'Receita Bruta' : 'Cachê Total'}:</span>
-              <span class="summary-value">R$ ${formatCurrency(totalRevenue)}</span>
-            </div>
-            <div class="summary-row">
-              <span class="summary-label">Despesas:</span>
-              <span class="summary-value">R$ ${formatCurrency(totalExpenses)}</span>
-            </div>
-            <div class="summary-row">
-              <span class="summary-label">Lucro Líquido:</span>
-              <span class="summary-value" style="color: ${totalProfit >= 0 ? '#10b981' : '#ef4444'};">R$ ${formatCurrency(totalProfit)}</span>
-            </div>
-            <div class="summary-row">
-              <span class="summary-label">Ticket Médio:</span>
-              <span class="summary-value">R$ ${formatCurrency(averageTicket)}</span>
-            </div>
-          </div>
-
-          <h2 style="color: #1f2937;">Detalhes dos Shows</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Data</th>
-                <th>Local</th>
-                <th style="text-align: right;">Cachê</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${showsHTML}
-            </tbody>
-          </table>
-
-          ${shows.length > 20 ? `<p style="margin-top: 10px; color: #6b7280; font-style: italic;">* Mostrando os primeiros 20 shows de ${totalShows} no total</p>` : ''}
-
-          <div class="footer">
-            <p><strong>Relatório gerado automaticamente pelo sistema Sou Artista</strong></p>
-            <p>${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p>
-            <p style="margin-top: 10px;">
-              💡 <strong>Dica:</strong> Para obter o relatório completo em ${format === 'pdf' ? 'PDF' : 'Excel'} com todos os detalhes e gráficos, 
-              acesse a plataforma e faça o download diretamente pelo aplicativo.
-            </p>
-          </div>
-        </body>
+          </body>
         </html>
       `,
+      attachments: [
+        {
+          content: attachmentContent,
+          filename: attachmentFilename,
+        }
+      ]
     });
 
     if (error) {
