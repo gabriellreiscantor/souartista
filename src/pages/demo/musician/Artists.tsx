@@ -15,7 +15,7 @@ const DemoMusicianArtists = () => {
 
   const demoArtists = [
     { id: '1', name: 'Gabriell Reis', shows_count: 1, total_earned: 480 },
-    { id: '2', name: 'Gusttavo Lima', shows_count: 1, total_earned: 500 },
+    { id: '2', name: 'Gusttavo Lima', shows_count: 1, total_earned: 500 }
   ];
 
   const formatCurrency = (value: number) => {
