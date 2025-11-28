@@ -551,12 +551,15 @@ export type Database = {
       subscriptions: {
         Row: {
           amount: number
+          apple_original_transaction_id: string | null
+          apple_product_id: string | null
           asaas_customer_id: string | null
           asaas_subscription_id: string | null
           created_at: string
           id: string
           next_due_date: string | null
           payment_method: string | null
+          payment_platform: string | null
           plan_type: string
           status: string
           updated_at: string
@@ -564,12 +567,15 @@ export type Database = {
         }
         Insert: {
           amount: number
+          apple_original_transaction_id?: string | null
+          apple_product_id?: string | null
           asaas_customer_id?: string | null
           asaas_subscription_id?: string | null
           created_at?: string
           id?: string
           next_due_date?: string | null
           payment_method?: string | null
+          payment_platform?: string | null
           plan_type: string
           status?: string
           updated_at?: string
@@ -577,12 +583,15 @@ export type Database = {
         }
         Update: {
           amount?: number
+          apple_original_transaction_id?: string | null
+          apple_product_id?: string | null
           asaas_customer_id?: string | null
           asaas_subscription_id?: string | null
           created_at?: string
           id?: string
           next_due_date?: string | null
           payment_method?: string | null
+          payment_platform?: string | null
           plan_type?: string
           status?: string
           updated_at?: string
