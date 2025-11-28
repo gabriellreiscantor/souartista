@@ -113,10 +113,44 @@ export default function Admin() {
   const [pushTitle, setPushTitle] = useState('');
   const [pushMessage, setPushMessage] = useState('');
   const [pushLink, setPushLink] = useState('');
+  const [pushLinkCategory, setPushLinkCategory] = useState<'none' | 'artist' | 'musician'>('none');
   const [sendingPush, setSendingPush] = useState(false);
   const [pushUserSearch, setPushUserSearch] = useState('todos');
   const [fcmUsersCount, setFcmUsersCount] = useState(0);
   const [loadingFcmCount, setLoadingFcmCount] = useState(false);
+
+  // Rotas disponíveis para notificações push
+  const pushLinkRoutes = {
+    artist: [
+      { path: '/artist/dashboard', label: 'Dashboard' },
+      { path: '/artist/shows', label: 'Shows' },
+      { path: '/artist/calendar', label: 'Calendário' },
+      { path: '/artist/musicians', label: 'Músicos' },
+      { path: '/artist/venues', label: 'Casas de Show' },
+      { path: '/artist/transportation', label: 'Transporte' },
+      { path: '/artist/reports', label: 'Relatórios' },
+      { path: '/artist/profile', label: 'Perfil' },
+      { path: '/artist/settings', label: 'Configurações' },
+      { path: '/artist/support', label: 'Suporte' },
+      { path: '/artist/tutorial', label: 'Tutorial' },
+      { path: '/artist/updates', label: 'Atualizações' },
+      { path: '/artist/subscription', label: 'Assinatura' },
+    ],
+    musician: [
+      { path: '/musician/dashboard', label: 'Dashboard' },
+      { path: '/musician/shows', label: 'Shows' },
+      { path: '/musician/calendar', label: 'Calendário' },
+      { path: '/musician/artists', label: 'Artistas' },
+      { path: '/musician/transportation', label: 'Transporte' },
+      { path: '/musician/reports', label: 'Relatórios' },
+      { path: '/musician/profile', label: 'Perfil' },
+      { path: '/musician/settings', label: 'Configurações' },
+      { path: '/musician/support', label: 'Suporte' },
+      { path: '/musician/tutorial', label: 'Tutorial' },
+      { path: '/musician/updates', label: 'Atualizações' },
+      { path: '/musician/subscription', label: 'Assinatura' },
+    ]
+  };
 
   // Estados para Contatos WhatsApp
   const [contacts, setContacts] = useState<any[]>([]);
@@ -2611,17 +2645,48 @@ export default function Admin() {
                         />
                       </div>
 
-                      {/* Link */}
+                      {/* Link - Categoria */}
                       <div className="space-y-2">
-                        <Label htmlFor="push-link" className="text-gray-900">Link (Opcional)</Label>
-                        <Input
-                          id="push-link"
-                          placeholder="/artist/dashboard ou URL externa"
-                          value={pushLink}
-                          onChange={e => setPushLink(e.target.value)}
-                          className="bg-white text-gray-900 border-gray-200"
-                        />
+                        <Label className="text-gray-900">Link (Opcional)</Label>
+                        <Select
+                          value={pushLinkCategory}
+                          onValueChange={(value: 'none' | 'artist' | 'musician') => {
+                            setPushLinkCategory(value);
+                            setPushLink(''); // Limpa o link ao trocar categoria
+                          }}
+                        >
+                          <SelectTrigger className="bg-white text-gray-900 border-gray-200">
+                            <SelectValue placeholder="Selecione..." />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white">
+                            <SelectItem value="none">Nenhum link</SelectItem>
+                            <SelectItem value="artist">Página de Artista</SelectItem>
+                            <SelectItem value="musician">Página de Músico</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
+
+                      {/* Link - Página específica */}
+                      {pushLinkCategory !== 'none' && (
+                        <div className="space-y-2">
+                          <Label className="text-gray-900">Página</Label>
+                          <Select
+                            value={pushLink}
+                            onValueChange={setPushLink}
+                          >
+                            <SelectTrigger className="bg-white text-gray-900 border-gray-200">
+                              <SelectValue placeholder="Selecione a página..." />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white">
+                              {pushLinkRoutes[pushLinkCategory].map(route => (
+                                <SelectItem key={route.path} value={route.path}>
+                                  {route.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
 
                       {/* Botão de envio */}
                       <Button
