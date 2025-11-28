@@ -250,7 +250,7 @@ const MusicianArtists = () => {
                   <p className="text-gray-500 font-medium">Carregando artistas...</p>
                 </div>
               ) : artists.length === 0 ? (
-                <Card className="border-2 border-dashed border-gray-300 bg-gradient-to-br from-purple-50/50 to-white p-12 text-center animate-fade-in">
+                <Card className="border-2 border-dashed bg-gradient-to-br from-purple-50/50 to-background p-12 text-center animate-fade-in">
                   <div className="max-w-md mx-auto">
                     <div className="w-20 h-20 bg-purple-100 rounded-full mx-auto mb-6 flex items-center justify-center">
                       <Mic2 className="w-10 h-10 text-purple-600" />
@@ -301,8 +301,8 @@ const MusicianArtists = () => {
                     <Card 
                       key={artist.id} 
                       className={cn(
-                        "group relative overflow-hidden border-2 border-gray-200 hover:border-purple-300",
-                        "bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1",
+                        "group relative overflow-hidden border-2 hover:border-purple-300",
+                        "bg-card hover:shadow-xl transition-all duration-300 hover:-translate-y-1",
                         "animate-fade-in"
                       )}
                       style={{ animationDelay: `${index * 50}ms` }}
