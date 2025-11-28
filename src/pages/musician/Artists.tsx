@@ -5,11 +5,8 @@ import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { UserMenu } from '@/components/UserMenu';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, Mic2, Music, Sparkles } from 'lucide-react';
+import { Mic2, Music } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,11 +25,6 @@ const MusicianArtists = () => {
   const { user, userData, userRole } = useAuth();
   const [artists, setArtists] = useState<Artist[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-  });
 
   useEffect(() => {
     fetchArtists();
@@ -42,15 +34,6 @@ const MusicianArtists = () => {
     if (!user) return;
     
     try {
-      // Busca os artistas
-      const { data: artistsData, error: artistsError } = await supabase
-        .from('artists')
-        .select('*')
-        .eq('owner_uid', user.id)
-        .order('name', { ascending: true });
-
-      if (artistsError) throw artistsError;
-
       // Busca os shows onde o músico participou
       const { data: showsData, error: showsError } = await supabase
         .from('shows')
@@ -59,33 +42,51 @@ const MusicianArtists = () => {
 
       if (showsError) throw showsError;
 
-      // Calcula estatísticas para cada artista
-      const artistsWithStats = (artistsData || []).map(artist => {
-        const artistShows = (showsData || []).filter(show => show.uid === artist.owner_uid);
+      // Agrupa shows por artista (uid do dono do show)
+      const artistStats: { [key: string]: { shows_count: number; total_earned: number } } = {};
+      
+      (showsData || []).forEach(show => {
+        const artistId = show.uid;
         
-        // Conta número de shows
-        const shows_count = artistShows.length;
+        if (!artistStats[artistId]) {
+          artistStats[artistId] = { shows_count: 0, total_earned: 0 };
+        }
         
-        // Calcula total ganho
-        let total_earned = 0;
-        artistShows.forEach(show => {
-          if (show.expenses_team && Array.isArray(show.expenses_team)) {
-            const expenses = show.expenses_team as Array<{ musician_id?: string; amount?: number }>;
-            const musicianExpense = expenses.find(
-              (exp) => exp.musician_id === user.id
-            );
-            if (musicianExpense?.amount) {
-              total_earned += Number(musicianExpense.amount) || 0;
-            }
+        artistStats[artistId].shows_count++;
+        
+        // Calcula total ganho (usando musicianId e cost corretos)
+        if (show.expenses_team && Array.isArray(show.expenses_team)) {
+          const expenses = show.expenses_team as Array<{ musicianId?: string; cost?: number }>;
+          const myExpense = expenses.find(exp => exp.musicianId === user.id);
+          if (myExpense?.cost) {
+            artistStats[artistId].total_earned += Number(myExpense.cost);
           }
-        });
-
-        return {
-          ...artist,
-          shows_count,
-          total_earned
-        };
+        }
       });
+
+      // Busca nomes dos artistas na tabela profiles
+      const artistIds = Object.keys(artistStats);
+      
+      if (artistIds.length === 0) {
+        setArtists([]);
+        return;
+      }
+
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, name')
+        .in('id', artistIds);
+
+      if (profilesError) throw profilesError;
+
+      // Combina dados
+      const artistsWithStats = (profiles || []).map(profile => ({
+        id: profile.id,
+        name: profile.name,
+        owner_uid: profile.id,
+        shows_count: artistStats[profile.id].shows_count,
+        total_earned: artistStats[profile.id].total_earned
+      }));
 
       setArtists(artistsWithStats);
     } catch (error: any) {
@@ -96,76 +97,11 @@ const MusicianArtists = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-
-    try {
-      const artistData = {
-        name: formData.name,
-        owner_uid: user.id,
-      };
-
-      if (editingArtist) {
-        const { error } = await supabase
-          .from('artists')
-          .update(artistData)
-          .eq('id', editingArtist.id);
-
-        if (error) throw error;
-        toast.success('Artista atualizado com sucesso!');
-      } else {
-        const { error } = await supabase
-          .from('artists')
-          .insert(artistData);
-
-        if (error) throw error;
-        toast.success('Artista cadastrado com sucesso!');
-      }
-
-      setDialogOpen(false);
-      resetForm();
-      fetchArtists();
-    } catch (error: any) {
-      toast.error('Erro ao salvar artista');
-      console.error(error);
-    }
-  };
-
-  const handleEdit = (artist: Artist) => {
-    setEditingArtist(artist);
-    setFormData({
-      name: artist.name,
-    });
-    setDialogOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este artista?')) return;
-
-    try {
-      const { error } = await supabase
-        .from('artists')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      toast.success('Artista excluído com sucesso!');
-      fetchArtists();
-    } catch (error: any) {
-      toast.error('Erro ao excluir artista');
-      console.error(error);
-    }
-  };
-
-  const resetForm = () => {
-    setFormData({ name: '' });
-    setEditingArtist(null);
-  };
-
-  const handleDialogClose = (open: boolean) => {
-    setDialogOpen(open);
-    if (!open) resetForm();
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
   };
 
   return (
@@ -204,41 +140,8 @@ const MusicianArtists = () => {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-gray-600">Gerencie sua rede de parceiros musicais</p>
+                    <p className="text-gray-600">Artistas com quem você trabalhou</p>
                   </div>
-                  
-                  <Dialog open={dialogOpen} onOpenChange={handleDialogClose}>
-                    <DialogTrigger asChild>
-                      <Button size="lg" className="bg-primary hover:bg-primary/90 text-white shadow-lg hover:shadow-xl transition-all">
-                        <Plus className="w-5 h-5 mr-2" />
-                        Novo Artista
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-white sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle className="text-2xl flex items-center gap-2 text-black">
-                          <Sparkles className="w-6 h-6 text-primary" />
-                          {editingArtist ? 'Editar Artista' : 'Novo Artista'}
-                        </DialogTitle>
-                      </DialogHeader>
-                      <form onSubmit={handleSubmit} className="space-y-6 pt-4">
-                        <div>
-                          <Label htmlFor="name" className="text-base font-medium text-black">Nome do Artista *</Label>
-                          <Input
-                            id="name"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            placeholder="Ex: João Silva"
-                            required
-                            className="mt-2 h-12 text-base bg-white text-black placeholder:text-gray-400"
-                          />
-                        </div>
-                        <Button type="submit" size="lg" className="w-full bg-primary hover:bg-primary/90">
-                          {editingArtist ? 'Atualizar Artista' : 'Cadastrar Artista'}
-                        </Button>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
                 </div>
               </div>
 
@@ -256,43 +159,11 @@ const MusicianArtists = () => {
                       <Mic2 className="w-10 h-10 text-purple-600" />
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 mb-3">
-                      Comece sua rede de colaborações
+                      Nenhum artista encontrado
                     </h3>
-                    <p className="text-gray-600 mb-6">
-                      Adicione os artistas com quem você trabalha para organizar melhor seus freelas e shows
+                    <p className="text-gray-600">
+                      Você ainda não trabalhou com nenhum artista. Quando você participar de um show, o artista aparecerá aqui automaticamente.
                     </p>
-                    <Dialog open={dialogOpen} onOpenChange={handleDialogClose}>
-                      <DialogTrigger asChild>
-                        <Button size="lg" className="bg-primary hover:bg-primary/90">
-                          <Plus className="w-5 h-5 mr-2" />
-                          Adicionar Primeiro Artista
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="bg-white sm:max-w-md">
-                        <DialogHeader>
-                          <DialogTitle className="text-2xl flex items-center gap-2">
-                            <Sparkles className="w-6 h-6 text-primary" />
-                            Novo Artista
-                          </DialogTitle>
-                        </DialogHeader>
-                        <form onSubmit={handleSubmit} className="space-y-6 pt-4">
-                          <div>
-                            <Label htmlFor="name-empty" className="text-base font-medium">Nome do Artista *</Label>
-                            <Input
-                              id="name-empty"
-                              value={formData.name}
-                              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                              placeholder="Ex: João Silva"
-                              required
-                              className="mt-2 h-12 text-base"
-                            />
-                          </div>
-                          <Button type="submit" size="lg" className="w-full bg-primary hover:bg-primary/90">
-                            Cadastrar Artista
-                          </Button>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
                   </div>
                 </Card>
               ) : (
@@ -317,24 +188,6 @@ const MusicianArtists = () => {
                               <Mic2 className="w-7 h-7 text-white" />
                             </div>
                           </div>
-                          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEdit(artist)}
-                              className="h-9 w-9 hover:bg-purple-100 hover:text-purple-600"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDelete(artist.id)}
-                              className="h-9 w-9 hover:bg-red-100 hover:text-red-600"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
                         </div>
                         
                         <div>
@@ -356,7 +209,7 @@ const MusicianArtists = () => {
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-bold text-green-600">
-                                R$ {(artist.total_earned || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                {formatCurrency(artist.total_earned || 0)}
                               </span>
                             </div>
                           </div>
