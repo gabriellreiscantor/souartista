@@ -1,8 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.83.0';
-import jsPDF from "https://esm.sh/jspdf@2.5.2";
-import autoTable from "https://esm.sh/jspdf-autotable@3.8.4";
+import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
 import * as XLSX from "https://esm.sh/xlsx@0.18.5";
 import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
 
@@ -34,37 +33,69 @@ const getPeriodLabel = (period: string) => {
   return labels[period] || period;
 };
 
-const generatePDF = (shows: any[], profile: any, period: string, userRole: string, totals: any) => {
-  const doc = new jsPDF.jsPDF();
+const generatePDF = async (shows: any[], profile: any, period: string, userRole: string, totals: any) => {
+  const pdfDoc = await PDFDocument.create();
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   
-  // Header
-  doc.setFontSize(20);
-  doc.text('Relatório Financeiro', 14, 20);
-  doc.setFontSize(12);
-  doc.text(`${userRole === 'artist' ? 'Artista' : 'Músico'}: ${profile.name}`, 14, 30);
-  doc.text(`Período: ${getPeriodLabel(period)}`, 14, 38);
+  const page = pdfDoc.addPage([595.28, 841.89]); // A4
+  const { width, height } = page.getSize();
+  
+  let y = height - 50;
+  
+  // Título
+  page.drawText('Relatório Financeiro', { x: 50, y, size: 20, font: boldFont, color: rgb(0, 0, 0) });
+  y -= 30;
+  
+  // Info do usuário
+  page.drawText(`${userRole === 'artist' ? 'Artista' : 'Músico'}: ${profile.name}`, { x: 50, y, size: 12, font, color: rgb(0, 0, 0) });
+  y -= 20;
+  page.drawText(`Período: ${getPeriodLabel(period)}`, { x: 50, y, size: 12, font, color: rgb(0, 0, 0) });
+  y -= 30;
   
   // Resumo financeiro
-  doc.text(`Total de Shows: ${totals.totalShows}`, 14, 50);
-  doc.text(`Receita: R$ ${formatCurrency(totals.totalRevenue)}`, 14, 58);
-  doc.text(`Despesas: R$ ${formatCurrency(totals.totalExpenses)}`, 14, 66);
-  doc.text(`Lucro Líquido: R$ ${formatCurrency(totals.totalProfit)}`, 14, 74);
+  page.drawText('Resumo Financeiro', { x: 50, y, size: 14, font: boldFont, color: rgb(0, 0, 0) });
+  y -= 20;
+  page.drawText(`Total de Shows: ${totals.totalShows}`, { x: 50, y, size: 11, font, color: rgb(0, 0, 0) });
+  y -= 15;
+  page.drawText(`Receita: R$ ${formatCurrency(totals.totalRevenue)}`, { x: 50, y, size: 11, font, color: rgb(0, 0, 0) });
+  y -= 15;
+  page.drawText(`Despesas: R$ ${formatCurrency(totals.totalExpenses)}`, { x: 50, y, size: 11, font, color: rgb(0, 0, 0) });
+  y -= 15;
+  page.drawText(`Lucro Líquido: R$ ${formatCurrency(totals.totalProfit)}`, { x: 50, y, size: 11, font, color: rgb(0, 0, 0) });
+  y -= 30;
   
-  // Tabela de shows
-  autoTable(doc, {
-    startY: 85,
-    head: [['#', 'Data', 'Local', 'Cachê', 'Despesas', 'Lucro']],
-    body: shows.map((show, i) => [
-      i + 1,
-      new Date(show.date_local).toLocaleDateString('pt-BR'),
-      show.venue_name,
-      `R$ ${formatCurrency(Number(show.fee))}`,
-      `R$ ${formatCurrency(show.totalExpenses || 0)}`,
-      `R$ ${formatCurrency(show.profit || 0)}`
-    ])
-  });
+  // Cabeçalho da tabela
+  page.drawText('Detalhes dos Shows', { x: 50, y, size: 14, font: boldFont, color: rgb(0, 0, 0) });
+  y -= 20;
+  page.drawText('#', { x: 50, y, size: 10, font: boldFont, color: rgb(0, 0, 0) });
+  page.drawText('Data', { x: 80, y, size: 10, font: boldFont, color: rgb(0, 0, 0) });
+  page.drawText('Local', { x: 160, y, size: 10, font: boldFont, color: rgb(0, 0, 0) });
+  page.drawText('Cachê', { x: 350, y, size: 10, font: boldFont, color: rgb(0, 0, 0) });
+  page.drawText('Despesas', { x: 420, y, size: 10, font: boldFont, color: rgb(0, 0, 0) });
+  page.drawText('Lucro', { x: 490, y, size: 10, font: boldFont, color: rgb(0, 0, 0) });
+  y -= 15;
   
-  return doc.output('arraybuffer');
+  // Linha separadora
+  page.drawLine({ start: { x: 50, y: y + 5 }, end: { x: 545, y: y + 5 }, thickness: 1, color: rgb(0, 0, 0) });
+  y -= 5;
+  
+  // Dados dos shows
+  for (let i = 0; i < shows.length && y > 50; i++) {
+    const show = shows[i];
+    page.drawText(`${i + 1}`, { x: 50, y, size: 9, font, color: rgb(0, 0, 0) });
+    page.drawText(new Date(show.date_local).toLocaleDateString('pt-BR'), { x: 80, y, size: 9, font, color: rgb(0, 0, 0) });
+    // Truncar nome do local se muito longo
+    const venueName = (show.venue_name || '-').substring(0, 30);
+    page.drawText(venueName, { x: 160, y, size: 9, font, color: rgb(0, 0, 0) });
+    page.drawText(`R$ ${formatCurrency(Number(show.fee))}`, { x: 350, y, size: 9, font, color: rgb(0, 0, 0) });
+    page.drawText(`R$ ${formatCurrency(show.totalExpenses || 0)}`, { x: 420, y, size: 9, font, color: rgb(0, 0, 0) });
+    page.drawText(`R$ ${formatCurrency(show.profit || 0)}`, { x: 490, y, size: 9, font, color: rgb(0, 0, 0) });
+    y -= 15;
+  }
+  
+  const pdfBytes = await pdfDoc.save();
+  return pdfBytes;
 };
 
 const generateXLSX = (shows: any[], profile: any, period: string, userRole: string, totals: any) => {
@@ -294,14 +325,22 @@ const handler = async (req: Request): Promise<Response> => {
     let attachmentFilename: string;
 
     if (format === 'pdf') {
-      const pdfBuffer = generatePDF(showsWithData, profile, period, userRole, totals);
-      attachmentContent = base64Encode(pdfBuffer as ArrayBuffer);
+      console.log('Generating PDF...');
+      const pdfBuffer = await generatePDF(showsWithData, profile, period, userRole, totals);
+      console.log(`PDF generated, size: ${pdfBuffer.byteLength} bytes`);
+      // Convert Uint8Array to base64
+      const pdfArrayBuffer = pdfBuffer.buffer.slice(pdfBuffer.byteOffset, pdfBuffer.byteOffset + pdfBuffer.byteLength);
+      attachmentContent = base64Encode(pdfArrayBuffer as ArrayBuffer);
       attachmentFilename = `relatorio-${period}-${new Date().toISOString().split('T')[0]}.pdf`;
     } else {
+      console.log('Generating XLSX...');
       const xlsxBuffer = generateXLSX(showsWithData, profile, period, userRole, totals);
+      console.log(`XLSX generated, size: ${xlsxBuffer.byteLength} bytes`);
       attachmentContent = base64Encode(xlsxBuffer as ArrayBuffer);
       attachmentFilename = `relatorio-${period}-${new Date().toISOString().split('T')[0]}.xlsx`;
     }
+
+    console.log(`Attachment base64 length: ${attachmentContent.length} chars`);
 
     // Send email with attachment
     const { data, error } = await resend.emails.send({
