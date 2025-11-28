@@ -678,6 +678,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_devices: {
+        Row: {
+          created_at: string | null
+          device_id: string
+          device_name: string | null
+          fcm_token: string | null
+          id: string
+          last_used_at: string | null
+          platform: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_id: string
+          device_name?: string | null
+          fcm_token?: string | null
+          id?: string
+          last_used_at?: string | null
+          platform: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          device_id?: string
+          device_name?: string | null
+          fcm_token?: string | null
+          id?: string
+          last_used_at?: string | null
+          platform?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_feedback: {
         Row: {
           created_at: string

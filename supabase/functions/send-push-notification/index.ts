@@ -6,10 +6,11 @@ const corsHeaders = {
 };
 
 interface PushNotificationRequest {
-  userId: string;
+  userId?: string;
   title: string;
   body: string;
   link?: string;
+  platform?: 'ios' | 'android' | 'all';
 }
 
 // Function to get OAuth2 access token from service account
@@ -74,10 +75,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { userId, title, body, link }: PushNotificationRequest = await req.json();
+    const { userId, title, body, link, platform = 'all' }: PushNotificationRequest = await req.json();
 
-    if (!userId || !title || !body) {
-      throw new Error('Missing required fields: userId, title, body');
+    if (!title || !body) {
+      throw new Error('Missing required fields: title, body');
     }
 
     const supabaseAdmin = createClient(
@@ -85,20 +86,40 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get user's FCM token
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('fcm_token')
-      .eq('id', userId)
-      .single();
+    // Build query for user devices
+    let devicesQuery = supabaseAdmin
+      .from('user_devices')
+      .select('id, user_id, fcm_token, platform, device_name')
+      .not('fcm_token', 'is', null);
 
-    if (profileError || !profile?.fcm_token) {
-      console.log('No FCM token found for user:', userId);
+    // Filter by userId if provided
+    if (userId) {
+      devicesQuery = devicesQuery.eq('user_id', userId);
+    }
+
+    // Filter by platform if specified
+    if (platform !== 'all') {
+      devicesQuery = devicesQuery.eq('platform', platform);
+    }
+
+    const { data: devices, error: devicesError } = await devicesQuery;
+
+    if (devicesError) {
+      console.error('Error fetching devices:', devicesError);
+      throw devicesError;
+    }
+
+    if (!devices || devices.length === 0) {
+      console.log('No devices found with FCM tokens');
       return new Response(
-        JSON.stringify({ error: 'No FCM token found for user' }),
+        JSON.stringify({ 
+          success: true,
+          message: 'No devices found with FCM tokens',
+          sent: 0
+        }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 404 
+          status: 200 
         }
       );
     }
@@ -111,83 +132,90 @@ Deno.serve(async (req) => {
     const serviceAccount = JSON.parse(serviceAccountJson!);
     const projectId = serviceAccount.project_id;
 
-    // Send notification via FCM HTTP v1
-    const fcmUrl = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
-    
-    const fcmResponse = await fetch(fcmUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: {
-          token: profile.fcm_token,
-          notification: {
-            title,
-            body,
-          },
-          data: {
-            link: link || '',
-          },
-          android: {
-            priority: 'high',
-          },
-          apns: {
-            headers: {
-              'apns-priority': '10',
-            },
-          },
-        },
-      }),
-    });
+    let successCount = 0;
+    let errorCount = 0;
 
-    const fcmResult = await fcmResponse.json();
-
-    if (!fcmResponse.ok) {
-      console.error('FCM error:', fcmResult);
-      
-      // Check for invalid/expired token errors
-      const errorCode = fcmResult.error?.code;
-      const errorStatus = fcmResult.error?.status;
-      const isUnregistered = fcmResult.error?.details?.some(
-        (d: any) => d.errorCode === 'UNREGISTERED'
-      );
-
-      if (errorCode === 404 || 
-          errorCode === 400 ||
-          errorStatus === 'NOT_FOUND' || 
-          errorStatus === 'INVALID_ARGUMENT' ||
-          isUnregistered) {
-        console.log('🗑️ Invalid/expired FCM token, removing from database for user:', userId);
-        await supabaseAdmin
-          .from('profiles')
-          .update({ fcm_token: null })
-          .eq('id', userId);
+    // Send notification to all devices
+    for (const device of devices) {
+      try {
+        const fcmUrl = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
         
-        // Return success since we handled the invalid token
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            message: 'Invalid FCM token removed from database. User will receive a new token on next app launch.' 
+        const fcmResponse = await fetch(fcmUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: {
+              token: device.fcm_token,
+              notification: {
+                title,
+                body,
+              },
+              data: {
+                link: link || '',
+              },
+              android: {
+                priority: 'high',
+              },
+              apns: {
+                headers: {
+                  'apns-priority': '10',
+                },
+              },
+            },
           }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200 
-          }
-        );
-      }
-      
-      throw new Error('Failed to send push notification');
-    }
+        });
 
-    console.log('✅ Push notification sent successfully:', fcmResult);
+        const fcmResult = await fcmResponse.json();
+
+        if (!fcmResponse.ok) {
+          console.error(`FCM error for device ${device.id}:`, fcmResult);
+          
+          // Check for invalid/expired token errors
+          const errorCode = fcmResult.error?.code;
+          const errorStatus = fcmResult.error?.status;
+          const isUnregistered = fcmResult.error?.details?.some(
+            (d: any) => d.errorCode === 'UNREGISTERED'
+          );
+
+          if (errorCode === 404 || 
+              errorCode === 400 ||
+              errorStatus === 'NOT_FOUND' || 
+              errorStatus === 'INVALID_ARGUMENT' ||
+              isUnregistered) {
+            console.log(`🗑️ Invalid/expired FCM token, removing device ${device.id}`);
+            await supabaseAdmin
+              .from('user_devices')
+              .delete()
+              .eq('id', device.id);
+          }
+          
+          errorCount++;
+        } else {
+          console.log(`✅ Push sent to device ${device.id} (${device.platform})`);
+          
+          // Update last_used_at
+          await supabaseAdmin
+            .from('user_devices')
+            .update({ last_used_at: new Date().toISOString() })
+            .eq('id', device.id);
+          
+          successCount++;
+        }
+      } catch (err) {
+        console.error(`Error sending push to device ${device.id}:`, err);
+        errorCount++;
+      }
+    }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Push notification sent',
-        fcmResult 
+        message: `Push notifications sent: ${successCount} successful, ${errorCount} failed`,
+        sent: successCount,
+        failed: errorCount
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
