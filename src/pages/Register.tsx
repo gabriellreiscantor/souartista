@@ -207,8 +207,58 @@ const Register = () => {
         setLoading(false);
         toast({
           title: 'CPF já cadastrado',
-          description: 'Este CPF já está registrado no sistema.',
+          description: 'Este CPF já possui uma conta. Faça login ou recupere sua senha.',
           variant: 'destructive',
+          action: (
+            <div className="flex flex-col gap-2 mt-2">
+              <button
+                onClick={() => navigate('/login')}
+                className="text-sm underline hover:no-underline"
+              >
+                Fazer login
+              </button>
+              <button
+                onClick={() => navigate('/reset-password')}
+                className="text-sm underline hover:no-underline"
+              >
+                Recuperar senha
+              </button>
+            </div>
+          ),
+        });
+        return;
+      }
+
+      // Verificar se o telefone já existe
+      const cleanPhone = formData.phone.replace(/\D/g, '');
+      const { data: phoneExists } = await supabase
+        .from('profiles')
+        .select('phone')
+        .eq('phone', cleanPhone)
+        .maybeSingle();
+
+      if (phoneExists) {
+        setLoading(false);
+        toast({
+          title: 'Telefone já cadastrado',
+          description: 'Este número de telefone já possui uma conta. Faça login ou recupere sua senha.',
+          variant: 'destructive',
+          action: (
+            <div className="flex flex-col gap-2 mt-2">
+              <button
+                onClick={() => navigate('/login')}
+                className="text-sm underline hover:no-underline"
+              >
+                Fazer login
+              </button>
+              <button
+                onClick={() => navigate('/reset-password')}
+                className="text-sm underline hover:no-underline"
+              >
+                Recuperar senha
+              </button>
+            </div>
+          ),
         });
         return;
       }
