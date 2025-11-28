@@ -1,6 +1,9 @@
 {
   "nodeModulesDir": "auto",
   "imports": {
-    "npm:": "https://esm.sh/"
+    "npm:": "https://esm.sh/",
+    "jspdf": "npm:jspdf@2.5.2",
+    "jspdf-autotable": "npm:jspdf-autotable@3.8.4",
+    "xlsx": "npm:xlsx@0.18.5"
   }
 }
