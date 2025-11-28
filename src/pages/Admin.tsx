@@ -2739,7 +2739,9 @@ export default function Admin() {
                                 title: pushTitle,
                                 message: pushMessage,
                                 link: pushLink || null,
-                                created_by: null, // Notificação global
+                                created_by: null,
+                                target_role: pushUserSearch === 'artistas' ? 'artist' : 
+                                             pushUserSearch === 'musicos' ? 'musician' : null,
                               })
                               .select()
                               .single();
