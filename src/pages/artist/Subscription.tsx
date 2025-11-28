@@ -8,12 +8,13 @@ import { PaymentHistory } from '@/components/PaymentHistory';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, CreditCard, Calendar, DollarSign, AlertCircle, HelpCircle, ExternalLink, QrCode, Copy, Clock, CheckCircle2 } from 'lucide-react';
+import { Loader2, CreditCard, Calendar, DollarSign, AlertCircle, HelpCircle, ExternalLink, QrCode, Copy, Clock, CheckCircle2, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useNativePlatform } from '@/hooks/useNativePlatform';
+import { useAppleIAP } from '@/hooks/useAppleIAP';
 import { useLastSeen } from '@/hooks/useLastSeen';
 import {
   AlertDialog,
@@ -39,6 +40,7 @@ const ArtistSubscription = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { isIOS, isNative } = useNativePlatform();
+  const { restorePurchases, loading: iapLoading } = useAppleIAP();
   useLastSeen(); // Atualizar last_seen_at
   const [loading, setLoading] = useState(true);
   const [canceling, setCanceling] = useState(false);
@@ -262,17 +264,28 @@ const ArtistSubscription = () => {
                       As assinaturas feitas pelo iPhone são gerenciadas pela App Store.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-600 mb-4">
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-gray-600">
                       Para visualizar, alterar ou cancelar sua assinatura, você precisa acessar as configurações de assinaturas do iOS.
                     </p>
-                    <Button 
-                      onClick={() => window.open('https://apps.apple.com/account/subscriptions', '_blank')}
-                      className="w-full"
-                    >
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Abrir Configurações da App Store
-                    </Button>
+                    <div className="space-y-3">
+                      <Button 
+                        onClick={() => window.open('https://apps.apple.com/account/subscriptions', '_blank')}
+                        className="w-full"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Abrir Configurações da App Store
+                      </Button>
+                      <Button 
+                        onClick={restorePurchases}
+                        variant="outline"
+                        className="w-full"
+                        disabled={iapLoading}
+                      >
+                        <RefreshCw className={`w-4 h-4 mr-2 ${iapLoading ? 'animate-spin' : ''}`} />
+                        {iapLoading ? 'Restaurando...' : 'Restaurar Compras'}
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ) : !subscription ? (

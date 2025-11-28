@@ -4,11 +4,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Check, Shield, Mail, Building2, Copy, QrCode, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Check, Shield, Mail, Building2, Copy, QrCode, AlertCircle, CheckCircle2, ArrowLeft, Smartphone } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { CreditCardForm, CreditCardData } from '@/components/CreditCardForm';
+import { useNativePlatform } from '@/hooks/useNativePlatform';
+import { useAppleIAP } from '@/hooks/useAppleIAP';
 const Subscribe = () => {
   const [billingCycle, setBillingCycle] = useState<'annual' | 'monthly'>('annual');
   const [showContactDialog, setShowContactDialog] = useState(false);
@@ -30,6 +32,8 @@ const Subscribe = () => {
     userRole
   } = useAuth();
   const navigate = useNavigate();
+  const { isIOS, isNative } = useNativePlatform();
+  const { purchaseProduct, loading: iapLoading } = useAppleIAP();
   useEffect(() => {
     const checkUserStatus = async () => {
       if (!user) return;
@@ -109,6 +113,23 @@ const Subscribe = () => {
       } = await supabase.auth.getSession();
       if (!session) {
         toast.error('Você precisa estar logado para assinar um plano.');
+        return;
+      }
+
+      // Se for iOS nativo, usar Apple In-App Purchase
+      if (isIOS && isNative) {
+        const success = await purchaseProduct(plan);
+        if (success) {
+          await refetchUserData();
+          const userRole = localStorage.getItem('userRole');
+          setTimeout(() => {
+            if (userRole === 'artist') {
+              navigate('/artist/dashboard', { replace: true });
+            } else if (userRole === 'musician') {
+              navigate('/musician/dashboard', { replace: true });
+            }
+          }, 1500);
+        }
         return;
       }
 
@@ -305,10 +326,23 @@ const Subscribe = () => {
         <Card className="glass-card border-primary/20 bg-primary/5 p-6 mb-8 max-w-3xl mx-auto">
           <div className="flex items-start gap-4">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Shield className="w-5 h-5 text-primary" />
+              {isIOS && isNative ? <Smartphone className="w-5 h-5 text-primary" /> : <Shield className="w-5 h-5 text-primary" />}
             </div>
             <div className="space-y-3">
-              {paymentMethod === 'CREDIT_CARD' ? <>
+              {isIOS && isNative ? <>
+                  <div>
+                    <h3 className="text-lg font-heading font-bold mb-2">
+                      Pagamento via Apple
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Pagamento seguro processado pela Apple. A cobrança será feita através da sua conta Apple e aparecerá na sua fatura da App Store.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-primary">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <span className="font-medium">Processamento seguro pela Apple</span>
+                  </div>
+                </> : paymentMethod === 'CREDIT_CARD' ? <>
                   <div>
                     <h3 className="text-lg font-heading font-bold mb-2">
                       Teste por 7 dias, sem compromisso!
@@ -353,20 +387,22 @@ const Subscribe = () => {
             </button>
           </div>
 
-          {/* Payment Method Selector */}
-          <div className="w-full max-w-md">
-            <label className="block text-sm font-medium text-foreground mb-3 text-center">
-              Método de Pagamento
-            </label>
-            <div className="inline-flex items-center gap-3 bg-muted/50 rounded-full p-1.5 w-full">
-              <button onClick={() => setPaymentMethod('PIX')} className={`flex-1 px-6 py-2.5 rounded-full transition-all font-medium ${paymentMethod === 'PIX' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-                PIX
-              </button>
-              <button onClick={() => setPaymentMethod('CREDIT_CARD')} className={`flex-1 px-6 py-2.5 rounded-full transition-all font-medium ${paymentMethod === 'CREDIT_CARD' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-                Cartão de Crédito
-              </button>
+          {/* Payment Method Selector - Esconder no iOS nativo */}
+          {!(isIOS && isNative) && (
+            <div className="w-full max-w-md">
+              <label className="block text-sm font-medium text-foreground mb-3 text-center">
+                Método de Pagamento
+              </label>
+              <div className="inline-flex items-center gap-3 bg-muted/50 rounded-full p-1.5 w-full">
+                <button onClick={() => setPaymentMethod('PIX')} className={`flex-1 px-6 py-2.5 rounded-full transition-all font-medium ${paymentMethod === 'PIX' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+                  PIX
+                </button>
+                <button onClick={() => setPaymentMethod('CREDIT_CARD')} className={`flex-1 px-6 py-2.5 rounded-full transition-all font-medium ${paymentMethod === 'CREDIT_CARD' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+                  Cartão de Crédito
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Plans Grid */}
@@ -390,8 +426,13 @@ const Subscribe = () => {
               {plans.monthly.features.map((feature, idx) => <Feature key={idx} text={feature} />)}
             </ul>
 
-            <Button variant={billingCycle === 'monthly' ? 'default' : 'outline'} className="w-full h-11" onClick={() => handleSubscribe('monthly')} disabled={billingCycle !== 'monthly'}>
-              Selecionar Plano Mensal
+            <Button 
+              variant={billingCycle === 'monthly' ? 'default' : 'outline'} 
+              className="w-full h-11" 
+              onClick={() => handleSubscribe('monthly')} 
+              disabled={billingCycle !== 'monthly' || iapLoading}
+            >
+              {iapLoading ? 'Processando...' : 'Selecionar Plano Mensal'}
             </Button>
           </Card>
 
@@ -423,8 +464,13 @@ const Subscribe = () => {
               {plans.annual.features.map((feature, idx) => <Feature key={idx} text={feature} />)}
             </ul>
 
-            <Button variant={billingCycle === 'annual' ? 'default' : 'outline'} className="w-full h-11" onClick={() => handleSubscribe('annual')} disabled={billingCycle !== 'annual'}>
-              Selecionar Plano Anual
+            <Button 
+              variant={billingCycle === 'annual' ? 'default' : 'outline'} 
+              className="w-full h-11" 
+              onClick={() => handleSubscribe('annual')} 
+              disabled={billingCycle !== 'annual' || iapLoading}
+            >
+              {iapLoading ? 'Processando...' : 'Selecionar Plano Anual'}
             </Button>
           </Card>
         </div>

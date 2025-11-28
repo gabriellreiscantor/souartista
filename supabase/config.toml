@@ -29,3 +29,9 @@ verify_jwt = true
 
 [functions.send-report-email]
 verify_jwt = true
+
+[functions.verify-apple-receipt]
+verify_jwt = true
+
+[functions.apple-subscription-webhook]
+verify_jwt = false
