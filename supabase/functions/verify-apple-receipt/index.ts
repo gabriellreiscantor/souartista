@@ -5,6 +5,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const REVENUECAT_API_KEY = Deno.env.get('REVENUECAT_API_KEY');
+const REVENUECAT_API_URL = 'https://api.revenuecat.com/v1';
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -26,78 +29,166 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { productId, transactionId, restore } = await req.json();
+    const { appUserId, restore } = await req.json();
+    const userId = appUserId || user.id;
 
-    console.log('🍎 Verify Apple Receipt - User:', user.id, 'Product:', productId);
+    console.log('🍎 Verify Apple Receipt via RevenueCat - User:', userId, 'Restore:', restore);
 
-    // TODO: Implementar validação real com Apple App Store Server API
-    // Por enquanto, este é um placeholder que será implementado quando
-    // você configurar os certificados e secrets da Apple
-    
-    // Para implementar validação real:
-    // 1. Obter o receipt da Apple
-    // 2. Validar com Apple's App Store Server API
-    // 3. Verificar se o receipt é válido e ativo
-    // 4. Atualizar banco de dados com status da assinatura
+    if (!REVENUECAT_API_KEY) {
+      throw new Error('REVENUECAT_API_KEY not configured');
+    }
 
-    // Exemplo de estrutura para validação real:
-    /*
-    const appleSharedSecret = Deno.env.get('APPLE_SHARED_SECRET');
-    const verifyUrl = 'https://buy.itunes.apple.com/verifyReceipt'; // Sandbox
-    // const verifyUrl = 'https://buy.itunes.apple.com/verifyReceipt'; // Production
-    
-    const verifyResponse = await fetch(verifyUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        'receipt-data': receiptData,
-        'password': appleSharedSecret,
-      }),
+    // Consultar RevenueCat API v1 para pegar status do subscriber
+    const revenueCatResponse = await fetch(`${REVENUECAT_API_URL}/subscribers/${userId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${REVENUECAT_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
     });
+
+    if (!revenueCatResponse.ok) {
+      const errorText = await revenueCatResponse.text();
+      console.error('❌ RevenueCat API error:', revenueCatResponse.status, errorText);
+      throw new Error(`RevenueCat API error: ${revenueCatResponse.status}`);
+    }
+
+    const revenueCatData = await revenueCatResponse.json();
+    console.log('📱 RevenueCat response:', JSON.stringify(revenueCatData, null, 2));
+
+    const subscriber = revenueCatData.subscriber;
     
-    const verifyResult = await verifyResponse.json();
-    
-    if (verifyResult.status === 0) {
-      // Receipt válido
-      const latestReceiptInfo = verifyResult.latest_receipt_info[0];
-      const expiresDate = new Date(parseInt(latestReceiptInfo.expires_date_ms));
+    if (!subscriber) {
+      console.log('⚠️ No subscriber data found');
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'No subscription found',
+          configured: true,
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    }
+
+    // Verificar se tem algum entitlement ativo
+    const entitlements = subscriber.entitlements || {};
+    const hasActiveEntitlement = Object.values(entitlements).some(
+      (entitlement: any) => entitlement.expires_date === null || new Date(entitlement.expires_date) > new Date()
+    );
+
+    console.log('🎫 Has active entitlement:', hasActiveEntitlement);
+
+    if (!hasActiveEntitlement) {
+      console.log('⚠️ No active entitlements found');
       
-      // Atualizar subscription no banco
-      await supabaseClient
-        .from('subscriptions')
-        .upsert({
-          user_id: user.id,
-          apple_product_id: productId,
-          apple_original_transaction_id: transactionId,
-          payment_platform: 'apple',
-          status: 'active',
-          next_due_date: expiresDate,
-          plan_type: productId.includes('annual') ? 'annual' : 'monthly',
-          amount: productId.includes('annual') ? 11.99 : 5.99,
-        });
-      
-      // Atualizar profile
+      // Atualizar status como expirado
       await supabaseClient
         .from('profiles')
         .update({
-          status_plano: 'ativo',
-          plan_type: productId.includes('annual') ? 'annual' : 'monthly',
+          status_plano: 'inactive',
         })
         .eq('id', user.id);
-    }
-    */
 
-    console.log('⚠️ Apple IAP validation not fully configured yet');
-    console.log('📝 To complete setup:');
-    console.log('1. Configure Apple Developer Account and create products');
-    console.log('2. Add APPLE_SHARED_SECRET to Supabase secrets');
-    console.log('3. Uncomment and configure the validation code above');
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'No active subscription',
+          configured: true,
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    }
+
+    // Pegar primeira assinatura ativa
+    const subscriptions = subscriber.subscriptions || {};
+    const activeSubscription = Object.entries(subscriptions).find(
+      ([_, sub]: [string, any]) => sub.expires_date === null || new Date(sub.expires_date) > new Date()
+    );
+
+    if (!activeSubscription) {
+      console.log('⚠️ No active subscription found in subscriptions list');
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'No active subscription details',
+          configured: true,
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    }
+
+    const [productId, subscriptionDetails] = activeSubscription as [string, any];
+    const expiresDate = subscriptionDetails.expires_date ? new Date(subscriptionDetails.expires_date) : null;
+    const originalTransactionId = subscriptionDetails.original_purchase_date || subscriptionDetails.purchase_date;
+    
+    // Determinar tipo de plano baseado no product ID
+    const planType = productId.toLowerCase().includes('annual') ? 'annual' : 'monthly';
+    const amount = planType === 'annual' ? 11.99 : 5.99;
+
+    console.log('💳 Subscription details:', {
+      productId,
+      planType,
+      expiresDate: expiresDate?.toISOString(),
+      originalTransactionId,
+    });
+
+    // Atualizar/criar subscription no banco
+    const { error: subError } = await supabaseClient
+      .from('subscriptions')
+      .upsert({
+        user_id: user.id,
+        apple_product_id: productId,
+        apple_original_transaction_id: originalTransactionId,
+        payment_platform: 'apple',
+        status: 'active',
+        next_due_date: expiresDate?.toISOString(),
+        plan_type: planType,
+        amount: amount,
+      }, {
+        onConflict: 'user_id',
+      });
+
+    if (subError) {
+      console.error('❌ Error upserting subscription:', subError);
+      throw new Error(`Database error: ${subError.message}`);
+    }
+
+    // Atualizar profile
+    const { error: profileError } = await supabaseClient
+      .from('profiles')
+      .update({
+        status_plano: 'ativo',
+        plan_type: planType,
+      })
+      .eq('id', user.id);
+
+    if (profileError) {
+      console.error('❌ Error updating profile:', profileError);
+      throw new Error(`Database error: ${profileError.message}`);
+    }
+
+    console.log('✅ Apple subscription verified and saved successfully');
 
     return new Response(
       JSON.stringify({
-        success: false,
-        message: 'Apple In-App Purchase validation is not configured yet. Please configure Apple Developer Account and RevenueCat first.',
-        configured: false,
+        success: true,
+        message: 'Subscription verified successfully',
+        configured: true,
+        subscription: {
+          productId,
+          planType,
+          expiresDate: expiresDate?.toISOString(),
+          status: 'active',
+        },
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -106,9 +197,12 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error verifying Apple receipt:', error);
+    console.error('❌ Error verifying Apple receipt:', error);
     return new Response(
-      JSON.stringify({ error: String(error) }),
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : String(error),
+        success: false,
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
