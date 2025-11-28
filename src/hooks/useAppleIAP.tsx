@@ -12,6 +12,14 @@ interface AppleProduct {
   planType: 'monthly' | 'annual';
 }
 
+// Type definitions for RevenueCat Capacitor
+interface PurchasesPlugin {
+  configure: (options: { apiKey: string }) => Promise<void>;
+  getOfferings: () => Promise<any>;
+  purchasePackage: (options: { aPackage: any }) => Promise<{ customerInfo: any }>;
+  restorePurchases: () => Promise<{ customerInfo: any }>;
+}
+
 export const useAppleIAP = () => {
   const { isIOS, isNative } = useNativePlatform();
   const { toast } = useToast();
@@ -25,47 +33,78 @@ export const useAppleIAP = () => {
     }
   }, [isIOS, isNative]);
 
+  const getPurchases = (): PurchasesPlugin | null => {
+    try {
+      // @ts-ignore - RevenueCat plugin is loaded at runtime in native iOS
+      return window.Purchases || null;
+    } catch {
+      return null;
+    }
+  };
+
   const initializeIAP = async () => {
     try {
-      // TODO: Configurar RevenueCat API Key
-      // Para configurar, você precisará:
+      const Purchases = getPurchases();
+      if (!Purchases) {
+        console.warn('RevenueCat plugin não disponível (apenas funciona em iOS nativo)');
+        setIsInitialized(false);
+        return;
+      }
+
+      // Configurar RevenueCat
+      // IMPORTANTE: Você precisará configurar a API Key do RevenueCat
       // 1. Criar conta no RevenueCat (https://www.revenuecat.com/)
       // 2. Configurar os produtos no App Store Connect
-      // 3. Adicionar a API Key no código ou nas configurações
+      // 3. Adicionar VITE_REVENUECAT_IOS_API_KEY no .env
       
+      const apiKey = import.meta.env.VITE_REVENUECAT_IOS_API_KEY;
+      
+      if (!apiKey) {
+        console.warn('RevenueCat API Key não configurada');
+        setIsInitialized(false);
+        return;
+      }
+
+      await Purchases.configure({ apiKey });
       setIsInitialized(true);
       await loadProducts();
     } catch (error) {
       console.error('Error initializing IAP:', error);
+      setIsInitialized(false);
     }
   };
 
   const loadProducts = async () => {
     setLoading(true);
     try {
-      // Produtos mockados - serão substituídos pelos reais da Apple
-      // Após configurar o RevenueCat e os produtos no App Store Connect,
-      // estes serão carregados dinamicamente da Apple
-      const mockProducts: AppleProduct[] = [
-        {
-          identifier: 'souartista_monthly',
-          title: 'Plano Mensal',
-          description: 'Assinatura mensal do SouArtista',
-          price: 5.99,
-          priceString: 'R$ 5,99',
-          planType: 'monthly'
-        },
-        {
-          identifier: 'souartista_annual',
-          title: 'Plano Anual',
-          description: 'Assinatura anual do SouArtista',
-          price: 11.99,
-          priceString: 'R$ 11,99',
-          planType: 'annual'
-        }
-      ];
+      const Purchases = getPurchases();
+      if (!Purchases || !isInitialized) {
+        console.warn('RevenueCat não está inicializado');
+        return;
+      }
+
+      // Buscar ofertas do RevenueCat
+      const offerings = await Purchases.getOfferings();
       
-      setProducts(mockProducts);
+      if (!offerings.current) {
+        console.warn('Nenhuma oferta disponível no RevenueCat');
+        return;
+      }
+
+      // Converter os pacotes do RevenueCat para o formato do app
+      const rcProducts: AppleProduct[] = offerings.current.availablePackages.map((pkg: any) => {
+        const isAnnual = pkg.identifier.includes('annual') || pkg.packageType === 'ANNUAL';
+        return {
+          identifier: pkg.product.identifier,
+          title: pkg.product.title,
+          description: pkg.product.description,
+          price: pkg.product.price,
+          priceString: pkg.product.priceString,
+          planType: isAnnual ? 'annual' : 'monthly'
+        };
+      });
+      
+      setProducts(rcProducts);
     } catch (error) {
       console.error('Error loading products:', error);
       toast({
@@ -82,30 +121,81 @@ export const useAppleIAP = () => {
     try {
       setLoading(true);
       
-      // TODO: Implementar compra real via StoreKit/RevenueCat
-      // Por enquanto, este é um placeholder que será substituído pela implementação real
-      
-      console.log('Attempting to purchase:', planType);
-      
-      // Simular delay de processamento
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Quando implementar com RevenueCat/StoreKit, o fluxo será:
-      // 1. Chamar API do StoreKit para iniciar compra
-      // 2. Usuário confirma com Face ID/Touch ID
-      // 3. Receber receipt da Apple
-      // 4. Validar receipt no backend
-      // 5. Atualizar banco de dados
-      
-      toast({
-        title: "IAP não configurado",
-        description: "Apple In-App Purchase ainda não está configurado. Configure o RevenueCat e os produtos no App Store Connect.",
-        variant: "destructive",
-      });
+      const Purchases = getPurchases();
+      if (!Purchases || !isInitialized) {
+        toast({
+          title: "IAP não disponível",
+          description: "In-App Purchase está disponível apenas no app iOS nativo.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Encontrar o produto correspondente
+      const product = products.find(p => p.planType === planType);
+      if (!product) {
+        toast({
+          title: "Produto não encontrado",
+          description: "Não foi possível encontrar o plano selecionado.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Buscar o pacote do RevenueCat
+      const offerings = await Purchases.getOfferings();
+      const pkg = offerings.current?.availablePackages.find(
+        (p: any) => p.product.identifier === product.identifier
+      );
+
+      if (!pkg) {
+        toast({
+          title: "Erro ao processar",
+          description: "Pacote não encontrado no RevenueCat.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Realizar a compra
+      const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg });
+
+      // Verificar se a compra foi bem-sucedida
+      if (customerInfo.entitlements.active['premium']) {
+        // Chamar a edge function para validar e atualizar o banco
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Usuário não autenticado');
+
+        const { error } = await supabase.functions.invoke('verify-apple-receipt', {
+          body: {
+            productId: product.identifier,
+            transactionId: customerInfo.originalAppUserId,
+            restore: false
+          }
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Compra realizada!",
+          description: "Sua assinatura foi ativada com sucesso.",
+        });
+
+        return true;
+      }
 
       return false;
     } catch (error: any) {
       console.error('Error purchasing product:', error);
+      
+      // Tratar cancelamento pelo usuário
+      if (error.code === 'PURCHASE_CANCELLED') {
+        toast({
+          title: "Compra cancelada",
+          description: "Você cancelou a compra.",
+        });
+        return false;
+      }
       
       toast({
         title: "Erro na compra",
@@ -123,18 +213,48 @@ export const useAppleIAP = () => {
     try {
       setLoading(true);
       
-      // TODO: Implementar restauração real via StoreKit/RevenueCat
-      console.log('Attempting to restore purchases');
-      
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "IAP não configurado",
-        description: "Apple In-App Purchase ainda não está configurado. Configure o RevenueCat primeiro.",
-        variant: "destructive",
-      });
+      const Purchases = getPurchases();
+      if (!Purchases || !isInitialized) {
+        toast({
+          title: "IAP não disponível",
+          description: "In-App Purchase está disponível apenas no app iOS nativo.",
+          variant: "destructive",
+        });
+        return false;
+      }
 
-      return false;
+      // Restaurar compras via RevenueCat
+      const { customerInfo } = await Purchases.restorePurchases();
+
+      // Verificar se tem assinatura ativa
+      if (customerInfo.entitlements.active['premium']) {
+        // Chamar edge function para sincronizar com o banco
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Usuário não autenticado');
+
+        const { error } = await supabase.functions.invoke('verify-apple-receipt', {
+          body: {
+            productId: customerInfo.entitlements.active['premium'].productIdentifier,
+            transactionId: customerInfo.originalAppUserId,
+            restore: true
+          }
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Compras restauradas!",
+          description: "Sua assinatura foi restaurada com sucesso.",
+        });
+
+        return true;
+      } else {
+        toast({
+          title: "Nenhuma compra encontrada",
+          description: "Não há assinaturas para restaurar.",
+        });
+        return false;
+      }
     } catch (error) {
       console.error('Error restoring purchases:', error);
       toast({
