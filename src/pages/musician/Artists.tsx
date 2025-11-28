@@ -216,21 +216,21 @@ const MusicianArtists = () => {
                     </DialogTrigger>
                     <DialogContent className="bg-white sm:max-w-md">
                       <DialogHeader>
-                        <DialogTitle className="text-2xl flex items-center gap-2">
+                        <DialogTitle className="text-2xl flex items-center gap-2 text-black">
                           <Sparkles className="w-6 h-6 text-primary" />
                           {editingArtist ? 'Editar Artista' : 'Novo Artista'}
                         </DialogTitle>
                       </DialogHeader>
                       <form onSubmit={handleSubmit} className="space-y-6 pt-4">
                         <div>
-                          <Label htmlFor="name" className="text-base font-medium">Nome do Artista *</Label>
+                          <Label htmlFor="name" className="text-base font-medium text-black">Nome do Artista *</Label>
                           <Input
                             id="name"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             placeholder="Ex: João Silva"
                             required
-                            className="mt-2 h-12 text-base bg-white"
+                            className="mt-2 h-12 text-base bg-white text-black placeholder:text-gray-400"
                           />
                         </div>
                         <Button type="submit" size="lg" className="w-full bg-primary hover:bg-primary/90">
