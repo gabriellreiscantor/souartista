@@ -37,12 +37,15 @@ serve(async (req) => {
     switch (event) {
       case 'PAYMENT_CONFIRMED':
       case 'PAYMENT_RECEIVED': {
-        // Update subscription status to active
-        if (subscription?.id) {
+        // CORREÇÃO: Para eventos de pagamento, o ID da assinatura está em payment.subscription (string)
+        const subscriptionId = payment?.subscription;
+        console.log('🔔 Looking for subscription ID:', subscriptionId);
+        
+        if (subscriptionId) {
           const { data: existingSubscription } = await supabase
             .from('subscriptions')
             .select('*')
-            .eq('asaas_subscription_id', subscription.id)
+            .eq('asaas_subscription_id', subscriptionId)
             .maybeSingle();
 
           if (existingSubscription) {
@@ -84,12 +87,15 @@ serve(async (req) => {
 
       case 'PAYMENT_OVERDUE':
       case 'PAYMENT_DELETED': {
-        // Update subscription status
-        if (subscription?.id) {
+        // CORREÇÃO: Para eventos de pagamento, o ID da assinatura está em payment.subscription (string)
+        const subscriptionId = payment?.subscription;
+        console.log('🔔 Looking for subscription ID:', subscriptionId);
+        
+        if (subscriptionId) {
           const { data: existingSubscription } = await supabase
             .from('subscriptions')
             .select('*')
-            .eq('asaas_subscription_id', subscription.id)
+            .eq('asaas_subscription_id', subscriptionId)
             .maybeSingle();
 
           if (existingSubscription) {
