@@ -228,12 +228,20 @@ serve(async (req) => {
     }
 
     // Save subscription in database
-    // For credit card, calculate the first charge date (7 days from now)
-    let nextDueDateToSave = subscriptionData.nextDueDate;
+    // Calculate next_due_date to save in database
+    let nextDueDateToSave: string;
     if (billingType === 'CREDIT_CARD') {
-      const firstChargeDate = new Date();
-      firstChargeDate.setDate(firstChargeDate.getDate() + 7);
-      nextDueDateToSave = firstChargeDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+      // Trial de 7 dias - calcular explicitamente
+      const trialEnd = new Date();
+      trialEnd.setDate(trialEnd.getDate() + 7);
+      // Formato YYYY-MM-DD manual para evitar problemas de timezone
+      const year = trialEnd.getFullYear();
+      const month = String(trialEnd.getMonth() + 1).padStart(2, '0');
+      const day = String(trialEnd.getDate()).padStart(2, '0');
+      nextDueDateToSave = `${year}-${month}-${day}`;
+    } else {
+      // PIX: usar a data retornada pelo Asaas
+      nextDueDateToSave = subscriptionData.nextDueDate;
     }
 
     const { error: insertError } = await supabase
@@ -243,7 +251,7 @@ serve(async (req) => {
         asaas_customer_id: customerId,
         asaas_subscription_id: subscriptionData.id,
         plan_type: planType,
-        status: 'pending',
+        status: billingType === 'CREDIT_CARD' ? 'active' : 'pending',
         amount,
         payment_method: billingType,
         next_due_date: nextDueDateToSave,
