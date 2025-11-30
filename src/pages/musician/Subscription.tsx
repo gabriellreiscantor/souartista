@@ -389,8 +389,9 @@ const MusicianSubscription = () => {
 
                   {/* Credit Card Trial Period Info */}
                   {subscription.payment_method === 'CREDIT_CARD' && 
-                   subscription.status === 'pending' && 
+                   (subscription.status === 'pending' || subscription.status === 'active') && 
                    subscription.next_due_date &&
+                   getDaysRemaining(subscription.next_due_date) <= 7 &&
                    getDaysRemaining(subscription.next_due_date) > 0 && (
                     <Card className="border-green-500 bg-green-50">
                       <CardHeader>
@@ -555,7 +556,11 @@ const MusicianSubscription = () => {
 
                   {/* Histórico de Pagamentos */}
                   {subscription && (
-                    <PaymentHistory subscription_id={subscription.id} />
+                    <PaymentHistory 
+                      subscription_id={subscription.id}
+                      paymentMethod={subscription.payment_method}
+                      subscriptionStatus={subscription.status}
+                    />
                   )}
 
                   {/* Card de Ajuda */}
