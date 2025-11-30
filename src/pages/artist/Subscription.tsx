@@ -554,7 +554,11 @@ const ArtistSubscription = () => {
 
                   {/* Histórico de Pagamentos */}
                   {subscription && (
-                    <PaymentHistory subscription_id={subscription.id} />
+                    <PaymentHistory 
+                      subscription_id={subscription.id}
+                      paymentMethod={subscription.payment_method}
+                      subscriptionStatus={subscription.status}
+                    />
                   )}
 
                   {/* Card de Ajuda */}
