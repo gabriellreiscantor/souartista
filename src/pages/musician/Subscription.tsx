@@ -127,8 +127,10 @@ const MusicianSubscription = () => {
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    // Extrair apenas a parte da data (YYYY-MM-DD) para evitar problemas de timezone
+    const datePart = dateString.split('T')[0].split(' ')[0];
+    const [year, month, day] = datePart.split('-');
+    return `${day}/${month}/${year}`;
   };
 
   const getPlanName = (planType: string) => {
