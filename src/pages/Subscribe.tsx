@@ -619,7 +619,7 @@ const Subscribe = () => {
                 <CheckCircle2 className="w-8 h-8 text-green-600" />
               </div>
             </div>
-            <DialogTitle className="text-center text-2xl">Pagamento Validado!</DialogTitle>
+            <DialogTitle className="text-center text-2xl text-primary">Pagamento Validado!</DialogTitle>
             <DialogDescription className="text-center space-y-3 pt-4">
               <p className="text-base">
                 Seu cartão foi validado com sucesso! Você está no período de teste de 7 dias.
