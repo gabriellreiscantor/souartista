@@ -8,6 +8,8 @@ import { ptBR } from 'date-fns/locale';
 
 interface PaymentHistoryProps {
   subscription_id: string;
+  paymentMethod?: string;
+  subscriptionStatus?: string;
 }
 
 interface PaymentRecord {
@@ -20,7 +22,7 @@ interface PaymentRecord {
   created_at: string;
 }
 
-export function PaymentHistory({ subscription_id }: PaymentHistoryProps) {
+export function PaymentHistory({ subscription_id, paymentMethod, subscriptionStatus }: PaymentHistoryProps) {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -59,26 +61,36 @@ export function PaymentHistory({ subscription_id }: PaymentHistoryProps) {
 
   if (loading) {
     return (
-      <Card>
+      <Card className="bg-white">
         <CardHeader>
-          <CardTitle className="text-lg">Histórico de Pagamentos</CardTitle>
+          <CardTitle className="text-lg text-gray-900">Histórico de Pagamentos</CardTitle>
         </CardHeader>
         <CardContent className="flex justify-center py-8">
-          <Loader2 className="w-6 h-6 animate-spin" />
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
         </CardContent>
       </Card>
     );
   }
 
   if (payments.length === 0) {
+    const getEmptyMessage = () => {
+      if (paymentMethod === 'CREDIT_CARD' && (subscriptionStatus === 'active' || subscriptionStatus === 'pending')) {
+        return 'Você está no período de teste de 7 dias. A primeira cobrança será feita automaticamente após o término do período de teste.';
+      }
+      if (paymentMethod === 'PIX') {
+        return 'Quando você realizar um pagamento via PIX, ele aparecerá aqui no histórico.';
+      }
+      return 'Nenhum histórico de pagamentos encontrado.';
+    };
+
     return (
-      <Card>
+      <Card className="bg-white">
         <CardHeader>
-          <CardTitle className="text-lg">Histórico de Pagamentos</CardTitle>
+          <CardTitle className="text-lg text-gray-900">Histórico de Pagamentos</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-center py-4">
-            Nenhum histórico de pagamentos encontrado.
+          <p className="text-gray-600 text-center py-4">
+            {getEmptyMessage()}
           </p>
         </CardContent>
       </Card>
@@ -86,9 +98,9 @@ export function PaymentHistory({ subscription_id }: PaymentHistoryProps) {
   }
 
   return (
-    <Card>
+    <Card className="bg-white">
       <CardHeader>
-        <CardTitle className="text-lg">Histórico de Pagamentos</CardTitle>
+        <CardTitle className="text-lg text-gray-900">Histórico de Pagamentos</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
