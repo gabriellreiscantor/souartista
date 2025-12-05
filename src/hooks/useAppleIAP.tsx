@@ -51,19 +51,9 @@ export const useAppleIAP = () => {
         return;
       }
 
-      // Configurar RevenueCat
-      // IMPORTANTE: Você precisará configurar a API Key do RevenueCat
-      // 1. Criar conta no RevenueCat (https://www.revenuecat.com/)
-      // 2. Configurar os produtos no App Store Connect
-      // 3. Adicionar VITE_REVENUECAT_IOS_API_KEY no .env
-      
-      const apiKey = import.meta.env.VITE_REVENUECAT_IOS_API_KEY;
-      
-      if (!apiKey) {
-        console.warn('RevenueCat API Key não configurada');
-        setIsInitialized(false);
-        return;
-      }
+      // RevenueCat Public API Key (iOS)
+      // Esta é uma chave PÚBLICA, feita para estar no código do app
+      const apiKey = 'appl_QMMKVysmKcFwBSTopyoULMZSrib';
 
       await Purchases.configure({ apiKey });
       setIsInitialized(true);
