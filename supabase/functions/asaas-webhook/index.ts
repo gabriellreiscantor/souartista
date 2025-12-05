@@ -14,6 +14,27 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // 🔒 SECURITY: Validate webhook token from Asaas
+  const webhookToken = Deno.env.get('ASAAS_WEBHOOK_TOKEN');
+  const receivedToken = req.headers.get('asaas-access-token');
+  
+  if (!webhookToken) {
+    console.error('❌ ASAAS_WEBHOOK_TOKEN not configured');
+    return new Response(
+      JSON.stringify({ error: 'Webhook not configured' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+  
+  if (!receivedToken || receivedToken !== webhookToken) {
+    console.error('❌ Invalid webhook token received');
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+  
+  console.log('✅ Webhook token validated successfully');
   console.log('🔔 Processing webhook request...');
 
   try {
