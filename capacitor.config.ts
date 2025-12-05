@@ -4,6 +4,12 @@ const config: CapacitorConfig = {
   appId: 'app.souartista',
   appName: 'SouArtista',
   webDir: 'dist',
+  ios: {
+    // Bundle ID diferente para iOS
+    overrides: {
+      appId: 'aplicativo.souartista'
+    }
+  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
