@@ -34,12 +34,10 @@ const AppHub = () => {
       return;
     }
 
-    // Verificar se o email foi confirmado antes de permitir seleção de role
+    // Verificar se o email foi confirmado - redireciona para verify-email ao invés de logout
     if (!user.email_confirmed_at) {
-      console.log('[AppHub] Email not confirmed, signing out');
-      signOut().then(() => {
-        navigate('/login');
-      });
+      console.log('[AppHub] Email not confirmed, redirecting to verify-email');
+      navigate(`/verify-email?email=${encodeURIComponent(user.email || '')}`);
       return;
     }
 
