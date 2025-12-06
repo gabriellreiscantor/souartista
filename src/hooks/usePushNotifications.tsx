@@ -15,31 +15,43 @@ export const usePushNotifications = () => {
 
     const initPushNotifications = async () => {
       try {
+        console.log('[PushNotifications] Initializing push notifications...');
+        console.log('[PushNotifications] Platform:', platform);
+        console.log('[PushNotifications] User ID:', user.id);
+        
         // Request permission
         let permStatus = await PushNotifications.checkPermissions();
+        console.log('[PushNotifications] Permission status:', permStatus.receive);
 
         if (permStatus.receive === 'prompt') {
+          console.log('[PushNotifications] Requesting permissions...');
           permStatus = await PushNotifications.requestPermissions();
+          console.log('[PushNotifications] Permission after request:', permStatus.receive);
         }
 
         if (permStatus.receive !== 'granted') {
-          console.log('Push notification permission denied');
+          console.log('[PushNotifications] Permission denied');
           return;
         }
 
         // Register with FCM
+        console.log('[PushNotifications] Registering with FCM...');
         await PushNotifications.register();
 
         // Listen for registration
         await PushNotifications.addListener('registration', async (token) => {
-          console.log('Push registration success, token: ' + token.value);
+          console.log('[PushNotifications] ✅ Registration success!');
+          console.log('[PushNotifications] FCM Token:', token.value.substring(0, 50) + '...');
           
           // Get device information
           const deviceInfo = await Device.getId();
           const deviceName = await Device.getInfo();
           
+          console.log('[PushNotifications] Device ID:', deviceInfo.identifier);
+          console.log('[PushNotifications] Device Name:', `${deviceName.manufacturer} ${deviceName.model}`);
+          
           // Save token to user_devices table
-          const { error } = await supabase
+          const { data, error } = await supabase
             .from('user_devices')
             .upsert({ 
               user_id: user.id,
@@ -50,21 +62,24 @@ export const usePushNotifications = () => {
               last_used_at: new Date().toISOString()
             }, {
               onConflict: 'user_id,device_id'
-            });
+            })
+            .select();
 
           if (error) {
-            console.error('Error saving FCM token:', error);
+            console.error('[PushNotifications] ❌ Error saving FCM token:', error);
+          } else {
+            console.log('[PushNotifications] ✅ FCM token saved to database:', data);
           }
         });
 
         // Listen for registration errors
         await PushNotifications.addListener('registrationError', (error) => {
-          console.error('Push registration error:', error);
+          console.error('[PushNotifications] ❌ Registration error:', error);
         });
 
         // Listen for incoming notifications
         await PushNotifications.addListener('pushNotificationReceived', (notification) => {
-          console.log('Push notification received:', notification);
+          console.log('[PushNotifications] 📬 Notification received:', notification);
           
           // Show toast for foreground notification
           toast({
@@ -75,16 +90,19 @@ export const usePushNotifications = () => {
 
         // Listen for notification actions
         await PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-          console.log('Push notification action performed:', notification);
+          console.log('[PushNotifications] 👆 Notification tapped:', notification);
           
           // Handle navigation if there's a link in the data
           if (notification.notification.data?.link) {
+            console.log('[PushNotifications] Navigating to:', notification.notification.data.link);
             window.location.href = notification.notification.data.link;
           }
         });
 
+        console.log('[PushNotifications] ✅ Push notifications initialized successfully');
+        
       } catch (error) {
-        console.error('Error initializing push notifications:', error);
+        console.error('[PushNotifications] ❌ Error initializing push notifications:', error);
       }
     };
 

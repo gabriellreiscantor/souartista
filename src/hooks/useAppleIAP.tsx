@@ -44,22 +44,29 @@ export const useAppleIAP = () => {
 
   const initializeIAP = async () => {
     try {
+      console.log('[useAppleIAP] Initializing IAP...');
+      console.log('[useAppleIAP] isIOS:', isIOS, 'isNative:', isNative);
+      
       const Purchases = getPurchases();
       if (!Purchases) {
-        console.warn('RevenueCat plugin não disponível (apenas funciona em iOS nativo)');
+        console.warn('[useAppleIAP] RevenueCat plugin não disponível (apenas funciona em iOS nativo)');
+        console.log('[useAppleIAP] window.Purchases:', typeof (window as any).Purchases);
         setIsInitialized(false);
         return;
       }
 
+      console.log('[useAppleIAP] RevenueCat plugin found, configuring...');
+      
       // RevenueCat Public API Key (iOS)
       // Esta é uma chave PÚBLICA, feita para estar no código do app
       const apiKey = 'appl_QMMKVysmKcFwBSTopyoULMZSrib';
 
       await Purchases.configure({ apiKey });
+      console.log('[useAppleIAP] ✅ RevenueCat configured successfully');
       setIsInitialized(true);
       await loadProducts();
     } catch (error) {
-      console.error('Error initializing IAP:', error);
+      console.error('[useAppleIAP] ❌ Error initializing IAP:', error);
       setIsInitialized(false);
     }
   };
@@ -67,23 +74,30 @@ export const useAppleIAP = () => {
   const loadProducts = async () => {
     setLoading(true);
     try {
+      console.log('[useAppleIAP] Loading products...');
+      
       const Purchases = getPurchases();
       if (!Purchases || !isInitialized) {
-        console.warn('RevenueCat não está inicializado');
+        console.warn('[useAppleIAP] RevenueCat não está inicializado');
         return;
       }
 
       // Buscar ofertas do RevenueCat
       const offerings = await Purchases.getOfferings();
+      console.log('[useAppleIAP] Offerings received:', JSON.stringify(offerings, null, 2));
       
       if (!offerings.current) {
-        console.warn('Nenhuma oferta disponível no RevenueCat');
+        console.warn('[useAppleIAP] Nenhuma oferta disponível no RevenueCat');
         return;
       }
+
+      console.log('[useAppleIAP] Current offering:', offerings.current.identifier);
+      console.log('[useAppleIAP] Available packages:', offerings.current.availablePackages.length);
 
       // Converter os pacotes do RevenueCat para o formato do app
       const rcProducts: AppleProduct[] = offerings.current.availablePackages.map((pkg: any) => {
         const isAnnual = pkg.identifier.includes('annual') || pkg.packageType === 'ANNUAL';
+        console.log('[useAppleIAP] Package:', pkg.identifier, 'Type:', pkg.packageType, 'isAnnual:', isAnnual);
         return {
           identifier: pkg.product.identifier,
           title: pkg.product.title,
@@ -94,9 +108,10 @@ export const useAppleIAP = () => {
         };
       });
       
+      console.log('[useAppleIAP] ✅ Products loaded:', rcProducts.length);
       setProducts(rcProducts);
     } catch (error) {
-      console.error('Error loading products:', error);
+      console.error('[useAppleIAP] ❌ Error loading products:', error);
       toast({
         title: "Erro ao carregar produtos",
         description: "Não foi possível carregar os produtos disponíveis.",
@@ -109,10 +124,12 @@ export const useAppleIAP = () => {
 
   const purchaseProduct = async (planType: 'monthly' | 'annual') => {
     try {
+      console.log('[useAppleIAP] Starting purchase for:', planType);
       setLoading(true);
       
       const Purchases = getPurchases();
       if (!Purchases || !isInitialized) {
+        console.log('[useAppleIAP] ❌ IAP not available - isInitialized:', isInitialized);
         toast({
           title: "IAP não disponível",
           description: "In-App Purchase está disponível apenas no app iOS nativo.",
