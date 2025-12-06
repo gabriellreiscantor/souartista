@@ -40,6 +40,11 @@ workflows:
           npx cap add ios
           npx cap sync ios
       
+      - name: Disable automatic code signing
+        script: |
+          cd ios/App
+          sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/' App.xcodeproj/project.pbxproj
+      
       - name: Install CocoaPods
         script: cd ios/App && pod install
       
