@@ -283,10 +283,10 @@ const Subscribe = () => {
       features: ['Gerenciamento de shows ilimitado', 'Controle financeiro completo', 'Gestão de equipe e músicos', 'Relatórios detalhados', 'Suporte prioritário via tickets']
     },
     annual: {
-      price: 'R$ 319,00',
+      price: 'R$ 300,00',
       period: '/ano',
-      total: 'Equivale a R$ 26,58/mês',
-      savings: 'Economize R$ 39,80',
+      total: 'Equivale a R$ 25,00/mês',
+      savings: 'Economize R$ 58,80',
       features: ['Gerenciamento de shows ilimitado', 'Controle financeiro completo', 'Gestão de equipe e músicos', 'Relatórios detalhados', 'Suporte prioritário via tickets', 'Pague uma vez, use o ano todo', 'Suporte premium via WhatsApp']
     }
   };
@@ -382,7 +382,7 @@ const Subscribe = () => {
             <button onClick={() => setBillingCycle('annual')} className={`px-6 py-2.5 rounded-full transition-all font-medium relative ${billingCycle === 'annual' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
               Anual
               <span className="absolute -top-2 -right-2 text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow-md">
-                -11%
+                -16%
               </span>
             </button>
           </div>
