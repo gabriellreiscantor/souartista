@@ -8,12 +8,12 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Music, Loader2, ArrowLeft, Home } from 'lucide-react';
 import logo from '@/assets/logo.png';
-
+import { supabase } from '@/integrations/supabase/client';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, user, session, loading: authLoading } = useAuth();
+  const { signIn, resendOtp, user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -56,24 +56,40 @@ const Login = () => {
 
       clearTimeout(timeoutId);
 
-    if (error) {
-      // Melhorar mensagens de erro do login
-      let errorMessage = error.message;
-      
-      if (error.message.includes('Invalid login credentials') || error.message.includes('invalid credentials')) {
-        errorMessage = 'E-mail ou senha incorretos. Verifique suas credenciais.';
-      } else if (error.message.includes('Email not confirmed')) {
-        errorMessage = 'Por favor, verifique seu e-mail antes de fazer login.';
-      }
+      if (error) {
+        // Melhorar mensagens de erro do login
+        let errorMessage = error.message;
+        
+        if (error.message.includes('Invalid login credentials') || error.message.includes('invalid credentials')) {
+          errorMessage = 'E-mail ou senha incorretos. Verifique suas credenciais.';
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'Por favor, verifique seu e-mail antes de fazer login.';
+        }
 
-      console.error('[Login] Login error:', error);
-      toast({
-        title: 'Erro ao fazer login',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-      setLoading(false);
-    } else {
+        console.error('[Login] Login error:', error);
+        toast({
+          title: 'Erro ao fazer login',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+        setLoading(false);
+      } else {
+        // Check if email is confirmed
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        
+        if (currentUser && !currentUser.email_confirmed_at) {
+          console.log('[Login] Email not confirmed, sending OTP and redirecting to verify-email');
+          // Send new OTP and redirect to verification page
+          await resendOtp(email);
+          toast({
+            title: 'Verificação necessária',
+            description: 'Enviamos um código para seu email.',
+          });
+          navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+          setLoading(false);
+          return;
+        }
+
         console.log('[Login] Login successful, redirecting to /app');
         toast({
           title: 'Login realizado!',

@@ -46,6 +46,7 @@ import MusicianUpdates from "./pages/musician/Updates";
 import ArtistTutorial from "./pages/artist/Tutorial";
 import MusicianTutorial from "./pages/musician/Tutorial";
 import ResetPassword from "./pages/ResetPassword";
+import VerifyEmail from "./pages/VerifyEmail";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import DemoSelectRole from "./pages/DemoSelectRole";
@@ -79,6 +80,7 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/complete-profile" element={<CompleteProfile />} />
