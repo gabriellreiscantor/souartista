@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
     
     // Determinar tipo de plano baseado no product ID
     const planType = productId.toLowerCase().includes('annual') ? 'annual' : 'monthly';
-    const amount = planType === 'annual' ? 319.00 : 29.90;
+    const amount = planType === 'annual' ? 300.00 : 29.90;
 
     console.log('💳 Subscription details:', {
       productId,
