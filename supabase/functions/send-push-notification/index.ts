@@ -77,6 +77,8 @@ Deno.serve(async (req) => {
   try {
     const { userId, title, body, link, platform = 'all' }: PushNotificationRequest = await req.json();
 
+    console.log('[send-push-notification] 📤 Request received:', { userId, title, body, link, platform });
+
     if (!title || !body) {
       throw new Error('Missing required fields: title, body');
     }
@@ -94,23 +96,35 @@ Deno.serve(async (req) => {
 
     // Filter by userId if provided
     if (userId) {
+      console.log('[send-push-notification] Filtering by userId:', userId);
       devicesQuery = devicesQuery.eq('user_id', userId);
     }
 
     // Filter by platform if specified
     if (platform !== 'all') {
+      console.log('[send-push-notification] Filtering by platform:', platform);
       devicesQuery = devicesQuery.eq('platform', platform);
     }
 
     const { data: devices, error: devicesError } = await devicesQuery;
 
     if (devicesError) {
-      console.error('Error fetching devices:', devicesError);
+      console.error('[send-push-notification] ❌ Error fetching devices:', devicesError);
       throw devicesError;
     }
 
+    console.log('[send-push-notification] 📱 Devices found:', devices?.length || 0);
+    if (devices && devices.length > 0) {
+      console.log('[send-push-notification] Device details:', devices.map(d => ({
+        id: d.id,
+        platform: d.platform,
+        device_name: d.device_name,
+        has_token: !!d.fcm_token
+      })));
+    }
+
     if (!devices || devices.length === 0) {
-      console.log('No devices found with FCM tokens');
+      console.log('[send-push-notification] ⚠️ No devices found with FCM tokens');
       return new Response(
         JSON.stringify({ 
           success: true,

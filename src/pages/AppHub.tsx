@@ -34,6 +34,15 @@ const AppHub = () => {
       return;
     }
 
+    // Verificar se o email foi confirmado antes de permitir seleção de role
+    if (!user.email_confirmed_at) {
+      console.log('[AppHub] Email not confirmed, signing out');
+      signOut().then(() => {
+        navigate('/login');
+      });
+      return;
+    }
+
     if (!userRole) {
       console.log('[AppHub] No role, redirecting to select-role');
       navigate('/select-role');

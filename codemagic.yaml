@@ -31,6 +31,9 @@ workflows:
       - name: Install dependencies
         script: npm install
       
+      - name: Install capacitor-assets
+        script: npm install -g @capacitor/assets
+      
       - name: Build web assets
         script: npm run build
       
@@ -39,6 +42,9 @@ workflows:
           rm -rf ios
           PLATFORM=ios npx cap add ios
           PLATFORM=ios npx cap sync ios
+      
+      - name: Generate App Icons and Splash Screens
+        script: npx capacitor-assets generate --ios
       
       - name: Install CocoaPods
         script: cd ios/App && pod install

@@ -146,11 +146,15 @@ const App = () => (
       <Toaster />
       <Sonner />
       <OfflineBanner />
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </BrowserRouter>
+      {/* Safe area wrapper for iOS native app */}
+      <div className="safe-area-status-bar fixed top-0 left-0 right-0 z-[9999]" />
+      <div className="safe-area-top">
+        <BrowserRouter>
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+        </BrowserRouter>
+      </div>
     </TooltipProvider>
   </QueryClientProvider>
 );

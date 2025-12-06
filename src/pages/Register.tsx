@@ -140,7 +140,16 @@ const Register = () => {
     }
   };
 
-  const handleBack = () => {
+  const handleBack = async () => {
+    // Se está na etapa 4 (OTP), fazer logout e ir para home
+    if (step === 4) {
+      const { signOut } = await import('@/hooks/useAuth').then(m => ({ signOut: m.useAuth }));
+      // Signout usando supabase diretamente
+      await supabase.auth.signOut();
+      navigate('/');
+      return;
+    }
+    
     if (step > 1) {
       setStep(step - 1);
     }
@@ -673,6 +682,16 @@ const Register = () => {
 
             {step === 4 && (
               <div className="space-y-6">
+                {/* Botão Voltar no topo da etapa 4 */}
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="flex items-center gap-2 text-[#C8BAD4] hover:text-white transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="text-sm">Cancelar verificação</span>
+                </button>
+                
                 <div className="flex flex-col items-center space-y-4">
                   <div className="w-16 h-16 rounded-full bg-[#B96FFF]/20 flex items-center justify-center">
                     <Mail className="w-8 h-8 text-[#B96FFF]" />
