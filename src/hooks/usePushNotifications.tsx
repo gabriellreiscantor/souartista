@@ -15,42 +15,73 @@ export const usePushNotifications = () => {
 
     const initPushNotifications = async () => {
       try {
-        console.log('[PushNotifications] Initializing push notifications...');
+        console.log('[PushNotifications] ========== INITIALIZING PUSH NOTIFICATIONS ==========');
         console.log('[PushNotifications] Platform:', platform);
+        console.log('[PushNotifications] isNative:', isNative);
         console.log('[PushNotifications] User ID:', user.id);
+        console.log('[PushNotifications] User Email:', user.email);
+        console.log('[PushNotifications] User Agent:', navigator.userAgent);
+        
+        // Check if plugin is available
+        console.log('[PushNotifications] PushNotifications plugin:', typeof PushNotifications);
+        console.log('[PushNotifications] Available methods:', Object.keys(PushNotifications));
         
         // Request permission
+        console.log('[PushNotifications] Checking permissions...');
         let permStatus = await PushNotifications.checkPermissions();
-        console.log('[PushNotifications] Permission status:', permStatus.receive);
+        console.log('[PushNotifications] Current permission status:', JSON.stringify(permStatus));
 
         if (permStatus.receive === 'prompt') {
-          console.log('[PushNotifications] Requesting permissions...');
+          console.log('[PushNotifications] Permission is prompt, requesting...');
           permStatus = await PushNotifications.requestPermissions();
-          console.log('[PushNotifications] Permission after request:', permStatus.receive);
+          console.log('[PushNotifications] Permission after request:', JSON.stringify(permStatus));
         }
 
         if (permStatus.receive !== 'granted') {
-          console.log('[PushNotifications] Permission denied');
+          console.log('[PushNotifications] ❌ Permission DENIED or not granted');
+          console.log('[PushNotifications] Final status:', permStatus.receive);
           return;
         }
 
-        // Register with FCM
-        console.log('[PushNotifications] Registering with FCM...');
+        console.log('[PushNotifications] ✅ Permission GRANTED');
+        
+        // Register with APNs/FCM
+        console.log('[PushNotifications] Calling PushNotifications.register()...');
         await PushNotifications.register();
+        console.log('[PushNotifications] register() called, waiting for registration event...');
 
         // Listen for registration
         await PushNotifications.addListener('registration', async (token) => {
-          console.log('[PushNotifications] ✅ Registration success!');
-          console.log('[PushNotifications] FCM Token:', token.value.substring(0, 50) + '...');
+          console.log('[PushNotifications] ========== REGISTRATION SUCCESS ==========');
+          console.log('[PushNotifications] Token received!');
+          console.log('[PushNotifications] Token length:', token.value?.length);
+          console.log('[PushNotifications] Token preview:', token.value ? token.value.substring(0, 80) + '...' : 'NO TOKEN');
+          console.log('[PushNotifications] Full token:', token.value);
           
           // Get device information
+          console.log('[PushNotifications] Getting device info...');
           const deviceInfo = await Device.getId();
           const deviceName = await Device.getInfo();
           
           console.log('[PushNotifications] Device ID:', deviceInfo.identifier);
-          console.log('[PushNotifications] Device Name:', `${deviceName.manufacturer} ${deviceName.model}`);
+          console.log('[PushNotifications] Device platform:', deviceName.platform);
+          console.log('[PushNotifications] Device model:', deviceName.model);
+          console.log('[PushNotifications] Device manufacturer:', deviceName.manufacturer);
+          console.log('[PushNotifications] Device OS:', deviceName.operatingSystem, deviceName.osVersion);
+          
+          const deviceNameStr = `${deviceName.manufacturer || 'Unknown'} ${deviceName.model || 'Device'}`;
+          console.log('[PushNotifications] Device name string:', deviceNameStr);
           
           // Save token to user_devices table
+          console.log('[PushNotifications] Saving token to database...');
+          console.log('[PushNotifications] Payload:', {
+            user_id: user.id,
+            device_id: deviceInfo.identifier,
+            platform: platform,
+            fcm_token: token.value ? 'TOKEN_PRESENT' : 'NO_TOKEN',
+            device_name: deviceNameStr
+          });
+          
           const { data, error } = await supabase
             .from('user_devices')
             .upsert({ 
@@ -58,7 +89,7 @@ export const usePushNotifications = () => {
               device_id: deviceInfo.identifier,
               platform: platform,
               fcm_token: token.value,
-              device_name: `${deviceName.manufacturer} ${deviceName.model}`,
+              device_name: deviceNameStr,
               last_used_at: new Date().toISOString()
             }, {
               onConflict: 'user_id,device_id'
@@ -66,15 +97,21 @@ export const usePushNotifications = () => {
             .select();
 
           if (error) {
-            console.error('[PushNotifications] ❌ Error saving FCM token:', error);
+            console.error('[PushNotifications] ❌ Error saving token to DB:', error);
+            console.error('[PushNotifications] Error code:', error.code);
+            console.error('[PushNotifications] Error message:', error.message);
+            console.error('[PushNotifications] Error details:', error.details);
           } else {
-            console.log('[PushNotifications] ✅ FCM token saved to database:', data);
+            console.log('[PushNotifications] ✅ Token saved to database successfully!');
+            console.log('[PushNotifications] Saved data:', JSON.stringify(data));
           }
         });
 
         // Listen for registration errors
         await PushNotifications.addListener('registrationError', (error) => {
-          console.error('[PushNotifications] ❌ Registration error:', error);
+          console.error('[PushNotifications] ========== REGISTRATION ERROR ==========');
+          console.error('[PushNotifications] Error object:', JSON.stringify(error));
+          console.error('[PushNotifications] Error message:', error?.error);
         });
 
         // Listen for incoming notifications

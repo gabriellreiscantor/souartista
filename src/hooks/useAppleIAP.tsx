@@ -44,29 +44,41 @@ export const useAppleIAP = () => {
 
   const initializeIAP = async () => {
     try {
-      console.log('[useAppleIAP] Initializing IAP...');
-      console.log('[useAppleIAP] isIOS:', isIOS, 'isNative:', isNative);
+      console.log('[useAppleIAP] ========== INITIALIZING IAP ==========');
+      console.log('[useAppleIAP] isIOS:', isIOS);
+      console.log('[useAppleIAP] isNative:', isNative);
+      console.log('[useAppleIAP] User Agent:', navigator.userAgent);
+      console.log('[useAppleIAP] Window keys:', Object.keys(window).filter(k => k.toLowerCase().includes('purchase') || k.toLowerCase().includes('capacitor')));
       
       const Purchases = getPurchases();
+      console.log('[useAppleIAP] Purchases object:', Purchases);
+      console.log('[useAppleIAP] window.Purchases type:', typeof (window as any).Purchases);
+      console.log('[useAppleIAP] window.Capacitor:', typeof (window as any).Capacitor);
+      
       if (!Purchases) {
-        console.warn('[useAppleIAP] RevenueCat plugin não disponível (apenas funciona em iOS nativo)');
-        console.log('[useAppleIAP] window.Purchases:', typeof (window as any).Purchases);
+        console.warn('[useAppleIAP] ❌ RevenueCat plugin NOT available');
+        console.log('[useAppleIAP] Checking Capacitor plugins...');
+        console.log('[useAppleIAP] Capacitor.Plugins:', (window as any).Capacitor?.Plugins);
         setIsInitialized(false);
         return;
       }
 
-      console.log('[useAppleIAP] RevenueCat plugin found, configuring...');
+      console.log('[useAppleIAP] ✅ RevenueCat plugin FOUND, configuring...');
+      console.log('[useAppleIAP] Available methods:', Object.keys(Purchases));
       
       // RevenueCat Public API Key (iOS)
       // Esta é uma chave PÚBLICA, feita para estar no código do app
       const apiKey = 'appl_QMMKVysmKcFwBSTopyoULMZSrib';
+      console.log('[useAppleIAP] Using API Key:', apiKey.substring(0, 10) + '...');
 
       await Purchases.configure({ apiKey });
-      console.log('[useAppleIAP] ✅ RevenueCat configured successfully');
+      console.log('[useAppleIAP] ✅ RevenueCat configured successfully!');
       setIsInitialized(true);
       await loadProducts();
-    } catch (error) {
+    } catch (error: any) {
       console.error('[useAppleIAP] ❌ Error initializing IAP:', error);
+      console.error('[useAppleIAP] Error message:', error?.message);
+      console.error('[useAppleIAP] Error stack:', error?.stack);
       setIsInitialized(false);
     }
   };

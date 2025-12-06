@@ -290,7 +290,7 @@ const Subscribe = () => {
       features: ['Gerenciamento de shows ilimitado', 'Controle financeiro completo', 'Gestão de equipe e músicos', 'Relatórios detalhados', 'Suporte prioritário via tickets', 'Pague uma vez, use o ano todo', 'Suporte premium via WhatsApp']
     }
   };
-  return <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-background via-primary/5 to-primary/10">
+  return <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-background via-primary/5 to-primary/10" style={{ paddingTop: isIOS && isNative ? 'calc(env(safe-area-inset-top, 0px) + 48px)' : '48px', paddingBottom: '48px' }}>
       <div className="w-full max-w-6xl">
         {/* Back Button */}
         <div className="mb-4">

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselApi } from '@/components/ui/carousel';
 import { Calendar, DollarSign, Users, TrendingUp, Music } from 'lucide-react';
 import logo from '@/assets/logo.png';
+import { useNativePlatform } from '@/hooks/useNativePlatform';
 
 // Premium floating particles background
 const FloatingParticles = () => {
@@ -65,6 +66,8 @@ interface OnboardingProps {
 const Onboarding = ({ onComplete }: OnboardingProps) => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
+  const { isNative, platform } = useNativePlatform();
+  const isIOSNative = isNative && platform === 'ios';
 
   // Update current slide when carousel changes
   useEffect(() => {
@@ -96,6 +99,17 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-hidden" style={{ backgroundColor: '#1E082B' }}>
+      {/* iOS Safe Area - Status Bar Background */}
+      {isIOSNative && (
+        <div 
+          className="absolute top-0 left-0 right-0 z-30"
+          style={{ 
+            height: 'env(safe-area-inset-top, 0px)',
+            backgroundColor: '#1E082B'
+          }}
+        />
+      )}
+      
       {/* Premium background effects */}
       <div className="absolute inset-0 pointer-events-none">
         {/* Subtle vertical gradient for texture */}
@@ -106,33 +120,42 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
         
         {/* Vignette effect */}
         <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.4)]" />
-        
-        {/* Floating particles */}
-        <FloatingParticles />
       </div>
 
-      {/* Logo */}
-      <div className="relative flex justify-center pt-8 pb-6 z-10">
+      {/* Logo - with safe area padding */}
+      <div 
+        className="relative flex justify-center pb-6 z-10"
+        style={{ paddingTop: isIOSNative ? 'calc(env(safe-area-inset-top, 0px) + 32px)' : '32px' }}
+      >
         <img src={logo} alt="SouArtista" className="h-32 w-auto animate-fade-in drop-shadow-[0_0_20px_rgba(168,85,247,0.6)]" />
       </div>
 
-      {/* Skip button */}
+      {/* Skip button - with safe area padding */}
       <button
         onClick={handleSkip}
-        className="absolute top-8 right-6 text-muted-foreground text-sm hover:text-foreground transition-all duration-300 z-20 hover:scale-105"
+        className="absolute right-6 text-muted-foreground text-sm hover:text-foreground transition-all duration-300 z-20 hover:scale-105"
+        style={{ top: isIOSNative ? 'calc(env(safe-area-inset-top, 0px) + 32px)' : '32px' }}
       >
         Pular
       </button>
 
-      {/* Carousel */}
-      <div className="relative flex-1 flex items-center z-10">
-        <Carousel className="w-full" setApi={setApi}>
-          <CarouselContent>
+      {/* Carousel - optimized for touch */}
+      <div className="relative flex-1 flex items-center z-10" style={{ touchAction: 'pan-x' }}>
+        <Carousel 
+          className="w-full" 
+          setApi={setApi}
+          opts={{
+            dragFree: false,
+            containScroll: 'trimSnaps',
+            watchDrag: true,
+          }}
+        >
+          <CarouselContent className="touch-pan-x">
             {slides.map((slide, index) => (
               <CarouselItem key={index}>
                 <div className="flex flex-col items-center justify-center px-8 text-center py-8">
                   {/* Premium icon container with glow and shadow */}
-                  <div className="relative mb-10 animate-scale-in">
+                  <div className="relative mb-10">
                     <div className="absolute inset-0 bg-primary/20 rounded-[28px] blur-xl" />
                     <div className="relative w-28 h-28 rounded-[28px] bg-gradient-to-br from-primary/15 to-primary/5 backdrop-blur-sm flex items-center justify-center border border-primary/20 shadow-[0_8px_32px_-8px_rgba(168,85,247,0.4)]">
                       <div className="text-primary drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">
@@ -142,12 +165,12 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
                   </div>
                   
                   {/* Title with premium styling */}
-                  <h2 className="text-3xl font-heading font-bold text-white mb-4 max-w-md animate-fade-in drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+                  <h2 className="text-3xl font-heading font-bold text-white mb-4 max-w-md drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
                     {slide.title}
                   </h2>
                   
                   {/* Subtitle */}
-                  <p className="text-lg max-w-sm animate-fade-in" style={{ color: '#B8AEC9' }}>
+                  <p className="text-lg max-w-sm" style={{ color: '#B8AEC9' }}>
                     {slide.description}
                   </p>
                 </div>
