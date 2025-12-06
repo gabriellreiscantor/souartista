@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNativePlatform } from './useNativePlatform';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
-import { Purchases, LOG_LEVEL } from '@revenuecat/purchases-capacitor';
 
 interface AppleProduct {
   identifier: string;
@@ -19,6 +18,7 @@ export const useAppleIAP = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [products, setProducts] = useState<AppleProduct[]>([]);
   const [loading, setLoading] = useState(false);
+  const purchasesRef = useRef<any>(null);
 
   useEffect(() => {
     if (isIOS && isNative) {
@@ -32,7 +32,12 @@ export const useAppleIAP = () => {
       console.log('[useAppleIAP] isIOS:', isIOS);
       console.log('[useAppleIAP] isNative:', isNative);
       console.log('[useAppleIAP] User Agent:', navigator.userAgent);
-      console.log('[useAppleIAP] Purchases module:', typeof Purchases);
+      
+      // Dynamic import to avoid breaking web builds
+      const { Purchases, LOG_LEVEL } = await import('@revenuecat/purchases-capacitor');
+      purchasesRef.current = Purchases;
+      
+      console.log('[useAppleIAP] Purchases module loaded:', typeof Purchases);
       console.log('[useAppleIAP] Purchases methods:', Purchases ? Object.keys(Purchases) : 'N/A');
       
       if (!Purchases) {
@@ -53,7 +58,7 @@ export const useAppleIAP = () => {
       console.log('[useAppleIAP] ✅ RevenueCat configured successfully!');
       
       setIsInitialized(true);
-      await loadProducts();
+      await loadProductsInternal(Purchases);
     } catch (error: any) {
       console.error('[useAppleIAP] ❌ Error initializing IAP:', error);
       console.error('[useAppleIAP] Error name:', error?.name);
@@ -63,15 +68,10 @@ export const useAppleIAP = () => {
     }
   };
 
-  const loadProducts = async () => {
+  const loadProductsInternal = async (Purchases: any) => {
     setLoading(true);
     try {
       console.log('[useAppleIAP] Loading products from RevenueCat...');
-      
-      if (!isInitialized && !isIOS) {
-        console.warn('[useAppleIAP] ❌ Not initialized or not iOS');
-        return;
-      }
 
       // Buscar ofertas do RevenueCat
       const offerings = await Purchases.getOfferings();
@@ -123,7 +123,9 @@ export const useAppleIAP = () => {
       console.log('[useAppleIAP] Available products:', products.length);
       setLoading(true);
       
-      if (!isInitialized) {
+      const Purchases = purchasesRef.current;
+      
+      if (!isInitialized || !Purchases) {
         console.error('[useAppleIAP] ❌ IAP not initialized');
         toast({
           title: "IAP não disponível",
@@ -232,7 +234,9 @@ export const useAppleIAP = () => {
       console.log('[useAppleIAP] ========== RESTORING PURCHASES ==========');
       setLoading(true);
       
-      if (!isInitialized) {
+      const Purchases = purchasesRef.current;
+      
+      if (!isInitialized || !Purchases) {
         toast({
           title: "IAP não disponível",
           description: "In-App Purchase está disponível apenas no app iOS nativo.",
