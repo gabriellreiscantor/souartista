@@ -11,7 +11,22 @@ export const usePushNotifications = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (!isNative || !user) return;
+    console.log('[PushNotifications] ========== HOOK MOUNTED ==========');
+    console.log('[PushNotifications] isNative:', isNative);
+    console.log('[PushNotifications] platform:', platform);
+    console.log('[PushNotifications] user:', user?.id || 'NO USER');
+    
+    if (!isNative) {
+      console.log('[PushNotifications] ❌ Skipping - NOT native platform');
+      return;
+    }
+    
+    if (!user) {
+      console.log('[PushNotifications] ❌ Skipping - NO user logged in');
+      return;
+    }
+
+    console.log('[PushNotifications] ✅ Conditions met, initializing...');
 
     const initPushNotifications = async () => {
       try {

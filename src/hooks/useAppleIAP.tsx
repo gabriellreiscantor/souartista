@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNativePlatform } from './useNativePlatform';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
+import { Purchases, LOG_LEVEL } from '@revenuecat/purchases-capacitor';
 
 interface AppleProduct {
   identifier: string;
@@ -10,14 +11,6 @@ interface AppleProduct {
   price: number;
   priceString: string;
   planType: 'monthly' | 'annual';
-}
-
-// Type definitions for RevenueCat Capacitor
-interface PurchasesPlugin {
-  configure: (options: { apiKey: string }) => Promise<void>;
-  getOfferings: () => Promise<any>;
-  purchasePackage: (options: { aPackage: any }) => Promise<{ customerInfo: any }>;
-  restorePurchases: () => Promise<{ customerInfo: any }>;
 }
 
 export const useAppleIAP = () => {
@@ -33,50 +26,37 @@ export const useAppleIAP = () => {
     }
   }, [isIOS, isNative]);
 
-  const getPurchases = (): PurchasesPlugin | null => {
-    try {
-      // @ts-ignore - RevenueCat plugin is loaded at runtime in native iOS
-      return window.Purchases || null;
-    } catch {
-      return null;
-    }
-  };
-
   const initializeIAP = async () => {
     try {
       console.log('[useAppleIAP] ========== INITIALIZING IAP ==========');
       console.log('[useAppleIAP] isIOS:', isIOS);
       console.log('[useAppleIAP] isNative:', isNative);
       console.log('[useAppleIAP] User Agent:', navigator.userAgent);
-      console.log('[useAppleIAP] Window keys:', Object.keys(window).filter(k => k.toLowerCase().includes('purchase') || k.toLowerCase().includes('capacitor')));
-      
-      const Purchases = getPurchases();
-      console.log('[useAppleIAP] Purchases object:', Purchases);
-      console.log('[useAppleIAP] window.Purchases type:', typeof (window as any).Purchases);
-      console.log('[useAppleIAP] window.Capacitor:', typeof (window as any).Capacitor);
+      console.log('[useAppleIAP] Purchases module:', typeof Purchases);
+      console.log('[useAppleIAP] Purchases methods:', Purchases ? Object.keys(Purchases) : 'N/A');
       
       if (!Purchases) {
-        console.warn('[useAppleIAP] ❌ RevenueCat plugin NOT available');
-        console.log('[useAppleIAP] Checking Capacitor plugins...');
-        console.log('[useAppleIAP] Capacitor.Plugins:', (window as any).Capacitor?.Plugins);
+        console.error('[useAppleIAP] ❌ RevenueCat Purchases module not available');
         setIsInitialized(false);
         return;
       }
 
-      console.log('[useAppleIAP] ✅ RevenueCat plugin FOUND, configuring...');
-      console.log('[useAppleIAP] Available methods:', Object.keys(Purchases));
-      
+      // Set log level for debugging
+      console.log('[useAppleIAP] Setting log level to DEBUG...');
+      await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
+
       // RevenueCat Public API Key (iOS)
-      // Esta é uma chave PÚBLICA, feita para estar no código do app
       const apiKey = 'appl_QMMKVysmKcFwBSTopyoULMZSrib';
-      console.log('[useAppleIAP] Using API Key:', apiKey.substring(0, 10) + '...');
+      console.log('[useAppleIAP] Configuring with API Key:', apiKey.substring(0, 15) + '...');
 
       await Purchases.configure({ apiKey });
       console.log('[useAppleIAP] ✅ RevenueCat configured successfully!');
+      
       setIsInitialized(true);
       await loadProducts();
     } catch (error: any) {
       console.error('[useAppleIAP] ❌ Error initializing IAP:', error);
+      console.error('[useAppleIAP] Error name:', error?.name);
       console.error('[useAppleIAP] Error message:', error?.message);
       console.error('[useAppleIAP] Error stack:', error?.stack);
       setIsInitialized(false);
@@ -86,11 +66,10 @@ export const useAppleIAP = () => {
   const loadProducts = async () => {
     setLoading(true);
     try {
-      console.log('[useAppleIAP] Loading products...');
+      console.log('[useAppleIAP] Loading products from RevenueCat...');
       
-      const Purchases = getPurchases();
-      if (!Purchases || !isInitialized) {
-        console.warn('[useAppleIAP] RevenueCat não está inicializado');
+      if (!isInitialized && !isIOS) {
+        console.warn('[useAppleIAP] ❌ Not initialized or not iOS');
         return;
       }
 
@@ -99,31 +78,33 @@ export const useAppleIAP = () => {
       console.log('[useAppleIAP] Offerings received:', JSON.stringify(offerings, null, 2));
       
       if (!offerings.current) {
-        console.warn('[useAppleIAP] Nenhuma oferta disponível no RevenueCat');
+        console.warn('[useAppleIAP] ❌ No current offering available');
         return;
       }
 
       console.log('[useAppleIAP] Current offering:', offerings.current.identifier);
-      console.log('[useAppleIAP] Available packages:', offerings.current.availablePackages.length);
+      console.log('[useAppleIAP] Available packages:', offerings.current.availablePackages?.length || 0);
 
       // Converter os pacotes do RevenueCat para o formato do app
-      const rcProducts: AppleProduct[] = offerings.current.availablePackages.map((pkg: any) => {
-        const isAnnual = pkg.identifier.includes('annual') || pkg.packageType === 'ANNUAL';
+      const rcProducts: AppleProduct[] = (offerings.current.availablePackages || []).map((pkg: any) => {
+        const isAnnual = pkg.identifier?.includes('annual') || pkg.packageType === 'ANNUAL';
         console.log('[useAppleIAP] Package:', pkg.identifier, 'Type:', pkg.packageType, 'isAnnual:', isAnnual);
         return {
-          identifier: pkg.product.identifier,
-          title: pkg.product.title,
-          description: pkg.product.description,
-          price: pkg.product.price,
-          priceString: pkg.product.priceString,
+          identifier: pkg.product?.identifier || pkg.identifier,
+          title: pkg.product?.title || 'SouArtista',
+          description: pkg.product?.description || '',
+          price: pkg.product?.price || 0,
+          priceString: pkg.product?.priceString || '',
           planType: isAnnual ? 'annual' : 'monthly'
         };
       });
       
       console.log('[useAppleIAP] ✅ Products loaded:', rcProducts.length);
+      console.log('[useAppleIAP] Products:', JSON.stringify(rcProducts, null, 2));
       setProducts(rcProducts);
-    } catch (error) {
+    } catch (error: any) {
       console.error('[useAppleIAP] ❌ Error loading products:', error);
+      console.error('[useAppleIAP] Error message:', error?.message);
       toast({
         title: "Erro ao carregar produtos",
         description: "Não foi possível carregar os produtos disponíveis.",
@@ -136,12 +117,14 @@ export const useAppleIAP = () => {
 
   const purchaseProduct = async (planType: 'monthly' | 'annual') => {
     try {
-      console.log('[useAppleIAP] Starting purchase for:', planType);
+      console.log('[useAppleIAP] ========== STARTING PURCHASE ==========');
+      console.log('[useAppleIAP] Plan type:', planType);
+      console.log('[useAppleIAP] isInitialized:', isInitialized);
+      console.log('[useAppleIAP] Available products:', products.length);
       setLoading(true);
       
-      const Purchases = getPurchases();
-      if (!Purchases || !isInitialized) {
-        console.log('[useAppleIAP] ❌ IAP not available - isInitialized:', isInitialized);
+      if (!isInitialized) {
+        console.error('[useAppleIAP] ❌ IAP not initialized');
         toast({
           title: "IAP não disponível",
           description: "In-App Purchase está disponível apenas no app iOS nativo.",
@@ -152,6 +135,8 @@ export const useAppleIAP = () => {
 
       // Encontrar o produto correspondente
       const product = products.find(p => p.planType === planType);
+      console.log('[useAppleIAP] Found product:', product);
+      
       if (!product) {
         toast({
           title: "Produto não encontrado",
@@ -162,10 +147,13 @@ export const useAppleIAP = () => {
       }
 
       // Buscar o pacote do RevenueCat
+      console.log('[useAppleIAP] Fetching offerings for purchase...');
       const offerings = await Purchases.getOfferings();
-      const pkg = offerings.current?.availablePackages.find(
-        (p: any) => p.product.identifier === product.identifier
+      const pkg = offerings.current?.availablePackages?.find(
+        (p: any) => p.product?.identifier === product.identifier
       );
+
+      console.log('[useAppleIAP] Package for purchase:', pkg);
 
       if (!pkg) {
         toast({
@@ -177,24 +165,32 @@ export const useAppleIAP = () => {
       }
 
       // Realizar a compra
+      console.log('[useAppleIAP] Calling purchasePackage...');
       const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg });
+      console.log('[useAppleIAP] Purchase result - customerInfo:', JSON.stringify(customerInfo, null, 2));
 
       // Verificar se a compra foi bem-sucedida
-      if (customerInfo.entitlements.active['premium']) {
+      if (customerInfo.entitlements?.active?.['premium']) {
+        console.log('[useAppleIAP] ✅ Premium entitlement active!');
+        
         // Chamar a edge function para validar e atualizar o banco
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Usuário não autenticado');
 
+        console.log('[useAppleIAP] Calling verify-apple-receipt edge function...');
         const { error } = await supabase.functions.invoke('verify-apple-receipt', {
           body: {
-            productId: product.identifier,
-            transactionId: customerInfo.originalAppUserId,
+            appUserId: customerInfo.originalAppUserId,
             restore: false
           }
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error('[useAppleIAP] ❌ Edge function error:', error);
+          throw error;
+        }
 
+        console.log('[useAppleIAP] ✅ Purchase verified and saved!');
         toast({
           title: "Compra realizada!",
           description: "Sua assinatura foi ativada com sucesso.",
@@ -203,12 +199,15 @@ export const useAppleIAP = () => {
         return true;
       }
 
+      console.warn('[useAppleIAP] ⚠️ No premium entitlement after purchase');
       return false;
     } catch (error: any) {
-      console.error('Error purchasing product:', error);
+      console.error('[useAppleIAP] ❌ Error purchasing product:', error);
+      console.error('[useAppleIAP] Error code:', error?.code);
+      console.error('[useAppleIAP] Error message:', error?.message);
       
       // Tratar cancelamento pelo usuário
-      if (error.code === 'PURCHASE_CANCELLED') {
+      if (error.code === 'PURCHASE_CANCELLED' || error.code === 1) {
         toast({
           title: "Compra cancelada",
           description: "Você cancelou a compra.",
@@ -218,7 +217,7 @@ export const useAppleIAP = () => {
       
       toast({
         title: "Erro na compra",
-        description: "Não foi possível concluir a compra. Tente novamente.",
+        description: error?.message || "Não foi possível concluir a compra. Tente novamente.",
         variant: "destructive",
       });
       
@@ -230,10 +229,10 @@ export const useAppleIAP = () => {
 
   const restorePurchases = async () => {
     try {
+      console.log('[useAppleIAP] ========== RESTORING PURCHASES ==========');
       setLoading(true);
       
-      const Purchases = getPurchases();
-      if (!Purchases || !isInitialized) {
+      if (!isInitialized) {
         toast({
           title: "IAP não disponível",
           description: "In-App Purchase está disponível apenas no app iOS nativo.",
@@ -243,23 +242,29 @@ export const useAppleIAP = () => {
       }
 
       // Restaurar compras via RevenueCat
+      console.log('[useAppleIAP] Calling restorePurchases...');
       const { customerInfo } = await Purchases.restorePurchases();
+      console.log('[useAppleIAP] Restore result:', JSON.stringify(customerInfo, null, 2));
 
       // Verificar se tem assinatura ativa
-      if (customerInfo.entitlements.active['premium']) {
+      if (customerInfo.entitlements?.active?.['premium']) {
+        console.log('[useAppleIAP] ✅ Premium entitlement found!');
+        
         // Chamar edge function para sincronizar com o banco
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Usuário não autenticado');
 
         const { error } = await supabase.functions.invoke('verify-apple-receipt', {
           body: {
-            productId: customerInfo.entitlements.active['premium'].productIdentifier,
-            transactionId: customerInfo.originalAppUserId,
+            appUserId: customerInfo.originalAppUserId,
             restore: true
           }
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error('[useAppleIAP] ❌ Edge function error:', error);
+          throw error;
+        }
 
         toast({
           title: "Compras restauradas!",
@@ -268,14 +273,16 @@ export const useAppleIAP = () => {
 
         return true;
       } else {
+        console.warn('[useAppleIAP] ⚠️ No premium entitlement found');
         toast({
           title: "Nenhuma compra encontrada",
           description: "Não há assinaturas para restaurar.",
         });
         return false;
       }
-    } catch (error) {
-      console.error('Error restoring purchases:', error);
+    } catch (error: any) {
+      console.error('[useAppleIAP] ❌ Error restoring purchases:', error);
+      console.error('[useAppleIAP] Error message:', error?.message);
       toast({
         title: "Erro ao restaurar",
         description: "Não foi possível restaurar as compras. Tente novamente.",
