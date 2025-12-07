@@ -33,7 +33,7 @@ const Subscribe = () => {
   } = useAuth();
   const navigate = useNavigate();
   const { isIOS, isNative } = useNativePlatform();
-  const { purchaseProduct, restorePurchases, loading: iapLoading } = useAppleIAP();
+  const { purchaseProduct, loading: iapLoading } = useAppleIAP();
   useEffect(() => {
     const checkUserStatus = async () => {
       if (!user) return;
@@ -488,34 +488,6 @@ const Subscribe = () => {
         <p className="text-center text-sm text-muted-foreground">
           {paymentMethod === 'CREDIT_CARD' ? 'Todos os planos com cartão incluem 7 dias de teste grátis. Cancele quando quiser.' : 'Com PIX, o acesso é liberado imediatamente após o pagamento. Cancele quando quiser.'}
         </p>
-
-        {/* Restore Purchases Button - iOS only */}
-        {isIOS && isNative && (
-          <div className="text-center mt-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={async () => {
-                const success = await restorePurchases();
-                if (success) {
-                  await refetchUserData();
-                  const userRole = localStorage.getItem('userRole');
-                  setTimeout(() => {
-                    if (userRole === 'artist') {
-                      navigate('/artist/dashboard', { replace: true });
-                    } else if (userRole === 'musician') {
-                      navigate('/musician/dashboard', { replace: true });
-                    }
-                  }, 1500);
-                }
-              }}
-              disabled={iapLoading}
-              className="text-primary hover:text-primary/80"
-            >
-              {iapLoading ? 'Restaurando...' : 'Restaurar Compras Anteriores'}
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* Contact Dialog */}
