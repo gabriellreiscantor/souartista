@@ -44,10 +44,8 @@ export function MusicianSidebar() {
   const { isAdmin } = useAdmin();
   const { isIOS, isNative } = useNativePlatform();
 
-  // Filter out Assinatura on iOS native
-  const filteredSettingsItems = isIOS && isNative 
-    ? settingsItems.filter(item => item.url !== '/musician/subscription')
-    : settingsItems;
+  // Mostrar todos os itens (incluindo Assinatura no iOS para gerenciar via App Store)
+  const filteredSettingsItems = settingsItems;
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -130,7 +128,7 @@ export function MusicianSidebar() {
         )}
 
         {/* Settings Navigation */}
-        <SidebarGroup className={isAdmin ? "" : "mt-auto border-t border-sidebar-border pt-4"}>
+        <SidebarGroup className={`${isAdmin ? "" : "border-t border-sidebar-border pt-4"} ${isIOS && isNative ? "mt-8" : "mt-auto"}`}>
           <SidebarGroupContent>
             <SidebarMenu>
               {filteredSettingsItems.map((item) => (
