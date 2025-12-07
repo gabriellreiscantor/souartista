@@ -26,6 +26,7 @@ const Subscribe = () => {
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [nextChargeDate, setNextChargeDate] = useState<string | null>(null);
+  const [showAppleSuccessDialog, setShowAppleSuccessDialog] = useState(false);
   const {
     refetchUserData,
     user,
@@ -120,17 +121,8 @@ const Subscribe = () => {
       if (isIOS && isNative) {
         const success = await purchaseProduct(plan);
         if (success) {
-          // Forçar sincronização extra com RevenueCat para garantir que o entitlement está propagado
-          await restorePurchases();
-          await refetchUserData();
-          const userRole = localStorage.getItem('userRole');
-          setTimeout(() => {
-            if (userRole === 'artist') {
-              navigate('/artist/dashboard', { replace: true });
-            } else if (userRole === 'musician') {
-              navigate('/musician/dashboard', { replace: true });
-            }
-          }, 1500);
+          // Mostrar modal de sucesso ao invés de navegar diretamente
+          setShowAppleSuccessDialog(true);
         }
         return;
       }
@@ -686,6 +678,54 @@ const Subscribe = () => {
               }}
             >
               Ir para Dashboard
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Apple IAP Success Dialog */}
+      <Dialog open={showAppleSuccessDialog} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-md bg-white border-primary/20" onPointerDownOutside={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle2 className="w-10 h-10 text-green-600" />
+              </div>
+            </div>
+            <DialogTitle className="text-center text-2xl text-primary">Parabéns!</DialogTitle>
+            <DialogDescription className="text-center space-y-3 pt-4">
+              <p className="text-lg font-medium text-foreground">
+                Sua assinatura foi concluída com sucesso!
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Você agora tem acesso completo a todos os recursos do Sou Artista.
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 mt-6">
+            <Button 
+              className="flex-1 h-12 text-base" 
+              onClick={async () => {
+                // Forçar sincronização com RevenueCat
+                await restorePurchases();
+                await refetchUserData();
+                
+                // Fechar modal
+                setShowAppleSuccessDialog(false);
+                
+                // Navegar para o dashboard
+                const role = userRole || localStorage.getItem('userRole');
+                if (role === 'artist') {
+                  navigate('/artist/dashboard', { replace: true });
+                } else if (role === 'musician') {
+                  navigate('/musician/dashboard', { replace: true });
+                } else {
+                  navigate('/app', { replace: true });
+                }
+              }}
+              disabled={iapLoading}
+            >
+              {iapLoading ? 'Carregando...' : 'Começar a usar'}
             </Button>
           </div>
         </DialogContent>
