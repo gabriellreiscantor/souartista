@@ -145,7 +145,11 @@ export const ImageEditor = ({ open, onOpenChange, imageFile, onSave }: ImageEdit
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            className="bg-secondary text-secondary-foreground border-border hover:bg-secondary/80"
+          >
             Cancelar
           </Button>
           <Button onClick={handleSave} className="bg-primary text-primary-foreground hover:bg-primary/90">
