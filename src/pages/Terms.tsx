@@ -51,6 +51,12 @@ const Terms = () => {
               e completas. Você é responsável por manter a confidencialidade de sua senha e
               por todas as atividades que ocorram em sua conta.
             </p>
+            <p className="mt-2">
+              <strong>Idade mínima:</strong> É necessário ter no mínimo 14 (quatorze) anos de idade
+              para criar uma conta no SouArtista. Menores de 14 anos não estão autorizados a utilizar
+              o serviço. Caso você tenha entre 14 e 18 anos, recomendamos que obtenha permissão de
+              um responsável legal antes de se cadastrar.
+            </p>
           </section>
 
           <section>
@@ -116,7 +122,7 @@ const Terms = () => {
           </section>
 
           <p className="text-sm mt-8">
-            Última atualização: Janeiro de 2025
+            Última atualização: Dezembro de 2025
           </p>
         </div>
       </main>
