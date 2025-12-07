@@ -298,11 +298,71 @@ export const useAppleIAP = () => {
     }
   };
 
+  // Verificação silenciosa de assinatura (sem toasts, para uso automático no login)
+  const checkSubscriptionStatus = async (): Promise<boolean> => {
+    try {
+      console.log('[useAppleIAP] ========== CHECKING SUBSCRIPTION STATUS ==========');
+      
+      // Aguardar inicialização se necessário
+      if (!isInitialized) {
+        console.log('[useAppleIAP] Waiting for initialization...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+      
+      const Purchases = purchasesRef.current;
+      
+      if (!Purchases) {
+        console.log('[useAppleIAP] Purchases not available, skipping check');
+        return false;
+      }
+
+      // Buscar customer info do RevenueCat
+      console.log('[useAppleIAP] Getting customer info...');
+      const { customerInfo } = await Purchases.getCustomerInfo();
+      console.log('[useAppleIAP] Customer info:', JSON.stringify(customerInfo, null, 2));
+
+      // Verificar se tem assinatura ativa
+      if (customerInfo.entitlements?.active?.['premium']) {
+        console.log('[useAppleIAP] ✅ Active premium subscription found!');
+        
+        // Chamar edge function para sincronizar com o banco
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.log('[useAppleIAP] No authenticated user');
+          return false;
+        }
+
+        console.log('[useAppleIAP] Syncing subscription to database...');
+        const { error } = await supabase.functions.invoke('verify-apple-receipt', {
+          body: {
+            appUserId: customerInfo.originalAppUserId,
+            restore: true
+          }
+        });
+
+        if (error) {
+          console.error('[useAppleIAP] ❌ Edge function error:', error);
+          return false;
+        }
+
+        console.log('[useAppleIAP] ✅ Subscription synced to database!');
+        return true;
+      }
+
+      console.log('[useAppleIAP] No active premium subscription');
+      return false;
+    } catch (error: any) {
+      console.error('[useAppleIAP] ❌ Error checking subscription status:', error);
+      return false;
+    }
+  };
+
   return {
     isInitialized,
     products,
     loading,
     purchaseProduct,
     restorePurchases,
+    checkSubscriptionStatus,
   };
 };
