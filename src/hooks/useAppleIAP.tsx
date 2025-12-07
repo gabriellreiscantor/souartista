@@ -51,7 +51,7 @@ export const useAppleIAP = () => {
       await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
 
       // RevenueCat Public API Key (iOS)
-      const apiKey = 'appl_QMMKVysmKcFwBSTopyoULMZSrib';
+      const apiKey = 'appl_KQGhvKDWBIoyOHAGhieWergOjig';
       console.log('[useAppleIAP] Configuring with API Key:', apiKey.substring(0, 15) + '...');
 
       await Purchases.configure({ apiKey });
