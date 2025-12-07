@@ -120,6 +120,8 @@ const Subscribe = () => {
       if (isIOS && isNative) {
         const success = await purchaseProduct(plan);
         if (success) {
+          // Forçar sincronização extra com RevenueCat para garantir que o entitlement está propagado
+          await restorePurchases();
           await refetchUserData();
           const userRole = localStorage.getItem('userRole');
           setTimeout(() => {
