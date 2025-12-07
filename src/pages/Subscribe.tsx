@@ -685,19 +685,25 @@ const Subscribe = () => {
 
       {/* Apple IAP Success Dialog */}
       <Dialog open={showAppleSuccessDialog} onOpenChange={() => {}}>
-        <DialogContent className="sm:max-w-md bg-[#1a0a24] border-purple-500/30" onPointerDownOutside={(e) => e.preventDefault()}>
+        <DialogContent 
+          className="sm:max-w-md border-purple-500/30 [&>button]:hidden" 
+          style={{ backgroundColor: '#1a0a24', color: 'white' }}
+          onPointerDownOutside={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <div className="flex items-center justify-center mb-4">
-              <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center">
-                <CheckCircle2 className="w-10 h-10 text-green-400" />
+              <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(34, 197, 94, 0.2)' }}>
+                <CheckCircle2 className="w-10 h-10" style={{ color: '#4ade80' }} />
               </div>
             </div>
-            <DialogTitle className="text-center text-2xl text-white">Parabéns!</DialogTitle>
+            <DialogTitle className="text-center text-2xl" style={{ color: 'white' }}>
+              Parabéns!
+            </DialogTitle>
             <DialogDescription className="text-center space-y-3 pt-4">
-              <p className="text-lg font-medium text-white">
+              <p className="text-lg font-medium" style={{ color: 'white' }}>
                 Sua assinatura foi concluída com sucesso!
               </p>
-              <p className="text-sm text-gray-300">
+              <p className="text-sm" style={{ color: '#d1d5db' }}>
                 Você agora tem acesso completo a todos os recursos do Sou Artista.
               </p>
             </DialogDescription>
