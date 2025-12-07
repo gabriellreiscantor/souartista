@@ -293,7 +293,7 @@ const Subscribe = () => {
   return <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-background via-primary/5 to-primary/10" style={{ paddingTop: isIOS && isNative ? 'calc(env(safe-area-inset-top, 0px) + 48px)' : '48px', paddingBottom: '48px' }}>
       <div className="w-full max-w-6xl">
         {/* Back Button */}
-        <div className="mb-4">
+        <div className="mb-4" style={{ marginTop: isIOS && isNative ? 0 : 'calc(env(safe-area-inset-top, 0px))' }}>
           <Button
             variant="ghost"
             size="icon"

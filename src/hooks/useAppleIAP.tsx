@@ -303,20 +303,25 @@ export const useAppleIAP = () => {
     try {
       console.log('[useAppleIAP] ========== CHECKING SUBSCRIPTION STATUS ==========');
       
-      // Aguardar inicialização se necessário
-      if (!isInitialized) {
-        console.log('[useAppleIAP] Waiting for initialization...');
-        await new Promise(resolve => setTimeout(resolve, 2000));
+      // Aguardar inicialização com polling (máximo 5 segundos, checando a cada 500ms)
+      const maxWaitTime = 5000;
+      const pollInterval = 500;
+      let waited = 0;
+      
+      while (!purchasesRef.current && waited < maxWaitTime) {
+        console.log(`[useAppleIAP] Waiting for initialization... (${waited}ms)`);
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+        waited += pollInterval;
       }
       
       const Purchases = purchasesRef.current;
       
       if (!Purchases) {
-        console.log('[useAppleIAP] Purchases not available, skipping check');
+        console.log('[useAppleIAP] Purchases not available after 5s wait, skipping check');
         return false;
       }
-
-      // Buscar customer info do RevenueCat
+      
+      console.log('[useAppleIAP] ✅ Purchases ready, checking subscription...');
       console.log('[useAppleIAP] Getting customer info...');
       const { customerInfo } = await Purchases.getCustomerInfo();
       console.log('[useAppleIAP] Customer info:', JSON.stringify(customerInfo, null, 2));

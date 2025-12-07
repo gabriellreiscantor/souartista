@@ -52,8 +52,8 @@ const AppHub = () => {
       }
     };
 
-    // Aguardar um pouco para o IAP inicializar
-    const timer = setTimeout(checkAppleSubscription, 1000);
+    // Aguardar mais tempo para o IAP inicializar (3 segundos)
+    const timer = setTimeout(checkAppleSubscription, 3000);
     return () => clearTimeout(timer);
   }, [isIOS, isNative, user, userData, userRole, loading, checkSubscriptionStatus, refetchUserData]);
 
