@@ -91,10 +91,6 @@ const Login = () => {
         }
 
         console.log('[Login] Login successful, redirecting to /app');
-        toast({
-          title: 'Login realizado!',
-          description: 'Bem-vindo de volta',
-        });
         // O redirecionamento será feito pelo useEffect acima
       }
     } catch (error) {
@@ -154,7 +150,8 @@ const Login = () => {
       {/* Botão Voltar para Home */}
       <Link 
         to="/" 
-        className="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all hover:scale-105"
+        className="absolute left-6 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all hover:scale-105"
+        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 16px)' }}
       >
         <ArrowLeft className="w-4 h-4 text-white" />
         <span className="text-white font-medium text-sm">Voltar</span>
