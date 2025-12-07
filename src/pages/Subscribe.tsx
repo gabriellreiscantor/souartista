@@ -685,26 +685,26 @@ const Subscribe = () => {
 
       {/* Apple IAP Success Dialog */}
       <Dialog open={showAppleSuccessDialog} onOpenChange={() => {}}>
-        <DialogContent className="sm:max-w-md bg-white border-primary/20" onPointerDownOutside={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-md bg-[#1a0a24] border-purple-500/30" onPointerDownOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <div className="flex items-center justify-center mb-4">
-              <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
-                <CheckCircle2 className="w-10 h-10 text-green-600" />
+              <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center">
+                <CheckCircle2 className="w-10 h-10 text-green-400" />
               </div>
             </div>
-            <DialogTitle className="text-center text-2xl text-primary">Parabéns!</DialogTitle>
+            <DialogTitle className="text-center text-2xl text-white">Parabéns!</DialogTitle>
             <DialogDescription className="text-center space-y-3 pt-4">
-              <p className="text-lg font-medium text-foreground">
+              <p className="text-lg font-medium text-white">
                 Sua assinatura foi concluída com sucesso!
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-gray-300">
                 Você agora tem acesso completo a todos os recursos do Sou Artista.
               </p>
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-3 mt-6">
             <Button 
-              className="flex-1 h-12 text-base" 
+              className="flex-1 h-12 text-base bg-purple-600 hover:bg-purple-700 text-white" 
               onClick={async () => {
                 // Forçar sincronização com RevenueCat
                 await restorePurchases();
