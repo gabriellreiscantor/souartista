@@ -133,6 +133,26 @@ const Register = () => {
         });
         return;
       }
+      
+      // Validação de idade mínima (14 anos)
+      const birthDate = new Date(formData.birthDate);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      
+      // Ajustar idade se ainda não fez aniversário este ano
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      
+      if (age < 14) {
+        toast({
+          title: 'Idade mínima não atingida',
+          description: 'Você precisa ter no mínimo 14 anos para criar uma conta. Peça permissão a um adulto responsável.',
+          variant: 'destructive',
+        });
+        return;
+      }
     }
 
     if (step < 3) {
