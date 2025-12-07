@@ -1,16 +1,66 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useNativePlatform } from '@/hooks/useNativePlatform';
+import { useAppleIAP } from '@/hooks/useAppleIAP';
 import logo from '@/assets/logo.png';
 
 const AppHub = () => {
-  const { user, userData, userRole, loading, signOut } = useAuth();
+  const { user, userData, userRole, loading, signOut, refetchUserData } = useAuth();
+  const { isIOS, isNative } = useNativePlatform();
+  const { checkSubscriptionStatus, isInitialized } = useAppleIAP();
   const navigate = useNavigate();
+  const [checkingApple, setCheckingApple] = useState(false);
+  const hasCheckedApple = useRef(false);
+
+  // Verificação automática de assinatura Apple no iOS
+  useEffect(() => {
+    const checkAppleSubscription = async () => {
+      // Só verificar no iOS nativo, quando usuário está logado, status não ativo, e não já verificou
+      if (!isIOS || !isNative || !user || !userData || loading || hasCheckedApple.current) {
+        return;
+      }
+
+      // Se já está ativo, não precisa verificar
+      if (userData.status_plano === 'ativo') {
+        return;
+      }
+
+      // Verificar se todas as outras condições para acessar /subscribe estão satisfeitas
+      if (!userData.cpf || !user.email_confirmed_at || !userRole) {
+        return;
+      }
+
+      console.log('[AppHub] iOS native detected, checking Apple subscription...');
+      hasCheckedApple.current = true;
+      setCheckingApple(true);
+
+      try {
+        const hasActiveSubscription = await checkSubscriptionStatus();
+        
+        if (hasActiveSubscription) {
+          console.log('[AppHub] ✅ Active Apple subscription found! Refreshing user data...');
+          await refetchUserData();
+          // O useEffect principal vai redirecionar para o dashboard após refetch
+        } else {
+          console.log('[AppHub] No active Apple subscription found');
+        }
+      } catch (error) {
+        console.error('[AppHub] Error checking Apple subscription:', error);
+      } finally {
+        setCheckingApple(false);
+      }
+    };
+
+    // Aguardar um pouco para o IAP inicializar
+    const timer = setTimeout(checkAppleSubscription, 1000);
+    return () => clearTimeout(timer);
+  }, [isIOS, isNative, user, userData, userRole, loading, checkSubscriptionStatus, refetchUserData]);
 
   useEffect(() => {
-    console.log('[AppHub] State:', { loading, user: user?.id, userData: !!userData, userRole, status_plano: userData?.status_plano });
+    console.log('[AppHub] State:', { loading, checkingApple, user: user?.id, userData: !!userData, userRole, status_plano: userData?.status_plano });
     
-    if (loading) return;
+    if (loading || checkingApple) return;
 
     if (!user) {
       console.log('[AppHub] No user, redirecting to login');
@@ -56,20 +106,20 @@ const AppHub = () => {
     // All checks passed, redirect to dashboard
     console.log('[AppHub] All checks passed, redirecting to dashboard:', `/${userRole}/dashboard`);
     navigate(`/${userRole}/dashboard`);
-  }, [user, userData, userRole, loading, navigate]);
+  }, [user, userData, userRole, loading, checkingApple, navigate]);
 
   // Timeout de segurança - se ficar mais de 10 segundos carregando, mostra erro
   useEffect(() => {
-    if (!loading) return;
+    if (!loading && !checkingApple) return;
     
     const timeoutId = setTimeout(() => {
       console.error('[AppHub] Loading timeout after 10 seconds');
     }, 10000);
 
     return () => clearTimeout(timeoutId);
-  }, [loading]);
+  }, [loading, checkingApple]);
 
-  if (loading) {
+  if (loading || checkingApple) {
     return (
       <div className="fixed inset-0 bg-gradient-to-br from-[#1E082B] to-[#2A0C3A] flex flex-col items-center justify-center z-50">
         {/* Logo com glow effect */}
@@ -90,7 +140,7 @@ const AppHub = () => {
         
         {/* Texto de carregamento */}
         <p className="text-white/80 text-sm font-light tracking-wide animate-pulse">
-          Carregando...
+          {checkingApple ? 'Verificando assinatura...' : 'Carregando...'}
         </p>
       </div>
     );
