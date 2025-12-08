@@ -43,8 +43,42 @@ workflows:
           PLATFORM=ios npx cap add ios
           PLATFORM=ios npx cap sync ios
       
-      - name: Copy GoogleService-Info.plist
-        script: cp resources/GoogleService-Info.plist ios/App/App/
+      - name: Copy and Add GoogleService-Info.plist to Xcode Project
+        script: |
+          # Copy the plist file
+          cp resources/GoogleService-Info.plist ios/App/App/
+
+          # Add the file to Xcode project and target
+          ruby <<RUBY
+          require 'xcodeproj'
+          
+          project_path = 'ios/App/App.xcodeproj'
+          project = Xcodeproj::Project.open(project_path)
+          
+          # Get the main target
+          target = project.targets.first
+          
+          # Get the App group
+          app_group = project.main_group.find_subpath('App', false)
+          
+          # Check if file reference already exists
+          file_ref = app_group.files.find { |f| f.path == 'GoogleService-Info.plist' }
+          
+          # If not, create it
+          if file_ref.nil?
+            file_ref = app_group.new_file('GoogleService-Info.plist')
+          end
+          
+          # Add to resources build phase if not already there
+          resources_phase = target.resources_build_phase
+          unless resources_phase.files_references.include?(file_ref)
+            resources_phase.add_file_reference(file_ref)
+          end
+          
+          project.save
+          
+          puts "GoogleService-Info.plist added to Xcode project and target"
+          RUBY
       
       - name: Add Firebase to Podfile
         script: |
