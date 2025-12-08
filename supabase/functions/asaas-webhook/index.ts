@@ -44,15 +44,30 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const payload = await req.json();
+    
+    // Validação de payload
+    if (!payload || !payload.event) {
+      console.error('❌ Invalid payload: missing event');
+      return new Response(
+        JSON.stringify({ error: 'Invalid payload' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
     console.log('🔔 Asaas webhook payload received:');
     console.log('🔔 Event:', payload.event);
-    console.log('🔔 Subscription ID:', payload.subscription?.id);
-    console.log('🔔 Payment ID:', payload.payment?.id);
-    console.log('🔔 Full payload:', JSON.stringify(payload, null, 2));
+    console.log('🔔 Subscription ID:', payload.subscription?.id || 'N/A');
+    console.log('🔔 Payment ID:', payload.payment?.id || 'N/A');
+    console.log('🔔 Payment Subscription Ref:', payload.payment?.subscription || 'N/A');
 
     const event = payload.event;
     const payment = payload.payment;
     const subscription = payload.subscription;
+    
+    // Log defensivo
+    if (!payment && !subscription) {
+      console.warn('⚠️ Payload without payment or subscription object for event:', event);
+    }
 
     // Handle different webhook events
     switch (event) {
@@ -100,7 +115,7 @@ serve(async (req) => {
                 created_by: existingSubscription.user_id,
               });
 
-            console.log('Subscription activated:', subscription.id);
+            console.log('✅ Subscription activated:', subscriptionId);
           }
         }
         break;
@@ -157,7 +172,7 @@ serve(async (req) => {
               .from('notifications')
               .insert(notificationData);
 
-            console.log('Subscription expired:', subscription.id);
+            console.log('❌ Subscription expired:', subscriptionId);
           }
         }
         break;
