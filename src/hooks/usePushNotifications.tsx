@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { PushNotifications } from '@capacitor/push-notifications';
+import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 import { Device } from '@capacitor/device';
 import { useNativePlatform } from './useNativePlatform';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,131 +30,128 @@ export const usePushNotifications = () => {
 
     const initPushNotifications = async () => {
       try {
-        console.log('[PushNotifications] ========== INITIALIZING PUSH NOTIFICATIONS ==========');
+        console.log('[PushNotifications] ========== INITIALIZING FIREBASE MESSAGING ==========');
         console.log('[PushNotifications] Platform:', platform);
-        console.log('[PushNotifications] isNative:', isNative);
         console.log('[PushNotifications] User ID:', user.id);
-        console.log('[PushNotifications] User Email:', user.email);
-        console.log('[PushNotifications] User Agent:', navigator.userAgent);
         
         // Check if plugin is available
-        console.log('[PushNotifications] PushNotifications plugin:', typeof PushNotifications);
-        console.log('[PushNotifications] Available methods:', Object.keys(PushNotifications));
+        console.log('[PushNotifications] FirebaseMessaging plugin:', typeof FirebaseMessaging);
         
         // Request permission
         console.log('[PushNotifications] Checking permissions...');
-        let permStatus = await PushNotifications.checkPermissions();
+        let permStatus = await FirebaseMessaging.checkPermissions();
         console.log('[PushNotifications] Current permission status:', JSON.stringify(permStatus));
 
         if (permStatus.receive === 'prompt') {
           console.log('[PushNotifications] Permission is prompt, requesting...');
-          permStatus = await PushNotifications.requestPermissions();
+          permStatus = await FirebaseMessaging.requestPermissions();
           console.log('[PushNotifications] Permission after request:', JSON.stringify(permStatus));
         }
 
         if (permStatus.receive !== 'granted') {
           console.log('[PushNotifications] ❌ Permission DENIED or not granted');
-          console.log('[PushNotifications] Final status:', permStatus.receive);
           return;
         }
 
         console.log('[PushNotifications] ✅ Permission GRANTED');
         
-        // Register with APNs/FCM
-        console.log('[PushNotifications] Calling PushNotifications.register()...');
-        await PushNotifications.register();
-        console.log('[PushNotifications] register() called, waiting for registration event...');
-
-        // Listen for registration
-        await PushNotifications.addListener('registration', async (token) => {
-          console.log('[PushNotifications] ========== REGISTRATION SUCCESS ==========');
-          console.log('[PushNotifications] Token received!');
-          console.log('[PushNotifications] Token length:', token.value?.length);
-          console.log('[PushNotifications] Token preview:', token.value ? token.value.substring(0, 80) + '...' : 'NO TOKEN');
-          console.log('[PushNotifications] Full token:', token.value);
-          
-          // Get device information
-          console.log('[PushNotifications] Getting device info...');
-          const deviceInfo = await Device.getId();
-          const deviceName = await Device.getInfo();
-          
-          console.log('[PushNotifications] Device ID:', deviceInfo.identifier);
-          console.log('[PushNotifications] Device platform:', deviceName.platform);
-          console.log('[PushNotifications] Device model:', deviceName.model);
-          console.log('[PushNotifications] Device manufacturer:', deviceName.manufacturer);
-          console.log('[PushNotifications] Device OS:', deviceName.operatingSystem, deviceName.osVersion);
-          
-          const deviceNameStr = `${deviceName.manufacturer || 'Unknown'} ${deviceName.model || 'Device'}`;
-          console.log('[PushNotifications] Device name string:', deviceNameStr);
-          
-          // Save token to user_devices table
-          console.log('[PushNotifications] Saving token to database...');
-          console.log('[PushNotifications] Payload:', {
+        // Get FCM token directly (this is the key difference!)
+        console.log('[PushNotifications] Getting FCM token...');
+        const tokenResult = await FirebaseMessaging.getToken();
+        const fcmToken = tokenResult.token;
+        
+        console.log('[PushNotifications] ========== FCM TOKEN RECEIVED ==========');
+        console.log('[PushNotifications] Token length:', fcmToken?.length);
+        console.log('[PushNotifications] Token preview:', fcmToken ? fcmToken.substring(0, 80) + '...' : 'NO TOKEN');
+        
+        if (!fcmToken) {
+          console.error('[PushNotifications] ❌ No FCM token received');
+          return;
+        }
+        
+        // Get device information
+        console.log('[PushNotifications] Getting device info...');
+        const deviceInfo = await Device.getId();
+        const deviceName = await Device.getInfo();
+        
+        console.log('[PushNotifications] Device ID:', deviceInfo.identifier);
+        console.log('[PushNotifications] Device platform:', deviceName.platform);
+        console.log('[PushNotifications] Device model:', deviceName.model);
+        
+        const deviceNameStr = `${deviceName.manufacturer || 'Unknown'} ${deviceName.model || 'Device'}`;
+        console.log('[PushNotifications] Device name string:', deviceNameStr);
+        
+        // Save token to user_devices table
+        console.log('[PushNotifications] Saving FCM token to database...');
+        
+        const { data, error } = await supabase
+          .from('user_devices')
+          .upsert({ 
             user_id: user.id,
             device_id: deviceInfo.identifier,
             platform: platform,
-            fcm_token: token.value ? 'TOKEN_PRESENT' : 'NO_TOKEN',
-            device_name: deviceNameStr
-          });
-          
-          const { data, error } = await supabase
-            .from('user_devices')
-            .upsert({ 
-              user_id: user.id,
-              device_id: deviceInfo.identifier,
-              platform: platform,
-              fcm_token: token.value,
-              device_name: deviceNameStr,
-              last_used_at: new Date().toISOString()
-            }, {
-              onConflict: 'user_id,device_id'
-            })
-            .select();
+            fcm_token: fcmToken,
+            device_name: deviceNameStr,
+            last_used_at: new Date().toISOString()
+          }, {
+            onConflict: 'user_id,device_id'
+          })
+          .select();
 
-          if (error) {
-            console.error('[PushNotifications] ❌ Error saving token to DB:', error);
-            console.error('[PushNotifications] Error code:', error.code);
-            console.error('[PushNotifications] Error message:', error.message);
-            console.error('[PushNotifications] Error details:', error.details);
-          } else {
-            console.log('[PushNotifications] ✅ Token saved to database successfully!');
-            console.log('[PushNotifications] Saved data:', JSON.stringify(data));
-          }
-        });
+        if (error) {
+          console.error('[PushNotifications] ❌ Error saving token to DB:', error);
+        } else {
+          console.log('[PushNotifications] ✅ FCM token saved to database successfully!');
+          console.log('[PushNotifications] Saved data:', JSON.stringify(data));
+        }
 
-        // Listen for registration errors
-        await PushNotifications.addListener('registrationError', (error) => {
-          console.error('[PushNotifications] ========== REGISTRATION ERROR ==========');
-          console.error('[PushNotifications] Error object:', JSON.stringify(error));
-          console.error('[PushNotifications] Error message:', error?.error);
-        });
-
-        // Listen for incoming notifications
-        await PushNotifications.addListener('pushNotificationReceived', (notification) => {
+        // Listen for incoming notifications (foreground)
+        await FirebaseMessaging.addListener('notificationReceived', (notification) => {
           console.log('[PushNotifications] 📬 Notification received:', notification);
           
-          // Show toast for foreground notification
           toast({
-            title: notification.title || 'Nova notificação',
-            description: notification.body,
+            title: notification.notification?.title || 'Nova notificação',
+            description: notification.notification?.body,
           });
         });
 
-        // Listen for notification actions
-        await PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+        // Listen for notification taps
+        await FirebaseMessaging.addListener('notificationActionPerformed', (notification) => {
           console.log('[PushNotifications] 👆 Notification tapped:', notification);
           
           // Handle navigation if there's a link in the data
-          if (notification.notification.data?.link) {
-            console.log('[PushNotifications] Navigating to:', notification.notification.data.link);
-            window.location.href = notification.notification.data.link;
+          const data = notification.notification?.data as Record<string, unknown> | undefined;
+          if (data?.link) {
+            console.log('[PushNotifications] Navigating to:', data.link);
+            window.location.href = data.link as string;
           }
         });
 
-        console.log('[PushNotifications] ✅ Push notifications initialized successfully');
+        // Listen for token refresh
+        await FirebaseMessaging.addListener('tokenReceived', async (event) => {
+          console.log('[PushNotifications] 🔄 Token refreshed:', event.token?.substring(0, 80) + '...');
+          
+          // Update token in database
+          if (event.token) {
+            await supabase
+              .from('user_devices')
+              .upsert({ 
+                user_id: user.id,
+                device_id: deviceInfo.identifier,
+                platform: platform,
+                fcm_token: event.token,
+                device_name: deviceNameStr,
+                last_used_at: new Date().toISOString()
+              }, {
+                onConflict: 'user_id,device_id'
+              });
+          }
+        });
+
+        console.log('[PushNotifications] ✅ Firebase Messaging initialized successfully');
         
       } catch (error) {
-        console.error('[PushNotifications] ❌ Error initializing push notifications:', error);
+        console.error('[PushNotifications] ❌ Error initializing Firebase Messaging:', error);
       }
     };
 
@@ -162,7 +159,7 @@ export const usePushNotifications = () => {
 
     // Cleanup
     return () => {
-      PushNotifications.removeAllListeners();
+      FirebaseMessaging.removeAllListeners();
     };
-  }, [isNative, user]);
+  }, [isNative, user, platform]);
 };

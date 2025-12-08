@@ -46,19 +46,40 @@ workflows:
       - name: Copy GoogleService-Info.plist
         script: cp resources/GoogleService-Info.plist ios/App/App/
       
-      - name: Add Push Notification Methods to AppDelegate
+      - name: Add Firebase to Podfile
         script: |
-          # Add the required push notification methods to AppDelegate.swift
+          # Add Firebase Messaging pod to Podfile
+          cd ios/App
+          cat >> Podfile << 'EOF'
+
+          # Firebase for Push Notifications
+          pod 'Firebase/Messaging'
+          EOF
+      
+      - name: Configure AppDelegate for Firebase Messaging
+        script: |
+          # Create AppDelegate.swift with Firebase initialization
           cat > ios/App/App/AppDelegate.swift << 'EOF'
           import UIKit
           import Capacitor
+          import FirebaseCore
+          import FirebaseMessaging
 
           @UIApplicationMain
-          class AppDelegate: UIResponder, UIApplicationDelegate {
+          class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
 
               var window: UIWindow?
 
               func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+                  // Initialize Firebase
+                  FirebaseApp.configure()
+                  
+                  // Set messaging delegate
+                  Messaging.messaging().delegate = self
+                  
+                  // Register for remote notifications
+                  application.registerForRemoteNotifications()
+                  
                   return true
               }
 
@@ -85,13 +106,23 @@ workflows:
                   return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
               }
 
-              // MARK: - Push Notifications
+              // MARK: - Push Notifications (APNs)
               func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+                  // Pass APNs token to Firebase
+                  Messaging.messaging().apnsToken = deviceToken
+                  // Also notify Capacitor
                   NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
               }
 
               func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+                  print("Failed to register for remote notifications: \(error)")
                   NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
+              }
+              
+              // MARK: - Firebase Messaging Delegate
+              func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+                  print("Firebase FCM token: \(fcmToken ?? "nil")")
+                  // Token will be handled by Capacitor Firebase Messaging plugin
               }
           }
           EOF
