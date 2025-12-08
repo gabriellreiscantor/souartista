@@ -12,6 +12,7 @@ interface Show {
   date_local: string;
   time_local: string;
   team_musician_ids: string[];
+  profiles: { name: string }[] | null;
 }
 
 Deno.serve(async (req) => {
@@ -35,10 +36,10 @@ Deno.serve(async (req) => {
     const currentMinutes = now.getMinutes();
     const currentTimeInMinutes = currentHour * 60 + currentMinutes;
 
-    // Busca todos os shows nos próximos 7 dias
+    // Busca todos os shows nos próximos 7 dias com nome do artista
     const { data: shows, error: showsError } = await supabase
       .from('shows')
-      .select('id, uid, venue_name, date_local, time_local, team_musician_ids')
+      .select('id, uid, venue_name, date_local, time_local, team_musician_ids, profiles:uid (name)')
       .gte('date_local', today)
       .lte('date_local', in7Days)
       .order('date_local', { ascending: true });
@@ -97,26 +98,27 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          // Cria mensagem personalizada
+          // Cria mensagem personalizada com nome do artista
+          const artistName = show.profiles?.[0]?.name || 'o artista';
           let title = '';
           let message = '';
           
           switch (notificationType) {
             case '7_days':
               title = '📅 Show em 1 semana!';
-              message = `Show no ${show.venue_name} em 7 dias! Já se preparou?`;
+              message = `Show com ${artistName} no ${show.venue_name} em 7 dias! Já se preparou?`;
               break;
             case '1_day':
               title = '⏰ Amanhã é dia de show!';
-              message = `Amanhã tem show no ${show.venue_name} às ${show.time_local}`;
+              message = `Amanhã tem show com ${artistName} no ${show.venue_name} às ${show.time_local}`;
               break;
             case 'today':
               title = '🎸 HOJE tem show!';
-              message = `Hoje tem show no ${show.venue_name} às ${show.time_local} - Arrase!`;
+              message = `Hoje tem show com ${artistName} no ${show.venue_name} às ${show.time_local} - Arrase!`;
               break;
             case '3_hours':
               title = '🚨 Faltam 3 horas para o show!';
-              message = `${show.venue_name} às ${show.time_local} - Hora de se preparar!`;
+              message = `Show com ${artistName} no ${show.venue_name} às ${show.time_local} - Hora de se preparar!`;
               break;
           }
 
