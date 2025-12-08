@@ -12,6 +12,16 @@ interface AppleProduct {
   planType: 'monthly' | 'annual';
 }
 
+// RevenueCat error codes
+const REVENUECAT_ERROR_CODES = {
+  PURCHASE_CANCELLED: 'PURCHASE_CANCELLED',
+  PRODUCT_ALREADY_PURCHASED: 'PRODUCT_ALREADY_PURCHASED',
+  PURCHASE_NOT_ALLOWED: 'PURCHASE_NOT_ALLOWED',
+  STORE_PROBLEM: 'STORE_PROBLEM',
+  NETWORK_ERROR: 'NETWORK_ERROR',
+  INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
+};
+
 export const useAppleIAP = () => {
   const { isIOS, isNative } = useNativePlatform();
   const { toast } = useToast();
@@ -115,6 +125,28 @@ export const useAppleIAP = () => {
     }
   };
 
+  // Helper function to check if user already has active subscription
+  const checkExistingEntitlements = async (Purchases: any): Promise<boolean> => {
+    try {
+      console.log('[useAppleIAP] Checking existing entitlements before purchase...');
+      const { customerInfo } = await Purchases.getCustomerInfo();
+      console.log('[useAppleIAP] Current customerInfo:', JSON.stringify(customerInfo, null, 2));
+      
+      const hasActiveSubscription = !!customerInfo.entitlements?.active?.['premium'];
+      console.log('[useAppleIAP] Has active premium subscription:', hasActiveSubscription);
+      
+      if (hasActiveSubscription) {
+        console.log('[useAppleIAP] Active entitlements:', Object.keys(customerInfo.entitlements?.active || {}));
+        console.log('[useAppleIAP] Premium details:', customerInfo.entitlements?.active?.['premium']);
+      }
+      
+      return hasActiveSubscription;
+    } catch (error) {
+      console.error('[useAppleIAP] Error checking entitlements:', error);
+      return false;
+    }
+  };
+
   const purchaseProduct = async (planType: 'monthly' | 'annual') => {
     try {
       console.log('[useAppleIAP] ========== STARTING PURCHASE ==========');
@@ -133,6 +165,30 @@ export const useAppleIAP = () => {
           variant: "destructive",
         });
         return false;
+      }
+
+      // NOVO: Verificar se já tem assinatura ativa antes de tentar comprar
+      const hasExistingSubscription = await checkExistingEntitlements(Purchases);
+      if (hasExistingSubscription) {
+        console.log('[useAppleIAP] ⚠️ User already has active subscription, calling restore instead...');
+        
+        // Sincronizar com o banco de dados
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { customerInfo } = await Purchases.getCustomerInfo();
+          await supabase.functions.invoke('verify-apple-receipt', {
+            body: {
+              appUserId: customerInfo.originalAppUserId,
+              restore: true
+            }
+          });
+        }
+        
+        toast({
+          title: "Assinatura já ativa",
+          description: "Você já possui uma assinatura ativa. Seus dados foram sincronizados.",
+        });
+        return true;
       }
 
       // Encontrar o produto correspondente
@@ -193,11 +249,6 @@ export const useAppleIAP = () => {
         }
 
         console.log('[useAppleIAP] ✅ Purchase verified and saved!');
-        toast({
-          title: "Compra realizada!",
-          description: "Sua assinatura foi ativada com sucesso.",
-        });
-
         return true;
       }
 
@@ -207,9 +258,11 @@ export const useAppleIAP = () => {
       console.error('[useAppleIAP] ❌ Error purchasing product:', error);
       console.error('[useAppleIAP] Error code:', error?.code);
       console.error('[useAppleIAP] Error message:', error?.message);
+      console.error('[useAppleIAP] Error underlyingErrorMessage:', error?.underlyingErrorMessage);
+      console.error('[useAppleIAP] Full error object:', JSON.stringify(error, null, 2));
       
       // Tratar cancelamento pelo usuário
-      if (error.code === 'PURCHASE_CANCELLED' || error.code === 1) {
+      if (error.code === REVENUECAT_ERROR_CODES.PURCHASE_CANCELLED || error.code === 1) {
         toast({
           title: "Compra cancelada",
           description: "Você cancelou a compra.",
@@ -217,9 +270,61 @@ export const useAppleIAP = () => {
         return false;
       }
       
+      // Tratar "já comprado" - tentar restaurar automaticamente
+      if (error.code === REVENUECAT_ERROR_CODES.PRODUCT_ALREADY_PURCHASED || 
+          error.message?.includes('already') || 
+          error.message?.includes('PRODUCT_ALREADY_PURCHASED')) {
+        console.log('[useAppleIAP] Product already purchased, attempting restore...');
+        
+        try {
+          const restored = await restorePurchases();
+          if (restored) {
+            return true;
+          }
+        } catch (restoreError) {
+          console.error('[useAppleIAP] Restore after already-purchased failed:', restoreError);
+        }
+        
+        toast({
+          title: "Produto já adquirido",
+          description: "Você já possui este produto. Tentamos restaurar sua compra.",
+        });
+        return false;
+      }
+      
+      // Tratar erro de credenciais/store
+      if (error.code === REVENUECAT_ERROR_CODES.PURCHASE_NOT_ALLOWED) {
+        toast({
+          title: "Compra não permitida",
+          description: "Verifique suas configurações da App Store.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      if (error.code === REVENUECAT_ERROR_CODES.STORE_PROBLEM) {
+        toast({
+          title: "Erro na App Store",
+          description: "Problema ao conectar com a App Store. Tente novamente.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      if (error.code === REVENUECAT_ERROR_CODES.NETWORK_ERROR) {
+        toast({
+          title: "Erro de conexão",
+          description: "Verifique sua conexão com a internet.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      // Erro genérico com mensagem detalhada
+      const errorMessage = error?.underlyingErrorMessage || error?.message || "Não foi possível concluir a compra.";
       toast({
         title: "Erro na compra",
-        description: error?.message || "Não foi possível concluir a compra. Tente novamente.",
+        description: errorMessage,
         variant: "destructive",
       });
       
@@ -280,7 +385,7 @@ export const useAppleIAP = () => {
         console.warn('[useAppleIAP] ⚠️ No premium entitlement found');
         toast({
           title: "Nenhuma compra encontrada",
-          description: "Não há assinaturas para restaurar.",
+          description: "Não há assinaturas ativas para restaurar nesta conta.",
         });
         return false;
       }
@@ -289,7 +394,7 @@ export const useAppleIAP = () => {
       console.error('[useAppleIAP] Error message:', error?.message);
       toast({
         title: "Erro ao restaurar",
-        description: "Não foi possível restaurar as compras. Tente novamente.",
+        description: error?.message || "Não foi possível restaurar as compras. Tente novamente.",
         variant: "destructive",
       });
       return false;
