@@ -53,9 +53,17 @@ const VerifyEmail = () => {
     try {
       const { error } = await verifyOtp(email, otpCode);
       if (error) {
+        // Mensagem mais clara para código inválido
+        const errorMessage = error.message?.toLowerCase().includes('invalid') || 
+                            error.message?.toLowerCase().includes('expired') ||
+                            error.message?.toLowerCase().includes('inválido') ||
+                            error.message?.toLowerCase().includes('expirado')
+          ? "Código inválido ou expirado. Verifique o código ou solicite um novo."
+          : error.message || "Código inválido ou expirado";
+        
         toast({
-          title: "Erro na verificação",
-          description: error.message || "Código inválido ou expirado",
+          title: "Código incorreto",
+          description: errorMessage,
           variant: "destructive",
         });
         setOtpCode("");
@@ -70,8 +78,8 @@ const VerifyEmail = () => {
       }
     } catch (error: any) {
       toast({
-        title: "Erro",
-        description: error.message || "Erro ao verificar código",
+        title: "Erro na verificação",
+        description: error.message || "Não foi possível verificar o código. Tente novamente.",
         variant: "destructive",
       });
     } finally {
