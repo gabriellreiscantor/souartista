@@ -98,7 +98,8 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          // Cria mensagem personalizada com nome do artista
+          // Verifica se é o dono do show (artista) ou músico da equipe
+          const isOwner = userId === show.uid;
           const artistName = show.profiles?.[0]?.name || 'o artista';
           let title = '';
           let message = '';
@@ -106,19 +107,27 @@ Deno.serve(async (req) => {
           switch (notificationType) {
             case '7_days':
               title = '📅 Show em 1 semana!';
-              message = `Show com ${artistName} no ${show.venue_name} em 7 dias! Já se preparou?`;
+              message = isOwner 
+                ? `Seu show no ${show.venue_name} em 7 dias! Já se preparou?`
+                : `Show com ${artistName} no ${show.venue_name} em 7 dias! Já se preparou?`;
               break;
             case '1_day':
               title = '⏰ Amanhã é dia de show!';
-              message = `Amanhã tem show com ${artistName} no ${show.venue_name} às ${show.time_local}`;
+              message = isOwner
+                ? `Amanhã tem seu show no ${show.venue_name} às ${show.time_local}`
+                : `Amanhã tem show com ${artistName} no ${show.venue_name} às ${show.time_local}`;
               break;
             case 'today':
               title = '🎸 HOJE tem show!';
-              message = `Hoje tem show com ${artistName} no ${show.venue_name} às ${show.time_local} - Arrase!`;
+              message = isOwner
+                ? `Hoje tem seu show no ${show.venue_name} às ${show.time_local} - Arrase!`
+                : `Hoje tem show com ${artistName} no ${show.venue_name} às ${show.time_local} - Arrase!`;
               break;
             case '3_hours':
-              title = '🚨 Faltam 3 horas para o show!';
-              message = `Show com ${artistName} no ${show.venue_name} às ${show.time_local} - Hora de se preparar!`;
+              title = isOwner ? '🚨 Faltam 3 horas para seu show!' : '🚨 Faltam 3 horas para o show!';
+              message = isOwner
+                ? `Seu show no ${show.venue_name} às ${show.time_local} - Hora de se preparar!`
+                : `Show com ${artistName} no ${show.venue_name} às ${show.time_local} - Hora de se preparar!`;
               break;
           }
 
