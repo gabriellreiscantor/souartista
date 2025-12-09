@@ -13,6 +13,8 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const { signIn, resendOtp, user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -28,14 +30,21 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      toast({
-        title: 'Campos obrigatórios',
-        description: 'Por favor, preencha todos os campos',
-        variant: 'destructive',
-      });
-      return;
+    // Limpar erros anteriores
+    setEmailError('');
+    setPasswordError('');
+    
+    // Validação inline
+    let hasError = false;
+    if (!email) {
+      setEmailError('Por favor, preencha o e-mail');
+      hasError = true;
     }
+    if (!password) {
+      setPasswordError('Por favor, preencha a senha');
+      hasError = true;
+    }
+    if (hasError) return;
 
     console.log('[Login] Starting login process...');
     setLoading(true);
@@ -57,21 +66,22 @@ const Login = () => {
       clearTimeout(timeoutId);
 
       if (error) {
-        // Melhorar mensagens de erro do login
-        let errorMessage = error.message;
-        
-        if (error.message.includes('Invalid login credentials') || error.message.includes('invalid credentials')) {
-          errorMessage = 'E-mail ou senha incorretos. Verifique suas credenciais.';
-        } else if (error.message.includes('Email not confirmed')) {
-          errorMessage = 'Por favor, verifique seu e-mail antes de fazer login.';
-        }
-
         console.error('[Login] Login error:', error);
-        toast({
-          title: 'Erro ao fazer login',
-          description: errorMessage,
-          variant: 'destructive',
-        });
+        
+        // Mostrar erro inline nos campos
+        if (error.message.includes('Invalid login credentials') || error.message.includes('invalid credentials')) {
+          setEmailError('E-mail ou senha incorretos');
+          setPasswordError('E-mail ou senha incorretos');
+        } else if (error.message.includes('Email not confirmed')) {
+          setEmailError('Verifique seu e-mail antes de fazer login');
+        } else {
+          // Para outros erros, usar toast
+          toast({
+            title: 'Erro ao fazer login',
+            description: error.message,
+            variant: 'destructive',
+          });
+        }
         setLoading(false);
       } else {
         // Check if email is confirmed
@@ -206,10 +216,18 @@ const Login = () => {
                 type="email"
                 placeholder="seu@email.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setEmailError('');
+                }}
                 disabled={loading}
-                className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
+                className={`h-11 bg-[#1B0D29] text-white placeholder:text-[#C8BAD4] ${
+                  emailError ? 'border-red-500' : 'border-[#B96FFF]'
+                }`}
               />
+              {emailError && (
+                <p className="text-red-500 text-xs mt-1">{emailError}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -218,10 +236,18 @@ const Login = () => {
                 id="password"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setPasswordError('');
+                }}
                 disabled={loading}
-                className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
+                className={`h-11 bg-[#1B0D29] text-white placeholder:text-[#C8BAD4] ${
+                  passwordError ? 'border-red-500' : 'border-[#B96FFF]'
+                }`}
               />
+              {passwordError && (
+                <p className="text-red-500 text-xs mt-1">{passwordError}</p>
+              )}
               <div className="flex justify-end">
                 <Link to="/reset-password" className="text-xs text-[#B96FFF] hover:underline">
                   Esqueceu a senha?
