@@ -547,6 +547,12 @@ const ArtistShows = () => {
   const getFilteredShows = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    
+    // Calcular o início da semana atual (domingo)
+    const startOfThisWeek = new Date(today);
+    startOfThisWeek.setDate(today.getDate() - today.getDay());
+    startOfThisWeek.setHours(0, 0, 0, 0);
+    
     switch (showFilter) {
       case 'upcoming':
         // Apenas shows com data >= hoje
@@ -555,18 +561,18 @@ const ArtistShows = () => {
           return new Date(year, month - 1, day) >= today;
         });
       case 'thisWeek':
-        // Shows desta semana
-        const endOfWeek = new Date(today);
-        endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
+        // Shows desta semana (domingo a sábado)
+        const endOfThisWeek = new Date(startOfThisWeek);
+        endOfThisWeek.setDate(startOfThisWeek.getDate() + 6);
         return shows.filter(show => {
           const [year, month, day] = show.date_local.split('-').map(Number);
           const d = new Date(year, month - 1, day);
-          return d >= today && d <= endOfWeek;
+          return d >= startOfThisWeek && d <= endOfThisWeek;
         });
       case 'lastWeek':
         // Shows da semana passada
-        const lastWeekStart = new Date(today);
-        lastWeekStart.setDate(today.getDate() - today.getDay() - 7);
+        const lastWeekStart = new Date(startOfThisWeek);
+        lastWeekStart.setDate(startOfThisWeek.getDate() - 7);
         const lastWeekEnd = new Date(lastWeekStart);
         lastWeekEnd.setDate(lastWeekStart.getDate() + 6);
         return shows.filter(show => {
@@ -576,8 +582,8 @@ const ArtistShows = () => {
         });
       case 'twoWeeksAgo':
         // Shows de 2 semanas atrás
-        const twoWeeksAgoStart = new Date(today);
-        twoWeeksAgoStart.setDate(today.getDate() - today.getDay() - 14);
+        const twoWeeksAgoStart = new Date(startOfThisWeek);
+        twoWeeksAgoStart.setDate(startOfThisWeek.getDate() - 14);
         const twoWeeksAgoEnd = new Date(twoWeeksAgoStart);
         twoWeeksAgoEnd.setDate(twoWeeksAgoStart.getDate() + 6);
         return shows.filter(show => {
