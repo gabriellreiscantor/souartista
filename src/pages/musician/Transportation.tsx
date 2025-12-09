@@ -202,7 +202,7 @@ const MusicianTransportation = () => {
             
             <div className="flex items-center gap-3">
               <NotificationBell />
-              <UserMenu userName={userData?.name} userRole={userRole} />
+              <UserMenu userName={userData?.name} userRole={userRole} photoUrl={userData?.photo_url} />
             </div>
           </header>
 

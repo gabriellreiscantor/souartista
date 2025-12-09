@@ -224,7 +224,7 @@ const ArtistSubscription = () => {
             </div>
             <div className="flex items-center gap-3">
               <NotificationBell />
-              <UserMenu userName={userData?.name} userRole="artist" />
+              <UserMenu userName={userData?.name} userRole="artist" photoUrl={userData?.photo_url} />
             </div>
             </header>
             <main className="flex-1 p-6 pb-20">
@@ -251,7 +251,7 @@ const ArtistSubscription = () => {
             </div>
             <div className="flex items-center gap-3">
               <NotificationBell />
-              <UserMenu userName={userData?.name} userRole="artist" />
+              <UserMenu userName={userData?.name} userRole="artist" photoUrl={userData?.photo_url} />
             </div>
           </header>
 

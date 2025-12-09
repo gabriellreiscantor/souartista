@@ -27,7 +27,7 @@ const MusicianTerms = () => {
             </div>
             <div className="flex items-center gap-4">
               <NotificationBell />
-              <UserMenu userName={userData?.name} userRole="musician" />
+              <UserMenu userName={userData?.name} userRole="musician" photoUrl={userData?.photo_url} />
             </div>
           </header>
 

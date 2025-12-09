@@ -23,7 +23,7 @@ interface Show {
 }
 
 const ArtistCalendar = () => {
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [shows, setShows] = useState<Show[]>([]);
   const [showDates, setShowDates] = useState<Date[]>([]);
@@ -112,7 +112,7 @@ const ArtistCalendar = () => {
             
             <div className="flex items-center gap-3">
               <NotificationBell />
-              <UserMenu />
+              <UserMenu userName={userData?.name} userRole="artist" photoUrl={userData?.photo_url} />
             </div>
           </header>
 

@@ -2,7 +2,6 @@ import { User, Settings, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,13 +10,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface UserMenuProps {
   userName?: string;
   userRole?: string;
+  photoUrl?: string;
 }
 
-export function UserMenu({ userName, userRole }: UserMenuProps) {
+const getInitials = (name?: string) => {
+  if (!name) return 'U';
+  const parts = name.trim().split(' ');
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+};
+
+export function UserMenu({ userName, userRole, photoUrl }: UserMenuProps) {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -55,9 +63,12 @@ export function UserMenu({ userName, userRole }: UserMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full bg-purple-100">
-          <User className="w-5 h-5 text-purple-600" />
-        </Button>
+        <Avatar className="h-9 w-9 cursor-pointer">
+          <AvatarImage src={photoUrl} alt={userName} />
+          <AvatarFallback className="bg-purple-100 text-purple-600 text-sm font-medium">
+            {getInitials(userName)}
+          </AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56 bg-white border-gray-200 text-gray-900">
         <DropdownMenuLabel>

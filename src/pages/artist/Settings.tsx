@@ -93,7 +93,7 @@ const ArtistSettings = () => {
             </div>
             <div className="flex items-center gap-4">
               <NotificationBell />
-              <UserMenu userName={userData?.name} userRole="artist" />
+              <UserMenu userName={userData?.name} userRole="artist" photoUrl={userData?.photo_url} />
             </div>
           </header>
 
