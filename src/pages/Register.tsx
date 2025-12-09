@@ -576,6 +576,7 @@ const Register = () => {
                   <Input
                     id="cpf"
                     type="text"
+                    inputMode="numeric"
                     placeholder="000.000.000-00"
                     value={formData.cpf}
                     onChange={(e) => {
@@ -632,11 +633,17 @@ const Register = () => {
                   <Input
                     id="phone"
                     type="tel"
+                    inputMode="numeric"
                     placeholder="+55 65 9 9614-6969"
                     value={formData.phone}
                     onChange={(e) => {
                       const formatted = formatPhone(e.target.value);
                       setFormData({ ...formData, phone: formatted });
+                    }}
+                    onFocus={(e) => {
+                      // Move cursor para o final para evitar edição do +55
+                      const length = e.target.value.length;
+                      setTimeout(() => e.target.setSelectionRange(length, length), 0);
                     }}
                     maxLength={19}
                     className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
