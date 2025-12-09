@@ -62,6 +62,16 @@ const Register = () => {
   const [verifying, setVerifying] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
 
+  // Estados de erro inline
+  const [nameError, setNameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [cpfError, setCpfError] = useState('');
+  const [birthDateError, setBirthDateError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [otpError, setOtpError] = useState('');
+
   // NÃO redireciona automaticamente - deixa o fluxo do formulário seguir
   // O redirecionamento acontece apenas após verificar o OTP no step 4
 
@@ -113,46 +123,63 @@ const Register = () => {
   };
 
   const handleNext = () => {
+    // Limpar erros anteriores
+    setNameError('');
+    setEmailError('');
+    setCpfError('');
+    setBirthDateError('');
+    setPhoneError('');
+
     if (step === 1) {
-      if (!formData.name || !formData.email) {
-        toast({
-          title: 'Campos obrigatórios',
-          description: 'Por favor, preencha nome e e-mail',
-          variant: 'destructive',
-        });
-        return;
+      let hasError = false;
+      
+      if (!formData.name.trim()) {
+        setNameError('Por favor, preencha seu nome');
+        hasError = true;
       }
+      if (!formData.email.trim()) {
+        setEmailError('Por favor, preencha o e-mail');
+        hasError = true;
+      }
+      
+      if (hasError) return;
     }
     
     if (step === 2) {
-      if (!formData.cpf || !formData.birthDate || !formData.phone) {
-        toast({
-          title: 'Campos obrigatórios',
-          description: 'Por favor, preencha todos os campos',
-          variant: 'destructive',
-        });
-        return;
+      let hasError = false;
+      
+      if (!formData.cpf || formData.cpf.replace(/\D/g, '').length < 11) {
+        setCpfError('Por favor, preencha o CPF completo');
+        hasError = true;
+      }
+      if (!formData.birthDate) {
+        setBirthDateError('Selecione sua data de nascimento');
+        hasError = true;
+      } else {
+        // Validação de idade mínima (14 anos)
+        const birthDate = new Date(formData.birthDate);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        // Ajustar idade se ainda não fez aniversário este ano
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        
+        if (age < 14) {
+          setBirthDateError('Você precisa ter no mínimo 14 anos para criar uma conta');
+          hasError = true;
+        }
       }
       
-      // Validação de idade mínima (14 anos)
-      const birthDate = new Date(formData.birthDate);
-      const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-      
-      // Ajustar idade se ainda não fez aniversário este ano
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
+      const cleanPhone = formData.phone.replace(/\D/g, '');
+      if (!formData.phone || cleanPhone.length < 13) {
+        setPhoneError('Por favor, preencha o WhatsApp completo');
+        hasError = true;
       }
       
-      if (age < 14) {
-        toast({
-          title: 'Idade mínima não atingida',
-          description: 'Você precisa ter no mínimo 14 anos para criar uma conta. Peça permissão a um adulto responsável.',
-          variant: 'destructive',
-        });
-        return;
-      }
+      if (hasError) return;
     }
 
     if (step < 3) {
@@ -178,23 +205,26 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Limpar erros anteriores
+    setPasswordError('');
+    setConfirmPasswordError('');
+    setEmailError('');
+    setCpfError('');
+    setPhoneError('');
+
+    let hasError = false;
+
     if (!formData.password || formData.password.length < 6) {
-      toast({
-        title: 'Senha inválida',
-        description: 'A senha deve ter no mínimo 6 caracteres',
-        variant: 'destructive',
-      });
-      return;
+      setPasswordError('A senha deve ter no mínimo 6 caracteres');
+      hasError = true;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: 'Senhas não conferem',
-        description: 'As senhas digitadas são diferentes',
-        variant: 'destructive',
-      });
-      return;
+      setConfirmPasswordError('As senhas não conferem');
+      hasError = true;
     }
+
+    if (hasError) return;
 
     setLoading(true);
 
@@ -208,19 +238,8 @@ const Register = () => {
 
       if (emailExists) {
         setLoading(false);
-        toast({
-          title: 'E-mail já cadastrado',
-          description: 'Este e-mail já possui uma conta. Esqueceu sua senha?',
-          variant: 'destructive',
-          action: (
-            <button
-              onClick={() => navigate('/reset-password')}
-              className="text-sm underline hover:no-underline"
-            >
-              Redefinir senha
-            </button>
-          ),
-        });
+        setStep(1);
+        setEmailError('Este e-mail já possui uma conta');
         return;
       }
 
@@ -234,27 +253,8 @@ const Register = () => {
 
       if (cpfExists) {
         setLoading(false);
-        toast({
-          title: 'CPF já cadastrado',
-          description: 'Este CPF já possui uma conta. Faça login ou recupere sua senha.',
-          variant: 'destructive',
-          action: (
-            <div className="flex flex-col gap-2 mt-2">
-              <button
-                onClick={() => navigate('/login')}
-                className="text-sm underline hover:no-underline"
-              >
-                Fazer login
-              </button>
-              <button
-                onClick={() => navigate('/reset-password')}
-                className="text-sm underline hover:no-underline"
-              >
-                Recuperar senha
-              </button>
-            </div>
-          ),
-        });
+        setStep(2);
+        setCpfError('Este CPF já possui uma conta');
         return;
       }
 
@@ -268,27 +268,8 @@ const Register = () => {
 
       if (phoneExists) {
         setLoading(false);
-        toast({
-          title: 'Telefone já cadastrado',
-          description: 'Este número de telefone já possui uma conta. Faça login ou recupere sua senha.',
-          variant: 'destructive',
-          action: (
-            <div className="flex flex-col gap-2 mt-2">
-              <button
-                onClick={() => navigate('/login')}
-                className="text-sm underline hover:no-underline"
-              >
-                Fazer login
-              </button>
-              <button
-                onClick={() => navigate('/reset-password')}
-                className="text-sm underline hover:no-underline"
-              >
-                Recuperar senha
-              </button>
-            </div>
-          ),
-        });
+        setStep(2);
+        setPhoneError('Este telefone já possui uma conta');
         return;
       }
 
@@ -301,22 +282,23 @@ const Register = () => {
       });
 
       if (error) {
-        // Melhorar mensagens de erro comuns do Supabase
-        let errorMessage = error.message;
-        
+        // Mapear erros para campos específicos
         if (error.message.includes('already registered') || error.message.includes('User already registered')) {
-          errorMessage = 'Este e-mail já está cadastrado. Faça login ou recupere sua senha.';
+          setStep(1);
+          setEmailError('Este e-mail já está cadastrado');
         } else if (error.message.includes('password')) {
-          errorMessage = 'A senha deve ter no mínimo 6 caracteres com letras e números.';
+          setPasswordError('A senha deve ter no mínimo 6 caracteres');
         } else if (error.message.includes('email')) {
-          errorMessage = 'Por favor, insira um e-mail válido.';
+          setStep(1);
+          setEmailError('Por favor, insira um e-mail válido');
+        } else {
+          // Para erros genéricos, usar toast
+          toast({
+            title: 'Erro ao criar conta',
+            description: error.message,
+            variant: 'destructive',
+          });
         }
-
-        toast({
-          title: 'Erro ao criar conta',
-          description: errorMessage,
-          variant: 'destructive',
-        });
         setLoading(false);
       } else {
         // Armazena email e vai para etapa 4 (OTP)
@@ -341,12 +323,10 @@ const Register = () => {
   };
 
   const handleVerifyOtp = async () => {
+    setOtpError('');
+    
     if (otpCode.length !== 6) {
-      toast({
-        title: 'Código incompleto',
-        description: 'Digite o código de 6 dígitos',
-        variant: 'destructive',
-      });
+      setOtpError('Digite o código de 6 dígitos');
       return;
     }
 
@@ -355,11 +335,7 @@ const Register = () => {
     const { error } = await verifyOtp(registeredEmail, otpCode);
 
     if (error) {
-      toast({
-        title: 'Código inválido',
-        description: error.message,
-        variant: 'destructive',
-      });
+      setOtpError('Código inválido ou expirado');
       setVerifying(false);
       return;
     }
@@ -546,9 +522,17 @@ const Register = () => {
                     type="text"
                     placeholder="Seu nome"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
+                    onChange={(e) => {
+                      setFormData({ ...formData, name: e.target.value });
+                      setNameError('');
+                    }}
+                    className={`h-11 bg-[#1B0D29] text-white placeholder:text-[#C8BAD4] ${
+                      nameError ? 'border-red-500' : 'border-[#B96FFF]'
+                    }`}
                   />
+                  {nameError && (
+                    <p className="text-red-500 text-xs mt-1">{nameError}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -558,9 +542,17 @@ const Register = () => {
                     type="email"
                     placeholder="seu@email.com"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
+                    onChange={(e) => {
+                      setFormData({ ...formData, email: e.target.value });
+                      setEmailError('');
+                    }}
+                    className={`h-11 bg-[#1B0D29] text-white placeholder:text-[#C8BAD4] ${
+                      emailError ? 'border-red-500' : 'border-[#B96FFF]'
+                    }`}
                   />
+                  {emailError && (
+                    <p className="text-red-500 text-xs mt-1">{emailError}</p>
+                  )}
                 </div>
 
                 <Button type="button" onClick={handleNext} className="w-full h-11">
@@ -582,10 +574,16 @@ const Register = () => {
                     onChange={(e) => {
                       const formatted = formatCPF(e.target.value);
                       setFormData({ ...formData, cpf: formatted });
+                      setCpfError('');
                     }}
                     maxLength={14}
-                    className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
+                    className={`h-11 bg-[#1B0D29] text-white placeholder:text-[#C8BAD4] ${
+                      cpfError ? 'border-red-500' : 'border-[#B96FFF]'
+                    }`}
                   />
+                  {cpfError && (
+                    <p className="text-red-500 text-xs mt-1">{cpfError}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -596,7 +594,8 @@ const Register = () => {
                         variant="outline"
                         className={cn(
                           "h-11 w-full justify-start text-left font-normal",
-                          !selectedDate && "text-muted-foreground"
+                          !selectedDate && "text-muted-foreground",
+                          birthDateError ? "border-red-500" : ""
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
@@ -609,6 +608,7 @@ const Register = () => {
                         selected={selectedDate}
                         onSelect={(date) => {
                           setSelectedDate(date);
+                          setBirthDateError('');
                           if (date) {
                             const year = date.getFullYear();
                             const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -626,6 +626,9 @@ const Register = () => {
                       />
                     </PopoverContent>
                   </Popover>
+                  {birthDateError && (
+                    <p className="text-red-500 text-xs mt-1">{birthDateError}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -639,6 +642,7 @@ const Register = () => {
                     onChange={(e) => {
                       const formatted = formatPhone(e.target.value);
                       setFormData({ ...formData, phone: formatted });
+                      setPhoneError('');
                     }}
                     onFocus={(e) => {
                       // Move cursor para o final para evitar edição do +55
@@ -646,8 +650,13 @@ const Register = () => {
                       setTimeout(() => e.target.setSelectionRange(length, length), 0);
                     }}
                     maxLength={19}
-                    className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
+                    className={`h-11 bg-[#1B0D29] text-white placeholder:text-[#C8BAD4] ${
+                      phoneError ? 'border-red-500' : 'border-[#B96FFF]'
+                    }`}
                   />
+                  {phoneError && (
+                    <p className="text-red-500 text-xs mt-1">{phoneError}</p>
+                  )}
                 </div>
 
                 <div className="flex gap-2">
@@ -670,10 +679,18 @@ const Register = () => {
                     id="password"
                     placeholder="Mínimo 6 caracteres"
                     value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, password: e.target.value });
+                      setPasswordError('');
+                    }}
                     disabled={loading}
-                    className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
+                    className={`h-11 bg-[#1B0D29] text-white placeholder:text-[#C8BAD4] ${
+                      passwordError ? 'border-red-500' : 'border-[#B96FFF]'
+                    }`}
                   />
+                  {passwordError && (
+                    <p className="text-red-500 text-xs mt-1">{passwordError}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -682,10 +699,18 @@ const Register = () => {
                     id="confirmPassword"
                     placeholder="Digite a senha novamente"
                     value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, confirmPassword: e.target.value });
+                      setConfirmPasswordError('');
+                    }}
                     disabled={loading}
-                    className="h-11 bg-[#1B0D29] border-[#B96FFF] text-white placeholder:text-[#C8BAD4]"
+                    className={`h-11 bg-[#1B0D29] text-white placeholder:text-[#C8BAD4] ${
+                      confirmPasswordError ? 'border-red-500' : 'border-[#B96FFF]'
+                    }`}
                   />
+                  {confirmPasswordError && (
+                    <p className="text-red-500 text-xs mt-1">{confirmPasswordError}</p>
+                  )}
                 </div>
 
                 <div className="flex gap-2">
@@ -732,17 +757,27 @@ const Register = () => {
                   </div>
                 </div>
 
-                <div className="flex justify-center">
-                  <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
+                <div className="flex flex-col items-center gap-2">
+                  <InputOTP 
+                    maxLength={6} 
+                    value={otpCode} 
+                    onChange={(value) => {
+                      setOtpCode(value);
+                      setOtpError('');
+                    }}
+                  >
                     <InputOTPGroup>
-                      <InputOTPSlot index={0} className="h-12 w-12 text-white border-[#B96FFF]" />
-                      <InputOTPSlot index={1} className="h-12 w-12 text-white border-[#B96FFF]" />
-                      <InputOTPSlot index={2} className="h-12 w-12 text-white border-[#B96FFF]" />
-                      <InputOTPSlot index={3} className="h-12 w-12 text-white border-[#B96FFF]" />
-                      <InputOTPSlot index={4} className="h-12 w-12 text-white border-[#B96FFF]" />
-                      <InputOTPSlot index={5} className="h-12 w-12 text-white border-[#B96FFF]" />
+                      <InputOTPSlot index={0} className={`h-12 w-12 text-white ${otpError ? 'border-red-500' : 'border-[#B96FFF]'}`} />
+                      <InputOTPSlot index={1} className={`h-12 w-12 text-white ${otpError ? 'border-red-500' : 'border-[#B96FFF]'}`} />
+                      <InputOTPSlot index={2} className={`h-12 w-12 text-white ${otpError ? 'border-red-500' : 'border-[#B96FFF]'}`} />
+                      <InputOTPSlot index={3} className={`h-12 w-12 text-white ${otpError ? 'border-red-500' : 'border-[#B96FFF]'}`} />
+                      <InputOTPSlot index={4} className={`h-12 w-12 text-white ${otpError ? 'border-red-500' : 'border-[#B96FFF]'}`} />
+                      <InputOTPSlot index={5} className={`h-12 w-12 text-white ${otpError ? 'border-red-500' : 'border-[#B96FFF]'}`} />
                     </InputOTPGroup>
                   </InputOTP>
+                  {otpError && (
+                    <p className="text-red-500 text-xs">{otpError}</p>
+                  )}
                 </div>
 
                 <Button
