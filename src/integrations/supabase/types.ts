@@ -94,6 +94,35 @@ export type Database = {
           },
         ]
       }
+      engagement_tip_logs: {
+        Row: {
+          id: string
+          sent_at: string
+          tip_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          sent_at?: string
+          tip_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          sent_at?: string
+          tip_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "engagement_tip_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       locomotion_expenses: {
         Row: {
           cost: number
