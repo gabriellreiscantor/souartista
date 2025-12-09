@@ -31,7 +31,7 @@ interface Show {
 }
 
 const ArtistTransportation = () => {
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<TransportTab>('uber');
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -202,7 +202,7 @@ const ArtistTransportation = () => {
             
             <div className="flex items-center gap-3">
               <NotificationBell />
-              <UserMenu />
+              <UserMenu userName={userData?.name} userRole="artist" photoUrl={userData?.photo_url} />
             </div>
           </header>
 

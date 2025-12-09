@@ -247,7 +247,7 @@ const MusicianSupport = () => {
             
             <div className="flex items-center gap-3">
               <NotificationBell />
-              <UserMenu userName={userData?.name} userRole="musician" />
+              <UserMenu userName={userData?.name} userRole="musician" photoUrl={userData?.photo_url} />
             </div>
           </header>
 
