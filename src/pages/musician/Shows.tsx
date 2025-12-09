@@ -78,6 +78,7 @@ const MusicianShows = () => {
   const [expandedShows, setExpandedShows] = useState<Set<string>>(new Set());
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showFilter, setShowFilter] = useState<string>('upcoming');
   
   // Delete confirmation states
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -677,9 +678,77 @@ const MusicianShows = () => {
       return newSet;
     });
   };
+
+  // Função de filtro por período
+  const getFilteredShows = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Início desta semana (domingo)
+    const startOfThisWeek = new Date(today);
+    startOfThisWeek.setDate(today.getDate() - today.getDay());
+    
+    // Fim desta semana (sábado)
+    const endOfThisWeek = new Date(startOfThisWeek);
+    endOfThisWeek.setDate(startOfThisWeek.getDate() + 6);
+
+    switch (showFilter) {
+      case 'upcoming':
+        // Shows de hoje em diante
+        return shows.filter(show => {
+          const [year, month, day] = show.date_local.split('-').map(Number);
+          const d = new Date(year, month - 1, day);
+          return d >= today;
+        });
+      case 'thisWeek':
+        // Shows desta semana
+        return shows.filter(show => {
+          const [year, month, day] = show.date_local.split('-').map(Number);
+          const d = new Date(year, month - 1, day);
+          return d >= startOfThisWeek && d <= endOfThisWeek;
+        });
+      case 'lastWeek':
+        // Shows da semana passada
+        const lastWeekStart = new Date(startOfThisWeek);
+        lastWeekStart.setDate(startOfThisWeek.getDate() - 7);
+        const lastWeekEnd = new Date(lastWeekStart);
+        lastWeekEnd.setDate(lastWeekStart.getDate() + 6);
+        return shows.filter(show => {
+          const [year, month, day] = show.date_local.split('-').map(Number);
+          const d = new Date(year, month - 1, day);
+          return d >= lastWeekStart && d <= lastWeekEnd;
+        });
+      case 'twoWeeksAgo':
+        // Shows de 2 semanas atrás
+        const twoWeeksAgoStart = new Date(startOfThisWeek);
+        twoWeeksAgoStart.setDate(startOfThisWeek.getDate() - 14);
+        const twoWeeksAgoEnd = new Date(twoWeeksAgoStart);
+        twoWeeksAgoEnd.setDate(twoWeeksAgoStart.getDate() + 6);
+        return shows.filter(show => {
+          const [year, month, day] = show.date_local.split('-').map(Number);
+          const d = new Date(year, month - 1, day);
+          return d >= twoWeeksAgoStart && d <= twoWeeksAgoEnd;
+        });
+      case 'thisMonth':
+        // Shows deste mês
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        return shows.filter(show => {
+          const [year, month, day] = show.date_local.split('-').map(Number);
+          const d = new Date(year, month - 1, day);
+          return d >= startOfMonth && d <= endOfMonth;
+        });
+      case 'all':
+      default:
+        return shows;
+    }
+  };
+
+  const filteredShows = getFilteredShows();
+
   const calculateTotals = () => {
-    const totalRevenue = shows.reduce((sum, show) => sum + getMyFee(show), 0);
-    const totalExpenses = shows.reduce((sum, show) => {
+    const totalRevenue = filteredShows.reduce((sum, show) => sum + getMyFee(show), 0);
+    const totalExpenses = filteredShows.reduce((sum, show) => {
       const showExpenses = show.expenses_other.reduce((expSum, e) => expSum + e.cost, 0);
       return sum + showExpenses;
     }, 0);
@@ -773,7 +842,7 @@ const MusicianShows = () => {
                       </p>
                     </div>
                     
-                    <Select defaultValue="upcoming">
+                    <Select value={showFilter} onValueChange={setShowFilter}>
                       <SelectTrigger className="w-full bg-white text-gray-900 border-gray-300">
                         <CalendarIcon className="w-4 h-4 mr-2 text-gray-900" />
                         <SelectValue />
@@ -837,7 +906,7 @@ const MusicianShows = () => {
                         </Button>
                       </div>
 
-                      <Select defaultValue="upcoming">
+                      <Select value={showFilter} onValueChange={setShowFilter}>
                         <SelectTrigger className="w-[200px] bg-white text-gray-900 border-gray-300">
                           <CalendarIcon className="w-4 h-4 mr-2 text-gray-900" />
                           <SelectValue />
@@ -1090,7 +1159,7 @@ const MusicianShows = () => {
                               <div className="text-center">Líquido</div>
                               <div className="text-center">Ações</div>
                             </div>
-                            {shows.map(show => {
+                            {filteredShows.map(show => {
                               const showDate = new Date(show.date_local);
                               const myFee = getMyFee(show);
                               const myInstrument = getMyInstrument(show);
@@ -1133,7 +1202,7 @@ const MusicianShows = () => {
                                 </div>;
                             })}
                           </div> : <div className="grid gap-4">
-                          {shows.map(show => {
+                          {filteredShows.map(show => {
                       const showDate = new Date(show.date_local);
                       const myFee = getMyFee(show);
                       const myInstrument = getMyInstrument(show);
