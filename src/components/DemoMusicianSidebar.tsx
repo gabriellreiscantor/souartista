@@ -3,6 +3,7 @@ import logo from '@/assets/logo.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useNativePlatform } from '@/hooks/useNativePlatform';
 import { DemoLockedModal } from '@/components/DemoLockedModal';
 import {
   Sidebar,
@@ -37,6 +38,7 @@ export function DemoMusicianSidebar() {
   const currentPath = location.pathname;
   const collapsed = state === 'collapsed';
   const [showLockedModal, setShowLockedModal] = useState(false);
+  const { isIOS, isNative } = useNativePlatform();
 
   const handleSignOut = () => {
     navigate('/login');
@@ -59,8 +61,13 @@ export function DemoMusicianSidebar() {
       collapsible="icon"
     >
       <SidebarContent className="bg-sidebar-background" onClick={handleSidebarClick}>
+        {/* iOS Safe Area Spacer */}
+        {isIOS && isNative && (
+          <div style={{ height: 'env(safe-area-inset-top, 0px)' }} />
+        )}
+        
         {/* Logo */}
-        <div className="p-4 border-b border-sidebar-border">
+        <div className="p-4 pt-6 border-b border-sidebar-border">
           {!collapsed ? (
             <img src={logo} alt="Sou Artista" className="h-12 w-auto mx-auto" />
           ) : (
