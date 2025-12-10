@@ -37,7 +37,7 @@ export default function DemoSelectRole() {
         <div className="flex justify-center mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500/20 border border-yellow-500/30 rounded-full">
             <span className="text-yellow-600 dark:text-yellow-400 text-sm font-semibold">
-              🎭 Modo Demonstração
+              🎸 Modo Demonstração
             </span>
           </div>
         </div>
