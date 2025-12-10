@@ -402,7 +402,16 @@ const Subscribe = () => {
         {/* Plans Grid */}
         <div className="grid md:grid-cols-2 gap-4 lg:gap-6 max-w-5xl mx-auto mb-6">
           {/* Monthly Plan */}
-          <Card className={`glass-card rounded-2xl p-6 transition-all ${billingCycle === 'monthly' ? 'border-2 border-primary shadow-lg opacity-100' : 'border border-border/30 opacity-50'}`}>
+          <Card className={`glass-card rounded-2xl p-6 transition-all relative ${billingCycle === 'monthly' ? 'border-2 border-primary shadow-lg opacity-100' : 'border border-border/30 opacity-50'}`}>
+            {/* Badge 7 dias grátis - apenas iOS ou Cartão de Crédito */}
+            {((isIOS && isNative) || paymentMethod === 'CREDIT_CARD') && (
+              <div className="absolute -top-2 -right-2 z-10">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-green-500 text-white text-[10px] font-bold shadow-md">
+                  7 dias grátis
+                </span>
+              </div>
+            )}
+            
             <div className="mb-4">
               <h3 className="text-xl font-heading font-bold mb-1">Plano Mensal</h3>
               <p className="text-xs text-muted-foreground mb-3">
@@ -432,7 +441,16 @@ const Subscribe = () => {
 
           {/* Annual Plan */}
           <Card className={`glass-card rounded-2xl p-6 transition-all relative ${billingCycle === 'annual' ? 'border-2 border-primary shadow-lg opacity-100' : 'border border-border/30 opacity-50'}`}>
-            {/* Badge */}
+            {/* Badge 7 dias grátis - apenas iOS ou Cartão de Crédito */}
+            {((isIOS && isNative) || paymentMethod === 'CREDIT_CARD') && (
+              <div className="absolute -top-2 -right-2 z-10">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-green-500 text-white text-[10px] font-bold shadow-md">
+                  7 dias grátis
+                </span>
+              </div>
+            )}
+            
+            {/* Badge Mais Popular */}
             {billingCycle === 'annual' && <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
                 <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium shadow-md">
                   ⭐ Mais Popular
