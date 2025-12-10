@@ -1,20 +1,41 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 // ========================================
 // CONFIGURAÇÃO DO NEGÓCIO - ALTERAR AQUI
 // ========================================
 const BUSINESS_CONFIG = {
   name: 'SouArtista',
-  // Quando tiver CNPJ, adicione aqui:
-  // cnpj: '00.000.000/0001-00',
-  // razaoSocial: 'SouArtista Tecnologia LTDA',
 };
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Schema de validação para dados do cartão de crédito
+const creditCardSchema = z.object({
+  holderName: z.string()
+    .min(3, "Nome do titular muito curto")
+    .max(100, "Nome do titular muito longo")
+    .regex(/^[a-zA-ZÀ-ÿ\s]+$/, "Nome deve conter apenas letras"),
+  number: z.string()
+    .transform(val => val.replace(/\s/g, ''))
+    .refine(val => /^\d{13,19}$/.test(val), "Número do cartão inválido"),
+  expiryMonth: z.string()
+    .regex(/^(0[1-9]|1[0-2])$/, "Mês de validade inválido"),
+  expiryYear: z.string()
+    .regex(/^20\d{2}$/, "Ano de validade inválido"),
+  ccv: z.string()
+    .regex(/^\d{3,4}$/, "CVV inválido"),
+  holderCpf: z.string()
+    .transform(val => val.replace(/\D/g, ''))
+    .refine(val => /^\d{11}$/.test(val), "CPF inválido"),
+  postalCode: z.string()
+    .transform(val => val.replace(/\D/g, ''))
+    .refine(val => /^\d{8}$/.test(val), "CEP inválido"),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -134,24 +155,40 @@ serve(async (req) => {
       description: `Plano ${planType === 'monthly' ? 'Mensal' : 'Anual'} - ${BUSINESS_CONFIG.name}`,
     };
 
-    // Para cartão de crédito, adicionar dados do cartão
-    if (billingType === 'CREDIT_CARD' && creditCardData) {
+    // Para cartão de crédito, validar e adicionar dados do cartão
+    if (billingType === 'CREDIT_CARD') {
+      if (!creditCardData) {
+        throw new Error('Dados do cartão de crédito são obrigatórios');
+      }
+
+      // Validação Zod dos dados do cartão
+      const validation = creditCardSchema.safeParse(creditCardData);
+      if (!validation.success) {
+        const errorMessage = validation.error.errors[0]?.message || 'Dados do cartão inválidos';
+        console.error('Credit card validation failed:', validation.error.errors);
+        throw new Error(errorMessage);
+      }
+
+      const validatedCard = validation.data;
+
       subscriptionPayload.creditCard = {
-        holderName: creditCardData.holderName,
-        number: creditCardData.number.replace(/\s/g, ''),
-        expiryMonth: creditCardData.expiryMonth,
-        expiryYear: creditCardData.expiryYear,
-        ccv: creditCardData.ccv,
+        holderName: validatedCard.holderName,
+        number: validatedCard.number,
+        expiryMonth: validatedCard.expiryMonth,
+        expiryYear: validatedCard.expiryYear,
+        ccv: validatedCard.ccv,
       };
       
       subscriptionPayload.creditCardHolderInfo = {
-        name: creditCardData.holderName,
+        name: validatedCard.holderName,
         email: profile.email,
         phone: profile.phone,
-        cpfCnpj: creditCardData.holderCpf.replace(/\D/g, ''),
-        postalCode: creditCardData.postalCode.replace(/\D/g, ''),
+        cpfCnpj: validatedCard.holderCpf,
+        postalCode: validatedCard.postalCode,
         addressNumber: '0',
       };
+
+      console.log('✅ Credit card data validated successfully');
     }
     
     const subscriptionResponse = await fetch('https://api.asaas.com/v3/subscriptions', {
