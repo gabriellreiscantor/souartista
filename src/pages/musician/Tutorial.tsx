@@ -47,8 +47,8 @@ const MusicianTutorial = () => {
           <header className="h-16 border-b border-border bg-white flex items-center px-4 md:px-6 gap-4 sticky top-0 z-10 w-full">
             <div className="flex items-center gap-4 flex-1">
               <SidebarTrigger />
-              <Button variant="ghost" size="icon" onClick={() => navigate('/musician/settings')} className="text-[#1f1825]">
-                <ArrowLeft className="w-5 h-5" />
+              <Button variant="ghost" size="icon" onClick={() => navigate('/musician/settings')} className="bg-primary rounded-full p-1.5">
+                <ArrowLeft className="w-5 h-5 text-white" />
               </Button>
               <h1 className="text-xl font-semibold text-black">Tutorial</h1>
             </div>
@@ -76,10 +76,10 @@ const MusicianTutorial = () => {
                         <tutorial.icon className="w-6 h-6 text-primary" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-bold mb-1 text-neutral-50">
+                        <h3 className="text-lg font-bold mb-1 text-gray-900">
                           {tutorial.title}
                         </h3>
-                        <p className="text-sm text-stone-50">
+                        <p className="text-sm text-gray-600">
                           {tutorial.description}
                         </p>
                       </div>
@@ -89,7 +89,7 @@ const MusicianTutorial = () => {
                           <span className="flex-shrink-0 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-xs font-semibold">
                             {stepIndex + 1}
                           </span>
-                          <span className="text-sm pt-0.5 text-stone-50">{step}</span>
+                          <span className="text-sm pt-0.5 text-gray-700">{step}</span>
                         </li>)}
                     </ol>
                   </Card>)}

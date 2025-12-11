@@ -73,8 +73,8 @@ const MusicianUpdates = () => {
           <header className="h-16 border-b border-border bg-white flex items-center px-4 md:px-6 gap-4 sticky top-0 z-10 w-full">
             <div className="flex items-center gap-4 flex-1">
               <SidebarTrigger />
-              <Button variant="ghost" size="icon" onClick={() => navigate('/musician/settings')} className="text-stone-950">
-                <ArrowLeft className="w-5 h-5" />
+              <Button variant="ghost" size="icon" onClick={() => navigate('/musician/settings')} className="bg-primary rounded-full p-1.5">
+                <ArrowLeft className="w-5 h-5 text-white" />
               </Button>
               <h1 className="text-xl font-semibold text-black">Atualizações</h1>
             </div>
@@ -108,7 +108,7 @@ const MusicianUpdates = () => {
                   </Card>
                 ) : (
                   updates.map((update, index) => (
-                    <Card key={index} className="p-6 text-slate-50">
+                    <Card key={index} className="p-6">
                       <div className="flex items-start gap-4">
                         <div className="mt-1">{getIcon(update.title)}</div>
                         <div className="flex-1">
@@ -120,14 +120,14 @@ const MusicianUpdates = () => {
                               {update.title}
                             </Badge>
                           </div>
-                          <p className="text-sm mb-4 text-red-50">
+                          <p className="text-sm mb-4 text-gray-600">
                             {new Date(update.release_date).toLocaleDateString('pt-BR', {
                               day: 'numeric',
                               month: 'long',
                               year: 'numeric'
                             })}
                           </p>
-                          <div className="text-red-50 whitespace-pre-line">
+                          <div className="text-gray-900 whitespace-pre-line">
                             {update.description}
                           </div>
                         </div>
