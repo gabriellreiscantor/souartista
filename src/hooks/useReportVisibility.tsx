@@ -16,6 +16,17 @@ const defaultSettings: ReportVisibilitySettings = {
   showLocomotion: true,
 };
 
+// Função para mascarar valores monetários
+export const maskCurrency = (value: number, show: boolean): string => {
+  if (show) {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  }
+  return 'R$ *.***,**';
+};
+
 export const useReportVisibility = () => {
   const [settings, setSettings] = useState<ReportVisibilitySettings>(defaultSettings);
 
@@ -37,5 +48,5 @@ export const useReportVisibility = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
 
-  return { settings, updateSettings };
+  return { settings, updateSettings, maskCurrency };
 };

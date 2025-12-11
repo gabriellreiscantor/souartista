@@ -5,6 +5,7 @@ import { useArtistStats } from '@/hooks/useArtistStats';
 import { useMonthlyData } from '@/hooks/useMonthlyData';
 import { useUpcomingShows } from '@/hooks/useUpcomingShows';
 import { useLocomotionData } from '@/hooks/useLocomotionData';
+import { useReportVisibility, maskCurrency } from '@/hooks/useReportVisibility';
 import { WeeklySchedule } from '@/components/WeeklySchedule';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -35,6 +36,7 @@ const ArtistDashboard = () => {
   const defaultPeriod = `${currentYear}-${currentMonth}`;
   const [selectedPeriod, setSelectedPeriod] = useState<string>(defaultPeriod);
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
+  const { settings } = useReportVisibility();
   const stats = useArtistStats(selectedPeriod);
   const {
     data: monthlyData
@@ -103,9 +105,9 @@ const ArtistDashboard = () => {
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
               <StatCard icon={<Music className="w-6 h-6 text-purple-600" />} title="Total de Shows" value={stats.totalShows.toString()} iconBg="bg-purple-100" iconColor="text-purple-600" valueColor="text-purple-600" />
-              <StatCard icon={<DollarSign className="w-6 h-6" />} title="Receita Bruta (Total)" value={formatCurrency(stats.grossRevenue)} iconBg="bg-green-100" iconColor="text-green-600" valueColor="text-green-600" />
-              <StatCard icon={<TrendingDown className="w-6 h-6" />} title="Custos Totais" value={formatCurrency(stats.totalCosts)} iconBg="bg-red-100" iconColor="text-red-600" valueColor="text-red-600" />
-              <StatCard icon={<TrendingUp className="w-6 h-6" />} title="Lucro Líquido (Total)" value={formatCurrency(stats.netProfit)} iconBg="bg-blue-100" iconColor="text-blue-600" valueColor="text-blue-600" />
+              <StatCard icon={<DollarSign className="w-6 h-6" />} title="Receita Bruta (Total)" value={maskCurrency(stats.grossRevenue, settings.showGrossRevenue)} iconBg="bg-green-100" iconColor="text-green-600" valueColor="text-green-600" />
+              <StatCard icon={<TrendingDown className="w-6 h-6" />} title="Custos Totais" value={maskCurrency(stats.totalCosts, settings.showShowCosts)} iconBg="bg-red-100" iconColor="text-red-600" valueColor="text-red-600" />
+              <StatCard icon={<TrendingUp className="w-6 h-6" />} title="Lucro Líquido (Total)" value={maskCurrency(stats.netProfit, settings.showNetProfit)} iconBg="bg-blue-100" iconColor="text-blue-600" valueColor="text-blue-600" />
             </div>
 
             {/* Charts Row */}
@@ -129,7 +131,7 @@ const ArtistDashboard = () => {
                           {show.time_local && ` - ${show.time_local}`}
                         </p>
                         <p className="text-sm font-medium text-green-600 mt-1">
-                          {formatCurrency(show.fee)}
+                          {maskCurrency(show.fee, settings.showGrossRevenue)}
                         </p>
                       </div>)}
                   </div>}
@@ -226,7 +228,7 @@ const ArtistDashboard = () => {
                     <h4 className="text-sm text-gray-600">Despesas com Locomoção</h4>
                     <Car className="w-5 h-5 text-yellow-500" />
                   </div>
-                  <p className="text-3xl font-bold text-gray-900">{formatCurrency(locomotionTotal)}</p>
+                  <p className="text-3xl font-bold text-gray-900">{maskCurrency(locomotionTotal, settings.showLocomotion)}</p>
                 </Card>
 
                 <Card className="lg:col-span-2 p-6 bg-white border border-gray-200">
