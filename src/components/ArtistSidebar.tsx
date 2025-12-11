@@ -79,7 +79,7 @@ export function ArtistSidebar() {
           {!collapsed ? (
             <img src={logo} alt="Sou Artista" className="h-12 w-auto mx-auto" />
           ) : (
-            <img src={logoIcon} alt="Sou Artista" className="h-8 w-8 mx-auto" />
+            <img src={logoIcon} alt="Sou Artista" className="h-6 w-6 mx-auto" />
           )}
         </div>
 
