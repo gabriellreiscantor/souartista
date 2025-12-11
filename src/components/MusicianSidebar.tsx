@@ -75,6 +75,10 @@ export function MusicianSidebar() {
         <div 
           className="p-4 border-b border-sidebar-border cursor-pointer hover:bg-sidebar-accent/50 transition-colors"
           onClick={toggleSidebar}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            toggleSidebar();
+          }}
         >
           {!collapsed ? (
             <img src={logo} alt="Sou Artista" className="h-12 w-auto mx-auto" />
