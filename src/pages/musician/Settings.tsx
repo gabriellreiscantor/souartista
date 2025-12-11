@@ -101,11 +101,11 @@ const MusicianSettings = () => {
                 <p className="text-gray-600">Personalize sua experiência na plataforma.</p>
               </div>
 
-              {/* Visibilidade do Relatório */}
+              {/* Visibilidade do Dashboard e Relatório */}
               <Card className="p-6 bg-white">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Visibilidade do Relatório</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Visibilidade do Dashboard e Relatório</h3>
                 <p className="text-gray-900 text-sm mb-6">
-                  Escolha quais informações financeiras você deseja ver na página de Relatórios.
+                  Escolha quais valores financeiros você deseja ver. Valores ocultos aparecem como R$ *.***,**
                 </p>
 
                 <div className="space-y-4">

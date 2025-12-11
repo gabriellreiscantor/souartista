@@ -5,6 +5,7 @@ import { useMusicianStats } from '@/hooks/useMusicianStats';
 import { useMonthlyData } from '@/hooks/useMonthlyData';
 import { useUpcomingShows } from '@/hooks/useUpcomingShows';
 import { useLocomotionData } from '@/hooks/useLocomotionData';
+import { useReportVisibility, maskCurrency } from '@/hooks/useReportVisibility';
 import { WeeklySchedule } from '@/components/WeeklySchedule';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -34,6 +35,7 @@ const MusicianDashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>(defaultPeriod);
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
 
+  const { settings } = useReportVisibility();
   const stats = useMusicianStats(selectedPeriod);
   const { data: monthlyData } = useMonthlyData(selectedYear, userRole);
   const { shows: upcomingShows } = useUpcomingShows(userRole, 5);
@@ -112,7 +114,7 @@ const MusicianDashboard = () => {
               <StatCard
                 icon={<DollarSign className="w-6 h-6" />}
                 title="Cachê Total"
-                value={formatCurrency(stats.totalEarnings)}
+                value={maskCurrency(stats.totalEarnings, settings.showGrossRevenue)}
                 iconBg="bg-green-100"
                 iconColor="text-green-600"
                 valueColor="text-green-600"
@@ -128,7 +130,7 @@ const MusicianDashboard = () => {
               <StatCard
                 icon={<TrendingDown className="w-6 h-6" />}
                 title="Despesas"
-                value={formatCurrency(stats.totalExpenses)}
+                value={maskCurrency(stats.totalExpenses, settings.showShowCosts)}
                 iconBg="bg-red-100"
                 iconColor="text-red-600"
                 valueColor="text-red-600"
@@ -156,7 +158,7 @@ const MusicianDashboard = () => {
                           {show.time_local && ` - ${show.time_local}`}
                         </p>
                         <p className="text-sm font-medium text-green-600 mt-1">
-                          {formatCurrency(show.fee)}
+                          {maskCurrency(show.fee, settings.showGrossRevenue)}
                         </p>
                       </div>
                     ))}
@@ -258,7 +260,7 @@ const MusicianDashboard = () => {
                     <h4 className="text-sm text-gray-600">Despesas com Locomoção</h4>
                     <Car className="w-5 h-5 text-yellow-500" />
                   </div>
-                  <p className="text-3xl font-bold text-gray-900">{formatCurrency(locomotionTotal)}</p>
+                  <p className="text-3xl font-bold text-gray-900">{maskCurrency(locomotionTotal, settings.showLocomotion)}</p>
                 </Card>
 
                 <Card className="lg:col-span-2 p-6 bg-white border border-gray-200">
