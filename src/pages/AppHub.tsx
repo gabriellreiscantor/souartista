@@ -5,6 +5,21 @@ import { useNativePlatform } from '@/hooks/useNativePlatform';
 import { useAppleIAP } from '@/hooks/useAppleIAP';
 import logo from '@/assets/logo.png';
 
+// Lista de emails de teste que têm acesso total (bypass de verificações)
+const TEST_EMAILS = [
+  'tester@souartista.com',
+  'ester@souartista.com',
+  'apple@souartista.com',
+  'test@souartista.com'
+];
+
+const isTestAccount = (email?: string): boolean => {
+  if (!email) return false;
+  return TEST_EMAILS.some(testEmail => 
+    email.toLowerCase() === testEmail.toLowerCase()
+  );
+};
+
 const AppHub = () => {
   const { user, userData, userRole, loading, signOut, refetchUserData } = useAuth();
   const { isIOS, isNative } = useNativePlatform();
@@ -58,7 +73,7 @@ const AppHub = () => {
   }, [isIOS, isNative, user, userData, userRole, loading, checkSubscriptionStatus, refetchUserData]);
 
   useEffect(() => {
-    console.log('[AppHub] State:', { loading, checkingApple, user: user?.id, userData: !!userData, userRole, status_plano: userData?.status_plano });
+    console.log('[AppHub] State:', { loading, checkingApple, user: user?.id, userData: !!userData, userRole, status_plano: userData?.status_plano, email: user?.email });
     
     if (loading || checkingApple) return;
 
@@ -78,6 +93,25 @@ const AppHub = () => {
       return;
     }
 
+    // BYPASS PARA CONTAS DE TESTE DA APPLE
+    // Essas contas têm acesso total sem verificações de CPF, email, assinatura, etc.
+    if (isTestAccount(user.email)) {
+      console.log('[AppHub] 🍎 Test account detected, bypassing all checks');
+      
+      // Se tem role, vai pro dashboard
+      if (userRole) {
+        console.log('[AppHub] 🍎 Test account redirecting to dashboard:', `/${userRole}/dashboard`);
+        navigate(`/${userRole}/dashboard`);
+        return;
+      }
+      
+      // Se não tem role, vai pra selecionar role (único passo necessário)
+      console.log('[AppHub] 🍎 Test account needs role selection');
+      navigate('/select-role');
+      return;
+    }
+
+    // Verificações normais para contas não-teste
     if (!userData?.cpf) {
       console.log('[AppHub] No CPF, redirecting to complete-profile');
       navigate('/complete-profile');
@@ -97,7 +131,9 @@ const AppHub = () => {
       return;
     }
 
-    if (userData?.status_plano !== 'ativo') {
+    // Verificar assinatura - aceita tanto 'ativo' quanto 'active'
+    const isActive = userData?.status_plano === 'ativo' || userData?.status_plano === 'active';
+    if (!isActive) {
       console.log('[AppHub] Plan not active, redirecting to subscribe');
       navigate('/subscribe');
       return;
