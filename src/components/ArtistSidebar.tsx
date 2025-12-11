@@ -1,5 +1,6 @@
 import { LayoutDashboard, Music, Calendar, BarChart3, Truck, HelpCircle, User, Settings, LogOut, MapPin, Shield, CreditCard } from 'lucide-react';
 import logo from '@/assets/logo.png';
+import logoIcon from '@/assets/logo_icon.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,7 +15,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
 
@@ -38,7 +38,7 @@ const adminItems = [
 ];
 
 export function ArtistSidebar() {
-  const { state, setOpenMobile, isMobile } = useSidebar();
+  const { state, setOpenMobile, isMobile, toggleSidebar } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === 'collapsed';
@@ -71,12 +71,15 @@ export function ArtistSidebar() {
           <div style={{ height: 'env(safe-area-inset-top, 0px)' }} />
         )}
         
-        {/* Logo */}
-        <div className="p-4 border-b border-sidebar-border">
+        {/* Logo - clicável para toggle */}
+        <div 
+          className="p-4 border-b border-sidebar-border cursor-pointer hover:bg-sidebar-accent/50 transition-colors"
+          onClick={toggleSidebar}
+        >
           {!collapsed ? (
             <img src={logo} alt="Sou Artista" className="h-12 w-auto mx-auto" />
           ) : (
-            <img src={logo} alt="Sou Artista" className="h-8 w-auto mx-auto" />
+            <img src={logoIcon} alt="Sou Artista" className="h-8 w-8 mx-auto" />
           )}
         </div>
 

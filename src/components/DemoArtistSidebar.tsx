@@ -1,5 +1,6 @@
 import { LayoutDashboard, Music, Calendar, BarChart3, Truck, HelpCircle, User, Settings, LogOut } from 'lucide-react';
 import logo from '@/assets/logo.png';
+import logoIcon from '@/assets/logo_icon.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -32,7 +33,7 @@ const settingsItems = [
 ];
 
 export function DemoArtistSidebar() {
-  const { state, setOpenMobile, isMobile } = useSidebar();
+  const { state, setOpenMobile, isMobile, toggleSidebar } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
@@ -66,12 +67,15 @@ export function DemoArtistSidebar() {
           <div style={{ height: 'env(safe-area-inset-top, 0px)' }} />
         )}
         
-        {/* Logo */}
-        <div className="p-4 pt-6 border-b border-sidebar-border">
+        {/* Logo - clicável para toggle */}
+        <div 
+          className="p-4 pt-6 border-b border-sidebar-border cursor-pointer hover:bg-sidebar-accent/50 transition-colors"
+          onClick={toggleSidebar}
+        >
           {!collapsed ? (
             <img src={logo} alt="Sou Artista" className="h-12 w-auto mx-auto" />
           ) : (
-            <img src={logo} alt="Sou Artista" className="h-8 w-auto mx-auto" />
+            <img src={logoIcon} alt="Sou Artista" className="h-8 w-8 mx-auto" />
           )}
         </div>
 
