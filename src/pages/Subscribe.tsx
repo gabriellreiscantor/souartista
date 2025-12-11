@@ -35,13 +35,36 @@ const Subscribe = () => {
   const navigate = useNavigate();
   const { isIOS, isNative } = useNativePlatform();
   const { purchaseProduct, restorePurchases, loading: iapLoading } = useAppleIAP();
+  // Lista de contas de teste da Apple
+  const TEST_EMAILS = [
+    'tester@souartista.com',
+    'ester@souartista.com',
+    'apple@souartista.com',
+    'test@souartista.com'
+  ];
+
+  const isTestAccount = (email?: string): boolean => {
+    if (!email) return false;
+    return TEST_EMAILS.some(testEmail => 
+      email.toLowerCase() === testEmail.toLowerCase()
+    );
+  };
+
   useEffect(() => {
     const checkUserStatus = async () => {
       if (!user) return;
+
+      // Bypass para contas de teste da Apple - redireciona direto para o dashboard
+      if (isTestAccount(user.email)) {
+        const role = userRole || localStorage.getItem('userRole') || 'artist';
+        navigate(`/${role}/dashboard`, { replace: true });
+        return;
+      }
+
       const {
         data: profile
       } = await supabase.from('profiles').select('status_plano').eq('id', user.id).single();
-      if (profile?.status_plano === 'ativo') {
+      if (profile?.status_plano === 'ativo' || profile?.status_plano === 'active') {
         // Usa userRole do contexto primeiro, depois localStorage, depois fallback
         const role = userRole || localStorage.getItem('userRole');
         if (role === 'artist') {

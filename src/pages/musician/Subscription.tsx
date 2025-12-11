@@ -35,6 +35,21 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
+// Lista de contas de teste da Apple
+const TEST_EMAILS = [
+  'tester@souartista.com',
+  'ester@souartista.com',
+  'apple@souartista.com',
+  'test@souartista.com'
+];
+
+const isTestAccount = (email?: string): boolean => {
+  if (!email) return false;
+  return TEST_EMAILS.some(testEmail => 
+    email.toLowerCase() === testEmail.toLowerCase()
+  );
+};
+
 const MusicianSubscription = () => {
   const { userData } = useAuth();
   const { toast } = useToast();
@@ -50,10 +65,18 @@ const MusicianSubscription = () => {
   const [loadingPayment, setLoadingPayment] = useState(false);
   const [showPixDialog, setShowPixDialog] = useState(false);
   const [checkingPayment, setCheckingPayment] = useState(false);
+  
+  // Detectar se é conta de teste
+  const isDemo = isTestAccount(userData?.email);
 
   useEffect(() => {
+    // Para contas de teste, não precisa carregar assinatura real
+    if (isDemo) {
+      setLoading(false);
+      return;
+    }
     fetchSubscription();
-  }, [userData]);
+  }, [userData, isDemo]);
 
   useEffect(() => {
     if (subscription?.payment_method === 'PIX' && subscription?.status === 'active') {
@@ -257,8 +280,45 @@ const MusicianSubscription = () => {
 
           <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
             <div className="max-w-4xl mx-auto space-y-6">
-              {/* iOS Native App - Show App Store message */}
-              {isIOS && isNative ? (
+              {/* Conta de Teste/Demo - Acesso total */}
+              {isDemo ? (
+                <Card className="bg-white border-green-500">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-green-800">
+                      <CheckCircle2 className="h-5 w-5" />
+                      Conta de Demonstração
+                    </CardTitle>
+                    <CardDescription className="text-green-700">
+                      Esta é uma conta de teste com acesso total à plataforma.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm text-green-900">
+                        <strong>Acesso Ilimitado!</strong><br />
+                        Você tem acesso a todas as funcionalidades do app para fins de teste e avaliação.
+                        Explore livremente os recursos disponíveis.
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-gray-500" />
+                        <div>
+                          <p className="text-xs text-gray-500">Plano</p>
+                          <p className="font-medium">Premium Anual</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 text-gray-500" />
+                        <div>
+                          <p className="text-xs text-gray-500">Status</p>
+                          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Ativa</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : isIOS && isNative ? (
                 <Card className="bg-white">
                   <CardHeader>
                     <CardTitle className="text-gray-900">Gerenciar Assinatura</CardTitle>
