@@ -592,30 +592,28 @@ const ArtistReports = () => {
                 </Card>
 
                 {/* Top 5 Locomotion Costs */}
-                {settings.showLocomotion && (
-                  <Card className="bg-white border-gray-200">
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Car className="w-5 h-5 text-gray-900" />
-                        <h3 className="font-bold text-gray-900">Top 5 Custos de Locomoção</h3>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        {locomotionByVenue.map((venue, index) => (
-                          <div key={index} className="flex items-center justify-between">
-                            <span className="text-sm text-gray-900">{index + 1}. {venue.name}</span>
-                            <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-purple-600 text-white text-xs font-semibold">
-                              R$ {formatCurrency(venue.cost)}
-                            </span>
-                          </div>
-                        ))}
-                        {locomotionByVenue.length === 0 && (
-                          <p className="text-sm text-gray-500">Dados insuficientes para análise.</p>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                <Card className="bg-white border-gray-200">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Car className="w-5 h-5 text-gray-900" />
+                      <h3 className="font-bold text-gray-900">Top 5 Custos de Locomoção</h3>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {locomotionByVenue.map((venue, index) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <span className="text-sm text-gray-900">{index + 1}. {venue.name}</span>
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-purple-600 text-white text-xs font-semibold">
+                            {settings.showLocomotion ? `R$ ${formatCurrency(venue.cost)}` : 'R$ *.***,**'}
+                          </span>
+                        </div>
+                      ))}
+                      {locomotionByVenue.length === 0 && (
+                        <p className="text-sm text-gray-500">Dados insuficientes para análise.</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Top 5 Venues by Show Count */}
                 <Card className="bg-white border-gray-200">
