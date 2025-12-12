@@ -370,7 +370,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     keysToRemove.forEach(key => localStorage.removeItem(key));
     console.log('[useAuth] Cleared localStorage keys:', keysToRemove.length);
     
-    // Keep isLoggingOut true - it will reset on next page load
+    // FORCE hard page reload to clear ALL memory state (tokens, SDK cache, etc.)
+    // This is NOT a SPA navigation - it discards all JavaScript and starts fresh
+    window.location.href = '/login';
   };
 
   const updateUserData = async (data: Partial<UserData>) => {
