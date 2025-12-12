@@ -31,11 +31,10 @@ export function UserMenu({ userName, userRole, photoUrl }: UserMenuProps) {
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
-      toast.success('Logout realizado com sucesso!');
-      navigate('/login');
     } catch (error) {
-      toast.error('Erro ao fazer logout');
+      console.log('Logout error (ignored):', error);
     }
+    window.location.href = '/login';
   };
 
   const handleProfile = () => {

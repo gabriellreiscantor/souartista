@@ -49,7 +49,11 @@ export function MusicianSidebar() {
   const filteredSettingsItems = settingsItems;
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.log('Logout error (ignored):', error);
+    }
     window.location.href = '/login';
   };
 
