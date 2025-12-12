@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ArtistSidebar } from '@/components/ArtistSidebar';
 import { UserMenu } from '@/components/UserMenu';
@@ -11,6 +12,10 @@ import { useNavigate } from 'react-router-dom';
 const ArtistPrivacy = () => {
   const { userData } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <SidebarProvider>

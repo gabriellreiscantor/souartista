@@ -250,7 +250,7 @@ const ArtistCalendar = () => {
 
             {/* Agenda Lateral */}
             <Sheet open={showAgenda} onOpenChange={setShowAgenda}>
-              <SheetContent side="right" className="w-full sm:w-[540px] sm:max-w-none overflow-y-auto bg-white scrollbar-hide" style={{
+              <SheetContent side="right" hideCloseButton className="w-full sm:w-[540px] sm:max-w-none overflow-y-auto bg-white scrollbar-hide" style={{
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
                 WebkitOverflowScrolling: 'touch'

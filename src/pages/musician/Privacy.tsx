@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { MusicianSidebar } from '@/components/MusicianSidebar';
 import { UserMenu } from '@/components/UserMenu';
@@ -7,11 +8,14 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { useNavigate } from 'react-router-dom';
+
 const MusicianPrivacy = () => {
-  const {
-    userData
-  } = useAuth();
+  const { userData } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   return <SidebarProvider>
       <div className="flex min-h-screen w-full bg-white">
         <MusicianSidebar />

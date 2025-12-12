@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ArtistSidebar } from '@/components/ArtistSidebar';
 import { UserMenu } from '@/components/UserMenu';
@@ -8,11 +9,14 @@ import { Card } from '@/components/ui/card';
 import { ArrowLeft, Calendar, Users, DollarSign, BarChart3, Car, MapPin } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { useNavigate } from 'react-router-dom';
+
 const ArtistTutorial = () => {
-  const {
-    userData
-  } = useAuth();
+  const { userData } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const tutorials = [{
     icon: Calendar,
     title: 'Gerenciar Shows',
@@ -75,7 +79,8 @@ const ArtistTutorial = () => {
               </div>
 
               <div className="grid gap-6 md:grid-cols-2">
-                {tutorials.map((tutorial, index) => <Card key={index} className="p-6 hover:shadow-lg transition-shadow border-2 border-purple-100">
+                {tutorials.map((tutorial, index) => (
+                  <Card key={index} className="p-6 hover:shadow-lg transition-shadow border-2 border-purple-100 bg-white">
                     <div className="flex items-start gap-4 mb-6">
                       <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-md">
                         <tutorial.icon className="w-6 h-6 text-white" />
@@ -90,14 +95,17 @@ const ArtistTutorial = () => {
                       </div>
                     </div>
                     <div className="space-y-3">
-                      {tutorial.steps.map((step, stepIndex) => <div key={stepIndex} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                      {tutorial.steps.map((step, stepIndex) => (
+                        <div key={stepIndex} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
                           <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-sm">
                             {stepIndex + 1}
                           </span>
                           <span className="text-sm text-gray-900 pt-0.5 leading-relaxed">{step}</span>
-                        </div>)}
+                        </div>
+                      ))}
                     </div>
-                  </Card>)}
+                  </Card>
+                ))}
               </div>
             </div>
           </main>
