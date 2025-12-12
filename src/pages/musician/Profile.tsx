@@ -25,7 +25,7 @@ import {
 import { ImageEditor } from '@/components/ImageEditor';
 
 const MusicianProfile = () => {
-  const { user, userData, signOut } = useAuth();
+  const { user, userData, signOut, refetchUserData } = useAuth();
   const navigate = useNavigate();
   
   const [name, setName] = useState('');
@@ -100,6 +100,9 @@ const MusicianProfile = () => {
         .eq('id', user?.id);
 
       if (updateError) throw updateError;
+
+      // Atualizar estado global do auth
+      await refetchUserData();
 
       toast.success('Foto atualizada com sucesso!');
     } catch (error) {

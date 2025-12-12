@@ -55,17 +55,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setTimeout(() => reject(new Error('Timeout fetching user data')), 8000)
       );
       
-      // Fetch profile data with timeout
+      // Fetch profile and role data in parallel
       const profilePromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .maybeSingle();
       
-      const { data: profile, error: profileError } = await Promise.race([
-        profilePromise,
-        timeoutPromise
+      const rolePromise = supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      // Execute both queries in parallel with timeout
+      const [profileResult, roleResult] = await Promise.race([
+        Promise.all([profilePromise, rolePromise]),
+        timeoutPromise.then(() => { throw new Error('Timeout'); })
       ]) as any;
+      
+      const { data: profile, error: profileError } = profileResult;
+      const { data: roleData, error: roleError } = roleResult;
       
       if (profileError) {
         console.error('[useAuth] Error fetching profile:', profileError);
@@ -77,55 +87,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUserData(null);
       }
 
-      // Check for expired canceled subscriptions and update status_plano if needed
-      try {
-        const { data: subscription } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (subscription && subscription.status === 'canceled' && subscription.next_due_date) {
-          const today = new Date();
-          const dueDate = new Date(subscription.next_due_date);
-          
-          // If next_due_date has passed, update status_plano to inactive
-          if (today > dueDate && profile?.status_plano === 'ativo') {
-            console.log('[useAuth] Subscription expired, updating status_plano to inactive');
-            await supabase
-              .from('profiles')
-              .update({ status_plano: 'inactive' })
-              .eq('id', userId);
-            
-            // Refetch profile to get updated data
-            const { data: updatedProfile } = await supabase
-              .from('profiles')
+      // Check for expired canceled subscriptions and update status_plano if needed (non-blocking)
+      if (profile) {
+        (async () => {
+          try {
+            const { data: subscription } = await supabase
+              .from('subscriptions')
               .select('*')
-              .eq('id', userId)
+              .eq('user_id', userId)
+              .order('created_at', { ascending: false })
+              .limit(1)
               .maybeSingle();
-            
-            if (updatedProfile) {
-              setUserData(updatedProfile as UserData);
-            }
-          }
-        }
-      } catch (error) {
-        console.error('[useAuth] Error checking subscription expiration:', error);
-      }
 
-      // Fetch user role with timeout
-      const rolePromise = supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .maybeSingle();
-      
-      const { data: roleData, error: roleError } = await Promise.race([
-        rolePromise,
-        timeoutPromise
-      ]) as any;
+            if (subscription && subscription.status === 'canceled' && subscription.next_due_date) {
+              const today = new Date();
+              const dueDate = new Date(subscription.next_due_date);
+              
+              if (today > dueDate && profile?.status_plano === 'ativo') {
+                console.log('[useAuth] Subscription expired, updating status_plano to inactive');
+                await supabase
+                  .from('profiles')
+                  .update({ status_plano: 'inactive' })
+                  .eq('id', userId);
+                
+                const { data: updatedProfile } = await supabase
+                  .from('profiles')
+                  .select('*')
+                  .eq('id', userId)
+                  .maybeSingle();
+                
+                if (updatedProfile) {
+                  setUserData(updatedProfile as UserData);
+                }
+              }
+            }
+          } catch (error) {
+            console.error('[useAuth] Error checking subscription expiration:', error);
+          }
+        })();
+      }
       
       if (roleError) {
         console.error('[useAuth] Error fetching role:', roleError);
