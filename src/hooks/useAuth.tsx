@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userRole, setUserRoleState] = useState<'artist' | 'musician' | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const isLoggingOutRef = useRef(false);
 
   const fetchUserData = async (userId: string) => {
     try {
@@ -202,7 +202,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (!mounted) return;
         
         // CRITICAL: Ignore ALL auth events during logout to prevent session restoration
-        if (isLoggingOut) {
+        if (isLoggingOutRef.current) {
           console.log('[useAuth] Ignoring auth event during logout:', event);
           return;
         }
@@ -342,7 +342,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     console.log('[useAuth] Starting logout...');
     
     // CRITICAL: Set flag FIRST to block onAuthStateChange from restoring session
-    setIsLoggingOut(true);
+    isLoggingOutRef.current = true;
     
     // Clear states
     setUser(null);
