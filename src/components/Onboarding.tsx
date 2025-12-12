@@ -121,11 +121,9 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
         {/* Subtle vertical gradient for texture */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#1E082B] via-[#23092E] to-[#1E082B] opacity-60" />
         
-        {/* Center glow effect - iOS lite version without blur */}
-        {!isIOSNative ? (
+        {/* Center glow effect - only on web */}
+        {!isIOSNative && (
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/15 rounded-full blur-[120px]" />
-        ) : (
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[250px] bg-primary/10 rounded-full" />
         )}
         
         {/* Vignette effect - removed on iOS */}
@@ -176,7 +174,8 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
             dragFree: false,
             containScroll: 'trimSnaps',
             watchDrag: true,
-            duration: isIOSNative ? 15 : 20, // Faster animation on iOS
+            align: 'center',
+            duration: isIOSNative ? 15 : 20,
           }}
         >
           <CarouselContent className={`touch-pan-x ${isIOSNative ? 'embla-track-optimized' : 'will-change-transform'}`}>
