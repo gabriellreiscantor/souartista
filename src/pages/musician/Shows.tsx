@@ -1596,16 +1596,29 @@ const MusicianShows = () => {
       <MobileBottomNav role="musician" />
       
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <AlertDialogContent className="bg-white">
+        <AlertDialogContent className="bg-white border border-gray-200">
           <AlertDialogHeader>
-            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação não pode ser desfeita. Isso excluirá permanentemente o item selecionado.
+            <AlertDialogTitle className="text-gray-900 text-lg font-semibold">Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600">
+              {itemToDelete?.type === 'show' && (
+                <>Deseja excluir o show em <span className="font-semibold text-gray-900">{shows.find(s => s.id === itemToDelete.id)?.venue_name}</span>?</>
+              )}
+              {itemToDelete?.type === 'artist' && (
+                <>Deseja excluir <span className="font-semibold text-gray-900">{artists.find(a => a.id === itemToDelete.id)?.name}</span> dos seus artistas?</>
+              )}
+              {itemToDelete?.type === 'instrument' && (
+                <>Deseja excluir o instrumento <span className="font-semibold text-gray-900">{instruments.find(i => i.id === itemToDelete.id)?.name}</span>?</>
+              )}
+              {itemToDelete?.type === 'venue' && (
+                <>Deseja excluir o local <span className="font-semibold text-gray-900">{venues.find(v => v.id === itemToDelete.id)?.name}</span>?</>
+              )}
+              <br />
+              <span className="text-sm text-gray-500">Esta ação não pode ser desfeita.</span>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-700">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-500 hover:bg-red-600 text-white border-0">
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
