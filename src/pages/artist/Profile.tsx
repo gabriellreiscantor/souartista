@@ -189,11 +189,10 @@ const {
   const handleLogout = async () => {
     try {
       await signOut();
-      navigate('/login');
     } catch (error) {
-      console.error('Error logging out:', error);
-      toast.error('Erro ao sair');
+      console.log('Logout error (ignored):', error);
     }
+    window.location.href = '/login';
   };
   return <SidebarProvider>
       <div className="flex min-h-screen w-full bg-white">

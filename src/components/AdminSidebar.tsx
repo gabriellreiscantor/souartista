@@ -46,12 +46,10 @@ export function AdminSidebar() {
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
-      toast.success('Logout realizado com sucesso!');
-      window.location.href = '/login';
     } catch (error) {
-      console.error('Erro ao fazer logout:', error);
-      toast.error('Erro ao fazer logout');
+      console.log('Logout error (ignored):', error);
     }
+    window.location.href = '/login';
   };
 
   const handleSidebarClick = (e: React.MouseEvent) => {
