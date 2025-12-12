@@ -57,13 +57,13 @@ const MusicianUpdates = () => {
   const getBadgeColor = (type: string) => {
     switch (type) {
       case 'Novidades':
-        return 'bg-purple-100 text-purple-700';
+        return 'bg-purple-100 text-purple-700 border border-purple-300';
       case 'Melhorias':
-        return 'bg-blue-100 text-blue-700';
+        return 'bg-blue-100 text-blue-700 border border-blue-300';
       case 'Correções':
-        return 'bg-green-100 text-green-700';
+        return 'bg-green-100 text-green-700 border border-green-300';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-gray-100 text-gray-700 border border-gray-300';
     }
   };
   return <SidebarProvider>
@@ -99,17 +99,17 @@ const MusicianUpdates = () => {
               <div className="space-y-6">
                 {loading ? (
                   <div className="flex justify-center py-8">
-                    <Loader2 className="w-8 h-8 animate-spin" />
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
                   </div>
                 ) : updates.length === 0 ? (
-                  <Card className="p-6">
-                    <p className="text-center text-muted-foreground">
+                  <Card className="p-6 bg-white border border-gray-200">
+                    <p className="text-center text-gray-500">
                       Nenhuma atualização disponível no momento.
                     </p>
                   </Card>
                 ) : (
                   updates.map((update, index) => (
-                    <Card key={index} className="p-6">
+                    <Card key={index} className="p-6 bg-white border border-gray-200">
                       <div className="flex items-start gap-4">
                         <div className="mt-1">{getIcon(update.title)}</div>
                         <div className="flex-1">
