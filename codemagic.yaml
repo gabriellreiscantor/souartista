@@ -19,14 +19,7 @@ workflows:
       node: v20
       xcode: latest
       cocoapods: default
-    
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: main
-          include: true
-    
+
     scripts:
       - name: Install dependencies
         script: npm install
@@ -120,16 +113,16 @@ workflows:
               func applicationWillResignActive(_ application: UIApplication) {
               }
 
-              func applicationDidEnterBackground(_ application: UIApplication) {
+              func applicationDidEnterBackground(_ application) {
               }
 
-              func applicationWillEnterForeground(_ application: UIApplication) {
+              func applicationWillEnterForeground(_ application) {
               }
 
-              func applicationDidBecomeActive(_ application: UIApplication) {
+              func applicationDidBecomeActive(_ application) {
               }
 
-              func applicationWillTerminate(_ application: UIApplication) {
+              func applicationWillTerminate(_ application) {
               }
 
               func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
@@ -236,13 +229,6 @@ workflows:
         VITE_SUPABASE_PROJECT_ID: "wjutvzmnvemrplpwbkyf"
       android_signing:
         - souartista_keystore
-    
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: main
-          include: true
     
     scripts:
       - name: Install dependencies
