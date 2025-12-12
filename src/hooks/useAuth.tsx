@@ -344,34 +344,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // CRITICAL: Set flag FIRST to block onAuthStateChange from restoring session
     isLoggingOutRef.current = true;
     
-    // Clear states
+    // Clear states IMMEDIATELY
     setUser(null);
     setUserData(null);
     setUserRoleState(null);
     setSession(null);
     setLoading(false);
     
-    // Do signOut FIRST (invalidates on server)
-    try {
-      await supabase.auth.signOut({ scope: 'global' });
-      console.log('[useAuth] SignOut completed');
-    } catch (error) {
-      console.log('[useAuth] SignOut error (ignored):', error);
-    }
-    
-    // THEN clear ALL localStorage (removes residual sessions)
+    // CLEAR localStorage FIRST - before signOut call
+    // This ensures the local session is gone even if signOut fails
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
+      if (key && (key.startsWith('sb-') || key.includes('supabase') || key.includes('auth'))) {
         keysToRemove.push(key);
       }
     }
     keysToRemove.forEach(key => localStorage.removeItem(key));
     console.log('[useAuth] Cleared localStorage keys:', keysToRemove.length);
     
-    // FORCE hard page reload to clear ALL memory state (tokens, SDK cache, etc.)
-    // This is NOT a SPA navigation - it discards all JavaScript and starts fresh
+    // Try signOut with 'local' scope (doesn't require server session)
+    // This clears the SDK's internal state
+    try {
+      await supabase.auth.signOut({ scope: 'local' });
+      console.log('[useAuth] Local signOut completed');
+    } catch (error) {
+      console.log('[useAuth] SignOut error (ignored):', error);
+    }
+    
+    // Clear sessionStorage as well
+    sessionStorage.clear();
+    
+    // FORCE hard page reload to clear ALL memory state
     window.location.href = '/login';
   };
 
