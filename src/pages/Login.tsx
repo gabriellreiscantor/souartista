@@ -21,6 +21,21 @@ const Login = () => {
 
   // Redireciona automaticamente se já estiver logado
   useEffect(() => {
+    console.log('[Login] ====== LOGIN PAGE MOUNT ======');
+    console.log('[Login] authLoading:', authLoading);
+    console.log('[Login] user:', user?.email);
+    console.log('[Login] session exists:', !!session);
+    
+    // Check localStorage
+    const authKeys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('sb-') || key.includes('supabase') || key.includes('auth'))) {
+        authKeys.push(key);
+      }
+    }
+    console.log('[Login] Auth localStorage keys:', authKeys);
+    
     if (!authLoading && user && session) {
       console.log('[Login] User already authenticated, redirecting to /app');
       navigate('/app');
