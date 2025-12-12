@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { parseISO, format } from 'date-fns';
+import { parseISO, getMonth } from 'date-fns';
 
 interface LocomotionDataPoint {
   month: string;
@@ -36,8 +36,7 @@ export function useLocomotionData(year: string) {
 
       (expenses || []).forEach((exp) => {
         const date = parseISO(exp.created_at);
-        const monthKey = format(date, 'MMM').toLowerCase();
-        const monthIndex = months.findIndex(m => m.startsWith(monthKey.substring(0, 3)));
+        const monthIndex = getMonth(date); // 0-11
         const month = months[monthIndex];
 
         if (month) {
