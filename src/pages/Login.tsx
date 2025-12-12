@@ -21,23 +21,7 @@ const Login = () => {
 
   // Redireciona automaticamente se já estiver logado
   useEffect(() => {
-    console.log('[Login] ====== LOGIN PAGE MOUNT ======');
-    console.log('[Login] authLoading:', authLoading);
-    console.log('[Login] user:', user?.email);
-    console.log('[Login] session exists:', !!session);
-    
-    // Check localStorage
-    const authKeys = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && (key.startsWith('sb-') || key.includes('supabase') || key.includes('auth'))) {
-        authKeys.push(key);
-      }
-    }
-    console.log('[Login] Auth localStorage keys:', authKeys);
-    
     if (!authLoading && user && session) {
-      console.log('[Login] User already authenticated, redirecting to /app');
       navigate('/app');
     }
   }, [user, session, authLoading, navigate]);
@@ -61,7 +45,6 @@ const Login = () => {
     }
     if (hasError) return;
 
-    console.log('[Login] Starting login process...');
     setLoading(true);
 
     // Timeout de segurança de 10 segundos
@@ -81,7 +64,6 @@ const Login = () => {
       clearTimeout(timeoutId);
 
       if (error) {
-        console.error('[Login] Login error:', error);
         
         // Mostrar erro inline nos campos
         if (error.message.includes('Invalid login credentials') || error.message.includes('invalid credentials')) {
@@ -103,7 +85,6 @@ const Login = () => {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         
         if (currentUser && !currentUser.email_confirmed_at) {
-          console.log('[Login] Email not confirmed, sending OTP and redirecting to verify-email');
           // Send new OTP and redirect to verification page
           await resendOtp(email);
           toast({
@@ -114,8 +95,6 @@ const Login = () => {
           setLoading(false);
           return;
         }
-
-        console.log('[Login] Login successful, redirecting to /app');
         // O redirecionamento será feito pelo useEffect acima
       }
     } catch (error) {
