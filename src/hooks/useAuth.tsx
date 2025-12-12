@@ -339,9 +339,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSession(null);
     setLoading(false);
     
-    // Tentar signOut (ignorar erros se sessão já expirou)
+    // Limpar TODO o localStorage do Supabase (remove todas as sessões residuais)
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    // Tentar signOut global (ignorar erros se sessão já expirou)
     try {
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'global' });
     } catch (error) {
       console.log('SignOut error (ignored):', error);
     }
