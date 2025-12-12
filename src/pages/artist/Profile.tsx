@@ -17,10 +17,11 @@ import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ImageEditor } from '@/components/ImageEditor';
 const ArtistProfile = () => {
-  const {
+const {
     user,
     userData,
-    signOut
+    signOut,
+    refetchUserData
   } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState('');
@@ -93,6 +94,9 @@ const ArtistProfile = () => {
         .eq('id', user?.id);
 
       if (updateError) throw updateError;
+
+      // Atualizar estado global do auth
+      await refetchUserData();
 
       toast.success('Foto atualizada com sucesso!');
     } catch (error) {

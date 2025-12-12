@@ -9,7 +9,7 @@ import { useNativePlatform } from '@/hooks/useNativePlatform';
 const FloatingParticles = () => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(12)].map((_, i) => (
+      {[...Array(6)].map((_, i) => (
         <div
           key={i}
           className="absolute w-1 h-1 bg-primary/20 rounded-full animate-float"
@@ -148,9 +148,10 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
             dragFree: false,
             containScroll: 'trimSnaps',
             watchDrag: true,
+            duration: 20,
           }}
         >
-          <CarouselContent className="touch-pan-x">
+          <CarouselContent className="touch-pan-x will-change-transform">
             {slides.map((slide, index) => (
               <CarouselItem key={index}>
                 <div className="flex flex-col items-center justify-center px-8 text-center py-8">
