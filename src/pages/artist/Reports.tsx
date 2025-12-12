@@ -224,15 +224,23 @@ const ArtistReports = () => {
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
 
-  // Top 5 Locomotion Costs by show venue
-  const locomotionByVenue = showsWithExpenses
-    .filter(show => show.locomotion > 0)
-    .reduce((acc: any[], show) => {
-      const existing = acc.find(v => v.name === show.venue_name);
+  // Top 5 Locomotion Costs by type
+  const typeLabels: Record<string, string> = {
+    uber: 'Uber/99',
+    km: 'Quilometragem',
+    van: 'Van',
+    onibus: 'Ônibus',
+    aviao: 'Avião'
+  };
+  
+  const locomotionByVenue = locomotionExpenses
+    .reduce((acc: any[], expense) => {
+      const typeName = typeLabels[expense.type] || expense.type;
+      const existing = acc.find(v => v.name === typeName);
       if (existing) {
-        existing.cost += show.locomotion;
+        existing.cost += Number(expense.cost) || 0;
       } else {
-        acc.push({ name: show.venue_name, cost: show.locomotion });
+        acc.push({ name: typeName, cost: Number(expense.cost) || 0 });
       }
       return acc;
     }, [])
