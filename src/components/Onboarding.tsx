@@ -25,35 +25,41 @@ const FloatingParticles = () => {
   );
 };
 
-interface OnboardingSlide {
-  icon: React.ReactNode;
+
+// Icon component that adapts size based on platform
+const SlideIcon = ({ icon: Icon, isIOSNative }: { icon: React.ComponentType<{ className?: string }>, isIOSNative: boolean }) => (
+  <Icon className={isIOSNative ? 'w-14 h-14' : 'w-16 h-16'} />
+);
+
+interface SlideData {
+  icon: React.ComponentType<{ className?: string }>;
   title: string;
   description: string;
 }
 
-const slides: OnboardingSlide[] = [
+const slidesData: SlideData[] = [
   {
-    icon: <DollarSign className="w-16 h-16" />,
+    icon: DollarSign,
     title: "Suas finanças musicais, organizadas.",
     description: "Veja cachês, despesas e lucro de cada show em um só lugar."
   },
   {
-    icon: <Calendar className="w-16 h-16" />,
+    icon: Calendar,
     title: "Agenda sempre em dia.",
     description: "Controle datas, horários e locais sem depender de planilhas."
   },
   {
-    icon: <Users className="w-16 h-16" />,
+    icon: Users,
     title: "Pague sua equipe sem dor de cabeça.",
     description: "Cadastre músicos fixos, valores e custos de cada evento."
   },
   {
-    icon: <TrendingUp className="w-16 h-16" />,
+    icon: TrendingUp,
     title: "Saiba quanto você realmente está ganhando.",
     description: "Relatórios mensais, fluxo de caixa e análise de lucro."
   },
   {
-    icon: <Music className="w-16 h-16" />,
+    icon: Music,
     title: "Também para quem é só músico.",
     description: "Controle seus próprios cachês, sem ser dono de banda."
   }
@@ -89,7 +95,7 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
     handleComplete();
   };
 
-  const isLastSlide = current === slides.length - 1;
+  const isLastSlide = current === slidesData.length - 1;
 
   const handleNext = () => {
     if (api) {
@@ -174,7 +180,7 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
           }}
         >
           <CarouselContent className={`touch-pan-x ${isIOSNative ? 'embla-track-optimized' : 'will-change-transform'}`}>
-            {slides.map((slide, index) => (
+            {slidesData.map((slide, index) => (
               <CarouselItem key={index}>
                 <div className="flex flex-col items-center justify-center px-8 text-center py-8">
                   {/* Premium icon container - simplified on iOS */}
@@ -183,13 +189,13 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
                     {!isIOSNative && (
                       <div className="absolute inset-0 bg-primary/20 rounded-[28px] blur-xl" />
                     )}
-                    <div className={`relative w-28 h-28 rounded-[28px] bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center border border-primary/20 ${
+                    <div className={`relative w-28 h-28 rounded-[28px] flex items-center justify-center border border-primary/20 ${
                       isIOSNative 
-                        ? 'ios-lite-shadow' 
-                        : 'backdrop-blur-sm shadow-[0_8px_32px_-8px_rgba(168,85,247,0.4)]'
+                        ? 'bg-primary/10 ios-lite-shadow' 
+                        : 'bg-gradient-to-br from-primary/15 to-primary/5 backdrop-blur-sm shadow-[0_8px_32px_-8px_rgba(168,85,247,0.4)]'
                     }`}>
                       <div className={`text-primary ${isIOSNative ? '' : 'drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]'}`}>
-                        {slide.icon}
+                        <SlideIcon icon={slide.icon} isIOSNative={isIOSNative} />
                       </div>
                     </div>
                   </div>
@@ -214,11 +220,11 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
 
       {/* Progress dots - simplified on iOS */}
       <div className="relative flex justify-center gap-2 py-6 z-10">
-        {slides.map((_, index) => (
+        {slidesData.map((_, index) => (
           <button
             key={index}
             onClick={() => api?.scrollTo(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${
+            className={`h-2 rounded-full ${isIOSNative ? '' : 'transition-all duration-300'} ${
               index === current 
                 ? `w-8 bg-primary ${isIOSNative ? '' : 'shadow-[0_0_12px_rgba(168,85,247,0.6)]'}`
                 : 'w-2 bg-primary/30'
@@ -233,10 +239,10 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
         <Button
           onClick={isLastSlide ? handleComplete : handleNext}
           size="lg"
-          className={`w-full rounded-full text-lg font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary border border-primary/20 ${
+          className={`w-full rounded-full text-lg font-semibold border border-primary/20 ${
             isIOSNative 
-              ? 'ios-lite-shadow active:scale-[0.98]' 
-              : 'shadow-[0_8px_32px_-8px_rgba(168,85,247,0.6)] hover:shadow-[0_12px_40px_-8px_rgba(168,85,247,0.8)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]'
+              ? 'bg-primary ios-lite-shadow active:scale-[0.98]' 
+              : 'bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-[0_8px_32px_-8px_rgba(168,85,247,0.6)] hover:shadow-[0_12px_40px_-8px_rgba(168,85,247,0.8)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]'
           }`}
         >
           {isLastSlide ? 'Começar agora' : 'Próximo'}
