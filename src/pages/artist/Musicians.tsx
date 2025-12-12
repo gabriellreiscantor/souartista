@@ -334,6 +334,7 @@ const ArtistMusicians = () => {
                             variant="outline"
                             size="icon"
                             onClick={() => handleEdit(musician)}
+                            className="border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-600"
                           >
                             <Pencil className="w-4 h-4" />
                           </Button>
@@ -341,6 +342,7 @@ const ArtistMusicians = () => {
                             variant="outline"
                             size="icon"
                             onClick={() => handleDelete(musician.id)}
+                            className="border-red-200 bg-red-50 hover:bg-red-100"
                           >
                             <Trash2 className="w-4 h-4 text-red-600" />
                           </Button>

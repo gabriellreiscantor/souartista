@@ -1192,10 +1192,10 @@ const MusicianShows = () => {
                                     </span>
                                   </div>
                                   <div className="flex gap-1 justify-center">
-                                    <Button variant="outline" size="icon" onClick={() => handleShowEdit(show)} className="h-8 w-8">
+                                    <Button variant="outline" size="icon" onClick={() => handleShowEdit(show)} className="h-8 w-8 border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-600">
                                       <Edit className="w-4 h-4" />
                                     </Button>
-                                    <Button variant="outline" size="icon" onClick={() => handleShowDelete(show.id)} className="h-8 w-8">
+                                    <Button variant="outline" size="icon" onClick={() => handleShowDelete(show.id)} className="h-8 w-8 border-red-200 bg-red-50 hover:bg-red-100">
                                       <Trash2 className="w-4 h-4 text-red-600" />
                                     </Button>
                                   </div>
@@ -1245,10 +1245,10 @@ const MusicianShows = () => {
                                     </div>
                                     
                                     <div className="flex gap-1 flex-shrink-0">
-                                      <Button variant="outline" size="icon" onClick={() => handleShowEdit(show)} className="h-8 w-8 md:h-10 md:w-10 bg-slate-50 text-stone-950 border-zinc-50">
+                                      <Button variant="outline" size="icon" onClick={() => handleShowEdit(show)} className="h-8 w-8 md:h-10 md:w-10 border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-600">
                                         <Edit className="w-4 h-4" />
                                       </Button>
-                                      <Button variant="outline" size="icon" onClick={() => handleShowDelete(show.id)} className="h-8 w-8 md:h-10 md:w-10 text-slate-50">
+                                      <Button variant="outline" size="icon" onClick={() => handleShowDelete(show.id)} className="h-8 w-8 md:h-10 md:w-10 border-red-200 bg-red-50 hover:bg-red-100">
                                         <Trash2 className="w-4 h-4 text-red-600" />
                                       </Button>
                                     </div>
@@ -1403,10 +1403,10 @@ const MusicianShows = () => {
                               </div>
                             </div>
                             <div className="flex gap-2">
-                              <Button variant="outline" size="icon" onClick={() => handleArtistEdit(artist)}>
+                              <Button variant="outline" size="icon" onClick={() => handleArtistEdit(artist)} className="border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-600">
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Button variant="outline" size="icon" onClick={() => handleArtistDelete(artist.id)}>
+                              <Button variant="outline" size="icon" onClick={() => handleArtistDelete(artist.id)} className="border-red-200 bg-red-50 hover:bg-red-100">
                                 <Trash2 className="w-4 h-4 text-red-600" />
                               </Button>
                             </div>
@@ -1497,10 +1497,10 @@ const MusicianShows = () => {
                               </div>
                             </div>
                             <div className="flex gap-2">
-                              <Button variant="outline" size="icon" onClick={() => handleInstrumentEdit(instrument)}>
+                              <Button variant="outline" size="icon" onClick={() => handleInstrumentEdit(instrument)} className="border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-600">
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Button variant="outline" size="icon" onClick={() => handleInstrumentDelete(instrument.id)}>
+                              <Button variant="outline" size="icon" onClick={() => handleInstrumentDelete(instrument.id)} className="border-red-200 bg-red-50 hover:bg-red-100">
                                 <Trash2 className="w-4 h-4 text-red-600" />
                               </Button>
                             </div>
@@ -1577,10 +1577,10 @@ const MusicianShows = () => {
                               </div>
                             </div>
                             <div className="flex gap-2 flex-shrink-0">
-                              <Button variant="outline" size="icon" onClick={() => handleVenueEdit(venue)}>
+                              <Button variant="outline" size="icon" onClick={() => handleVenueEdit(venue)} className="border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-600">
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Button variant="outline" size="icon" onClick={() => handleVenueDelete(venue.id)}>
+                              <Button variant="outline" size="icon" onClick={() => handleVenueDelete(venue.id)} className="border-red-200 bg-red-50 hover:bg-red-100">
                                 <Trash2 className="w-4 h-4 text-red-600" />
                               </Button>
                             </div>
