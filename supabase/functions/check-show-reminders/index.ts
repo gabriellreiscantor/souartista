@@ -98,6 +98,21 @@ Deno.serve(async (req) => {
             continue;
           }
 
+          // 1º INSERIR O LOG PRIMEIRO (bloqueia race conditions)
+          const { error: logError } = await supabase
+            .from('show_notification_logs')
+            .insert({
+              show_id: show.id,
+              user_id: userId,
+              notification_type: notificationType,
+            });
+
+          // Se falhou ao inserir log (duplicata ou erro), pular
+          if (logError) {
+            console.log(`[check-show-reminders] Log already exists or error for ${notificationType}, skipping:`, logError.message);
+            continue;
+          }
+
           // Verifica se é o dono do show (artista) ou músico da equipe
           const isOwner = userId === show.uid;
           const artistName = show.profiles?.[0]?.name || 'o artista';
@@ -131,14 +146,14 @@ Deno.serve(async (req) => {
               break;
           }
 
-          // Cria notificação user-specific
+          // 2º CRIAR NOTIFICAÇÃO (só se o log foi criado com sucesso)
           const { error: notifError } = await supabase
             .from('notifications')
             .insert({
               title,
               message,
               link: show.uid === userId ? '/artist/shows' : '/musician/shows',
-              user_id: userId, // Notificação específica para este usuário
+              user_id: userId,
             });
 
           if (notifError) {
@@ -146,7 +161,7 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          // Envia push notification
+          // 3º ENVIAR PUSH (só se notificação foi criada)
           try {
             await supabase.functions.invoke('send-push-notification', {
               body: {
@@ -160,21 +175,8 @@ Deno.serve(async (req) => {
             console.error(`[check-show-reminders] Error sending push:`, pushError);
           }
 
-          // Registra log
-          const { error: logError } = await supabase
-            .from('show_notification_logs')
-            .insert({
-              show_id: show.id,
-              user_id: userId,
-              notification_type: notificationType,
-            });
-
-          if (logError) {
-            console.error(`[check-show-reminders] Error creating log:`, logError);
-          } else {
-            notificationsSent++;
-            console.log(`[check-show-reminders] Sent ${notificationType} notification for show ${show.id} to user ${userId}`);
-          }
+          notificationsSent++;
+          console.log(`[check-show-reminders] Sent ${notificationType} notification for show ${show.id} to user ${userId}`);
         }
       }
     }
