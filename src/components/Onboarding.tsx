@@ -5,7 +5,7 @@ import { Calendar, DollarSign, Users, TrendingUp, Music } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { useNativePlatform } from '@/hooks/useNativePlatform';
 
-// Premium floating particles background
+// Premium floating particles background - only rendered on web
 const FloatingParticles = () => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -110,37 +110,59 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
         />
       )}
       
-      {/* Premium background effects */}
+      {/* Premium background effects - lighter on iOS */}
       <div className="absolute inset-0 pointer-events-none">
         {/* Subtle vertical gradient for texture */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#1E082B] via-[#23092E] to-[#1E082B] opacity-60" />
         
-        {/* Center glow effect */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/15 rounded-full blur-[120px]" />
+        {/* Center glow effect - iOS lite version without blur */}
+        {!isIOSNative ? (
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/15 rounded-full blur-[120px]" />
+        ) : (
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[250px] bg-primary/10 rounded-full" />
+        )}
         
-        {/* Vignette effect */}
-        <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.4)]" />
+        {/* Vignette effect - removed on iOS */}
+        {!isIOSNative && (
+          <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.4)]" />
+        )}
+        
+        {/* Floating particles - only on web */}
+        {!isIOSNative && <FloatingParticles />}
       </div>
 
-      {/* Logo - with safe area padding */}
+      {/* Logo - with safe area padding, reduced effects on iOS */}
       <div 
         className="relative flex justify-center pb-6 z-10"
         style={{ paddingTop: isIOSNative ? 'calc(env(safe-area-inset-top, 0px) + 32px)' : '32px' }}
       >
-        <img src={logo} alt="SouArtista" className="h-32 w-auto animate-fade-in drop-shadow-[0_0_20px_rgba(168,85,247,0.6)]" />
+        <img 
+          src={logo} 
+          alt="SouArtista" 
+          className={`h-32 w-auto ${
+            isIOSNative 
+              ? 'ios-lite-glow' 
+              : 'animate-fade-in drop-shadow-[0_0_20px_rgba(168,85,247,0.6)]'
+          }`} 
+        />
       </div>
 
       {/* Skip button - with safe area padding */}
       <button
         onClick={handleSkip}
-        className="absolute right-6 text-muted-foreground text-sm hover:text-foreground transition-all duration-300 z-20 hover:scale-105"
+        className={`absolute right-6 text-muted-foreground text-sm hover:text-foreground z-20 ${
+          isIOSNative ? '' : 'transition-all duration-300 hover:scale-105'
+        }`}
         style={{ top: isIOSNative ? 'calc(env(safe-area-inset-top, 0px) + 32px)' : '32px' }}
       >
         Pular
       </button>
 
-      {/* Carousel - optimized for touch */}
-      <div className="relative flex-1 flex items-center z-10" style={{ touchAction: 'pan-x' }}>
+      {/* Carousel - optimized for touch, extra optimizations on iOS */}
+      <div 
+        className={`relative flex-1 flex items-center z-10 ${isIOSNative ? 'embla-optimized' : ''}`} 
+        style={{ touchAction: 'pan-x' }}
+      >
         <Carousel 
           className="w-full" 
           setApi={setApi}
@@ -148,25 +170,34 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
             dragFree: false,
             containScroll: 'trimSnaps',
             watchDrag: true,
-            duration: 20,
+            duration: isIOSNative ? 15 : 20, // Faster animation on iOS
           }}
         >
-          <CarouselContent className="touch-pan-x will-change-transform">
+          <CarouselContent className={`touch-pan-x ${isIOSNative ? 'embla-track-optimized' : 'will-change-transform'}`}>
             {slides.map((slide, index) => (
               <CarouselItem key={index}>
                 <div className="flex flex-col items-center justify-center px-8 text-center py-8">
-                  {/* Premium icon container with glow and shadow */}
+                  {/* Premium icon container - simplified on iOS */}
                   <div className="relative mb-10">
-                    <div className="absolute inset-0 bg-primary/20 rounded-[28px] blur-xl" />
-                    <div className="relative w-28 h-28 rounded-[28px] bg-gradient-to-br from-primary/15 to-primary/5 backdrop-blur-sm flex items-center justify-center border border-primary/20 shadow-[0_8px_32px_-8px_rgba(168,85,247,0.4)]">
-                      <div className="text-primary drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">
+                    {/* Glow behind icon - only on web */}
+                    {!isIOSNative && (
+                      <div className="absolute inset-0 bg-primary/20 rounded-[28px] blur-xl" />
+                    )}
+                    <div className={`relative w-28 h-28 rounded-[28px] bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center border border-primary/20 ${
+                      isIOSNative 
+                        ? 'ios-lite-shadow' 
+                        : 'backdrop-blur-sm shadow-[0_8px_32px_-8px_rgba(168,85,247,0.4)]'
+                    }`}>
+                      <div className={`text-primary ${isIOSNative ? '' : 'drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]'}`}>
                         {slide.icon}
                       </div>
                     </div>
                   </div>
                   
                   {/* Title with premium styling */}
-                  <h2 className="text-3xl font-heading font-bold text-white mb-4 max-w-md drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+                  <h2 className={`text-3xl font-heading font-bold text-white mb-4 max-w-md ${
+                    isIOSNative ? '' : 'drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
+                  }`}>
                     {slide.title}
                   </h2>
                   
@@ -181,7 +212,7 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
         </Carousel>
       </div>
 
-      {/* Progress dots */}
+      {/* Progress dots - simplified on iOS */}
       <div className="relative flex justify-center gap-2 py-6 z-10">
         {slides.map((_, index) => (
           <button
@@ -189,7 +220,7 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
             onClick={() => api?.scrollTo(index)}
             className={`h-2 rounded-full transition-all duration-300 ${
               index === current 
-                ? 'w-8 bg-primary shadow-[0_0_12px_rgba(168,85,247,0.6)]' 
+                ? `w-8 bg-primary ${isIOSNative ? '' : 'shadow-[0_0_12px_rgba(168,85,247,0.6)]'}`
                 : 'w-2 bg-primary/30'
             }`}
             aria-label={`Ir para slide ${index + 1}`}
@@ -197,12 +228,16 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
         ))}
       </div>
 
-      {/* Premium action button */}
+      {/* Premium action button - lighter effects on iOS */}
       <div className="relative px-8 pb-8 z-10">
         <Button
           onClick={isLastSlide ? handleComplete : handleNext}
           size="lg"
-          className="w-full rounded-full text-lg font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-[0_8px_32px_-8px_rgba(168,85,247,0.6)] hover:shadow-[0_12px_40px_-8px_rgba(168,85,247,0.8)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] border border-primary/20"
+          className={`w-full rounded-full text-lg font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary border border-primary/20 ${
+            isIOSNative 
+              ? 'ios-lite-shadow active:scale-[0.98]' 
+              : 'shadow-[0_8px_32px_-8px_rgba(168,85,247,0.6)] hover:shadow-[0_12px_40px_-8px_rgba(168,85,247,0.8)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]'
+          }`}
         >
           {isLastSlide ? 'Começar agora' : 'Próximo'}
         </Button>
