@@ -48,15 +48,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUserData = async (userId: string) => {
     try {
-      console.log('[useAuth] Fetching user data for:', userId);
-      setLoading(true); // Always set loading when starting to fetch
+      setLoading(true);
       
-      // Add timeout to prevent infinite loading
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Timeout fetching user data')), 8000)
       );
       
-      // Fetch profile and role data in parallel
       const profilePromise = supabase
         .from('profiles')
         .select('*')
@@ -69,7 +66,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq('user_id', userId)
         .maybeSingle();
       
-      // Execute both queries in parallel with timeout
       const [profileResult, roleResult] = await Promise.race([
         Promise.all([profilePromise, rolePromise]),
         timeoutPromise.then(() => { throw new Error('Timeout'); })
@@ -81,10 +77,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (profileError) {
         console.error('[useAuth] Error fetching profile:', profileError);
       } else if (profile) {
-        console.log('[useAuth] Profile loaded:', profile);
         setUserData(profile);
       } else {
-        console.warn('[useAuth] No profile found for user:', userId);
         setUserData(null);
       }
 
@@ -105,7 +99,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               const dueDate = new Date(subscription.next_due_date);
               
               if (today > dueDate && profile?.status_plano === 'ativo') {
-                console.log('[useAuth] Subscription expired, updating status_plano to inactive');
                 await supabase
                   .from('profiles')
                   .update({ status_plano: 'inactive' })
@@ -131,19 +124,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (roleError) {
         console.error('[useAuth] Error fetching role:', roleError);
       } else if (roleData) {
-        console.log('[useAuth] Role loaded:', roleData.role);
         setUserRoleState(roleData.role);
       } else {
-        console.log('[useAuth] No role found for user:', userId);
         setUserRoleState(null);
       }
     } catch (error) {
       console.error('[useAuth] Error in fetchUserData:', error);
-      // Even on error, set loading to false so user isn't stuck
       setUserData(null);
       setUserRoleState(null);
     } finally {
-      console.log('[useAuth] Finished fetching user data, setting loading to false');
       setLoading(false);
     }
   };
@@ -155,33 +144,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    console.log('[useAuth] ====== AUTH INIT START ======');
-    console.log('[useAuth] isLoggingOutRef.current:', isLoggingOutRef.current);
-    
-    // Check localStorage at init time
-    const authKeys = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && (key.startsWith('sb-') || key.includes('supabase') || key.includes('auth'))) {
-        authKeys.push(key);
-      }
-    }
-    console.log('[useAuth] Auth-related localStorage keys at init:', authKeys);
-    
     let isInitialLoad = true;
     let mounted = true;
     
-    // Check for existing session first
-    console.log('[useAuth] Calling getSession()...');
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (!mounted) return;
       
-      console.log('[useAuth] getSession() returned:', {
-        hasSession: !!session,
-        userId: session?.user?.id,
-        email: session?.user?.email,
-        error: error?.message
-      });
       if (error) {
         console.error('[useAuth] Error getting session:', error);
         setSession(null);
@@ -190,19 +158,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       
-      console.log('[useAuth] Initial session check:', {
-        hasSession: !!session,
-        userId: session?.user?.id,
-        email: session?.user?.email
-      });
-      
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
         fetchUserData(session.user.id);
       } else {
-        console.warn('[useAuth] No active session found');
         setLoading(false);
       }
       isInitialLoad = false;
@@ -215,28 +176,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
     
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
         
-        // CRITICAL: Ignore ALL auth events during logout to prevent session restoration
+        // Ignore ALL auth events during logout to prevent session restoration
         if (isLoggingOutRef.current) {
-          console.log('[useAuth] Ignoring auth event during logout:', event);
           return;
         }
-        
-        console.log('[useAuth] Auth state changed:', {
-          event,
-          hasSession: !!session,
-          userId: session?.user?.id
-        });
         
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Only fetch if not the initial load (which already fetched)
           if (!isInitialLoad) {
             fetchUserData(session.user.id);
           }
@@ -268,7 +220,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      // Send all user data in user_metadata - the database trigger will handle profile creation
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -288,89 +239,74 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) return { error };
 
-      console.log('Conta criada com sucesso. Enviando código OTP...');
-
-      // Enviar código OTP via nossa edge function customizada
       const { error: otpError } = await supabase.functions.invoke('send-otp-email', {
         body: { email }
       });
 
       if (otpError) {
-        console.error('Erro ao enviar código OTP:', otpError);
+        console.error('[useAuth] Error sending OTP:', otpError);
         return { error: otpError };
       }
 
-      console.log('Código OTP enviado com sucesso');
       return { error: null };
     } catch (error: any) {
-      console.error('Erro no signup:', error);
+      console.error('[useAuth] Error in signup:', error);
       return { error };
     }
   };
 
   const verifyOtp = async (email: string, token: string) => {
     try {
-      console.log('Verificando código OTP...');
-      
-      // Chamar nossa edge function customizada para verificar o código
       const { data, error } = await supabase.functions.invoke('verify-otp', {
         body: { email, code: token }
       });
 
       if (error) {
-        console.error('Erro ao verificar OTP:', error);
+        console.error('[useAuth] Error verifying OTP:', error);
         return { error };
       }
 
       if (data?.error) {
-        console.error('Erro na resposta:', data.error);
         return { error: new Error(data.error) };
       }
 
-      console.log('Código OTP verificado com sucesso');
       return { error: null };
     } catch (error: any) {
-      console.error('Erro ao verificar OTP:', error);
+      console.error('[useAuth] Error verifying OTP:', error);
       return { error };
     }
   };
 
   const resendOtp = async (email: string) => {
     try {
-      console.log('Reenviando código OTP...');
-      
-      // Chamar nossa edge function para gerar e enviar novo código
       const { error } = await supabase.functions.invoke('send-otp-email', {
         body: { email }
       });
 
       if (error) {
-        console.error('Erro ao reenviar OTP:', error);
+        console.error('[useAuth] Error resending OTP:', error);
         return { error };
       }
 
-      console.log('Novo código OTP enviado com sucesso');
       return { error: null };
     } catch (error: any) {
-      console.error('Erro ao reenviar OTP:', error);
+      console.error('[useAuth] Error resending OTP:', error);
       return { error };
     }
   };
 
   const signOut = async () => {
-    console.log('[useAuth] ====== LOGOUT START ======');
-    
-    // CRITICAL: Set flag FIRST to block onAuthStateChange from restoring session
+    // Set flag to block onAuthStateChange from restoring session
     isLoggingOutRef.current = true;
     
-    // Clear states IMMEDIATELY
+    // Clear states immediately
     setUser(null);
     setUserData(null);
     setUserRoleState(null);
     setSession(null);
     setLoading(false);
     
-    // 1. Clear localStorage
+    // Clear localStorage
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -384,42 +320,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const projectRef = 'wjutvzmnvemrplpwbkyf';
     localStorage.removeItem(`sb-${projectRef}-auth-token`);
     
-    // 2. Clear sessionStorage
+    // Clear sessionStorage
     sessionStorage.clear();
     
-    // 3. Clear IndexedDB (Supabase may use this in iframes)
+    // Clear IndexedDB (Supabase may use this in iframes)
     if (typeof indexedDB !== 'undefined' && indexedDB.databases) {
       try {
         const databases = await indexedDB.databases();
         for (const db of databases) {
           if (db.name && (db.name.includes('supabase') || db.name.includes('auth') || db.name.includes('sb-'))) {
             indexedDB.deleteDatabase(db.name);
-            console.log('[useAuth] Deleted IndexedDB:', db.name);
           }
         }
       } catch (e) {
-        console.log('[useAuth] IndexedDB cleanup skipped');
+        // IndexedDB cleanup not supported in this browser
       }
     }
     
-    // 4. Clear auth-related cookies
+    // Clear auth-related cookies
     document.cookie.split(';').forEach(cookie => {
       const name = cookie.split('=')[0].trim();
       if (name.includes('sb-') || name.includes('supabase') || name.includes('auth')) {
         document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
         document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
-        console.log('[useAuth] Deleted cookie:', name);
       }
     });
     
-    // 5. SignOut with local scope
+    // SignOut with local scope
     try {
       await supabase.auth.signOut({ scope: 'local' });
     } catch (error) {
-      console.log('[useAuth] SignOut error (ignored):', error);
+      // Ignore signOut errors
     }
     
-    // 6. Final cleanup - remove any remaining auth keys
+    // Final cleanup - remove any remaining auth keys
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const key = localStorage.key(i);
       if (key && (key.startsWith('sb-') || key.includes('supabase') || key.includes('auth'))) {
@@ -427,8 +361,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     
-    console.log('[useAuth] ====== LOGOUT COMPLETE - REDIRECTING ======');
-    // FORCE hard page reload to clear ALL memory state
+    // Force hard page reload to clear all memory state
     window.location.href = '/login';
   };
 
@@ -452,9 +385,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error: new Error('Usuário não autenticado') };
       }
       
-      console.log('[useAuth] Setting role:', role, 'for user:', user.id);
-      
-      // First check if role already exists
       const { data: existingRole } = await supabase
         .from('user_roles')
         .select('id')
@@ -464,16 +394,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       let error = null;
       
       if (existingRole) {
-        // Update existing role
-        console.log('[useAuth] Updating existing role');
         const result = await supabase
           .from('user_roles')
           .update({ role })
           .eq('user_id', user.id);
         error = result.error;
       } else {
-        // Insert new role
-        console.log('[useAuth] Inserting new role');
         const result = await supabase
           .from('user_roles')
           .insert({
@@ -488,10 +414,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error };
       }
       
-      console.log('[useAuth] Role saved successfully, refetching data...');
       setUserRoleState(role);
       
-      // Force refetch after a small delay to ensure DB is updated
       await new Promise(resolve => setTimeout(resolve, 500));
       await refetchUserData();
       
