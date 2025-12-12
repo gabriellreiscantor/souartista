@@ -155,14 +155,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    console.log('[useAuth] Initializing auth...');
+    console.log('[useAuth] ====== AUTH INIT START ======');
+    console.log('[useAuth] isLoggingOutRef.current:', isLoggingOutRef.current);
+    
+    // Check localStorage at init time
+    const authKeys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('sb-') || key.includes('supabase') || key.includes('auth'))) {
+        authKeys.push(key);
+      }
+    }
+    console.log('[useAuth] Auth-related localStorage keys at init:', authKeys);
+    
     let isInitialLoad = true;
     let mounted = true;
     
     // Check for existing session first
+    console.log('[useAuth] Calling getSession()...');
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (!mounted) return;
       
+      console.log('[useAuth] getSession() returned:', {
+        hasSession: !!session,
+        userId: session?.user?.id,
+        email: session?.user?.email,
+        error: error?.message
+      });
       if (error) {
         console.error('[useAuth] Error getting session:', error);
         setSession(null);
@@ -339,10 +358,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    console.log('[useAuth] Starting logout...');
+    console.log('[useAuth] ====== LOGOUT START ======');
+    console.log('[useAuth] Current user:', user?.email);
+    console.log('[useAuth] Current session exists:', !!session);
     
     // CRITICAL: Set flag FIRST to block onAuthStateChange from restoring session
     isLoggingOutRef.current = true;
+    console.log('[useAuth] isLoggingOutRef set to TRUE');
     
     // Clear states IMMEDIATELY
     setUser(null);
@@ -350,9 +372,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUserRoleState(null);
     setSession(null);
     setLoading(false);
+    console.log('[useAuth] All states cleared');
     
     // CLEAR localStorage FIRST - before signOut call
-    // This ensures the local session is gone even if signOut fails
+    console.log('[useAuth] Checking localStorage before clear...');
+    const allKeys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      allKeys.push(localStorage.key(i));
+    }
+    console.log('[useAuth] All localStorage keys:', allKeys);
+    
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -360,21 +389,54 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         keysToRemove.push(key);
       }
     }
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-    console.log('[useAuth] Cleared localStorage keys:', keysToRemove.length);
+    console.log('[useAuth] Keys to remove:', keysToRemove);
+    keysToRemove.forEach(key => {
+      console.log('[useAuth] Removing key:', key);
+      localStorage.removeItem(key);
+    });
+    console.log('[useAuth] localStorage cleared');
     
-    // Try signOut with 'local' scope (doesn't require server session)
-    // This clears the SDK's internal state
-    try {
-      await supabase.auth.signOut({ scope: 'local' });
-      console.log('[useAuth] Local signOut completed');
-    } catch (error) {
-      console.log('[useAuth] SignOut error (ignored):', error);
-    }
+    // Also try clearing the specific known key format
+    const projectRef = 'wjutvzmnvemrplpwbkyf';
+    const specificKey = `sb-${projectRef}-auth-token`;
+    console.log('[useAuth] Trying to remove specific key:', specificKey);
+    localStorage.removeItem(specificKey);
     
     // Clear sessionStorage as well
+    console.log('[useAuth] Clearing sessionStorage...');
     sessionStorage.clear();
     
+    // Try signOut with 'local' scope (doesn't require server session)
+    console.log('[useAuth] Calling supabase.auth.signOut({ scope: "local" })...');
+    try {
+      const { error } = await supabase.auth.signOut({ scope: 'local' });
+      if (error) {
+        console.log('[useAuth] SignOut returned error:', error);
+      } else {
+        console.log('[useAuth] SignOut completed successfully');
+      }
+    } catch (error) {
+      console.log('[useAuth] SignOut threw exception:', error);
+    }
+    
+    // Double check localStorage after signOut
+    console.log('[useAuth] Checking localStorage AFTER signOut...');
+    const afterKeys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      afterKeys.push(localStorage.key(i));
+    }
+    console.log('[useAuth] localStorage keys after signOut:', afterKeys);
+    
+    // If any auth keys still exist, remove them again
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('sb-') || key.includes('supabase') || key.includes('auth'))) {
+        console.log('[useAuth] STILL FOUND KEY - removing:', key);
+        localStorage.removeItem(key);
+      }
+    }
+    
+    console.log('[useAuth] ====== REDIRECTING TO /login ======');
     // FORCE hard page reload to clear ALL memory state
     window.location.href = '/login';
   };
