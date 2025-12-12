@@ -224,6 +224,21 @@ const ArtistReports = () => {
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
 
+  // Top 5 Locomotion Costs by show venue
+  const locomotionByVenue = showsWithExpenses
+    .filter(show => show.locomotion > 0)
+    .reduce((acc: any[], show) => {
+      const existing = acc.find(v => v.name === show.venue_name);
+      if (existing) {
+        existing.cost += show.locomotion;
+      } else {
+        acc.push({ name: show.venue_name, cost: show.locomotion });
+      }
+      return acc;
+    }, [])
+    .sort((a, b) => b.cost - a.cost)
+    .slice(0, 5);
+
   const formatCurrency = (value: number) => {
     return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
@@ -586,7 +601,17 @@ const ArtistReports = () => {
                       </div>
                       
                       <div className="space-y-3">
-                        <p className="text-sm text-gray-500">Dados insuficientes para análise.</p>
+                        {locomotionByVenue.map((venue, index) => (
+                          <div key={index} className="flex items-center justify-between">
+                            <span className="text-sm text-gray-900">{index + 1}. {venue.name}</span>
+                            <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-purple-600 text-white text-xs font-semibold">
+                              R$ {formatCurrency(venue.cost)}
+                            </span>
+                          </div>
+                        ))}
+                        {locomotionByVenue.length === 0 && (
+                          <p className="text-sm text-gray-500">Dados insuficientes para análise.</p>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
