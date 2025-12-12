@@ -1596,10 +1596,10 @@ const ArtistShows = () => {
                               </div>
                             </div>
                             <div className="flex gap-2">
-                              <Button variant="outline" size="icon" onClick={() => handleVenueEdit(venue)}>
+                              <Button variant="outline" size="icon" onClick={() => handleVenueEdit(venue)} className="border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-600">
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Button variant="outline" size="icon" onClick={() => handleVenueDelete(venue.id)}>
+                              <Button variant="outline" size="icon" onClick={() => handleVenueDelete(venue.id)} className="border-red-200 bg-red-50 hover:bg-red-100">
                                 <Trash2 className="w-4 h-4 text-red-600" />
                               </Button>
                             </div>
@@ -1738,10 +1738,10 @@ const ArtistShows = () => {
                               </div>
                             </div>
                             <div className="flex gap-2">
-                              <Button variant="outline" size="icon" onClick={() => handleMusicianEdit(musician)}>
+                              <Button variant="outline" size="icon" onClick={() => handleMusicianEdit(musician)} className="border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-600">
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Button variant="outline" size="icon" onClick={() => handleMusicianDelete(musician.id)}>
+                              <Button variant="outline" size="icon" onClick={() => handleMusicianDelete(musician.id)} className="border-red-200 bg-red-50 hover:bg-red-100">
                                 <Trash2 className="w-4 h-4 text-red-600" />
                               </Button>
                             </div>
