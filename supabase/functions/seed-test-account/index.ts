@@ -219,6 +219,43 @@ Deno.serve(async (req) => {
       await supabaseAdmin.from('venues').insert(venues);
     }
 
+    // 7. Adicionar despesas de locomoção de demonstração se não existirem
+    const { data: existingExpenses } = await supabaseAdmin
+      .from('locomotion_expenses')
+      .select('id')
+      .eq('uid', userId);
+
+    if (!existingExpenses || existingExpenses.length === 0) {
+      console.log('🍎 Adding demo locomotion expenses...');
+      
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth();
+      
+      // Despesas variadas ao longo dos últimos meses
+      const expenses = [
+        // Mês atual
+        { uid: userId, type: 'uber', cost: 45.50, created_at: new Date(currentYear, currentMonth, 5).toISOString() },
+        { uid: userId, type: 'uber', cost: 38.00, created_at: new Date(currentYear, currentMonth, 12).toISOString() },
+        { uid: userId, type: 'km', cost: 85.00, distance_km: 50, price_per_liter: 5.89, vehicle_consumption: 10, created_at: new Date(currentYear, currentMonth, 8).toISOString() },
+        // Mês passado
+        { uid: userId, type: 'uber', cost: 52.00, created_at: new Date(currentYear, currentMonth - 1, 3).toISOString() },
+        { uid: userId, type: 'uber', cost: 29.90, created_at: new Date(currentYear, currentMonth - 1, 15).toISOString() },
+        { uid: userId, type: 'km', cost: 120.00, distance_km: 80, price_per_liter: 5.99, vehicle_consumption: 12, created_at: new Date(currentYear, currentMonth - 1, 20).toISOString() },
+        { uid: userId, type: 'van', cost: 150.00, created_at: new Date(currentYear, currentMonth - 1, 25).toISOString() },
+        // 2 meses atrás
+        { uid: userId, type: 'uber', cost: 35.00, created_at: new Date(currentYear, currentMonth - 2, 8).toISOString() },
+        { uid: userId, type: 'km', cost: 95.00, distance_km: 60, price_per_liter: 5.79, vehicle_consumption: 11, created_at: new Date(currentYear, currentMonth - 2, 18).toISOString() },
+        { uid: userId, type: 'onibus', cost: 25.00, created_at: new Date(currentYear, currentMonth - 2, 22).toISOString() },
+        // 3 meses atrás
+        { uid: userId, type: 'uber', cost: 48.00, created_at: new Date(currentYear, currentMonth - 3, 5).toISOString() },
+        { uid: userId, type: 'uber', cost: 42.50, created_at: new Date(currentYear, currentMonth - 3, 14).toISOString() },
+        { uid: userId, type: 'aviao', cost: 450.00, created_at: new Date(currentYear, currentMonth - 3, 28).toISOString() },
+      ];
+
+      await supabaseAdmin.from('locomotion_expenses').insert(expenses);
+    }
+
     console.log('🍎 Apple test account setup complete!');
 
     return new Response(
