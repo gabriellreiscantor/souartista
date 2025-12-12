@@ -244,19 +244,22 @@ const MusicianCalendar = () => {
 
             {/* Agenda Lateral */}
             <Sheet open={showAgenda} onOpenChange={setShowAgenda}>
-              <SheetContent side="right" className="w-full sm:w-[540px] sm:max-w-none overflow-y-auto bg-white">
+              <SheetContent side="right" hideCloseButton className="w-full sm:w-[540px] sm:max-w-none overflow-y-auto bg-white scrollbar-hide" style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch'
+              }}>
                 <SheetHeader className="border-b pb-4 mb-6">
                   <div className="flex items-center justify-between">
                     <SheetTitle className="text-xl font-semibold text-gray-900">
                       {selectedDate && `Agenda para ${format(selectedDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}`}
                     </SheetTitle>
                     <Button 
-                      variant="ghost" 
-                      size="icon"
                       onClick={() => setShowAgenda(false)}
-                      className="rounded-full"
+                      className="bg-primary text-white hover:bg-primary/90 gap-2"
                     >
-                      <X className="w-5 h-5" />
+                      <X className="w-4 h-4" />
+                      Fechar
                     </Button>
                   </div>
                 </SheetHeader>
