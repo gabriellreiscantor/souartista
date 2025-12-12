@@ -44,6 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userRole, setUserRoleState] = useState<'artist' | 'musician' | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const fetchUserData = async (userId: string) => {
     try {
@@ -200,6 +201,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       (event, session) => {
         if (!mounted) return;
         
+        // CRITICAL: Ignore ALL auth events during logout to prevent session restoration
+        if (isLoggingOut) {
+          console.log('[useAuth] Ignoring auth event during logout:', event);
+          return;
+        }
+        
         console.log('[useAuth] Auth state changed:', {
           event,
           hasSession: !!session,
@@ -332,14 +339,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    // Limpar estados primeiro para evitar race condition
+    console.log('[useAuth] Starting logout...');
+    
+    // CRITICAL: Set flag FIRST to block onAuthStateChange from restoring session
+    setIsLoggingOut(true);
+    
+    // Clear states
     setUser(null);
     setUserData(null);
     setUserRoleState(null);
     setSession(null);
     setLoading(false);
     
-    // Limpar TODO o localStorage do Supabase (remove todas as sessões residuais)
+    // Do signOut FIRST (invalidates on server)
+    try {
+      await supabase.auth.signOut({ scope: 'global' });
+      console.log('[useAuth] SignOut completed');
+    } catch (error) {
+      console.log('[useAuth] SignOut error (ignored):', error);
+    }
+    
+    // THEN clear ALL localStorage (removes residual sessions)
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -348,13 +368,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     keysToRemove.forEach(key => localStorage.removeItem(key));
+    console.log('[useAuth] Cleared localStorage keys:', keysToRemove.length);
     
-    // Tentar signOut global (ignorar erros se sessão já expirou)
-    try {
-      await supabase.auth.signOut({ scope: 'global' });
-    } catch (error) {
-      console.log('SignOut error (ignored):', error);
-    }
+    // Keep isLoggingOut true - it will reset on next page load
   };
 
   const updateUserData = async (data: Partial<UserData>) => {
