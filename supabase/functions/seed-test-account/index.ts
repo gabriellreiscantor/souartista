@@ -242,6 +242,43 @@ async function setupTestAccount(
     await supabaseAdmin.from('locomotion_expenses').insert(expenses);
   }
 
+  // 8. For expired accounts, create an expired subscription record
+  if (isExpired) {
+    const { data: existingSubscription } = await supabaseAdmin
+      .from('subscriptions')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (!existingSubscription) {
+      console.log('🍎 Adding expired subscription for returning user modal...');
+      
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      await supabaseAdmin.from('subscriptions').insert({
+        user_id: userId,
+        plan_type: 'monthly',
+        status: 'expired',
+        amount: 29.90,
+        payment_method: 'PIX',
+        next_due_date: thirtyDaysAgo.toISOString(),
+        updated_at: thirtyDaysAgo.toISOString()
+      });
+      
+      console.log('🍎 Expired subscription created');
+    } else {
+      // Update existing subscription to expired
+      await supabaseAdmin
+        .from('subscriptions')
+        .update({ 
+          status: 'expired',
+          updated_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        })
+        .eq('id', existingSubscription.id);
+    }
+  }
+
   return userId;
 }
 
