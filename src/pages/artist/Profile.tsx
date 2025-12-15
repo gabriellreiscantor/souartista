@@ -9,20 +9,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Mail, Phone, Camera, LogOut, Bell, Trash2 } from 'lucide-react';
+import { User, Mail, Phone, Camera, LogOut, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ImageEditor } from '@/components/ImageEditor';
+import { useCamera } from '@/hooks/useCamera';
+
 const ArtistProfile = () => {
-const {
-    user,
-    userData,
-    signOut,
-    refetchUserData
-  } = useAuth();
+  const { user, userData, signOut, refetchUserData } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -36,6 +33,24 @@ const {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [imageEditorOpen, setImageEditorOpen] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+
+  const handlePhotoSelected = (file: File) => {
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('A imagem deve ter no máximo 5MB');
+      return;
+    }
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor, selecione uma imagem válida');
+      return;
+    }
+    setSelectedImageFile(file);
+    setImageEditorOpen(true);
+  };
+
+  const { takePicture, isNative } = useCamera({ onPhotoSelected: handlePhotoSelected });
+
   useEffect(() => {
     if (userData) {
       setName(userData.name || '');
@@ -44,24 +59,13 @@ const {
       setPhotoUrl(userData.photo_url || '');
     }
   }, [userData]);
+
+  // Web fallback for file input
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validar tamanho (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('A imagem deve ter no máximo 5MB');
-      return;
+    if (file) {
+      handlePhotoSelected(file);
     }
-
-    // Validar tipo de arquivo
-    if (!file.type.startsWith('image/')) {
-      toast.error('Por favor, selecione uma imagem válida');
-      return;
-    }
-
-    setSelectedImageFile(file);
-    setImageEditorOpen(true);
   };
 
   const handlePhotoUpload = async (croppedImage: Blob) => {
@@ -225,17 +229,27 @@ const {
                       {name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <label htmlFor="photo-upload" className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full cursor-pointer hover:bg-primary/90 transition-colors">
-                    <Camera className="w-5 h-5" />
-                    <input 
-                      id="photo-upload" 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handlePhotoSelect} 
-                      className="hidden" 
-                      disabled={uploading} 
-                    />
-                  </label>
+                  {isNative ? (
+                    <button 
+                      onClick={takePicture}
+                      disabled={uploading}
+                      className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full cursor-pointer hover:bg-primary/90 transition-colors"
+                    >
+                      <Camera className="w-5 h-5" />
+                    </button>
+                  ) : (
+                    <label htmlFor="photo-upload" className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full cursor-pointer hover:bg-primary/90 transition-colors">
+                      <Camera className="w-5 h-5" />
+                      <input 
+                        id="photo-upload" 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handlePhotoSelect} 
+                        className="hidden" 
+                        disabled={uploading} 
+                      />
+                    </label>
+                  )}
                 </div>
                 {photoUrl && (
                   <Button 
