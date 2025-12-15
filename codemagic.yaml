@@ -36,6 +36,29 @@ workflows:
           PLATFORM=ios npx cap add ios
           PLATFORM=ios npx cap sync ios
       
+      - name: Add Camera and Photo Library Permissions to Info.plist
+        script: |
+          cat << 'EOF' > /tmp/add_permissions.py
+          import plistlib
+
+          plist_path = 'ios/App/App/Info.plist'
+          
+          with open(plist_path, 'rb') as f:
+              plist = plistlib.load(f)
+          
+          # Add camera and photo permissions
+          plist['NSCameraUsageDescription'] = 'Precisamos acessar sua câmera para tirar foto de perfil'
+          plist['NSPhotoLibraryUsageDescription'] = 'Precisamos acessar suas fotos para selecionar foto de perfil'
+          plist['NSPhotoLibraryAddUsageDescription'] = 'Precisamos salvar fotos no seu dispositivo'
+          
+          with open(plist_path, 'wb') as f:
+              plistlib.dump(plist, f)
+          
+          print("Camera and Photo Library permissions added to Info.plist")
+          EOF
+          
+          python3 /tmp/add_permissions.py
+      
       - name: Copy and Add GoogleService-Info.plist to Xcode Project
         script: |
           # Copy the plist file
