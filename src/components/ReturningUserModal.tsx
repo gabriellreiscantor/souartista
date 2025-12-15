@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Heart, Music, Calendar, DollarSign } from 'lucide-react';
+import { Music, Calendar, DollarSign } from 'lucide-react';
+import logoIcon from '@/assets/logo_icon.png';
 
 interface UserStats {
   totalShows: number;
@@ -39,9 +40,7 @@ export const ReturningUserModal = ({ open, onClose, stats, userRole }: Returning
       <DialogContent className="sm:max-w-md dark bg-background border-primary/20">
         <DialogHeader>
           <div className="flex items-center justify-center mb-4">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <Heart className="w-8 h-8 text-primary" />
-            </div>
+            <img src={logoIcon} alt="SouArtista" className="w-12 h-12" />
           </div>
           <DialogTitle className="text-center text-2xl">
             Que bom ter você de volta! 🎉
