@@ -88,7 +88,25 @@ const ArtistTerms = () => {
                 em vigor imediatamente após a publicação.
               </p>
 
-              <h2 className="text-gray-900">8. Contato</h2>
+              <h2 className="text-gray-900">8. Termos Adicionais para Compras via App Store (iOS)</h2>
+              <p className="text-gray-900">
+                Para assinaturas adquiridas através da App Store da Apple, aplicam-se também os termos
+                do Contrato de Licença de Usuário Final (EULA) padrão da Apple.
+              </p>
+              <p className="text-gray-900">
+                Ao adquirir uma assinatura pelo iOS, você concorda com ambos os termos: os Termos de Uso
+                do SouArtista e o{' '}
+                <a
+                  href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline font-medium"
+                >
+                  EULA da Apple
+                </a>.
+              </p>
+
+              <h2 className="text-gray-900">9. Contato</h2>
               <p className="text-gray-900">
                 Para dúvidas sobre estes termos, entre em contato através da seção "Fale Conosco".
               </p>

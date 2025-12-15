@@ -114,7 +114,27 @@ const Terms = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">10. Contato</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">10. Termos Adicionais para Compras via App Store (iOS)</h2>
+            <p>
+              Para assinaturas adquiridas através da App Store da Apple, aplicam-se também os termos
+              do Contrato de Licença de Usuário Final (EULA) padrão da Apple.
+            </p>
+            <p className="mt-2">
+              Ao adquirir uma assinatura pelo iOS, você concorda com ambos os termos: os Termos de Uso
+              do SouArtista e o{' '}
+              <a
+                href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline font-medium"
+              >
+                EULA da Apple
+              </a>.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">11. Contato</h2>
             <p>
               Se você tiver dúvidas sobre estes Termos, entre em contato conosco através dos
               canais de suporte disponíveis no aplicativo.
