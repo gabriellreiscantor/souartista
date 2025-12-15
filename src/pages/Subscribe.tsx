@@ -11,6 +11,16 @@ import { toast } from 'sonner';
 import { CreditCardForm, CreditCardData } from '@/components/CreditCardForm';
 import { useNativePlatform } from '@/hooks/useNativePlatform';
 import { useAppleIAP } from '@/hooks/useAppleIAP';
+import { ReturningUserModal } from '@/components/ReturningUserModal';
+
+interface ReturningUserStats {
+  totalShows: number;
+  totalRevenue: number;
+  totalMusicians?: number;
+  totalArtists?: number;
+  expirationDate?: string;
+}
+
 const Subscribe = () => {
   const [billingCycle, setBillingCycle] = useState<'annual' | 'monthly'>('annual');
   const [showContactDialog, setShowContactDialog] = useState(false);
@@ -27,6 +37,8 @@ const Subscribe = () => {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [nextChargeDate, setNextChargeDate] = useState<string | null>(null);
   const [showAppleSuccessDialog, setShowAppleSuccessDialog] = useState(false);
+  const [showReturningUserModal, setShowReturningUserModal] = useState(false);
+  const [returningUserStats, setReturningUserStats] = useState<ReturningUserStats | null>(null);
   const {
     refetchUserData,
     user,
@@ -85,6 +97,74 @@ const Subscribe = () => {
     };
     checkUserStatus();
   }, [user, userRole, navigate]);
+
+  // Check if user is a returning subscriber with expired subscription
+  useEffect(() => {
+    const checkReturningUser = async () => {
+      if (!user) return;
+      
+      // Skip for test accounts
+      if (isTestAccount(user.email)) return;
+
+      try {
+        // Check for expired/cancelled subscription
+        const { data: subscription } = await supabase
+          .from('subscriptions')
+          .select('status, updated_at')
+          .eq('user_id', user.id)
+          .in('status', ['expired', 'cancelled', 'inactive'])
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (!subscription) return;
+
+        // Fetch user stats
+        const role = userRole || localStorage.getItem('userRole') as 'artist' | 'musician' | null;
+        
+        const { data: shows } = await supabase
+          .from('shows')
+          .select('fee')
+          .eq('uid', user.id);
+
+        const totalShows = shows?.length || 0;
+        const totalRevenue = shows?.reduce((sum, show) => sum + (show.fee || 0), 0) || 0;
+
+        let totalMusicians = 0;
+        let totalArtists = 0;
+
+        if (role === 'artist') {
+          const { count } = await supabase
+            .from('musicians')
+            .select('*', { count: 'exact', head: true })
+            .eq('owner_uid', user.id);
+          totalMusicians = count || 0;
+        } else if (role === 'musician') {
+          const { count } = await supabase
+            .from('artists')
+            .select('*', { count: 'exact', head: true })
+            .eq('owner_uid', user.id);
+          totalArtists = count || 0;
+        }
+
+        // Only show modal if user has some data
+        if (totalShows > 0 || totalRevenue > 0 || totalMusicians > 0 || totalArtists > 0) {
+          setReturningUserStats({
+            totalShows,
+            totalRevenue,
+            totalMusicians,
+            totalArtists,
+            expirationDate: subscription.updated_at
+          });
+          setShowReturningUserModal(true);
+        }
+      } catch (error) {
+        console.error('Error checking returning user:', error);
+      }
+    };
+
+    checkReturningUser();
+  }, [user, userRole]);
 
   // Poll for payment confirmation when PIX dialog is open
   useEffect(() => {
@@ -777,6 +857,16 @@ const Subscribe = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Returning User Modal */}
+      {returningUserStats && (
+        <ReturningUserModal
+          open={showReturningUserModal}
+          onClose={() => setShowReturningUserModal(false)}
+          stats={returningUserStats}
+          userRole={userRole as 'artist' | 'musician' | null}
+        />
+      )}
     </div>;
 };
 const Feature = ({
