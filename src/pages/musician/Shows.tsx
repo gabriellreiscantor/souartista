@@ -19,6 +19,7 @@ import { TimePicker } from '@/components/ui/time-picker';
 import { Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic2, ChevronDown, ChevronUp, Users, TrendingDown, ArrowUpRight, Guitar, Calendar as CalendarIcon, LayoutGrid, List } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useInAppReview } from '@/hooks/useInAppReview';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -64,6 +65,7 @@ interface Show {
 }
 const MusicianShows = () => {
   const isMobile = useIsMobile();
+  const { requestReview } = useInAppReview();
   const {
     user,
     userData,
@@ -310,6 +312,9 @@ const MusicianShows = () => {
         });
         if (error) throw error;
         toast.success('Show cadastrado com sucesso!');
+        
+        // Request in-app review after creating a new show
+        requestReview(shows.length + 1);
       }
       setShowDialogOpen(false);
       resetShowForm();
