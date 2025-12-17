@@ -24,6 +24,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { NotificationBell } from '@/components/NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useInAppReview } from '@/hooks/useInAppReview';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -69,6 +70,7 @@ const ArtistShows = () => {
     userRole
   } = useAuth();
   const isMobile = useIsMobile();
+  const { requestReview } = useInAppReview();
   const [shows, setShows] = useState<Show[]>([]);
   const [musicians, setMusicians] = useState<Musician[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
@@ -232,6 +234,9 @@ const ArtistShows = () => {
         });
         if (error) throw error;
         toast.success('Show cadastrado com sucesso!');
+        
+        // Request in-app review after creating a new show
+        requestReview(shows.length + 1);
       }
       setShowDialogOpen(false);
       resetShowForm();
