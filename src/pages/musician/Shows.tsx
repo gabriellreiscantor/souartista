@@ -81,6 +81,7 @@ const MusicianShows = () => {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilter, setShowFilter] = useState<string>('upcoming');
+  const [isSavingShow, setIsSavingShow] = useState(false);
   
   // Delete confirmation states
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -257,7 +258,15 @@ const MusicianShows = () => {
   // Show handlers
   const handleShowSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !userData) return;
+    if (!user || !userData || isSavingShow) return;
+    
+    // Check for internet connection
+    if (!navigator.onLine) {
+      toast.error('Você está offline. Conecte-se à internet para salvar.');
+      return;
+    }
+    
+    setIsSavingShow(true);
     try {
       const selectedArtist = artists.find(a => a.id === showFormData.artist_id);
       const selectedInstrument = instruments.find(i => i.id === showFormData.instrument_id);
@@ -322,6 +331,8 @@ const MusicianShows = () => {
     } catch (error: any) {
       console.error('Error saving show:', error);
       toast.error('Erro ao salvar show');
+    } finally {
+      setIsSavingShow(false);
     }
   };
   const handleShowDelete = (id: string) => {
@@ -1140,8 +1151,8 @@ const MusicianShows = () => {
                             <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
                               Cancelar
                             </Button>
-                            <Button type="submit" className="flex-1 text-slate-50">
-                              {editingShow ? 'Atualizar Show' : 'Cadastrar Show'}
+                            <Button type="submit" disabled={isSavingShow} className="flex-1 text-slate-50">
+                              {isSavingShow ? 'Salvando...' : (editingShow ? 'Atualizar Show' : 'Cadastrar Show')}
                             </Button>
                           </div>
                         </form>
