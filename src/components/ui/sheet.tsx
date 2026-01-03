@@ -59,8 +59,8 @@ const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Con
       <SheetOverlay />
       <SheetPrimitive.Content 
         ref={ref} 
-        className={cn(sheetVariants({ side }), "touch-manipulation", className)} 
-        style={{ touchAction: 'pan-y', paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)' }}
+        className={cn(sheetVariants({ side }), "touch-manipulation overflow-x-hidden", className)} 
+        style={{ touchAction: 'pan-y', overscrollBehaviorX: 'none', paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)' }}
         {...props}
       >
         {children}

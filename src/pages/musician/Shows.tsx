@@ -1055,7 +1055,7 @@ const MusicianShows = () => {
                                 <TimePicker value={showFormData.time_local} onChange={time => setShowFormData({
                                     ...showFormData,
                                     time_local: time
-                                  })} />
+                                  })} className="w-32" />
                               </div>
                             </div>
 

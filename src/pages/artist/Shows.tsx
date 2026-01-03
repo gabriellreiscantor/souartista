@@ -799,7 +799,7 @@ const ArtistShows = () => {
                                     <Input id="date_local_mobile" type="date" lang="pt-BR" value={showFormData.date_local} onChange={e => setShowFormData({
                                     ...showFormData,
                                     date_local: e.target.value
-                                  })} className="bg-white text-gray-900 mt-1.5" required />
+                                  })} className="bg-white text-gray-900 mt-1.5 h-10" required />
                                     
                                     {isDateInPast() && (
                                       <Alert className="mt-2 border-orange-200 bg-orange-50">
@@ -816,7 +816,7 @@ const ArtistShows = () => {
                                     <Input id="time_local_mobile" type="time" lang="pt-BR" value={showFormData.time_local} onChange={e => setShowFormData({
                                     ...showFormData,
                                     time_local: e.target.value
-                                  })} className="bg-white text-gray-900 mt-1.5" required />
+                                  })} className="bg-white text-gray-900 mt-1.5 h-10 w-32" required />
                                   </div>
                                 </div>
 
