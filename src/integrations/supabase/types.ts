@@ -174,6 +174,38 @@ export type Database = {
           },
         ]
       }
+      marketing_notification_logs: {
+        Row: {
+          id: string
+          message_id: string
+          notification_type: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          message_id: string
+          notification_type: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          message_id?: string
+          notification_type?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_notification_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       musician_instruments: {
         Row: {
           created_at: string

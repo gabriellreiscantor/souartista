@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.seed-test-account]
 verify_jwt = false
+
+[functions.send-marketing-notifications]
+verify_jwt = false
