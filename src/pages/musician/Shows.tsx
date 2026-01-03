@@ -880,7 +880,7 @@ const MusicianShows = () => {
                           Adicionar
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white text-gray-900">
+                      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-white text-gray-900">
                         <DialogHeader>
                           <DialogTitle className="text-gray-900 font-semibold">
                             {editingShow ? 'Editar Show' : 'Adicionar Show'}

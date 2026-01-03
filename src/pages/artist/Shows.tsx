@@ -737,12 +737,12 @@ const ArtistShows = () => {
                               Adicionar
                             </Button>
                           </SheetTrigger>
-                          <SheetContent side="bottom" className="h-[90vh] overflow-y-auto bg-white p-0 scrollbar-hide" style={{
+                          <SheetContent side="bottom" className="h-[85vh] overflow-y-auto bg-white p-0 scrollbar-hide" style={{
                         scrollbarWidth: 'none',
                         msOverflowStyle: 'none',
                         WebkitOverflowScrolling: 'touch'
                       }}>
-                          <div className="p-6 pb-8">
+                          <div className="p-4 pb-6">
                             <SheetHeader className="mb-4">
                               <SheetTitle className="text-gray-900 text-left">
                                 {editingShow ? 'Editar Show' : 'Adicionar Novo Show'}
@@ -751,7 +751,7 @@ const ArtistShows = () => {
                                 Preencha as informações abaixo para gerenciar o show.
                               </p>
                             </SheetHeader>
-                            <form onSubmit={handleShowSubmit} className="space-y-4">
+                            <form onSubmit={handleShowSubmit} className="space-y-3">
                               <div className="space-y-3">
                                 <Button type="button" variant={showFormData.is_private_event ? "default" : "outline"} onClick={() => setShowFormData({
                                 ...showFormData,
@@ -796,7 +796,7 @@ const ArtistShows = () => {
                                 <div className="space-y-3">
                                   <div>
                                     <Label htmlFor="date_local_mobile" className="text-gray-900 text-sm font-medium">Data do show</Label>
-                                    <Input id="date_local_mobile" type="date" value={showFormData.date_local} onChange={e => setShowFormData({
+                                    <Input id="date_local_mobile" type="date" lang="pt-BR" value={showFormData.date_local} onChange={e => setShowFormData({
                                     ...showFormData,
                                     date_local: e.target.value
                                   })} className="bg-white text-gray-900 mt-1.5" required />
@@ -813,7 +813,7 @@ const ArtistShows = () => {
                                   
                                   <div>
                                     <Label htmlFor="time_local_mobile" className="text-gray-900 text-sm font-medium">Horário</Label>
-                                    <Input id="time_local_mobile" type="time" value={showFormData.time_local} onChange={e => setShowFormData({
+                                    <Input id="time_local_mobile" type="time" lang="pt-BR" value={showFormData.time_local} onChange={e => setShowFormData({
                                     ...showFormData,
                                     time_local: e.target.value
                                   })} className="bg-white text-gray-900 mt-1.5" required />
@@ -828,13 +828,21 @@ const ArtistShows = () => {
                                     </SelectTrigger>
                                     <SelectContent className="bg-white z-[100]">
                                       <SelectItem value="1h">1 hora</SelectItem>
+                                      <SelectItem value="1.5h">1 hora e meia</SelectItem>
                                       <SelectItem value="2h">2 horas</SelectItem>
+                                      <SelectItem value="2.5h">2 horas e meia</SelectItem>
                                       <SelectItem value="3h">3 horas</SelectItem>
+                                      <SelectItem value="3.5h">3 horas e meia</SelectItem>
                                       <SelectItem value="4h">4 horas</SelectItem>
+                                      <SelectItem value="4.5h">4 horas e meia</SelectItem>
                                       <SelectItem value="5h">5 horas</SelectItem>
+                                      <SelectItem value="5.5h">5 horas e meia</SelectItem>
                                       <SelectItem value="6h">6 horas</SelectItem>
+                                      <SelectItem value="6.5h">6 horas e meia</SelectItem>
                                       <SelectItem value="7h">7 horas</SelectItem>
+                                      <SelectItem value="7.5h">7 horas e meia</SelectItem>
                                       <SelectItem value="8h">8 horas</SelectItem>
+                                      <SelectItem value="8.5h">8 horas e meia</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </div>
