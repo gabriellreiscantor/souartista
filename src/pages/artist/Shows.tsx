@@ -80,6 +80,7 @@ const ArtistShows = () => {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [showFilter, setShowFilter] = useState<string>('upcoming');
+  const [isSavingShow, setIsSavingShow] = useState(false);
   
   // Delete confirmation states
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -194,7 +195,15 @@ const ArtistShows = () => {
   // Show handlers
   const handleShowSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || isSavingShow) return;
+    
+    // Check for internet connection
+    if (!navigator.onLine) {
+      toast.error('Você está offline. Conecte-se à internet para salvar.');
+      return;
+    }
+    
+    setIsSavingShow(true);
     try {
       const venueName = showFormData.is_private_event ? showFormData.custom_venue : venues.find(v => v.id === showFormData.venue_id)?.name || showFormData.custom_venue;
       if (!venueName) {
@@ -244,6 +253,8 @@ const ArtistShows = () => {
     } catch (error: any) {
       console.error('Error saving show:', error);
       toast.error('Erro ao salvar show');
+    } finally {
+      setIsSavingShow(false);
     }
   };
   const handleShowDelete = (id: string) => {
@@ -949,8 +960,8 @@ const ArtistShows = () => {
                                 <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white border-gray-300 text-gray-900 hover:bg-gray-50">
                                   Cancelar
                                 </Button>
-                                <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-white">
-                                  Salvar Show
+                                <Button type="submit" disabled={isSavingShow} className="flex-1 bg-primary hover:bg-primary/90 text-white">
+                                  {isSavingShow ? 'Salvando...' : 'Salvar Show'}
                                 </Button>
                               </div>
                             </form>
@@ -1275,8 +1286,8 @@ const ArtistShows = () => {
                                   <Button type="button" variant="outline" onClick={() => setShowDialogOpen(false)} className="flex-1 bg-white border-gray-300 text-gray-900 hover:bg-gray-50">
                                     Cancelar
                                   </Button>
-                                  <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-white">
-                                    Salvar Show
+                                  <Button type="submit" disabled={isSavingShow} className="flex-1 bg-primary hover:bg-primary/90 text-white">
+                                    {isSavingShow ? 'Salvando...' : 'Salvar Show'}
                                   </Button>
                                 </div>
                               </form>
