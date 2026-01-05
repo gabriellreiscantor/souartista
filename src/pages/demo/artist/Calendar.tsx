@@ -44,13 +44,13 @@ const DemoArtistCalendar = () => {
   };
 
   const monthShows = demoShows.filter(show => {
-    const showDate = new Date(show.date_local);
+    const showDate = new Date(show.date_local + 'T12:00:00');
     return showDate.getMonth() === currentMonth.getMonth() && 
            showDate.getFullYear() === currentMonth.getFullYear();
   });
 
   const selectedDayShows = demoShows.filter(
-    show => selectedDate && format(new Date(show.date_local), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
+    show => selectedDate && format(new Date(show.date_local + 'T12:00:00'), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
   );
 
   const timeSlots = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
@@ -166,7 +166,7 @@ const DemoArtistCalendar = () => {
                           {monthShows.map((show) => (
                             <tr key={show.id} className="border-b border-gray-100 hover:bg-gray-50">
                               <td className="py-3 px-4 text-sm text-gray-900">
-                                {format(new Date(show.date_local), "dd/MM/yyyy", { locale: ptBR })}
+                                {format(new Date(show.date_local + 'T12:00:00'), "dd/MM/yyyy", { locale: ptBR })}
                               </td>
                               <td className="py-3 px-4 text-sm text-gray-900">{show.venue_name}</td>
                               <td className="py-3 px-4 text-sm text-right font-semibold text-green-600">

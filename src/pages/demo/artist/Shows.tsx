@@ -13,7 +13,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Calendar as CalendarIcon, Clock, MapPin, Music2, Users, ChevronDown, ChevronUp, Pencil, Trash2, X } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Plus, Calendar as CalendarIconLucide, Clock, MapPin, Music2, Users, ChevronDown, ChevronUp, Pencil, Trash2, X } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { toast } from 'sonner';
@@ -332,7 +334,7 @@ const DemoArtistShows = () => {
                       
                       <Select value={showFilter} onValueChange={handleFilterChange}>
                         <SelectTrigger className="w-full bg-white text-gray-900 border-gray-300">
-                          <CalendarIcon className="w-4 h-4 mr-2 text-gray-900" />
+                          <CalendarIconLucide className="w-4 h-4 mr-2 text-gray-900" />
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-white">
@@ -604,14 +606,35 @@ const DemoArtistShows = () => {
             
             <div className="space-y-2">
               <Label htmlFor="show-date" className="text-gray-900 font-semibold">Data do show</Label>
-              <Input
-                id="show-date"
-                type="date"
-                placeholder="dd/mm/aaaa"
-                value={showDate}
-                onChange={(e) => setShowDate(e.target.value)}
-                className="bg-white border-gray-300 text-gray-900"
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal bg-white border-gray-300 text-gray-900",
+                      !showDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIconLucide className="mr-2 h-4 w-4" />
+                    {showDate
+                      ? format(new Date(showDate + 'T12:00:00'), "dd/MM/yyyy", { locale: ptBR })
+                      : "Selecione a data"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 z-[200] pointer-events-auto" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={showDate ? new Date(showDate + 'T12:00:00') : undefined}
+                    onSelect={(date) => {
+                      if (date) {
+                        setShowDate(format(date, 'yyyy-MM-dd'));
+                      }
+                    }}
+                    variant="light"
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             
             <div className="space-y-2">

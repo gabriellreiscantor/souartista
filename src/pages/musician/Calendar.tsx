@@ -48,7 +48,7 @@ const MusicianCalendar = () => {
       if (error) throw error;
       
       setShows(data || []);
-      const dates = (data || []).map(show => new Date(show.date_local));
+      const dates = (data || []).map(show => new Date(show.date_local + 'T12:00:00'));
       setShowDates(dates);
     } catch (error) {
       console.error('Error fetching shows:', error);
@@ -56,13 +56,13 @@ const MusicianCalendar = () => {
   };
 
   const selectedDayShows = shows.filter(
-    show => selectedDate && format(new Date(show.date_local), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
+    show => selectedDate && format(new Date(show.date_local + 'T12:00:00'), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
   );
 
   const handleDateClick = (clickedDate: Date) => {
     setSelectedDate(clickedDate);
     const hasShows = shows.some(
-      show => format(new Date(show.date_local), 'yyyy-MM-dd') === format(clickedDate, 'yyyy-MM-dd')
+      show => format(new Date(show.date_local + 'T12:00:00'), 'yyyy-MM-dd') === format(clickedDate, 'yyyy-MM-dd')
     );
     if (hasShows) {
       setShowAgenda(true);
@@ -70,13 +70,13 @@ const MusicianCalendar = () => {
   };
 
   const monthShows = shows.filter(show => {
-    const showDate = new Date(show.date_local);
+    const showDate = new Date(show.date_local + 'T12:00:00');
     return showDate.getMonth() === currentMonth.getMonth() && 
            showDate.getFullYear() === currentMonth.getFullYear();
   });
 
   const getDatesWithShows = () => {
-    return shows.map(show => format(new Date(show.date_local), 'yyyy-MM-dd'));
+    return shows.map(show => format(new Date(show.date_local + 'T12:00:00'), 'yyyy-MM-dd'));
   };
 
   const datesWithShows = getDatesWithShows();
@@ -222,7 +222,7 @@ const MusicianCalendar = () => {
                           {monthShows.map((show) => (
                             <tr key={show.id} className="border-b border-gray-100 hover:bg-gray-50">
                               <td className="py-3 px-4 text-sm text-gray-900">
-                                {format(new Date(show.date_local), "dd/MM/yyyy", { locale: ptBR })}
+                                {format(new Date(show.date_local + 'T12:00:00'), "dd/MM/yyyy", { locale: ptBR })}
                               </td>
                               <td className="py-3 px-4 text-sm text-gray-900">{show.venue_name}</td>
                               <td className="py-3 px-4 text-sm text-right font-semibold text-green-600">

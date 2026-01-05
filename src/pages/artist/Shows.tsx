@@ -796,10 +796,39 @@ const ArtistShows = () => {
                                 <div className="space-y-3">
                                   <div>
                                     <Label htmlFor="date_local_mobile" className="text-gray-900 text-sm font-medium">Data do show</Label>
-                                    <Input id="date_local_mobile" type="date" lang="pt-BR" value={showFormData.date_local} onChange={e => setShowFormData({
-                                    ...showFormData,
-                                    date_local: e.target.value
-                                  })} className="bg-white text-gray-900 mt-1.5 h-10" required />
+                                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                                      <PopoverTrigger asChild>
+                                        <Button
+                                          variant="outline"
+                                          className={cn(
+                                            "w-full justify-start text-left font-normal bg-white text-gray-900 mt-1.5 h-10",
+                                            !showFormData.date_local && "text-muted-foreground"
+                                          )}
+                                        >
+                                          <CalendarIcon className="mr-2 h-4 w-4" />
+                                          {showFormData.date_local
+                                            ? format(new Date(showFormData.date_local + 'T12:00:00'), "dd/MM/yyyy", { locale: ptBR })
+                                            : "Selecione a data"}
+                                        </Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-auto p-0 z-[200] pointer-events-auto" align="start">
+                                        <Calendar
+                                          mode="single"
+                                          selected={showFormData.date_local ? new Date(showFormData.date_local + 'T12:00:00') : undefined}
+                                          onSelect={(date) => {
+                                            if (date) {
+                                              setShowFormData({
+                                                ...showFormData,
+                                                date_local: format(date, 'yyyy-MM-dd')
+                                              });
+                                              setCalendarOpen(false);
+                                            }
+                                          }}
+                                          variant="light"
+                                          className="pointer-events-auto"
+                                        />
+                                      </PopoverContent>
+                                    </Popover>
                                     
                                     {isDateInPast() && (
                                       <Alert className="mt-2 border-orange-200 bg-orange-50">
