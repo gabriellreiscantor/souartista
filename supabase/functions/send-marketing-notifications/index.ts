@@ -136,27 +136,34 @@ Deno.serve(async (req) => {
     let sentCount = 0;
     let skippedCount = 0;
     const now = new Date();
-    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    
+    // Calculate start of TODAY in BRT (UTC-3) - this ensures one notification per calendar day
+    const nowBRT = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+    const todayStartBRT = new Date(Date.UTC(nowBRT.getUTCFullYear(), nowBRT.getUTCMonth(), nowBRT.getUTCDate(), 0, 0, 0, 0));
+    const todayStartUTC = new Date(todayStartBRT.getTime() + 3 * 60 * 60 * 1000); // Convert back to UTC
+    
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    console.log(`[send-marketing-notifications] 📅 Today start (BRT): ${todayStartBRT.toISOString()}`);
+    console.log(`[send-marketing-notifications] 📅 Today start (UTC): ${todayStartUTC.toISOString()}`);
 
     for (const user of users || []) {
       // Skip users without devices
       if (!usersWithDevices.has(user.id)) {
-        console.log(`[send-marketing-notifications] ⏭️ Skipping ${user.id} - no device registered`);
         skippedCount++;
         continue;
       }
 
-      // Check if user received a marketing notification in the last 24h
+      // Check if user received a marketing notification TODAY (not last 24h)
       const { data: recentLogs, error: logsError } = await supabaseAdmin
         .from('marketing_notification_logs')
-        .select('id')
+        .select('id, sent_at')
         .eq('user_id', user.id)
-        .gte('sent_at', oneDayAgo.toISOString())
+        .gte('sent_at', todayStartUTC.toISOString())
         .limit(1);
 
       if (recentLogs && recentLogs.length > 0) {
-        console.log(`[send-marketing-notifications] ⏭️ Skipping ${user.id} - already received today`);
+        console.log(`[send-marketing-notifications] ⏭️ Skipping ${user.id} - already received today at ${recentLogs[0].sent_at}`);
         skippedCount++;
         continue;
       }
@@ -166,10 +173,13 @@ Deno.serve(async (req) => {
       let notificationType = 'engagement';
       let link = '/app-hub';
 
-      const isActive = user.status_plano === 'active';
+      // FIX: Check both 'active' and 'ativo' for subscription status
+      const isActive = user.status_plano === 'active' || user.status_plano === 'ativo';
       const lastSeen = user.last_seen_at ? new Date(user.last_seen_at) : null;
       const isInactive = lastSeen && lastSeen < sevenDaysAgo;
       const hasShows = (userShowCounts[user.id] || 0) > 0;
+      
+      console.log(`[send-marketing-notifications] 👤 User ${user.id}: status_plano=${user.status_plano}, isActive=${isActive}, hasShows=${hasShows}, isInactive=${isInactive}`);
 
       // Get messages already sent to this user
       const { data: sentMessages } = await supabaseAdmin
