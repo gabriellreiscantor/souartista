@@ -1080,6 +1080,24 @@ export default function Admin() {
         if (updateError) throw updateError;
       }
 
+      // Enviar notificação para o usuário que criou o ticket
+      try {
+        const { error: notifError } = await supabase.functions.invoke('create-notification', {
+          body: {
+            userId: respondingTicket.user_id,
+            title: '💬 Resposta no seu ticket de suporte',
+            message: `Seu ticket "${respondingTicket.subject}" recebeu uma resposta. Toque para ver.`,
+            link: '/app-hub'
+          }
+        });
+
+        if (notifError) {
+          console.error('Erro ao enviar notificação:', notifError);
+        }
+      } catch (notifError) {
+        console.error('Erro ao invocar notificação:', notifError);
+      }
+
       toast.success('Resposta enviada com sucesso!');
       setShowResponseDialog(false);
       setResponseMessage('');
