@@ -130,6 +130,27 @@ const Register = () => {
     setImageEditorOpen(false);
   };
 
+  // Validação de email
+  const validateEmail = (email: string): { valid: boolean; error?: string } => {
+    const trimmed = email.trim().toLowerCase();
+    
+    // Regex básico de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (!emailRegex.test(trimmed)) {
+      return { valid: false, error: 'Por favor, insira um e-mail válido' };
+    }
+    
+    const domain = trimmed.split('@')[1];
+    
+    // Verifica se tem formato válido de domínio
+    if (!domain || !domain.includes('.')) {
+      return { valid: false, error: 'Domínio de e-mail inválido' };
+    }
+    
+    return { valid: true };
+  };
+
   const handleNext = () => {
     // Limpar erros anteriores
     setNameError('');
@@ -145,9 +166,16 @@ const Register = () => {
         setNameError('Por favor, preencha seu nome');
         hasError = true;
       }
+      
       if (!formData.email.trim()) {
         setEmailError('Por favor, preencha o e-mail');
         hasError = true;
+      } else {
+        const emailValidation = validateEmail(formData.email);
+        if (!emailValidation.valid) {
+          setEmailError(emailValidation.error || 'E-mail inválido');
+          hasError = true;
+        }
       }
       
       if (hasError) return;
