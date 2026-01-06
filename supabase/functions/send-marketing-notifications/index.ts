@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { sendPushToUser } from '../_shared/fcm-sender.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -254,16 +255,16 @@ Deno.serve(async (req) => {
         created_by: user.id,
       });
 
-      // Send push notification
+      // Send push notification directly via FCM (not via functions.invoke)
       try {
-        await supabaseAdmin.functions.invoke('send-push-notification', {
-          body: {
-            userId: user.id,
-            title: selectedMessage.title,
-            body: selectedMessage.message,
-            link: link,
-          },
+        const pushResult = await sendPushToUser({
+          supabaseAdmin,
+          userId: user.id,
+          title: selectedMessage.title,
+          body: selectedMessage.message,
+          link: link,
         });
+        console.log(`[send-marketing-notifications] Push result for ${user.id}: sent=${pushResult.sent}, failed=${pushResult.failed}`);
       } catch (pushError) {
         console.error(`[send-marketing-notifications] ⚠️ Push failed for ${user.id}:`, pushError);
       }
