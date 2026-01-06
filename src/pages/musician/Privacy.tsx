@@ -16,7 +16,9 @@ const MusicianPrivacy = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  return <SidebarProvider>
+
+  return (
+    <SidebarProvider>
       <div className="flex min-h-screen w-full bg-white">
         <MusicianSidebar />
         
@@ -36,24 +38,25 @@ const MusicianPrivacy = () => {
           </header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6 scrollbar-hide" style={{
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          WebkitOverflowScrolling: 'touch'
-        }}>
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}>
             <div className="max-w-3xl mx-auto prose prose-slate">
               <h1 className="text-stone-950">Política de Privacidade</h1>
-              <p className="text-gray-600">Última atualização: {new Date().toLocaleDateString('pt-BR')}</p>
+              <p className="text-gray-600">Última atualização: Janeiro de 2026</p>
 
               <h2 className="text-stone-950">1. Informações que Coletamos</h2>
               <p className="text-stone-950">
-                Coletamos informações que você nos fornece diretamente, incluindo:
+                Coletamos informações fornecidas diretamente pelo usuário no momento do cadastro e durante 
+                o uso da plataforma, incluindo nome, e-mail, telefone, CPF, data de nascimento, informações 
+                de plano e dados relacionados à atividade profissional, como registros de shows, cachês, 
+                receitas, despesas e outros dados financeiros inseridos pelo próprio usuário.
               </p>
-              <ul>
-                <li className="text-stone-950">Nome, email e telefone</li>
-                <li className="text-stone-950">Informações sobre shows e eventos</li>
-                <li className="text-stone-950">Dados financeiros relacionados a cachês e despesas</li>
-                <li className="text-stone-950">Informações sobre músicos e equipes</li>
-              </ul>
+              <p className="text-stone-950">
+                Também coletamos informações técnicas e de uso da plataforma, como datas de acesso, 
+                interações com funcionalidades e dados necessários para suporte e segurança.
+              </p>
 
               <h2 className="text-stone-950">2. Como Usamos Suas Informações</h2>
               <p className="text-stone-950">
@@ -65,6 +68,11 @@ const MusicianPrivacy = () => {
                 <li className="text-stone-950">Enviar comunicações técnicas e atualizações</li>
                 <li className="text-stone-950">Responder a seus comentários e perguntas</li>
               </ul>
+              <p className="text-stone-950">
+                As informações coletadas poderão ser acessadas por administradores autorizados da plataforma 
+                exclusivamente para fins de operação, manutenção, suporte ao usuário, análise interna, 
+                geração de relatórios, prevenção a fraudes e melhoria contínua do serviço.
+              </p>
 
               <h2 className="text-stone-950">3. Compartilhamento de Informações</h2>
               <p className="text-stone-950">
@@ -76,6 +84,11 @@ const MusicianPrivacy = () => {
                 <li className="text-stone-950">Para cumprir obrigações legais</li>
                 <li className="text-stone-950">Com provedores de serviços que nos auxiliam</li>
               </ul>
+              <p className="text-stone-950">
+                O SouArtista não comercializa dados pessoais. Dados financeiros de pagamento são processados 
+                por parceiros externos (como operadoras de pagamento e lojas de aplicativos), não sendo 
+                armazenados integralmente em nossos sistemas.
+              </p>
 
               <h2 className="text-stone-950">4. Segurança dos Dados</h2>
               <p className="text-stone-950">
@@ -122,6 +135,8 @@ const MusicianPrivacy = () => {
           <MobileBottomNav role="musician" />
         </div>
       </div>
-    </SidebarProvider>;
+    </SidebarProvider>
+  );
 };
+
 export default MusicianPrivacy;

@@ -29,10 +29,14 @@ const Privacy = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">1. Informações que Coletamos</h2>
             <p>
-              Coletamos informações que você nos fornece diretamente ao criar uma conta,
-              incluindo nome, e-mail, telefone e informações de pagamento. Também coletamos
-              automaticamente informações sobre seu uso do serviço, como dados de shows,
-              receitas e despesas que você registra.
+              Coletamos informações fornecidas diretamente pelo usuário no momento do cadastro e durante 
+              o uso da plataforma, incluindo nome, e-mail, telefone, CPF, data de nascimento, informações 
+              de plano e dados relacionados à atividade profissional, como registros de shows, cachês, 
+              receitas, despesas e outros dados financeiros inseridos pelo próprio usuário.
+            </p>
+            <p className="mt-2">
+              Também coletamos informações técnicas e de uso da plataforma, como datas de acesso, 
+              interações com funcionalidades e dados necessários para suporte e segurança.
             </p>
           </section>
 
@@ -49,6 +53,11 @@ const Privacy = () => {
               <li>Monitorar e analisar tendências, uso e atividades</li>
               <li>Personalizar e melhorar o serviço</li>
             </ul>
+            <p className="mt-4">
+              As informações coletadas poderão ser acessadas por administradores autorizados da plataforma 
+              exclusivamente para fins de operação, manutenção, suporte ao usuário, análise interna, 
+              geração de relatórios, prevenção a fraudes e melhoria contínua do serviço.
+            </p>
           </section>
 
           <section>
@@ -63,6 +72,11 @@ const Privacy = () => {
               <li>Para cumprir obrigações legais ou responder a solicitações governamentais</li>
               <li>Para proteger os direitos, propriedade ou segurança da empresa e usuários</li>
             </ul>
+            <p className="mt-4">
+              O SouArtista não comercializa dados pessoais. Dados financeiros de pagamento são processados 
+              por parceiros externos (como operadoras de pagamento e lojas de aplicativos), não sendo 
+              armazenados integralmente em nossos sistemas.
+            </p>
           </section>
 
           <section>
@@ -131,7 +145,7 @@ const Privacy = () => {
           </section>
 
           <p className="text-sm mt-8">
-            Última atualização: Janeiro de 2025
+            Última atualização: Janeiro de 2026
           </p>
         </div>
       </main>

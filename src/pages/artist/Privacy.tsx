@@ -44,18 +44,19 @@ const ArtistPrivacy = () => {
           }}>
             <div className="max-w-3xl mx-auto prose prose-slate prose-headings:text-gray-900 prose-p:text-gray-900 prose-li:text-gray-900">
               <h1 className="text-gray-900">Política de Privacidade</h1>
-              <p className="text-gray-600">Última atualização: {new Date().toLocaleDateString('pt-BR')}</p>
+              <p className="text-gray-600">Última atualização: Janeiro de 2026</p>
 
               <h2 className="text-gray-900">1. Informações que Coletamos</h2>
               <p className="text-gray-900">
-                Coletamos informações que você nos fornece diretamente, incluindo:
+                Coletamos informações fornecidas diretamente pelo usuário no momento do cadastro e durante 
+                o uso da plataforma, incluindo nome, e-mail, telefone, CPF, data de nascimento, informações 
+                de plano e dados relacionados à atividade profissional, como registros de shows, cachês, 
+                receitas, despesas e outros dados financeiros inseridos pelo próprio usuário.
               </p>
-              <ul>
-                <li className="text-gray-900">Nome, email e telefone</li>
-                <li className="text-gray-900">Informações sobre shows e eventos</li>
-                <li className="text-gray-900">Dados financeiros relacionados a cachês e despesas</li>
-                <li className="text-gray-900">Informações sobre músicos e equipes</li>
-              </ul>
+              <p className="text-gray-900">
+                Também coletamos informações técnicas e de uso da plataforma, como datas de acesso, 
+                interações com funcionalidades e dados necessários para suporte e segurança.
+              </p>
 
               <h2 className="text-gray-900">2. Como Usamos Suas Informações</h2>
               <p className="text-gray-900">
@@ -67,6 +68,11 @@ const ArtistPrivacy = () => {
                 <li className="text-gray-900">Enviar comunicações técnicas e atualizações</li>
                 <li className="text-gray-900">Responder a seus comentários e perguntas</li>
               </ul>
+              <p className="text-gray-900">
+                As informações coletadas poderão ser acessadas por administradores autorizados da plataforma 
+                exclusivamente para fins de operação, manutenção, suporte ao usuário, análise interna, 
+                geração de relatórios, prevenção a fraudes e melhoria contínua do serviço.
+              </p>
 
               <h2 className="text-gray-900">3. Compartilhamento de Informações</h2>
               <p className="text-gray-900">
@@ -78,6 +84,11 @@ const ArtistPrivacy = () => {
                 <li className="text-gray-900">Para cumprir obrigações legais</li>
                 <li className="text-gray-900">Com provedores de serviços que nos auxiliam</li>
               </ul>
+              <p className="text-gray-900">
+                O SouArtista não comercializa dados pessoais. Dados financeiros de pagamento são processados 
+                por parceiros externos (como operadoras de pagamento e lojas de aplicativos), não sendo 
+                armazenados integralmente em nossos sistemas.
+              </p>
 
               <h2 className="text-gray-900">4. Segurança dos Dados</h2>
               <p className="text-gray-900">

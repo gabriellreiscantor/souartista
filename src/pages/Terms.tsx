@@ -60,7 +60,24 @@ const Terms = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">4. Uso Aceitável</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">4. Acesso Administrativo e Uso de Dados</h2>
+            <p>
+              Para fins de operação, suporte, segurança, análise e gestão da plataforma, os administradores 
+              do SouArtista (incluindo perfis de CEO, COO ou funções equivalentes) poderão acessar dados 
+              cadastrais e operacionais dos usuários, tais como nome, e-mail, telefone, CPF, informações 
+              de plano, bem como dados financeiros inseridos na plataforma relacionados à atividade 
+              profissional do usuário, incluindo registros de shows, cachês, receitas, despesas e 
+              indicadores financeiros agregados.
+            </p>
+            <p className="mt-2">
+              O SouArtista não acessa senhas, códigos de autenticação, dados completos de cartões de 
+              crédito ou informações bancárias sensíveis, os quais são processados exclusivamente por 
+              parceiros de pagamento externos.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">5. Uso Aceitável</h2>
             <p>
               Você concorda em usar o serviço apenas para fins legítimos e de acordo com estes
               Termos. Você não deve usar o serviço de maneira que possa danificar, desabilitar,
@@ -69,7 +86,7 @@ const Terms = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">5. Propriedade Intelectual</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">6. Propriedade Intelectual</h2>
             <p>
               Todo o conteúdo, recursos e funcionalidades do SouArtista são de propriedade
               exclusiva da empresa e são protegidos por leis de direitos autorais, marcas
@@ -78,7 +95,7 @@ const Terms = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">6. Pagamentos e Assinaturas</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">7. Pagamentos e Assinaturas</h2>
             <p>
               O acesso a determinados recursos pode exigir uma assinatura paga. Você concorda
               em fornecer informações de pagamento precisas e atualizadas. As taxas de assinatura
@@ -87,7 +104,7 @@ const Terms = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">7. Cancelamento</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">8. Cancelamento</h2>
             <p>
               Você pode cancelar sua conta a qualquer momento através das configurações da sua
               conta. Reservamo-nos o direito de suspender ou encerrar sua conta se você violar
@@ -96,7 +113,7 @@ const Terms = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">8. Limitação de Responsabilidade</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">9. Limitação de Responsabilidade</h2>
             <p>
               O SouArtista é fornecido "como está" sem garantias de qualquer tipo. Não seremos
               responsáveis por quaisquer danos diretos, indiretos, incidentais ou consequenciais
@@ -105,7 +122,7 @@ const Terms = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">9. Alterações aos Termos</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">10. Alterações aos Termos</h2>
             <p>
               Reservamo-nos o direito de modificar estes Termos a qualquer momento. Notificaremos
               você sobre quaisquer alterações publicando os novos Termos nesta página. É sua
@@ -114,7 +131,7 @@ const Terms = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">10. Termos Adicionais para Compras via App Store (iOS)</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">11. Termos Adicionais para Compras via App Store (iOS)</h2>
             <p>
               Para assinaturas adquiridas através da App Store da Apple, aplicam-se também os termos
               do Contrato de Licença de Usuário Final (EULA) padrão da Apple.
@@ -134,7 +151,7 @@ const Terms = () => {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4 text-foreground">11. Contato</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-foreground">12. Contato</h2>
             <p>
               Se você tiver dúvidas sobre estes Termos, entre em contato conosco:{' '}
               <a 
@@ -147,7 +164,7 @@ const Terms = () => {
           </section>
 
           <p className="text-sm mt-8">
-            Última atualização: Dezembro de 2025
+            Última atualização: Janeiro de 2026
           </p>
         </div>
       </main>
