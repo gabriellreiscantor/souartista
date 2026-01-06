@@ -159,6 +159,51 @@ export type Database = {
         }
         Relationships: []
       }
+      lgpd_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          description: string | null
+          handled_at: string | null
+          handled_by: string | null
+          id: string
+          request_type: string
+          status: string
+          updated_at: string
+          user_email: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          description?: string | null
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          request_type: string
+          status?: string
+          updated_at?: string
+          user_email: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          description?: string | null
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          request_type?: string
+          status?: string
+          updated_at?: string
+          user_email?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: []
+      }
       locomotion_expenses: {
         Row: {
           cost: number
