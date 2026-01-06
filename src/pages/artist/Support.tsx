@@ -475,7 +475,7 @@ const ArtistSupport = () => {
                       ))}
 
                       {/* New Response Input */}
-                      {selectedTicket.status !== 'closed' && (
+                      {selectedTicket.status !== 'closed' && selectedTicket.status !== 'resolved' && (
                         <div className="space-y-3">
                           <Textarea
                             value={newResponse}
