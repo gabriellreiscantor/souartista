@@ -546,6 +546,10 @@ export default function Support() {
                       <span>{selectedTicket.profile?.name} ({selectedTicket.profile?.email})</span>
                     </div>
                     <div className="flex justify-between">
+                      <span className="text-muted-foreground">User ID:</span>
+                      <span className="font-mono text-xs">{selectedTicket.user_id}</span>
+                    </div>
+                    <div className="flex justify-between">
                       <span className="text-muted-foreground">Criado em:</span>
                       <span>{format(new Date(selectedTicket.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}</span>
                     </div>
