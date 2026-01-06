@@ -246,7 +246,8 @@ export function NotificationBell() {
         align="end" 
         side="bottom" 
         sideOffset={8}
-        alignOffset={0}
+        alignOffset={-8}
+        collisionPadding={{ right: 16 }}
       >
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
           <div>
