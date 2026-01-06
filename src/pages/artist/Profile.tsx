@@ -253,11 +253,10 @@ const ArtistProfile = () => {
                 </div>
                 {photoUrl && (
                   <Button 
-                    variant="outline" 
                     size="sm"
                     onClick={handleRemovePhoto}
                     disabled={uploading}
-                    className="text-destructive hover:text-destructive"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Remover Imagem
