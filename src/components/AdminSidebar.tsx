@@ -1,9 +1,11 @@
-import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones, Download, Smartphone, Sparkles, MessageSquare, Scale, UserCog } from 'lucide-react';
+import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones, Download, Smartphone, Sparkles, MessageSquare, Scale, UserCog, AlertTriangle } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useEffect, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 
 import {
   Sidebar,
@@ -25,6 +27,7 @@ const mainItems = [
   { title: 'Importação Firebase', url: '/admin?tab=importacao', icon: Download },
   { title: 'Financeiro Global', url: '/admin?tab=financeiro', icon: DollarSign },
   { title: 'Suporte', url: '/admin?tab=suporte', icon: Headphones },
+  { title: 'Tickets Escalados', url: '/admin?tab=escalados', icon: AlertTriangle, showBadge: true },
   { title: 'Notificações', url: '/admin?tab=notificacoes', icon: Bell },
   { title: 'Push Mobile', url: '/admin?tab=push-mobile', icon: Smartphone },
   { title: 'Contatos WhatsApp', url: '/admin?tab=contatos', icon: MessageCircle },
@@ -39,6 +42,47 @@ export function AdminSidebar() {
   const searchParams = new URLSearchParams(location.search);
   const currentTab = searchParams.get('tab') || 'usuarios';
   const collapsed = state === 'collapsed';
+  const [escalatedCount, setEscalatedCount] = useState(0);
+
+  useEffect(() => {
+    fetchEscalatedCount();
+    
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('escalated-tickets-count')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'support_tickets',
+          filter: 'escalated_to_admin=eq.true'
+        },
+        () => {
+          fetchEscalatedCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const fetchEscalatedCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('support_tickets')
+        .select('*', { count: 'exact', head: true })
+        .eq('escalated_to_admin', true)
+        .in('status', ['open', 'in_progress']);
+
+      if (error) throw error;
+      setEscalatedCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching escalated count:', error);
+    }
+  };
 
   const isActive = (url: string) => {
     const tabParam = new URL(url, window.location.origin).searchParams.get('tab');
@@ -85,7 +129,7 @@ export function AdminSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                      className="hover:bg-sidebar-accent"
+                      className="hover:bg-sidebar-accent relative"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                       onClick={() => {
                         if (isMobile) {
@@ -95,6 +139,16 @@ export function AdminSidebar() {
                     >
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span className="text-sm">{item.title}</span>}
+                      {item.showBadge && escalatedCount > 0 && !collapsed && (
+                        <Badge className="ml-auto bg-orange-500 text-white text-xs px-1.5 py-0.5 h-5 min-w-5 flex items-center justify-center">
+                          {escalatedCount}
+                        </Badge>
+                      )}
+                      {item.showBadge && escalatedCount > 0 && collapsed && (
+                        <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                          {escalatedCount > 9 ? '9+' : escalatedCount}
+                        </span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

@@ -881,6 +881,10 @@ export type Database = {
         Row: {
           attachment_url: string | null
           created_at: string
+          escalated_at: string | null
+          escalated_by: string | null
+          escalated_to_admin: boolean | null
+          escalation_reason: string | null
           id: string
           message: string
           priority: string
@@ -892,6 +896,10 @@ export type Database = {
         Insert: {
           attachment_url?: string | null
           created_at?: string
+          escalated_at?: string | null
+          escalated_by?: string | null
+          escalated_to_admin?: boolean | null
+          escalation_reason?: string | null
           id?: string
           message: string
           priority?: string
@@ -903,6 +911,10 @@ export type Database = {
         Update: {
           attachment_url?: string | null
           created_at?: string
+          escalated_at?: string | null
+          escalated_by?: string | null
+          escalated_to_admin?: boolean | null
+          escalation_reason?: string | null
           id?: string
           message?: string
           priority?: string

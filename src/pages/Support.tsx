@@ -9,11 +9,13 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Separator } from '@/components/ui/separator';
 import { 
   Loader2, 
   MessageCircle, 
@@ -25,7 +27,13 @@ import {
   XCircle,
   ArrowLeft,
   LogOut,
-  Monitor
+  Monitor,
+  User,
+  Calendar,
+  MapPin,
+  Bell,
+  AlertTriangle,
+  ArrowUpRight
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -41,10 +49,18 @@ interface SupportTicket {
   updated_at: string;
   user_id: string;
   attachment_url?: string;
+  escalated_to_admin?: boolean;
+  escalated_at?: string;
+  escalation_reason?: string;
+  escalated_by?: string;
   profile?: {
     id: string;
     name: string;
     email: string;
+    phone?: string;
+    created_at?: string;
+    last_seen_at?: string;
+    status_plano?: string;
   };
   responses?: SupportResponse[];
 }
@@ -55,6 +71,17 @@ interface SupportResponse {
   is_admin: boolean;
   created_at: string;
   user_id: string;
+}
+
+interface UserShow {
+  id: string;
+  venue_name: string;
+  date_local: string;
+  time_local: string;
+}
+
+interface UserRole {
+  role: string;
 }
 
 export default function Support() {
@@ -75,12 +102,30 @@ export default function Support() {
   const [responseMessage, setResponseMessage] = useState('');
   const [sendingResponse, setSendingResponse] = useState(false);
 
+  // User details
+  const [userShows, setUserShows] = useState<UserShow[]>([]);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [loadingUserDetails, setLoadingUserDetails] = useState(false);
+
+  // Escalation dialog
+  const [showEscalateDialog, setShowEscalateDialog] = useState(false);
+  const [escalationReason, setEscalationReason] = useState('');
+  const [escalationCategory, setEscalationCategory] = useState('');
+  const [escalating, setEscalating] = useState(false);
+
+  // Send notification dialog
+  const [showNotificationDialog, setShowNotificationDialog] = useState(false);
+  const [notificationTitle, setNotificationTitle] = useState('');
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [sendingNotification, setSendingNotification] = useState(false);
+
   // Stats
   const [stats, setStats] = useState({
     total: 0,
     open: 0,
     inProgress: 0,
-    resolved: 0
+    resolved: 0,
+    escalated: 0
   });
 
   useEffect(() => {
@@ -111,7 +156,7 @@ export default function Support() {
       
       if (!ticketsData || ticketsData.length === 0) {
         setTickets([]);
-        setStats({ total: 0, open: 0, inProgress: 0, resolved: 0 });
+        setStats({ total: 0, open: 0, inProgress: 0, resolved: 0, escalated: 0 });
         return;
       }
 
@@ -119,7 +164,7 @@ export default function Support() {
       const userIds = [...new Set(ticketsData.map(t => t.user_id))];
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, name, email')
+        .select('id, name, email, phone, created_at, last_seen_at, status_plano')
         .in('id', userIds);
       
       if (profilesError) throw profilesError;
@@ -138,7 +183,8 @@ export default function Support() {
         total: ticketsData.length,
         open: ticketsData.filter(t => t.status === 'open').length,
         inProgress: ticketsData.filter(t => t.status === 'in_progress').length,
-        resolved: ticketsData.filter(t => t.status === 'resolved' || t.status === 'closed').length
+        resolved: ticketsData.filter(t => t.status === 'resolved' || t.status === 'closed').length,
+        escalated: ticketsData.filter(t => t.escalated_to_admin === true).length
       });
     } catch (error) {
       console.error('Erro ao buscar tickets:', error);
@@ -164,10 +210,50 @@ export default function Support() {
     }
   };
 
+  const fetchUserDetails = async (userId: string) => {
+    try {
+      setLoadingUserDetails(true);
+      
+      // Buscar shows do usuário (últimos 5, sem dados financeiros)
+      const { data: shows, error: showsError } = await supabase
+        .from('shows')
+        .select('id, venue_name, date_local, time_local')
+        .eq('uid', userId)
+        .order('date_local', { ascending: false })
+        .limit(5);
+      
+      if (showsError) {
+        console.error('Erro ao buscar shows:', showsError);
+      } else {
+        setUserShows(shows || []);
+      }
+
+      // Buscar role do usuário
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .single();
+      
+      if (roleError && roleError.code !== 'PGRST116') {
+        console.error('Erro ao buscar role:', roleError);
+      } else {
+        setUserRole(roleData?.role || null);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar detalhes do usuário:', error);
+    } finally {
+      setLoadingUserDetails(false);
+    }
+  };
+
   const handleViewTicket = async (ticket: SupportTicket) => {
     const responses = await fetchTicketResponses(ticket.id);
     setSelectedTicket({ ...ticket, responses });
     setShowTicketDialog(true);
+    
+    // Buscar detalhes adicionais do usuário
+    fetchUserDetails(ticket.user_id);
   };
 
   const handleRespondTicket = async () => {
@@ -258,6 +344,92 @@ export default function Support() {
     }
   };
 
+  const handleEscalateTicket = async () => {
+    if (!selectedTicket || !escalationCategory) {
+      toast.error('Selecione um motivo para escalar');
+      return;
+    }
+
+    try {
+      setEscalating(true);
+
+      const fullReason = escalationReason 
+        ? `${escalationCategory}: ${escalationReason}`
+        : escalationCategory;
+
+      // Atualizar ticket com escalação
+      const { error: updateError } = await supabase
+        .from('support_tickets')
+        .update({
+          escalated_to_admin: true,
+          escalated_at: new Date().toISOString(),
+          escalation_reason: fullReason,
+          escalated_by: user?.id,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedTicket.id);
+
+      if (updateError) throw updateError;
+
+      // Criar notificação para admins
+      const { error: notifError } = await supabase
+        .from('notifications')
+        .insert({
+          title: '🚨 Ticket Escalado',
+          message: `Ticket "${selectedTicket.subject}" foi escalado para admin. Motivo: ${fullReason}`,
+          link: '/admin?tab=escalados',
+          target_role: null, // Será visível para admins pela policy
+          created_by: user?.id
+        });
+
+      if (notifError) {
+        console.error('Erro ao criar notificação:', notifError);
+      }
+
+      toast.success('Ticket escalado para admin!');
+      setShowEscalateDialog(false);
+      setEscalationReason('');
+      setEscalationCategory('');
+      setShowTicketDialog(false);
+      fetchTickets();
+    } catch (error) {
+      console.error('Erro ao escalar ticket:', error);
+      toast.error('Erro ao escalar ticket');
+    } finally {
+      setEscalating(false);
+    }
+  };
+
+  const handleSendNotification = async () => {
+    if (!selectedTicket || !notificationTitle.trim() || !notificationMessage.trim()) {
+      toast.error('Preencha título e mensagem');
+      return;
+    }
+
+    try {
+      setSendingNotification(true);
+
+      await supabase.functions.invoke('create-notification', {
+        body: {
+          userId: selectedTicket.user_id,
+          title: notificationTitle,
+          message: notificationMessage,
+          link: '/app-hub'
+        }
+      });
+
+      toast.success('Notificação enviada!');
+      setShowNotificationDialog(false);
+      setNotificationTitle('');
+      setNotificationMessage('');
+    } catch (error) {
+      console.error('Erro ao enviar notificação:', error);
+      toast.error('Erro ao enviar notificação');
+    } finally {
+      setSendingNotification(false);
+    }
+  };
+
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -293,6 +465,17 @@ export default function Support() {
         return <Badge variant="secondary">Baixa</Badge>;
       default:
         return <Badge variant="outline">{priority}</Badge>;
+    }
+  };
+
+  const getRoleBadge = (role: string | null) => {
+    switch (role) {
+      case 'artist':
+        return <Badge className="bg-purple-500">Artista</Badge>;
+      case 'musician':
+        return <Badge className="bg-blue-500">Músico</Badge>;
+      default:
+        return <Badge variant="outline">Sem role</Badge>;
     }
   };
 
@@ -378,7 +561,7 @@ export default function Support() {
 
       <main className="container px-4 py-6">
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4 mb-6">
+        <div className="grid gap-4 md:grid-cols-5 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total</CardTitle>
@@ -416,6 +599,16 @@ export default function Support() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-500">{stats.resolved}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Escalados</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-orange-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-500">{stats.escalated}</div>
             </CardContent>
           </Card>
         </div>
@@ -480,6 +673,7 @@ export default function Support() {
                       <TableHead>Assunto</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Prioridade</TableHead>
+                      <TableHead>Escalado</TableHead>
                       <TableHead>Data</TableHead>
                       <TableHead>Ações</TableHead>
                     </TableRow>
@@ -498,6 +692,13 @@ export default function Support() {
                         </TableCell>
                         <TableCell>{getStatusBadge(ticket.status)}</TableCell>
                         <TableCell>{getPriorityBadge(ticket.priority)}</TableCell>
+                        <TableCell>
+                          {ticket.escalated_to_admin ? (
+                            <Badge className="bg-orange-500">Sim</Badge>
+                          ) : (
+                            <Badge variant="outline">Não</Badge>
+                          )}
+                        </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {format(new Date(ticket.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                         </TableCell>
@@ -523,7 +724,7 @@ export default function Support() {
 
       {/* Ticket Detail Dialog */}
       <Dialog open={showTicketDialog} onOpenChange={setShowTicketDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gray-900 text-white border-gray-700">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-900 text-white border-gray-700">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
@@ -532,123 +733,363 @@ export default function Support() {
             <DialogDescription className="flex items-center gap-2">
               {selectedTicket && getStatusBadge(selectedTicket.status)}
               {selectedTicket && getPriorityBadge(selectedTicket.priority)}
+              {selectedTicket?.escalated_to_admin && (
+                <Badge className="bg-orange-500">Escalado</Badge>
+              )}
             </DialogDescription>
           </DialogHeader>
 
           {selectedTicket && (
-            <div className="space-y-4">
-              {/* Ticket Info */}
-              <Card className="bg-gray-800 border-gray-700">
-                <CardContent className="pt-4 text-gray-200">
-                  <div className="grid gap-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Usuário:</span>
-                      <span>{selectedTicket.profile?.name} ({selectedTicket.profile?.email})</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">User ID:</span>
-                      <span className="font-mono text-xs">{selectedTicket.user_id}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Criado em:</span>
-                      <span>{format(new Date(selectedTicket.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Atualizado em:</span>
-                      <span>{format(new Date(selectedTicket.updated_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Original Message */}
-              <Card className="bg-gray-800 border-gray-700">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-gray-200">Mensagem Original</CardTitle>
-                </CardHeader>
-                <CardContent className="text-gray-200">
-                  <p className="text-sm whitespace-pre-wrap">{selectedTicket.message}</p>
-                  {selectedTicket.attachment_url && (
-                    <a 
-                      href={selectedTicket.attachment_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-primary text-sm underline mt-2 inline-block"
-                    >
-                      Ver anexo
-                    </a>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Responses */}
-              {selectedTicket.responses && selectedTicket.responses.length > 0 && (
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Left Column - User Details */}
+              <div className="space-y-4">
+                {/* User Info */}
                 <Card className="bg-gray-800 border-gray-700">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-gray-200">Histórico de Respostas</CardTitle>
+                    <CardTitle className="text-sm text-gray-200 flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Dados do Usuário
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3 text-gray-200">
-                    {selectedTicket.responses.map((response) => (
-                      <div 
-                        key={response.id} 
-                        className={`p-3 rounded-lg ${response.is_admin ? 'bg-primary/10 ml-4' : 'bg-muted mr-4'}`}
-                      >
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-xs font-medium">
-                            {response.is_admin ? '🛡️ Suporte' : '👤 Usuário'}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {format(new Date(response.created_at), "dd/MM HH:mm", { locale: ptBR })}
-                          </span>
-                        </div>
-                        <p className="text-sm whitespace-pre-wrap">{response.message}</p>
+                  <CardContent className="text-gray-200">
+                    <div className="grid gap-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Nome:</span>
+                        <span>{selectedTicket.profile?.name}</span>
                       </div>
-                    ))}
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Email:</span>
+                        <span>{selectedTicket.profile?.email}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Telefone:</span>
+                        <span>{selectedTicket.profile?.phone || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">User ID:</span>
+                        <span className="font-mono text-xs">{selectedTicket.user_id}</span>
+                      </div>
+                      <Separator className="my-2 bg-gray-700" />
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Tipo:</span>
+                        {loadingUserDetails ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          getRoleBadge(userRole)
+                        )}
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Plano:</span>
+                        <span>
+                          {selectedTicket.profile?.status_plano === 'ativo' ? (
+                            <Badge className="bg-green-500">Ativo</Badge>
+                          ) : (
+                            <Badge variant="secondary">Inativo</Badge>
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Conta criada:</span>
+                        <span>
+                          {selectedTicket.profile?.created_at 
+                            ? format(new Date(selectedTicket.profile.created_at), "dd/MM/yyyy", { locale: ptBR })
+                            : 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Último acesso:</span>
+                        <span>
+                          {selectedTicket.profile?.last_seen_at 
+                            ? format(new Date(selectedTicket.profile.last_seen_at), "dd/MM/yyyy HH:mm", { locale: ptBR })
+                            : 'N/A'}
+                        </span>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
-              )}
 
-              {/* Status Update */}
-              <div className="flex gap-2">
-                <Select 
-                  value={selectedTicket.status} 
-                  onValueChange={(value) => handleUpdateStatus(selectedTicket.id, value)}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Alterar status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="open">Aberto</SelectItem>
-                    <SelectItem value="in_progress">Em Andamento</SelectItem>
-                    <SelectItem value="resolved">Resolvido</SelectItem>
-                    <SelectItem value="closed">Fechado</SelectItem>
-                  </SelectContent>
-                </Select>
+                {/* Recent Shows */}
+                <Card className="bg-gray-800 border-gray-700">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm text-gray-200 flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Shows Recentes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-gray-200">
+                    {loadingUserDetails ? (
+                      <div className="flex justify-center py-4">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                      </div>
+                    ) : userShows.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-2">
+                        Nenhum show encontrado
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {userShows.map((show) => (
+                          <div key={show.id} className="flex items-center gap-2 text-sm p-2 bg-gray-700/50 rounded">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <div className="flex-1">
+                              <div className="font-medium">{show.venue_name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {format(new Date(show.date_local), "dd/MM/yyyy", { locale: ptBR })} às {show.time_local}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Support Actions */}
+                <Card className="bg-gray-800 border-gray-700">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm text-gray-200">Ações Rápidas</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-start"
+                      onClick={() => setShowNotificationDialog(true)}
+                    >
+                      <Bell className="h-4 w-4 mr-2" />
+                      Enviar Notificação Individual
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-start"
+                      onClick={() => handleUpdateStatus(selectedTicket.id, 'resolved')}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Marcar como Resolvido
+                    </Button>
+                    {!selectedTicket.escalated_to_admin && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full justify-start text-orange-400 border-orange-400 hover:bg-orange-400/10"
+                        onClick={() => setShowEscalateDialog(true)}
+                      >
+                        <ArrowUpRight className="h-4 w-4 mr-2" />
+                        Escalar para Admin
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
 
-              {/* Response Form */}
-              <div className="space-y-2">
-                <Textarea
-                  placeholder="Digite sua resposta..."
-                  value={responseMessage}
-                  onChange={(e) => setResponseMessage(e.target.value)}
-                  rows={4}
-                />
-                <Button 
-                  onClick={handleRespondTicket} 
-                  disabled={sendingResponse || !responseMessage.trim()}
-                  className="w-full"
-                >
-                  {sendingResponse ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <Send className="h-4 w-4 mr-2" />
-                  )}
-                  Enviar Resposta
-                </Button>
+              {/* Right Column - Ticket Details */}
+              <div className="space-y-4">
+                {/* Original Message */}
+                <Card className="bg-gray-800 border-gray-700">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm text-gray-200">Mensagem Original</CardTitle>
+                    <p className="text-xs text-muted-foreground">
+                      {format(new Date(selectedTicket.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                    </p>
+                  </CardHeader>
+                  <CardContent className="text-gray-200">
+                    <p className="text-sm whitespace-pre-wrap">{selectedTicket.message}</p>
+                    {selectedTicket.attachment_url && (
+                      <a 
+                        href={selectedTicket.attachment_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-primary text-sm underline mt-2 inline-block"
+                      >
+                        Ver anexo
+                      </a>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Responses */}
+                {selectedTicket.responses && selectedTicket.responses.length > 0 && (
+                  <Card className="bg-gray-800 border-gray-700">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm text-gray-200">Histórico de Respostas</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-gray-200 max-h-[200px] overflow-y-auto">
+                      {selectedTicket.responses.map((response) => (
+                        <div 
+                          key={response.id} 
+                          className={`p-3 rounded-lg ${response.is_admin ? 'bg-primary/10 ml-4' : 'bg-muted mr-4'}`}
+                        >
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-xs font-medium">
+                              {response.is_admin ? '🛡️ Suporte' : '👤 Usuário'}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {format(new Date(response.created_at), "dd/MM HH:mm", { locale: ptBR })}
+                            </span>
+                          </div>
+                          <p className="text-sm whitespace-pre-wrap">{response.message}</p>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Status Update */}
+                <div className="flex gap-2">
+                  <Select 
+                    value={selectedTicket.status} 
+                    onValueChange={(value) => handleUpdateStatus(selectedTicket.id, value)}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Alterar status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="open">Aberto</SelectItem>
+                      <SelectItem value="in_progress">Em Andamento</SelectItem>
+                      <SelectItem value="resolved">Resolvido</SelectItem>
+                      <SelectItem value="closed">Fechado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Response Form */}
+                <div className="space-y-2">
+                  <Textarea
+                    placeholder="Digite sua resposta..."
+                    value={responseMessage}
+                    onChange={(e) => setResponseMessage(e.target.value)}
+                    rows={4}
+                  />
+                  <Button 
+                    onClick={handleRespondTicket} 
+                    disabled={sendingResponse || !responseMessage.trim()}
+                    className="w-full"
+                  >
+                    {sendingResponse ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Enviar Resposta
+                  </Button>
+                </div>
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Escalate Dialog */}
+      <Dialog open={showEscalateDialog} onOpenChange={setShowEscalateDialog}>
+        <DialogContent className="bg-gray-900 text-white border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              Escalar para Admin
+            </DialogTitle>
+            <DialogDescription>
+              O ticket será enviado para a fila de análise do admin.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Motivo da escalação</Label>
+              <Select value={escalationCategory} onValueChange={setEscalationCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o motivo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Problema de pagamento">Problema de pagamento</SelectItem>
+                  <SelectItem value="Solicitação LGPD">Solicitação LGPD</SelectItem>
+                  <SelectItem value="Bug técnico">Bug técnico</SelectItem>
+                  <SelectItem value="Reclamação grave">Reclamação grave</SelectItem>
+                  <SelectItem value="Outro">Outro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Detalhes adicionais (opcional)</Label>
+              <Textarea
+                placeholder="Descreva detalhes que podem ajudar o admin..."
+                value={escalationReason}
+                onChange={(e) => setEscalationReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEscalateDialog(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleEscalateTicket}
+              disabled={escalating || !escalationCategory}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              {escalating ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <ArrowUpRight className="h-4 w-4 mr-2" />
+              )}
+              Escalar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send Notification Dialog */}
+      <Dialog open={showNotificationDialog} onOpenChange={setShowNotificationDialog}>
+        <DialogContent className="bg-gray-900 text-white border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5" />
+              Enviar Notificação
+            </DialogTitle>
+            <DialogDescription>
+              Envie uma notificação push + in-app para {selectedTicket?.profile?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Título</Label>
+              <Input
+                placeholder="Título da notificação"
+                value={notificationTitle}
+                onChange={(e) => setNotificationTitle(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Mensagem</Label>
+              <Textarea
+                placeholder="Mensagem da notificação"
+                value={notificationMessage}
+                onChange={(e) => setNotificationMessage(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNotificationDialog(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleSendNotification}
+              disabled={sendingNotification || !notificationTitle.trim() || !notificationMessage.trim()}
+            >
+              {sendingNotification ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Send className="h-4 w-4 mr-2" />
+              )}
+              Enviar
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
