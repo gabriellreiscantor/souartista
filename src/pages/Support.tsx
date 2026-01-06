@@ -33,7 +33,11 @@ import {
   MapPin,
   Bell,
   AlertTriangle,
-  ArrowUpRight
+  ArrowUpRight,
+  Mail,
+  Key,
+  Phone,
+  Pencil
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -118,6 +122,17 @@ export default function Support() {
   const [notificationTitle, setNotificationTitle] = useState('');
   const [notificationMessage, setNotificationMessage] = useState('');
   const [sendingNotification, setSendingNotification] = useState(false);
+
+  // Edit user dialogs
+  const [showEditEmailDialog, setShowEditEmailDialog] = useState(false);
+  const [showEditPasswordDialog, setShowEditPasswordDialog] = useState(false);
+  const [showEditProfileDialog, setShowEditProfileDialog] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [editName, setEditName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [savingUserData, setSavingUserData] = useState(false);
 
   // Stats
   const [stats, setStats] = useState({
@@ -428,6 +443,131 @@ export default function Support() {
     } finally {
       setSendingNotification(false);
     }
+  };
+
+  const handleUpdateEmail = async () => {
+    if (!selectedTicket || !newEmail.trim()) {
+      toast.error('Email é obrigatório');
+      return;
+    }
+
+    try {
+      setSavingUserData(true);
+
+      const { data, error } = await supabase.functions.invoke('support-manage-user', {
+        body: {
+          action: 'update_email',
+          userId: selectedTicket.user_id,
+          newEmail: newEmail.trim()
+        }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success('Email atualizado!');
+      setShowEditEmailDialog(false);
+      setNewEmail('');
+      
+      // Atualizar dados do ticket
+      setSelectedTicket({
+        ...selectedTicket,
+        profile: { ...selectedTicket.profile!, email: newEmail.trim() }
+      });
+      fetchTickets();
+    } catch (error: any) {
+      console.error('Erro ao atualizar email:', error);
+      toast.error(error?.message || 'Erro ao atualizar email');
+    } finally {
+      setSavingUserData(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!selectedTicket || !newPassword) {
+      toast.error('Senha é obrigatória');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error('Senha deve ter no mínimo 6 caracteres');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error('Senhas não coincidem');
+      return;
+    }
+
+    try {
+      setSavingUserData(true);
+
+      const { data, error } = await supabase.functions.invoke('support-manage-user', {
+        body: {
+          action: 'reset_password',
+          userId: selectedTicket.user_id,
+          newPassword
+        }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success('Senha resetada!');
+      setShowEditPasswordDialog(false);
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      console.error('Erro ao resetar senha:', error);
+      toast.error(error?.message || 'Erro ao resetar senha');
+    } finally {
+      setSavingUserData(false);
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!selectedTicket) return;
+
+    try {
+      setSavingUserData(true);
+
+      const { data, error } = await supabase.functions.invoke('support-manage-user', {
+        body: {
+          action: 'update_profile',
+          userId: selectedTicket.user_id,
+          newName: editName.trim() || undefined,
+          newPhone: editPhone.trim() || undefined
+        }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success('Perfil atualizado!');
+      setShowEditProfileDialog(false);
+      
+      // Atualizar dados do ticket
+      setSelectedTicket({
+        ...selectedTicket,
+        profile: { 
+          ...selectedTicket.profile!, 
+          name: editName.trim() || selectedTicket.profile?.name || '',
+          phone: editPhone.trim() || selectedTicket.profile?.phone
+        }
+      });
+      fetchTickets();
+    } catch (error: any) {
+      console.error('Erro ao atualizar perfil:', error);
+      toast.error(error?.message || 'Erro ao atualizar perfil');
+    } finally {
+      setSavingUserData(false);
+    }
+  };
+
+  const openEditProfileDialog = () => {
+    setEditName(selectedTicket?.profile?.name || '');
+    setEditPhone(selectedTicket?.profile?.phone || '');
+    setShowEditProfileDialog(true);
   };
 
   const handleSignOut = async () => {
@@ -843,10 +983,52 @@ export default function Support() {
                   </CardContent>
                 </Card>
 
+                {/* User Management Actions */}
+                <Card className="bg-gray-800 border-gray-700">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm text-gray-200 flex items-center gap-2">
+                      <Pencil className="h-4 w-4" />
+                      Gerenciar Usuário
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-start"
+                      onClick={openEditProfileDialog}
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Editar Nome/Telefone
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-start"
+                      onClick={() => {
+                        setNewEmail(selectedTicket.profile?.email || '');
+                        setShowEditEmailDialog(true);
+                      }}
+                    >
+                      <Mail className="h-4 w-4 mr-2" />
+                      Alterar Email
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-start"
+                      onClick={() => setShowEditPasswordDialog(true)}
+                    >
+                      <Key className="h-4 w-4 mr-2" />
+                      Resetar Senha
+                    </Button>
+                  </CardContent>
+                </Card>
+
                 {/* Support Actions */}
                 <Card className="bg-gray-800 border-gray-700">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-gray-200">Ações Rápidas</CardTitle>
+                    <CardTitle className="text-sm text-gray-200">Ações do Ticket</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     <Button 
@@ -1088,6 +1270,158 @@ export default function Support() {
                 <Send className="h-4 w-4 mr-2" />
               )}
               Enviar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Email Dialog */}
+      <Dialog open={showEditEmailDialog} onOpenChange={setShowEditEmailDialog}>
+        <DialogContent className="bg-gray-900 text-white border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              Alterar Email
+            </DialogTitle>
+            <DialogDescription>
+              Altere o email do usuário {selectedTicket?.profile?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Novo Email</Label>
+              <Input
+                type="email"
+                placeholder="novo@email.com"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditEmailDialog(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleUpdateEmail}
+              disabled={savingUserData || !newEmail.trim()}
+            >
+              {savingUserData ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Mail className="h-4 w-4 mr-2" />
+              )}
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={showEditPasswordDialog} onOpenChange={setShowEditPasswordDialog}>
+        <DialogContent className="bg-gray-900 text-white border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Key className="h-5 w-5" />
+              Resetar Senha
+            </DialogTitle>
+            <DialogDescription>
+              Defina uma nova senha para {selectedTicket?.profile?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Nova Senha</Label>
+              <Input
+                type="password"
+                placeholder="Mínimo 6 caracteres"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Confirmar Senha</Label>
+              <Input
+                type="password"
+                placeholder="Repita a senha"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowEditPasswordDialog(false);
+              setNewPassword('');
+              setConfirmPassword('');
+            }}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleResetPassword}
+              disabled={savingUserData || !newPassword || newPassword !== confirmPassword}
+            >
+              {savingUserData ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Key className="h-4 w-4 mr-2" />
+              )}
+              Resetar Senha
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Profile Dialog */}
+      <Dialog open={showEditProfileDialog} onOpenChange={setShowEditProfileDialog}>
+        <DialogContent className="bg-gray-900 text-white border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Editar Perfil
+            </DialogTitle>
+            <DialogDescription>
+              Edite os dados do usuário {selectedTicket?.profile?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Nome</Label>
+              <Input
+                placeholder="Nome do usuário"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Telefone</Label>
+              <Input
+                placeholder="(00) 00000-0000"
+                value={editPhone}
+                onChange={(e) => setEditPhone(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditProfileDialog(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleUpdateProfile}
+              disabled={savingUserData}
+            >
+              {savingUserData ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Pencil className="h-4 w-4 mr-2" />
+              )}
+              Salvar
             </Button>
           </DialogFooter>
         </DialogContent>
