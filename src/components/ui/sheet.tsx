@@ -53,14 +53,14 @@ interface SheetContentProps
   hideCloseButton?: boolean;
 }
 
-const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Content>, SheetContentProps>(
-  ({ side = "right", className, children, hideCloseButton = false, ...props }, ref) => (
+const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Content>, SheetContentProps & { style?: React.CSSProperties }>(
+  ({ side = "right", className, children, hideCloseButton = false, style, ...props }, ref) => (
     <SheetPortal>
       <SheetOverlay />
       <SheetPrimitive.Content 
         ref={ref} 
         className={cn(sheetVariants({ side }), "touch-manipulation overflow-x-hidden", className)} 
-        style={{ touchAction: 'pan-y', overscrollBehaviorX: 'none', paddingTop: 'calc(env(safe-area-inset-top, 0px) + 80px)' }}
+        style={{ touchAction: 'pan-y', overscrollBehaviorX: 'none', paddingTop: 'calc(env(safe-area-inset-top, 0px) + 80px)', ...style }}
         {...props}
       >
         {children}
