@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Mail, Phone, Camera, LogOut, Trash2 } from 'lucide-react';
+import { User, Mail, Phone, Camera, LogOut, Trash2, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ImageEditor } from '@/components/ImageEditor';
 import { useCamera } from '@/hooks/useCamera';
+import { useInAppReview } from '@/hooks/useInAppReview';
 
 const ArtistProfile = () => {
   const { user, userData, signOut, refetchUserData } = useAuth();
@@ -50,6 +51,12 @@ const ArtistProfile = () => {
   };
 
   const { takePicture, isNative } = useCamera({ onPhotoSelected: handlePhotoSelected });
+  const { forceRequestReview, isAvailable: isReviewAvailable, isIOS } = useInAppReview();
+
+  const handleRateApp = async () => {
+    await forceRequestReview();
+    toast.success('Obrigado pelo seu feedback!');
+  };
 
   useEffect(() => {
     if (userData) {
@@ -350,6 +357,24 @@ const ArtistProfile = () => {
               <div className="mt-6">
                 <FeedbackForm />
               </div>
+
+              {/* Rate App Section - Only on native */}
+              {isReviewAvailable && (
+                <div className="bg-white border border-border rounded-lg p-6 text-center">
+                  <Star className="w-8 h-8 mx-auto mb-2 text-yellow-500 fill-yellow-500" />
+                  <h3 className="font-semibold text-lg mb-1 text-foreground">Gostando do Sou Artista?</h3>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Sua avaliação nos ajuda a melhorar o app!
+                  </p>
+                  <Button 
+                    onClick={handleRateApp}
+                    className="bg-primary text-white hover:bg-primary/90"
+                  >
+                    <Star className="w-4 h-4 mr-2" />
+                    Avaliar na {isIOS ? 'App Store' : 'Play Store'}
+                  </Button>
+                </div>
+              )}
             </div>
           </main>
 
