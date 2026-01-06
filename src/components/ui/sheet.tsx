@@ -60,12 +60,12 @@ const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Con
       <SheetPrimitive.Content 
         ref={ref} 
         className={cn(sheetVariants({ side }), "touch-manipulation overflow-x-hidden", className)} 
-        style={{ touchAction: 'pan-y', overscrollBehaviorX: 'none', paddingTop: 'calc(env(safe-area-inset-top, 0px) + 80px)', ...style }}
+        style={{ touchAction: 'pan-y', overscrollBehaviorX: 'none', paddingTop: 'env(safe-area-inset-top, 0px)', ...style }}
         {...props}
       >
         {children}
         {!hideCloseButton && (
-          <SheetPrimitive.Close className="absolute right-4 bg-primary rounded-full p-1.5 ring-offset-background transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 60px)' }}>
+          <SheetPrimitive.Close className="absolute right-4 bg-primary rounded-full p-1.5 ring-offset-background transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
             <X className="h-5 w-5 text-primary-foreground" />
             <span className="sr-only">Close</span>
           </SheetPrimitive.Close>

@@ -169,9 +169,11 @@ const Sidebar = React.forwardRef<
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+              paddingTop: 'env(safe-area-inset-top, 0px)',
             } as React.CSSProperties
           }
           side={side}
+          hideCloseButton
         >
           <div className="flex h-full w-full flex-col">{children}</div>
         </SheetContent>
