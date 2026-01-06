@@ -10,13 +10,15 @@ import { Progress } from '@/components/ui/progress';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import { Music, Loader2, ArrowLeft, CalendarIcon, Camera, Mail } from 'lucide-react';
+import { Music, Loader2, ArrowLeft, CalendarIcon, Camera, Mail, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { ImageEditor } from '@/components/ImageEditor';
 import { supabase } from '@/integrations/supabase/client';
 import logo from '@/assets/logo.png';
 import { cn } from '@/lib/utils';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Formatação de CPF: 000.000.000-00
 const formatCPF = (value: string) => {
@@ -71,6 +73,10 @@ const Register = () => {
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [otpError, setOtpError] = useState('');
+
+  // Estados para modais de Termos e Privacidade
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
+  const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
 
   // NÃO redireciona automaticamente - deixa o fluxo do formulário seguir
   // O redirecionamento acontece apenas após verificar o OTP no step 4
@@ -713,6 +719,26 @@ const Register = () => {
                   )}
                 </div>
 
+                {/* Texto de aceite dos Termos e Privacidade */}
+                <p className="text-xs text-center text-[#C8BAD4]">
+                  Ao criar sua conta, você concorda com os{' '}
+                  <button
+                    type="button"
+                    onClick={() => setTermsModalOpen(true)}
+                    className="text-[#B96FFF] hover:underline font-medium"
+                  >
+                    Termos de Uso
+                  </button>{' '}
+                  e a{' '}
+                  <button
+                    type="button"
+                    onClick={() => setPrivacyModalOpen(true)}
+                    className="text-[#B96FFF] hover:underline font-medium"
+                  >
+                    Política de Privacidade
+                  </button>
+                </p>
+
                 <div className="flex gap-2">
                   <Button type="button" onClick={handleBack} variant="outline" className="flex-1 h-11" disabled={loading}>
                     <ArrowLeft className="w-4 h-4 mr-2" />
@@ -833,6 +859,108 @@ const Register = () => {
           onSave={handlePhotoSave}
         />
       )}
+
+      {/* Modal Termos de Uso */}
+      <Dialog open={termsModalOpen} onOpenChange={setTermsModalOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle>Termos de Uso</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="px-6 pb-6 max-h-[60vh]">
+            <div className="space-y-4 text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">Última atualização: Janeiro de 2026</p>
+              
+              <section>
+                <h3 className="font-semibold text-foreground mb-2">1. Aceitação dos Termos</h3>
+                <p>Ao acessar e usar o SouArtista, você concorda com estes Termos de Uso. Se você não concordar com qualquer parte destes termos, não poderá usar nossos serviços.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-foreground mb-2">2. Descrição do Serviço</h3>
+                <p>O SouArtista é uma plataforma de gestão profissional para artistas e músicos, oferecendo ferramentas para gerenciamento de shows, finanças, agenda e relatórios.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-foreground mb-2">3. Cadastro e Conta</h3>
+                <p>Você é responsável por manter a confidencialidade de sua conta e senha. Todas as atividades realizadas em sua conta são de sua responsabilidade.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-foreground mb-2">4. Acesso Administrativo e Uso de Dados</h3>
+                <p>Para fins de operação, suporte, segurança, análise e gestão da plataforma, os administradores do SouArtista (incluindo perfis de CEO, COO ou funções equivalentes) poderão acessar dados cadastrais e operacionais dos usuários, tais como nome, e-mail, telefone, CPF, informações de plano, bem como dados financeiros inseridos na plataforma relacionados à atividade profissional do usuário, incluindo registros de shows, cachês, receitas, despesas e indicadores financeiros agregados.</p>
+                <p className="mt-2">O SouArtista não acessa senhas, códigos de autenticação, dados completos de cartões de crédito ou informações bancárias sensíveis, os quais são processados exclusivamente por parceiros de pagamento externos.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-foreground mb-2">5. Uso Aceitável</h3>
+                <p>Você concorda em usar o serviço apenas para fins legais e de acordo com estes termos. É proibido usar o serviço para qualquer atividade ilegal ou não autorizada.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-foreground mb-2">6. Pagamentos e Assinaturas</h3>
+                <p>Os planos de assinatura são cobrados de forma recorrente. Você pode cancelar a qualquer momento, mas não haverá reembolso proporcional do período já pago.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-foreground mb-2">7. Limitação de Responsabilidade</h3>
+                <p>O SouArtista não se responsabiliza por perdas ou danos indiretos resultantes do uso ou impossibilidade de uso do serviço.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-foreground mb-2">8. Contato</h3>
+                <p>Para dúvidas sobre estes termos, entre em contato pelo e-mail: contato@souartista.com.br</p>
+              </section>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Política de Privacidade */}
+      <Dialog open={privacyModalOpen} onOpenChange={setPrivacyModalOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle>Política de Privacidade</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="px-6 pb-6 max-h-[60vh]">
+            <div className="space-y-4 text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">Última atualização: Janeiro de 2026</p>
+              
+              <section>
+                <h3 className="font-semibold text-foreground mb-2">1. Informações que Coletamos</h3>
+                <p>Coletamos informações fornecidas diretamente pelo usuário no momento do cadastro e durante o uso da plataforma, incluindo nome, e-mail, telefone, CPF, data de nascimento, informações de plano e dados relacionados à atividade profissional, como registros de shows, cachês, receitas, despesas e outros dados financeiros inseridos pelo próprio usuário.</p>
+                <p className="mt-2">Também coletamos informações técnicas e de uso da plataforma, como datas de acesso, interações com funcionalidades e dados necessários para suporte e segurança.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-foreground mb-2">2. Como Usamos Suas Informações</h3>
+                <p>Utilizamos suas informações para fornecer e melhorar nossos serviços, processar pagamentos, enviar comunicações importantes e personalizar sua experiência.</p>
+                <p className="mt-2">As informações coletadas poderão ser acessadas por administradores autorizados da plataforma exclusivamente para fins de operação, manutenção, suporte ao usuário, análise interna, geração de relatórios, prevenção a fraudes e melhoria contínua do serviço.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-foreground mb-2">3. Compartilhamento de Informações</h3>
+                <p>Não vendemos suas informações pessoais. Podemos compartilhar dados com processadores de pagamento e outros parceiros essenciais para a operação do serviço.</p>
+                <p className="mt-2">O SouArtista não comercializa dados pessoais. Dados financeiros de pagamento são processados por parceiros externos (como operadoras de pagamento e lojas de aplicativos), não sendo armazenados integralmente em nossos sistemas.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-foreground mb-2">4. Segurança</h3>
+                <p>Implementamos medidas de segurança técnicas e organizacionais para proteger suas informações contra acesso não autorizado, alteração ou destruição.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-foreground mb-2">5. Seus Direitos</h3>
+                <p>Você tem direito de acessar, corrigir ou excluir suas informações pessoais. Para exercer esses direitos, entre em contato conosco.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-foreground mb-2">6. Contato</h3>
+                <p>Para questões sobre privacidade, entre em contato pelo e-mail: contato@souartista.com.br</p>
+              </section>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
