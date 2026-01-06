@@ -1596,29 +1596,77 @@ export default function Admin() {
                   {loading ? <div className="flex justify-center py-8">
                       <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
                     </div> : <>
-                      <div className="rounded-md border overflow-x-auto border-gray-200">
+                      {/* Mobile: Card layout */}
+                      <div className="md:hidden space-y-2">
+                        {paginatedUsers.map(user => (
+                          <div key={user.id} className="border border-gray-200 rounded-lg p-3 bg-white">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm text-gray-900 truncate">{user.name}</p>
+                                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                    <MoreVertical className="h-4 w-4 text-gray-600" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="bg-white text-gray-900 border border-gray-200">
+                                  <DropdownMenuItem className="hover:bg-gray-100" onClick={() => {
+                                    setEditingUser(user);
+                                    setEditName(user.name);
+                                    setShowEditDialog(true);
+                                  }}>
+                                    Editar Nome
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem className="hover:bg-gray-100" onClick={() => {
+                                    setEditingUser(user);
+                                    setEditStatus(user.status_plano);
+                                    setEditPlanType(user.plan_type || '');
+                                    setShowStatusDialog(true);
+                                  }}>
+                                    Gerenciar Plano
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem className="hover:bg-gray-100" onClick={() => copyToClipboard(user.id)}>
+                                    Copiar ID
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {getStatusBadge(user.status_plano)}
+                              {getPlanTypeBadge(user.plan_type)}
+                              {user.role && (
+                                <Badge className={user.role === 'artist' ? 'bg-purple-100 text-purple-800 text-xs' : 'bg-blue-100 text-blue-800 text-xs'}>
+                                  {user.role === 'artist' ? '🎸 Artista' : '🎵 Músico'}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Desktop: Table layout */}
+                      <div className="hidden md:block rounded-md border overflow-x-auto border-gray-200">
                         <table className="w-full bg-white">
                           <thead>
                             <tr className="border-b bg-gray-50 border-gray-200">
-                              <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900">Nome</th>
-                              <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900 hidden md:table-cell">Email</th>
-                              <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900 hidden lg:table-cell">Role</th>
-                              <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900">Status</th>
-                              <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900 hidden sm:table-cell">Cancelado</th>
-                              <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900 hidden lg:table-cell">ID</th>
-                              <th className="p-2 md:p-3 text-left font-medium text-sm text-gray-900">Ações</th>
+                              <th className="p-3 text-left font-medium text-sm text-gray-900">Nome</th>
+                              <th className="p-3 text-left font-medium text-sm text-gray-900">Email</th>
+                              <th className="p-3 text-left font-medium text-sm text-gray-900 hidden lg:table-cell">Role</th>
+                              <th className="p-3 text-left font-medium text-sm text-gray-900">Status</th>
+                              <th className="p-3 text-left font-medium text-sm text-gray-900">Cancelado</th>
+                              <th className="p-3 text-left font-medium text-sm text-gray-900 hidden lg:table-cell">ID</th>
+                              <th className="p-3 text-left font-medium text-sm text-gray-900">Ações</th>
                             </tr>
                           </thead>
                           <tbody>
                             {paginatedUsers.map(user => <tr key={user.id} className="border-b hover:bg-gray-50 border-gray-200">
-                                <td className="p-2 md:p-3">
-                                  <div>
-                                    <p className="font-medium text-sm text-gray-900">{user.name}</p>
-                                    <p className="text-xs text-gray-600 md:hidden truncate max-w-[160px]">{user.email}</p>
-                                  </div>
+                                <td className="p-3">
+                                  <p className="font-medium text-sm text-gray-900">{user.name}</p>
                                 </td>
-                                <td className="p-2 md:p-3 hidden md:table-cell text-gray-700">{user.email}</td>
-                                <td className="p-2 md:p-3 hidden lg:table-cell">
+                                <td className="p-3 text-gray-700">{user.email}</td>
+                                <td className="p-3 hidden lg:table-cell">
                                   {user.role ? (
                                     <Badge className={user.role === 'artist' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}>
                                       {user.role === 'artist' ? '🎸 Artista' : '🎵 Músico'}
@@ -1627,13 +1675,13 @@ export default function Admin() {
                                     <span className="text-xs text-gray-400">-</span>
                                   )}
                                 </td>
-                                <td className="p-1.5 md:p-3">
-                                  <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-1">
+                                <td className="p-3">
+                                  <div className="flex gap-1">
                                     {getStatusBadge(user.status_plano)}
                                     {getPlanTypeBadge(user.plan_type)}
                                   </div>
                                 </td>
-                                <td className="p-2 md:p-3 hidden sm:table-cell">
+                                <td className="p-3">
                                   {user.status_plano === 'cancelado' ? (
                                     <Badge className="bg-red-100 text-red-800 font-semibold">
                                       ✕ SIM
@@ -1642,7 +1690,7 @@ export default function Admin() {
                                     <span className="text-xs text-gray-500">Não</span>
                                   )}
                                 </td>
-                                <td className="p-2 md:p-3 hidden lg:table-cell">
+                                <td className="p-3 hidden lg:table-cell">
                                   <div className="flex items-center gap-2">
                                     <span className="text-xs text-gray-600 font-mono">
                                       {user.id.slice(0, 8)}...
@@ -1652,7 +1700,7 @@ export default function Admin() {
                                     </Button>
                                   </div>
                                 </td>
-                                <td className="p-2 md:p-3">
+                                <td className="p-3">
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                       <Button variant="ghost" size="sm">
@@ -1661,18 +1709,18 @@ export default function Admin() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="bg-white text-gray-900 border border-gray-200">
                                       <DropdownMenuItem className="hover:bg-gray-100" onClick={() => {
-                                setEditingUser(user);
-                                setEditName(user.name);
-                                setShowEditDialog(true);
-                              }}>
+                                        setEditingUser(user);
+                                        setEditName(user.name);
+                                        setShowEditDialog(true);
+                                      }}>
                                         Editar Nome
                                       </DropdownMenuItem>
                                       <DropdownMenuItem className="hover:bg-gray-100" onClick={() => {
-                                setEditingUser(user);
-                                setEditStatus(user.status_plano);
-                                setEditPlanType(user.plan_type || '');
-                                setShowStatusDialog(true);
-                              }}>
+                                        setEditingUser(user);
+                                        setEditStatus(user.status_plano);
+                                        setEditPlanType(user.plan_type || '');
+                                        setShowStatusDialog(true);
+                                      }}>
                                         Gerenciar Plano
                                       </DropdownMenuItem>
                                       <DropdownMenuItem className="hover:bg-gray-100" onClick={() => copyToClipboard(user.id)}>
