@@ -256,7 +256,7 @@ const ArtistProfile = () => {
                     size="sm"
                     onClick={handleRemovePhoto}
                     disabled={uploading}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="bg-primary text-white hover:bg-primary/90"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Remover Imagem
