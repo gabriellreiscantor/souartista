@@ -111,6 +111,7 @@ Deno.serve(async (req) => {
             body: message,
             link: '/artist/subscription',
             data: { type: 'subscription_reminder' },
+            source: 'subscription',
           });
           console.log(`📱 Push result for ${subscription.user_id}: sent=${pushResult.sent}, failed=${pushResult.failed}`);
         } catch (pushError) {

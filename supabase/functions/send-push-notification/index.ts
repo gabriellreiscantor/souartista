@@ -44,6 +44,7 @@ async function logPushAttempt(
       error_message: params.errorMessage || null,
       error_code: params.errorCode || null,
       response_data: params.responseData || null,
+      source: 'manual',
     });
   } catch (error) {
     console.error('[send-push-notification] ⚠️ Failed to log push attempt:', error);

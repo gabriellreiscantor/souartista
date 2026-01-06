@@ -212,6 +212,7 @@ Deno.serve(async (req) => {
             title: selectedTip.title,
             body: selectedTip.message,
             link: selectedTip.link,
+            source: 'engagement',
           });
           console.log(`📱 Push result for ${user.id}: sent=${pushResult.sent}, failed=${pushResult.failed}`);
         } catch (pushError) {

@@ -8,12 +8,53 @@ interface SendPushParams {
   body: string;
   link?: string;
   data?: Record<string, string>;
+  notificationId?: string;
+  source?: 'manual' | 'marketing' | 'show_reminder' | 'engagement' | 'subscription';
 }
 
 interface DeviceInfo {
   id: string;
   fcm_token: string;
   platform: string;
+  device_id?: string;
+}
+
+// Log push attempt to database
+async function logPushAttempt(
+  supabaseAdmin: any,
+  params: {
+    notificationId?: string;
+    userId: string;
+    deviceId?: string;
+    platform?: string;
+    fcmToken?: string;
+    title: string;
+    body: string;
+    status: 'sent' | 'failed' | 'invalid_token';
+    errorMessage?: string;
+    errorCode?: string;
+    responseData?: any;
+    source?: string;
+  }
+) {
+  try {
+    await supabaseAdmin.from('push_notification_logs').insert({
+      notification_id: params.notificationId || null,
+      user_id: params.userId,
+      device_id: params.deviceId || null,
+      platform: params.platform || null,
+      fcm_token_preview: params.fcmToken ? params.fcmToken.substring(0, 20) + '...' : null,
+      title: params.title,
+      body: params.body,
+      status: params.status,
+      error_message: params.errorMessage || null,
+      error_code: params.errorCode || null,
+      response_data: params.responseData || null,
+      source: params.source || 'manual',
+    });
+  } catch (error) {
+    console.error('[fcm-sender] ⚠️ Failed to log push attempt:', error);
+  }
 }
 
 // Get Firebase OAuth2 access token
@@ -99,7 +140,7 @@ export async function getAccessToken(): Promise<string> {
 
 // Send push notification directly via FCM API
 export async function sendPushToUser(params: SendPushParams): Promise<{ success: boolean; sent: number; failed: number }> {
-  const { supabaseAdmin, userId, title, body, link, data } = params;
+  const { supabaseAdmin, userId, title, body, link, data, notificationId, source = 'manual' } = params;
   
   let sent = 0;
   let failed = 0;
@@ -108,7 +149,7 @@ export async function sendPushToUser(params: SendPushParams): Promise<{ success:
     // Fetch user devices
     const { data: devices, error: devicesError } = await supabaseAdmin
       .from('user_devices')
-      .select('id, fcm_token, platform')
+      .select('id, fcm_token, platform, device_id')
       .eq('user_id', userId)
       .not('fcm_token', 'is', null);
 
@@ -135,7 +176,7 @@ export async function sendPushToUser(params: SendPushParams): Promise<{ success:
       return acc;
     }, []);
 
-    console.log(`[fcm-sender] Sending to ${uniqueDevices.length} devices for user ${userId}`);
+    console.log(`[fcm-sender] Sending to ${uniqueDevices.length} devices for user ${userId} (source: ${source})`);
 
     for (const device of uniqueDevices) {
       try {
@@ -195,16 +236,57 @@ export async function sendPushToUser(params: SendPushParams): Promise<{ success:
         );
 
         if (response.ok) {
+          const responseData = await response.json();
           sent++;
           console.log(`[fcm-sender] ✅ Sent to device ${device.id} (${device.platform})`);
+          
+          // Log successful push
+          await logPushAttempt(supabaseAdmin, {
+            notificationId,
+            userId,
+            deviceId: device.device_id,
+            platform: device.platform,
+            fcmToken: device.fcm_token,
+            title,
+            body,
+            status: 'sent',
+            responseData: { messageId: responseData.name },
+            source,
+          });
         } else {
           const errorData = await response.json();
           console.error(`[fcm-sender] ❌ FCM error for device ${device.id}:`, errorData);
           
-          // Remove invalid tokens
-          if (errorData.error?.details?.some((d: any) => 
+          const errorCode = errorData.error?.code;
+          const errorMessage = errorData.error?.message || 'Unknown FCM error';
+          const isUnregistered = errorData.error?.details?.some((d: any) => 
             d.errorCode === 'UNREGISTERED' || d.errorCode === 'INVALID_ARGUMENT'
-          )) {
+          );
+          
+          const isInvalidToken = errorCode === 404 || 
+            errorCode === 400 ||
+            isUnregistered ||
+            errorMessage.includes('not a valid FCM registration token') ||
+            errorMessage.includes('Requested entity was not found');
+          
+          // Log failed push
+          await logPushAttempt(supabaseAdmin, {
+            notificationId,
+            userId,
+            deviceId: device.device_id,
+            platform: device.platform,
+            fcmToken: device.fcm_token,
+            title,
+            body,
+            status: isInvalidToken ? 'invalid_token' : 'failed',
+            errorMessage,
+            errorCode: String(errorCode),
+            responseData: errorData,
+            source,
+          });
+          
+          // Remove invalid tokens
+          if (isInvalidToken) {
             console.log(`[fcm-sender] Removing invalid token for device ${device.id}`);
             await supabaseAdmin
               .from('user_devices')
@@ -216,6 +298,21 @@ export async function sendPushToUser(params: SendPushParams): Promise<{ success:
         }
       } catch (deviceError) {
         console.error(`[fcm-sender] Error sending to device ${device.id}:`, deviceError);
+        
+        // Log exception
+        await logPushAttempt(supabaseAdmin, {
+          notificationId,
+          userId,
+          deviceId: device.device_id,
+          platform: device.platform,
+          fcmToken: device.fcm_token,
+          title,
+          body,
+          status: 'failed',
+          errorMessage: deviceError instanceof Error ? deviceError.message : 'Unknown error',
+          source,
+        });
+        
         failed++;
       }
     }

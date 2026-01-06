@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Loader2, ChevronDown, ChevronUp, RefreshCw, Shield, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronUp, RefreshCw, Shield, CheckCircle2, XCircle, AlertTriangle, Filter } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface PushLog {
   id: string;
@@ -20,6 +21,7 @@ interface PushLog {
   error_message: string | null;
   error_code: string | null;
   sent_at: string;
+  source: string | null;
   user_name?: string;
 }
 
@@ -41,15 +43,17 @@ interface PushStats {
   sent: number;
   failed: number;
   invalidToken: number;
+  bySource: Record<string, number>;
 }
 
 export function PushNotificationLogs() {
   const [logs, setLogs] = useState<PushLog[]>([]);
   const [tokenHistory, setTokenHistory] = useState<TokenHistory[]>([]);
-  const [stats, setStats] = useState<PushStats>({ total: 0, sent: 0, failed: 0, invalidToken: 0 });
+  const [stats, setStats] = useState<PushStats>({ total: 0, sent: 0, failed: 0, invalidToken: 0, bySource: {} });
   const [loading, setLoading] = useState(true);
   const [logsOpen, setLogsOpen] = useState(false);
   const [tokenHistoryOpen, setTokenHistoryOpen] = useState(false);
+  const [sourceFilter, setSourceFilter] = useState<string>('all');
 
   const fetchData = async () => {
     setLoading(true);
@@ -58,12 +62,14 @@ export function PushNotificationLogs() {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-      const { data: logsData, error: logsError } = await supabase
+      let logsQuery = supabase
         .from('push_notification_logs')
         .select('*')
         .gte('sent_at', sevenDaysAgo.toISOString())
         .order('sent_at', { ascending: false })
         .limit(100);
+
+      const { data: logsData, error: logsError } = await logsQuery;
 
       if (logsError) throw logsError;
 
@@ -87,10 +93,18 @@ export function PushNotificationLogs() {
         const sent = logsData.filter(l => l.status === 'sent').length;
         const failed = logsData.filter(l => l.status === 'failed').length;
         const invalidToken = logsData.filter(l => l.status === 'invalid_token').length;
-        setStats({ total, sent, failed, invalidToken });
+        
+        // Stats by source
+        const bySource: Record<string, number> = {};
+        logsData.forEach(log => {
+          const src = log.source || 'manual';
+          bySource[src] = (bySource[src] || 0) + 1;
+        });
+        
+        setStats({ total, sent, failed, invalidToken, bySource });
       } else {
         setLogs([]);
-        setStats({ total: 0, sent: 0, failed: 0, invalidToken: 0 });
+        setStats({ total: 0, sent: 0, failed: 0, invalidToken: 0, bySource: {} });
       }
 
       // Fetch token history (últimos 30 dias)
@@ -164,6 +178,26 @@ export function PushNotificationLogs() {
 
   const successRate = stats.total > 0 ? Math.round((stats.sent / stats.total) * 100) : 0;
 
+  const getSourceBadge = (source: string | null) => {
+    switch (source) {
+      case 'marketing':
+        return <Badge className="bg-purple-100 text-purple-800 text-xs">Marketing</Badge>;
+      case 'show_reminder':
+        return <Badge className="bg-blue-100 text-blue-800 text-xs">Show</Badge>;
+      case 'engagement':
+        return <Badge className="bg-orange-100 text-orange-800 text-xs">Engajamento</Badge>;
+      case 'subscription':
+        return <Badge className="bg-green-100 text-green-800 text-xs">Assinatura</Badge>;
+      case 'manual':
+      default:
+        return <Badge className="bg-gray-100 text-gray-800 text-xs">Manual</Badge>;
+    }
+  };
+
+  const filteredLogs = sourceFilter === 'all' 
+    ? logs 
+    : logs.filter(log => (log.source || 'manual') === sourceFilter);
+
   return (
     <div className="space-y-4 mt-6">
       {/* Estatísticas */}
@@ -220,48 +254,78 @@ export function PushNotificationLogs() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-gray-900 text-sm md:text-base flex items-center gap-2">
                   📝 Logs Recentes
-                  <Badge className="bg-gray-100 text-gray-800 text-xs">{logs.length}</Badge>
+                  <Badge className="bg-gray-100 text-gray-800 text-xs">{filteredLogs.length}</Badge>
                 </CardTitle>
                 {logsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </div>
             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="p-3 md:p-4 pt-0 max-h-80 overflow-y-auto">
-              {logs.length === 0 ? (
-                <p className="text-center text-gray-500 text-sm py-4">Nenhum log encontrado</p>
-              ) : (
-                <div className="space-y-2">
-                  {logs.map(log => (
-                    <div key={log.id} className="border border-gray-100 rounded-lg p-2 bg-gray-50">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {getStatusBadge(log.status)}
-                            <span className="text-xs text-gray-500">
-                              {format(new Date(log.sent_at), "dd/MM HH:mm", { locale: ptBR })}
-                            </span>
-                            <Badge className="bg-gray-100 text-gray-600 text-xs">
-                              {log.platform || '?'}
-                            </Badge>
-                          </div>
-                          <p className="text-xs font-medium text-gray-900 mt-1 truncate">
-                            {log.user_name}
-                          </p>
-                          <p className="text-xs text-gray-700 mt-0.5 truncate">
-                            <strong>{log.title}</strong>: {log.body}
-                          </p>
-                          {log.error_message && (
-                            <p className="text-xs text-red-600 mt-1">
-                              ❌ {log.error_message}
+            <CardContent className="p-3 md:p-4 pt-0">
+              {/* Filter by source */}
+              <div className="flex items-center gap-2 mb-3">
+                <Filter className="w-4 h-4 text-gray-500" />
+                <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                  <SelectTrigger className="w-40 h-8 text-xs">
+                    <SelectValue placeholder="Filtrar por fonte" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="manual">Manual</SelectItem>
+                    <SelectItem value="marketing">Marketing</SelectItem>
+                    <SelectItem value="show_reminder">Show Reminder</SelectItem>
+                    <SelectItem value="engagement">Engajamento</SelectItem>
+                    <SelectItem value="subscription">Assinatura</SelectItem>
+                  </SelectContent>
+                </Select>
+                {Object.keys(stats.bySource).length > 0 && (
+                  <div className="flex gap-1 flex-wrap">
+                    {Object.entries(stats.bySource).map(([src, count]) => (
+                      <Badge key={src} variant="outline" className="text-xs">
+                        {src}: {count}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <div className="max-h-80 overflow-y-auto">
+                {filteredLogs.length === 0 ? (
+                  <p className="text-center text-gray-500 text-sm py-4">Nenhum log encontrado</p>
+                ) : (
+                  <div className="space-y-2">
+                    {filteredLogs.map(log => (
+                      <div key={log.id} className="border border-gray-100 rounded-lg p-2 bg-gray-50">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {getStatusBadge(log.status)}
+                              {getSourceBadge(log.source)}
+                              <span className="text-xs text-gray-500">
+                                {format(new Date(log.sent_at), "dd/MM HH:mm", { locale: ptBR })}
+                              </span>
+                              <Badge className="bg-gray-100 text-gray-600 text-xs">
+                                {log.platform || '?'}
+                              </Badge>
+                            </div>
+                            <p className="text-xs font-medium text-gray-900 mt-1 truncate">
+                              {log.user_name}
                             </p>
-                          )}
+                            <p className="text-xs text-gray-700 mt-0.5 truncate">
+                              <strong>{log.title}</strong>: {log.body}
+                            </p>
+                            {log.error_message && (
+                              <p className="text-xs text-red-600 mt-1">
+                                ❌ {log.error_message}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </CardContent>
           </CollapsibleContent>
         </Card>

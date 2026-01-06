@@ -569,6 +569,7 @@ export type Database = {
           platform: string | null
           response_data: Json | null
           sent_at: string | null
+          source: string | null
           status: string
           title: string
           user_id: string
@@ -584,6 +585,7 @@ export type Database = {
           platform?: string | null
           response_data?: Json | null
           sent_at?: string | null
+          source?: string | null
           status: string
           title: string
           user_id: string
@@ -599,6 +601,7 @@ export type Database = {
           platform?: string | null
           response_data?: Json | null
           sent_at?: string | null
+          source?: string | null
           status?: string
           title?: string
           user_id?: string

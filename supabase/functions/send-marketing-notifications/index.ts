@@ -263,6 +263,7 @@ Deno.serve(async (req) => {
           title: selectedMessage.title,
           body: selectedMessage.message,
           link: link,
+          source: 'marketing',
         });
         console.log(`[send-marketing-notifications] Push result for ${user.id}: sent=${pushResult.sent}, failed=${pushResult.failed}`);
       } catch (pushError) {
