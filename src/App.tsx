@@ -6,6 +6,7 @@ import { UpdateBanner } from "@/components/UpdateBanner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { usePixNotificationChecker } from "./hooks/usePixNotificationChecker";
 import { usePushNotifications } from "./hooks/usePushNotifications";
 import Landing from "./pages/Landing";
@@ -73,11 +74,12 @@ import DemoMusicianSettings from "./pages/demo/musician/Settings";
 const queryClient = new QueryClient();
 
 const AppRoutes = () => {
-  usePixNotificationChecker(); // Verifica notificações PIX periodicamente
-  usePushNotifications(); // Inicializa push notifications nativas
+  usePixNotificationChecker();
+  usePushNotifications();
   
   return (
     <Routes>
+      {/* Public Routes */}
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -89,38 +91,45 @@ const AppRoutes = () => {
       <Route path="/select-role" element={<SelectRole />} />
       <Route path="/subscribe" element={<Subscribe />} />
       <Route path="/app" element={<AppHub />} />
-      <Route path="/artist/dashboard" element={<ArtistDashboard />} />
-      <Route path="/artist/shows" element={<ArtistShows />} />
-      <Route path="/artist/musicians" element={<ArtistMusicians />} />
-      <Route path="/artist/venues" element={<ArtistVenues />} />
-      <Route path="/artist/calendar" element={<ArtistCalendar />} />
-      <Route path="/artist/reports" element={<ArtistReports />} />
-      <Route path="/artist/transportation" element={<ArtistTransportation />} />
-      <Route path="/artist/support" element={<ArtistSupport />} />
-      <Route path="/artist/profile" element={<ArtistProfile />} />
-      <Route path="/artist/settings" element={<ArtistSettings />} />
-      <Route path="/artist/subscription" element={<ArtistSubscription />} />
-      <Route path="/artist/terms" element={<ArtistTerms />} />
-      <Route path="/artist/privacy" element={<ArtistPrivacy />} />
-      <Route path="/artist/updates" element={<ArtistUpdates />} />
-      <Route path="/artist/tutorial" element={<ArtistTutorial />} />
-      <Route path="/musician/dashboard" element={<MusicianDashboard />} />
-      <Route path="/musician/shows" element={<MusicianShows />} />
-      <Route path="/musician/artists" element={<MusicianArtists />} />
-      <Route path="/musician/calendar" element={<MusicianCalendar />} />
-      <Route path="/musician/reports" element={<MusicianReports />} />
-      <Route path="/musician/transportation" element={<MusicianTransportation />} />
-      <Route path="/musician/support" element={<MusicianSupport />} />
-      <Route path="/musician/profile" element={<MusicianProfile />} />
-      <Route path="/musician/settings" element={<MusicianSettings />} />
-      <Route path="/musician/subscription" element={<MusicianSubscription />} />
-      <Route path="/musician/terms" element={<MusicianTerms />} />
-      <Route path="/musician/privacy" element={<MusicianPrivacy />} />
-      <Route path="/musician/updates" element={<MusicianUpdates />} />
-      <Route path="/musician/tutorial" element={<MusicianTutorial />} />
-      <Route path="/admin" element={<Admin />} />
-      <Route path="/support" element={<Support />} />
-      {/* Demo Routes */}
+      
+      {/* Protected Artist Routes */}
+      <Route path="/artist/dashboard" element={<ProtectedRoute requiredRole="artist"><ArtistDashboard /></ProtectedRoute>} />
+      <Route path="/artist/shows" element={<ProtectedRoute requiredRole="artist"><ArtistShows /></ProtectedRoute>} />
+      <Route path="/artist/musicians" element={<ProtectedRoute requiredRole="artist"><ArtistMusicians /></ProtectedRoute>} />
+      <Route path="/artist/venues" element={<ProtectedRoute requiredRole="artist"><ArtistVenues /></ProtectedRoute>} />
+      <Route path="/artist/calendar" element={<ProtectedRoute requiredRole="artist"><ArtistCalendar /></ProtectedRoute>} />
+      <Route path="/artist/reports" element={<ProtectedRoute requiredRole="artist"><ArtistReports /></ProtectedRoute>} />
+      <Route path="/artist/transportation" element={<ProtectedRoute requiredRole="artist"><ArtistTransportation /></ProtectedRoute>} />
+      <Route path="/artist/support" element={<ProtectedRoute requiredRole="artist"><ArtistSupport /></ProtectedRoute>} />
+      <Route path="/artist/profile" element={<ProtectedRoute requiredRole="artist"><ArtistProfile /></ProtectedRoute>} />
+      <Route path="/artist/settings" element={<ProtectedRoute requiredRole="artist"><ArtistSettings /></ProtectedRoute>} />
+      <Route path="/artist/subscription" element={<ProtectedRoute requiredRole="artist"><ArtistSubscription /></ProtectedRoute>} />
+      <Route path="/artist/terms" element={<ProtectedRoute requiredRole="artist"><ArtistTerms /></ProtectedRoute>} />
+      <Route path="/artist/privacy" element={<ProtectedRoute requiredRole="artist"><ArtistPrivacy /></ProtectedRoute>} />
+      <Route path="/artist/updates" element={<ProtectedRoute requiredRole="artist"><ArtistUpdates /></ProtectedRoute>} />
+      <Route path="/artist/tutorial" element={<ProtectedRoute requiredRole="artist"><ArtistTutorial /></ProtectedRoute>} />
+      
+      {/* Protected Musician Routes */}
+      <Route path="/musician/dashboard" element={<ProtectedRoute requiredRole="musician"><MusicianDashboard /></ProtectedRoute>} />
+      <Route path="/musician/shows" element={<ProtectedRoute requiredRole="musician"><MusicianShows /></ProtectedRoute>} />
+      <Route path="/musician/artists" element={<ProtectedRoute requiredRole="musician"><MusicianArtists /></ProtectedRoute>} />
+      <Route path="/musician/calendar" element={<ProtectedRoute requiredRole="musician"><MusicianCalendar /></ProtectedRoute>} />
+      <Route path="/musician/reports" element={<ProtectedRoute requiredRole="musician"><MusicianReports /></ProtectedRoute>} />
+      <Route path="/musician/transportation" element={<ProtectedRoute requiredRole="musician"><MusicianTransportation /></ProtectedRoute>} />
+      <Route path="/musician/support" element={<ProtectedRoute requiredRole="musician"><MusicianSupport /></ProtectedRoute>} />
+      <Route path="/musician/profile" element={<ProtectedRoute requiredRole="musician"><MusicianProfile /></ProtectedRoute>} />
+      <Route path="/musician/settings" element={<ProtectedRoute requiredRole="musician"><MusicianSettings /></ProtectedRoute>} />
+      <Route path="/musician/subscription" element={<ProtectedRoute requiredRole="musician"><MusicianSubscription /></ProtectedRoute>} />
+      <Route path="/musician/terms" element={<ProtectedRoute requiredRole="musician"><MusicianTerms /></ProtectedRoute>} />
+      <Route path="/musician/privacy" element={<ProtectedRoute requiredRole="musician"><MusicianPrivacy /></ProtectedRoute>} />
+      <Route path="/musician/updates" element={<ProtectedRoute requiredRole="musician"><MusicianUpdates /></ProtectedRoute>} />
+      <Route path="/musician/tutorial" element={<ProtectedRoute requiredRole="musician"><MusicianTutorial /></ProtectedRoute>} />
+      
+      {/* Protected Admin/Support Routes */}
+      <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Admin /></ProtectedRoute>} />
+      <Route path="/support" element={<ProtectedRoute allowedRoles={['admin', 'support']}><Support /></ProtectedRoute>} />
+      
+      {/* Demo Routes (public) */}
       <Route path="/demo" element={<DemoSelectRole />} />
       <Route path="/demo/artist/dashboard" element={<DemoArtistDashboard />} />
       <Route path="/demo/artist/shows" element={<DemoArtistShows />} />
@@ -139,7 +148,8 @@ const AppRoutes = () => {
       <Route path="/demo/musician/support" element={<DemoMusicianSupport />} />
       <Route path="/demo/musician/profile" element={<DemoMusicianProfile />} />
       <Route path="/demo/musician/settings" element={<DemoMusicianSettings />} />
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      
+      {/* Catch-all */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -152,7 +162,6 @@ const App = () => (
       <Sonner />
       <OfflineBanner />
       <UpdateBanner />
-      {/* Safe area wrapper for iOS native app */}
       <div className="safe-area-status-bar fixed top-0 left-0 right-0 z-[9999]" />
       <div className="safe-area-top">
         <BrowserRouter>
