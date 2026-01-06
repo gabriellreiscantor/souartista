@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, X, Send, Download, Filter, Link as LinkIcon, MessageCircle } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { RouteSelector } from '@/components/RouteSelector';
+import { PushNotificationLogs } from '@/components/PushNotificationLogs';
 import * as XLSX from 'xlsx';
 interface UserProfile {
   id: string;
@@ -2949,6 +2950,9 @@ export default function Admin() {
                     </div>
                   </CardContent>
                 </Card>
+                
+                {/* Logs e Estatísticas de Push */}
+                <PushNotificationLogs />
               </div>}
 
             {currentTab === 'contatos' && <Card className="bg-white border-gray-200">
