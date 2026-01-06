@@ -208,6 +208,15 @@ export default function Admin() {
   const [feedbackFilter, setFeedbackFilter] = useState('all');
   const [usersWithPlanCount, setUsersWithPlanCount] = useState(0);
   const [feedbackCount, setFeedbackCount] = useState(0);
+
+  // Estados para LGPD
+  const [lgpdRequests, setLgpdRequests] = useState<any[]>([]);
+  const [loadingLgpd, setLoadingLgpd] = useState(false);
+  const [lgpdFilter, setLgpdFilter] = useState('all');
+  const [processingLgpd, setProcessingLgpd] = useState<string | null>(null);
+  const [lgpdNotes, setLgpdNotes] = useState('');
+  const [showLgpdDialog, setShowLgpdDialog] = useState(false);
+  const [selectedLgpdRequest, setSelectedLgpdRequest] = useState<any | null>(null);
   
   const usersPerPage = 50;
   useEffect(() => {
@@ -263,6 +272,8 @@ export default function Admin() {
         fetchAppUpdates();
       } else if (currentTab === 'feedback') {
         fetchFeedback();
+      } else if (currentTab === 'lgpd') {
+        fetchLgpdRequests();
       }
     }
   }, [isAdmin, currentTab]);
@@ -1420,7 +1431,81 @@ export default function Admin() {
   const paginatedUsers = users.slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage);
   const totalPages = Math.ceil(users.length / usersPerPage);
 
-  // Funções para Importação Firebase
+  // Funções para LGPD
+  const fetchLgpdRequests = async () => {
+    try {
+      setLoadingLgpd(true);
+      const { data, error } = await supabase
+        .from('lgpd_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setLgpdRequests(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar solicitações LGPD:', error);
+      toast.error('Erro ao carregar solicitações LGPD');
+    } finally {
+      setLoadingLgpd(false);
+    }
+  };
+
+  const handleLgpdStatusUpdate = async (requestId: string, newStatus: string) => {
+    try {
+      setProcessingLgpd(requestId);
+      
+      const updateData: any = {
+        status: newStatus,
+        handled_by: user?.id,
+        handled_at: new Date().toISOString()
+      };
+
+      if (lgpdNotes.trim()) {
+        updateData.admin_notes = lgpdNotes;
+      }
+
+      const { error } = await supabase
+        .from('lgpd_requests')
+        .update(updateData)
+        .eq('id', requestId);
+
+      if (error) throw error;
+
+      toast.success('Status atualizado com sucesso!');
+      setShowLgpdDialog(false);
+      setLgpdNotes('');
+      setSelectedLgpdRequest(null);
+      fetchLgpdRequests();
+    } catch (error) {
+      console.error('Erro ao atualizar solicitação LGPD:', error);
+      toast.error('Erro ao atualizar solicitação');
+    } finally {
+      setProcessingLgpd(null);
+    }
+  };
+
+  const getLgpdRequestTypeLabel = (type: string) => {
+    const types: Record<string, { label: string; icon: string; description: string }> = {
+      access: { label: 'Acesso', icon: '📋', description: 'Cópia dos dados pessoais' },
+      correction: { label: 'Correção', icon: '✏️', description: 'Corrigir informações' },
+      deletion: { label: 'Exclusão', icon: '🗑️', description: 'Excluir conta e dados' },
+      opposition: { label: 'Oposição', icon: '🚫', description: 'Oposição ao processamento' },
+      portability: { label: 'Portabilidade', icon: '📤', description: 'Exportar dados' }
+    };
+    return types[type] || { label: type, icon: '❓', description: '' };
+  };
+
+  const getLgpdStatusBadge = (status: string) => {
+    const statusConfig: Record<string, { label: string; className: string }> = {
+      pending: { label: '⏳ Pendente', className: 'bg-yellow-100 text-yellow-800' },
+      in_progress: { label: '🔄 Em Andamento', className: 'bg-blue-100 text-blue-800' },
+      completed: { label: '✅ Concluído', className: 'bg-green-100 text-green-800' },
+      rejected: { label: '❌ Rejeitado', className: 'bg-red-100 text-red-800' }
+    };
+    const config = statusConfig[status] || statusConfig.pending;
+    return <Badge className={config.className}>{config.label}</Badge>;
+  };
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -3685,6 +3770,337 @@ export default function Admin() {
                 </CardContent>
               </Card>
             </div>}
+
+            {/* Tab LGPD */}
+            {currentTab === 'lgpd' && (
+              <div className="space-y-4 md:space-y-6">
+                <Card className="bg-white border-gray-200">
+                  <CardHeader className="p-3 md:p-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                      <div>
+                        <CardTitle className="text-gray-900 text-base md:text-lg flex items-center gap-2">
+                          ⚖️ Solicitações de Direitos LGPD
+                        </CardTitle>
+                        <p className="text-xs md:text-sm text-gray-500 mt-1">
+                          Gerencie solicitações de acesso, correção, exclusão, oposição e portabilidade de dados
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Select value={lgpdFilter} onValueChange={setLgpdFilter}>
+                          <SelectTrigger className="bg-white text-gray-900 border-gray-200 w-[140px] md:w-[180px] h-8 md:h-9 text-xs md:text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white text-gray-900 border border-gray-200">
+                            <SelectItem value="all">Todos</SelectItem>
+                            <SelectItem value="pending">⏳ Pendentes</SelectItem>
+                            <SelectItem value="in_progress">🔄 Em Andamento</SelectItem>
+                            <SelectItem value="completed">✅ Concluídos</SelectItem>
+                            <SelectItem value="rejected">❌ Rejeitados</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button onClick={fetchLgpdRequests} variant="outline" size="sm" disabled={loadingLgpd} className="h-8 md:h-9 text-xs md:text-sm">
+                          {loadingLgpd ? <Loader2 className="h-3 w-3 md:h-4 md:w-4 animate-spin" /> : '↻'}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-3 md:p-6 pt-0">
+                    {loadingLgpd ? (
+                      <div className="flex justify-center py-8">
+                        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                      </div>
+                    ) : lgpdRequests.filter(r => lgpdFilter === 'all' || r.status === lgpdFilter).length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <p className="text-lg mb-2">🎉</p>
+                        <p>Nenhuma solicitação LGPD encontrada</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {lgpdRequests
+                          .filter(r => lgpdFilter === 'all' || r.status === lgpdFilter)
+                          .map(request => {
+                            const typeInfo = getLgpdRequestTypeLabel(request.request_type);
+                            return (
+                              <Card key={request.id} className="border border-gray-200 hover:border-gray-300 transition-colors">
+                                <CardContent className="p-3 md:p-4">
+                                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                    <div className="flex-1">
+                                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                                        <span className="text-xl">{typeInfo.icon}</span>
+                                        <span className="font-semibold text-gray-900">{typeInfo.label}</span>
+                                        {getLgpdStatusBadge(request.status)}
+                                      </div>
+                                      <div className="space-y-1 text-sm text-gray-600">
+                                        <p><strong>Usuário:</strong> {request.user_name} ({request.user_email})</p>
+                                        <p><strong>Descrição:</strong> {typeInfo.description}</p>
+                                        {request.description && (
+                                          <p><strong>Observação do usuário:</strong> {request.description}</p>
+                                        )}
+                                        {request.admin_notes && (
+                                          <p className="text-purple-700"><strong>Notas do admin:</strong> {request.admin_notes}</p>
+                                        )}
+                                        <p className="text-xs text-gray-400">
+                                          Criado em: {new Date(request.created_at).toLocaleString('pt-BR')}
+                                          {request.handled_at && ` • Atualizado: ${new Date(request.handled_at).toLocaleString('pt-BR')}`}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-2 flex-wrap">
+                                      {request.status === 'pending' && (
+                                        <>
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => handleLgpdStatusUpdate(request.id, 'in_progress')}
+                                            disabled={processingLgpd === request.id}
+                                            className="text-blue-600 hover:text-blue-700 text-xs"
+                                          >
+                                            {processingLgpd === request.id ? <Loader2 className="w-3 h-3 animate-spin" /> : '🔄 Iniciar'}
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => {
+                                              setSelectedLgpdRequest(request);
+                                              setShowLgpdDialog(true);
+                                            }}
+                                            className="text-red-600 hover:text-red-700 text-xs"
+                                          >
+                                            ❌ Rejeitar
+                                          </Button>
+                                        </>
+                                      )}
+                                      {request.status === 'in_progress' && (
+                                        <>
+                                          <Button
+                                            size="sm"
+                                            onClick={() => {
+                                              setSelectedLgpdRequest(request);
+                                              setShowLgpdDialog(true);
+                                            }}
+                                            className="bg-green-600 hover:bg-green-700 text-white text-xs"
+                                          >
+                                            ✅ Concluir
+                                          </Button>
+                                          {request.request_type === 'deletion' && (
+                                            <Button
+                                              size="sm"
+                                              variant="destructive"
+                                              onClick={async () => {
+                                                if (!confirm(`ATENÇÃO! Isso irá EXCLUIR PERMANENTEMENTE a conta de ${request.user_name}. Deseja continuar?`)) return;
+                                                
+                                                try {
+                                                  setProcessingLgpd(request.id);
+                                                  
+                                                  // Chamar a edge function de exclusão
+                                                  const { data: sessionData } = await supabase.auth.getSession();
+                                                  const response = await fetch(
+                                                    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`,
+                                                    {
+                                                      method: 'POST',
+                                                      headers: {
+                                                        'Content-Type': 'application/json',
+                                                        'Authorization': `Bearer ${sessionData.session?.access_token}`
+                                                      },
+                                                      body: JSON.stringify({ userId: request.user_id })
+                                                    }
+                                                  );
+
+                                                  if (!response.ok) {
+                                                    throw new Error('Erro ao excluir conta');
+                                                  }
+
+                                                  // Atualizar status da solicitação
+                                                  await supabase
+                                                    .from('lgpd_requests')
+                                                    .update({
+                                                      status: 'completed',
+                                                      admin_notes: 'Conta excluída com sucesso pelo administrador',
+                                                      handled_by: user?.id,
+                                                      handled_at: new Date().toISOString()
+                                                    })
+                                                    .eq('id', request.id);
+
+                                                  toast.success('Conta excluída com sucesso!');
+                                                  fetchLgpdRequests();
+                                                } catch (error) {
+                                                  console.error('Erro ao excluir conta:', error);
+                                                  toast.error('Erro ao excluir conta');
+                                                } finally {
+                                                  setProcessingLgpd(null);
+                                                }
+                                              }}
+                                              className="text-xs"
+                                            >
+                                              {processingLgpd === request.id ? <Loader2 className="w-3 h-3 animate-spin" /> : '🗑️ Excluir Conta'}
+                                            </Button>
+                                          )}
+                                          {request.request_type === 'portability' && (
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              onClick={async () => {
+                                                try {
+                                                  setProcessingLgpd(request.id);
+                                                  
+                                                  // Buscar dados do usuário
+                                                  const { data: profile } = await supabase
+                                                    .from('profiles')
+                                                    .select('*')
+                                                    .eq('id', request.user_id)
+                                                    .single();
+
+                                                  const { data: shows } = await supabase
+                                                    .from('shows')
+                                                    .select('*')
+                                                    .eq('uid', request.user_id);
+
+                                                  const { data: expenses } = await supabase
+                                                    .from('locomotion_expenses')
+                                                    .select('*')
+                                                    .eq('uid', request.user_id);
+
+                                                  // Criar arquivo JSON para download
+                                                  const exportData = {
+                                                    profile,
+                                                    shows,
+                                                    expenses,
+                                                    exported_at: new Date().toISOString()
+                                                  };
+
+                                                  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                                                  const url = URL.createObjectURL(blob);
+                                                  const a = document.createElement('a');
+                                                  a.href = url;
+                                                  a.download = `dados_${request.user_name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
+                                                  a.click();
+                                                  URL.revokeObjectURL(url);
+
+                                                  toast.success('Dados exportados! Envie o arquivo ao usuário.');
+                                                } catch (error) {
+                                                  console.error('Erro ao exportar dados:', error);
+                                                  toast.error('Erro ao exportar dados');
+                                                } finally {
+                                                  setProcessingLgpd(null);
+                                                }
+                                              }}
+                                              className="text-xs"
+                                            >
+                                              {processingLgpd === request.id ? <Loader2 className="w-3 h-3 animate-spin" /> : '📤 Exportar Dados'}
+                                            </Button>
+                                          )}
+                                          {request.request_type === 'access' && (
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              onClick={async () => {
+                                                try {
+                                                  setProcessingLgpd(request.id);
+                                                  
+                                                  // Buscar dados do usuário
+                                                  const { data: profile } = await supabase
+                                                    .from('profiles')
+                                                    .select('*')
+                                                    .eq('id', request.user_id)
+                                                    .single();
+
+                                                  const { data: shows } = await supabase
+                                                    .from('shows')
+                                                    .select('*')
+                                                    .eq('uid', request.user_id);
+
+                                                  const { data: expenses } = await supabase
+                                                    .from('locomotion_expenses')
+                                                    .select('*')
+                                                    .eq('uid', request.user_id);
+
+                                                  // Criar arquivo JSON para download
+                                                  const exportData = {
+                                                    profile,
+                                                    shows,
+                                                    expenses,
+                                                    exported_at: new Date().toISOString()
+                                                  };
+
+                                                  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                                                  const url = URL.createObjectURL(blob);
+                                                  const a = document.createElement('a');
+                                                  a.href = url;
+                                                  a.download = `dados_${request.user_name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
+                                                  a.click();
+                                                  URL.revokeObjectURL(url);
+
+                                                  toast.success('Dados exportados! Envie o arquivo ao usuário.');
+                                                } catch (error) {
+                                                  console.error('Erro ao exportar dados:', error);
+                                                  toast.error('Erro ao exportar dados');
+                                                } finally {
+                                                  setProcessingLgpd(null);
+                                                }
+                                              }}
+                                              className="text-xs"
+                                            >
+                                              {processingLgpd === request.id ? <Loader2 className="w-3 h-3 animate-spin" /> : '📋 Gerar Relatório'}
+                                            </Button>
+                                          )}
+                                        </>
+                                      )}
+                                      {(request.status === 'completed' || request.status === 'rejected') && (
+                                        <Badge variant="outline" className="text-xs">
+                                          Processado
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Resumo LGPD */}
+                <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
+                  <CardHeader className="p-3 md:p-6">
+                    <CardTitle className="text-gray-900 text-base md:text-lg">📊 Resumo de Solicitações</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3 md:p-6 pt-0">
+                    <div className="grid gap-2 md:gap-4 grid-cols-2 lg:grid-cols-5">
+                      <div className="p-2 md:p-4 bg-white rounded-lg border border-gray-200">
+                        <p className="text-[10px] md:text-xs text-gray-600 mb-0.5 md:mb-1">Total</p>
+                        <p className="text-lg md:text-2xl font-bold text-gray-900">{lgpdRequests.length}</p>
+                      </div>
+                      <div className="p-2 md:p-4 bg-white rounded-lg border border-yellow-200">
+                        <p className="text-[10px] md:text-xs text-gray-600 mb-0.5 md:mb-1">Pendentes</p>
+                        <p className="text-lg md:text-2xl font-bold text-yellow-600">
+                          {lgpdRequests.filter(r => r.status === 'pending').length}
+                        </p>
+                      </div>
+                      <div className="p-2 md:p-4 bg-white rounded-lg border border-blue-200">
+                        <p className="text-[10px] md:text-xs text-gray-600 mb-0.5 md:mb-1">Em Andamento</p>
+                        <p className="text-lg md:text-2xl font-bold text-blue-600">
+                          {lgpdRequests.filter(r => r.status === 'in_progress').length}
+                        </p>
+                      </div>
+                      <div className="p-2 md:p-4 bg-white rounded-lg border border-green-200">
+                        <p className="text-[10px] md:text-xs text-gray-600 mb-0.5 md:mb-1">Concluídos</p>
+                        <p className="text-lg md:text-2xl font-bold text-green-600">
+                          {lgpdRequests.filter(r => r.status === 'completed').length}
+                        </p>
+                      </div>
+                      <div className="p-2 md:p-4 bg-white rounded-lg border border-red-200">
+                        <p className="text-[10px] md:text-xs text-gray-600 mb-0.5 md:mb-1">Rejeitados</p>
+                        <p className="text-lg md:text-2xl font-bold text-red-600">
+                          {lgpdRequests.filter(r => r.status === 'rejected').length}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </main>
         </SidebarInset>
       </div>
@@ -3877,6 +4293,74 @@ export default function Admin() {
             <Button onClick={handleSaveUpdate} disabled={savingUpdate}>
               {savingUpdate ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               {editingUpdate ? 'Salvar' : 'Criar'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog LGPD */}
+      <Dialog open={showLgpdDialog} onOpenChange={setShowLgpdDialog}>
+        <DialogContent className="bg-white text-gray-900 max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">
+              {selectedLgpdRequest?.status === 'pending' ? 'Rejeitar Solicitação' : 'Concluir Solicitação'}
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              {selectedLgpdRequest && (
+                <>
+                  Solicitação de <strong>{getLgpdRequestTypeLabel(selectedLgpdRequest.request_type).label}</strong> de{' '}
+                  <strong>{selectedLgpdRequest.user_name}</strong>
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="lgpd-notes" className="text-gray-900">Notas do Admin</Label>
+              <Textarea
+                id="lgpd-notes"
+                value={lgpdNotes}
+                onChange={e => setLgpdNotes(e.target.value)}
+                placeholder={
+                  selectedLgpdRequest?.status === 'pending'
+                    ? 'Motivo da rejeição (obrigatório)...'
+                    : 'Observações sobre a conclusão (opcional)...'
+                }
+                className="bg-white text-gray-900 border-gray-200 min-h-[100px]"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowLgpdDialog(false);
+                setLgpdNotes('');
+                setSelectedLgpdRequest(null);
+              }}
+              disabled={processingLgpd !== null}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (selectedLgpdRequest?.status === 'pending') {
+                  if (!lgpdNotes.trim()) {
+                    toast.error('Por favor, informe o motivo da rejeição');
+                    return;
+                  }
+                  handleLgpdStatusUpdate(selectedLgpdRequest.id, 'rejected');
+                } else {
+                  handleLgpdStatusUpdate(selectedLgpdRequest.id, 'completed');
+                }
+              }}
+              disabled={processingLgpd !== null}
+              className={selectedLgpdRequest?.status === 'pending' ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}
+            >
+              {processingLgpd ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : null}
+              {selectedLgpdRequest?.status === 'pending' ? '❌ Rejeitar' : '✅ Concluir'}
             </Button>
           </div>
         </DialogContent>
