@@ -263,32 +263,21 @@ export function PushNotificationLogs() {
           <CollapsibleContent>
             <CardContent className="p-3 md:p-4 pt-0">
               {/* Filter by source */}
-              <div className="flex flex-col gap-2 mb-3">
-                <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-gray-500 shrink-0" />
-                  <Select value={sourceFilter} onValueChange={setSourceFilter}>
-                    <SelectTrigger className="w-40 h-8 text-xs">
-                      <SelectValue placeholder="Filtrar por fonte" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos</SelectItem>
-                      <SelectItem value="manual">Manual</SelectItem>
-                      <SelectItem value="marketing">Marketing</SelectItem>
-                      <SelectItem value="show_reminder">Show Reminder</SelectItem>
-                      <SelectItem value="engagement">Engajamento</SelectItem>
-                      <SelectItem value="subscription">Assinatura</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                {Object.keys(stats.bySource).length > 0 && (
-                  <div className="flex gap-1 overflow-x-auto pb-1">
-                    {Object.entries(stats.bySource).map(([src, count]) => (
-                      <Badge key={src} variant="outline" className="text-xs shrink-0">
-                        {src}: {count}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
+              <div className="flex items-center gap-2 mb-3">
+                <Filter className="w-4 h-4 text-gray-500 shrink-0" />
+                <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                  <SelectTrigger className="w-40 h-8 text-xs bg-white">
+                    <SelectValue placeholder="Filtrar por fonte" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="manual">Manual</SelectItem>
+                    <SelectItem value="marketing">Marketing</SelectItem>
+                    <SelectItem value="show_reminder">Show Reminder</SelectItem>
+                    <SelectItem value="engagement">Engajamento</SelectItem>
+                    <SelectItem value="subscription">Assinatura</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="max-h-80 overflow-y-auto">
