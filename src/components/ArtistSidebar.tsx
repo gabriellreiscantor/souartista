@@ -70,10 +70,6 @@ export function ArtistSidebar() {
       collapsible="icon"
     >
       <SidebarContent className="bg-sidebar-background" onClick={handleSidebarClick}>
-        {/* iOS Safe Area Spacer */}
-        {isIOS && isNative && (
-          <div style={{ height: 'env(safe-area-inset-top, 0px)' }} />
-        )}
         
         {/* Logo - clicável para toggle */}
         <div 
