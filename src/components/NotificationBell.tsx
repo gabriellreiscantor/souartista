@@ -270,10 +270,10 @@ export function NotificationBell() {
           )}
         </div>
         
-        <div className="max-h-[400px] overflow-y-auto overflow-x-hidden">
+        <div className="max-h-[320px] overflow-y-auto overflow-x-hidden">
           {notifications.length === 0 ? (
-            <div className="p-8 text-center">
-              <Bell className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <div className="p-6 text-center">
+              <Bell className="w-10 h-10 mx-auto mb-2 text-gray-300" />
               <p className="text-sm text-gray-500">Nenhuma notificação</p>
             </div>
           ) : (
