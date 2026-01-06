@@ -263,16 +263,17 @@ const ArtistSupport = () => {
                   <p className="text-gray-600 mt-1">Gerencie seus tickets e obtenha ajuda</p>
                 </div>
                 
-                <div className="flex items-center gap-3">
-                  {isAnnualPlan && (
+                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
+                  <div className="flex flex-col items-center">
                     <Button
-                      onClick={() => window.open('https://wa.me/SEUNUMERO', '_blank')}
-                      className="bg-[#25D366] hover:bg-[#20BA5A] text-white"
+                      disabled
+                      className="bg-[#25D366] text-white opacity-50 cursor-not-allowed"
                     >
                       <MessageCircle className="w-4 h-4 mr-2" />
                       Suporte WhatsApp
                     </Button>
-                  )}
+                    <span className="text-xs text-gray-500 mt-1">em manutenção</span>
+                  </div>
                   
                   <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
