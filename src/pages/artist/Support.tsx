@@ -263,18 +263,7 @@ const ArtistSupport = () => {
                   <p className="text-gray-600 mt-1">Gerencie seus tickets e obtenha ajuda</p>
                 </div>
                 
-                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
-                  <div className="flex flex-col items-center">
-                    <Button
-                      disabled
-                      className="bg-[#25D366] text-white opacity-50 cursor-not-allowed"
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Suporte WhatsApp
-                    </Button>
-                    <span className="text-xs text-gray-500 mt-1">em manutenção</span>
-                  </div>
-                  
+                <div className="flex items-center gap-3">
                   <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
                     <Button className="bg-primary text-white hover:bg-primary/90">
