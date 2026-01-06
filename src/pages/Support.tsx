@@ -523,7 +523,7 @@ export default function Support() {
 
       {/* Ticket Detail Dialog */}
       <Dialog open={showTicketDialog} onOpenChange={setShowTicketDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gray-900 text-white border-gray-700">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
@@ -538,8 +538,8 @@ export default function Support() {
           {selectedTicket && (
             <div className="space-y-4">
               {/* Ticket Info */}
-              <Card>
-                <CardContent className="pt-4">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardContent className="pt-4 text-gray-200">
                   <div className="grid gap-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Usuário:</span>
@@ -558,11 +558,11 @@ export default function Support() {
               </Card>
 
               {/* Original Message */}
-              <Card>
+              <Card className="bg-gray-800 border-gray-700">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">Mensagem Original</CardTitle>
+                  <CardTitle className="text-sm text-gray-200">Mensagem Original</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="text-gray-200">
                   <p className="text-sm whitespace-pre-wrap">{selectedTicket.message}</p>
                   {selectedTicket.attachment_url && (
                     <a 
@@ -579,11 +579,11 @@ export default function Support() {
 
               {/* Responses */}
               {selectedTicket.responses && selectedTicket.responses.length > 0 && (
-                <Card>
+                <Card className="bg-gray-800 border-gray-700">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Histórico de Respostas</CardTitle>
+                    <CardTitle className="text-sm text-gray-200">Histórico de Respostas</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-3 text-gray-200">
                     {selectedTicket.responses.map((response) => (
                       <div 
                         key={response.id} 
