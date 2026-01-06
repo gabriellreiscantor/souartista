@@ -106,7 +106,13 @@ const MusicianTerms = () => {
 
               <h2 className="text-stone-950">9. Contato</h2>
               <p className="text-stone-950">
-                Para dúvidas sobre estes termos, entre em contato através da seção "Fale Conosco".
+                Para dúvidas sobre estes termos, entre em contato:{' '}
+                <a 
+                  href="mailto:contato@souartista.app" 
+                  className="text-primary hover:underline font-medium"
+                >
+                  contato@souartista.app
+                </a>
               </p>
             </div>
           </main>

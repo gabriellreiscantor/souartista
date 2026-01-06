@@ -110,8 +110,13 @@ const ArtistPrivacy = () => {
 
               <h2 className="text-gray-900">8. Contato</h2>
               <p className="text-gray-900">
-                Se você tiver dúvidas sobre esta política de privacidade, entre em contato através da seção 
-                "Fale Conosco".
+                Se você tiver dúvidas sobre esta política de privacidade, entre em contato:{' '}
+                <a 
+                  href="mailto:contato@souartista.app" 
+                  className="text-primary hover:underline font-medium"
+                >
+                  contato@souartista.app
+                </a>
               </p>
             </div>
           </main>

@@ -136,8 +136,13 @@ const Terms = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">11. Contato</h2>
             <p>
-              Se você tiver dúvidas sobre estes Termos, entre em contato conosco através dos
-              canais de suporte disponíveis no aplicativo.
+              Se você tiver dúvidas sobre estes Termos, entre em contato conosco:{' '}
+              <a 
+                href="mailto:contato@souartista.app" 
+                className="text-primary hover:underline font-medium"
+              >
+                contato@souartista.app
+              </a>
             </p>
           </section>
 

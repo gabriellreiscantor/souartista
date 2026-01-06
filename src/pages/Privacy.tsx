@@ -120,8 +120,13 @@ const Privacy = () => {
             <h2 className="text-2xl font-semibold mb-4 text-foreground">9. Contato</h2>
             <p>
               Se você tiver dúvidas sobre esta Política de Privacidade ou sobre como tratamos
-              suas informações, entre em contato conosco através dos canais de suporte
-              disponíveis no aplicativo.
+              suas informações, entre em contato conosco:{' '}
+              <a 
+                href="mailto:contato@souartista.app" 
+                className="text-primary hover:underline font-medium"
+              >
+                contato@souartista.app
+              </a>
             </p>
           </section>
 
