@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, X, Send, Download, Filter, Link as LinkIcon, MessageCircle } from 'lucide-react';
+import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, X, Send, Download, Filter, Link as LinkIcon, MessageCircle, UserCog, Eye, EyeOff, RefreshCw, Trash2, UserMinus, Monitor } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { RouteSelector } from '@/components/RouteSelector';
 import { PushNotificationLogs } from '@/components/PushNotificationLogs';
@@ -217,6 +217,21 @@ export default function Admin() {
   const [lgpdNotes, setLgpdNotes] = useState('');
   const [showLgpdDialog, setShowLgpdDialog] = useState(false);
   const [selectedLgpdRequest, setSelectedLgpdRequest] = useState<any | null>(null);
+
+  // Estados para Funcionários de Suporte
+  const [supportStaff, setSupportStaff] = useState<any[]>([]);
+  const [loadingSupportStaff, setLoadingSupportStaff] = useState(false);
+  const [showCreateStaffDialog, setShowCreateStaffDialog] = useState(false);
+  const [newStaffName, setNewStaffName] = useState('');
+  const [newStaffEmail, setNewStaffEmail] = useState('');
+  const [generatedPassword, setGeneratedPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [creatingStaff, setCreatingStaff] = useState(false);
+  const [staffCreated, setStaffCreated] = useState(false);
+  const [processingStaffAction, setProcessingStaffAction] = useState<string | null>(null);
+  const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
+  const [selectedStaffForReset, setSelectedStaffForReset] = useState<any | null>(null);
+  const [newGeneratedPassword, setNewGeneratedPassword] = useState('');
   
   const usersPerPage = 50;
   useEffect(() => {
@@ -274,6 +289,8 @@ export default function Admin() {
         fetchFeedback();
       } else if (currentTab === 'lgpd') {
         fetchLgpdRequests();
+      } else if (currentTab === 'funcionarios') {
+        fetchSupportStaff();
       }
     }
   }, [isAdmin, currentTab]);
@@ -1261,6 +1278,177 @@ export default function Admin() {
     } catch (error) {
       console.error('Erro ao remover suporte:', error);
       toast.error('Erro ao remover suporte');
+    }
+  };
+
+  // Funções para Funcionários de Suporte
+  const generateSecurePassword = () => {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
+
+  const fetchSupportStaff = async () => {
+    try {
+      setLoadingSupportStaff(true);
+      console.log('🔄 Buscando funcionários de suporte...');
+      
+      // Buscar usuários com role 'support'
+      const { data: supportRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, created_at')
+        .eq('role', 'support');
+      
+      if (rolesError) throw rolesError;
+      
+      if (!supportRoles || supportRoles.length === 0) {
+        setSupportStaff([]);
+        return;
+      }
+
+      // Buscar profiles desses usuários
+      const userIds = supportRoles.map(r => r.user_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, name, email, created_at')
+        .in('id', userIds);
+      
+      if (profilesError) throw profilesError;
+      
+      // Combinar dados
+      const staffWithDates = profiles?.map(profile => {
+        const roleData = supportRoles.find(r => r.user_id === profile.id);
+        return {
+          ...profile,
+          role_created_at: roleData?.created_at
+        };
+      }) || [];
+      
+      setSupportStaff(staffWithDates);
+      console.log(`✅ ${staffWithDates.length} funcionário(s) de suporte encontrado(s)`);
+    } catch (error) {
+      console.error('Erro ao buscar funcionários de suporte:', error);
+      toast.error('Erro ao carregar funcionários');
+    } finally {
+      setLoadingSupportStaff(false);
+    }
+  };
+
+  const handleCreateStaff = async () => {
+    if (!newStaffName.trim() || !newStaffEmail.trim()) {
+      toast.error('Preencha nome e email');
+      return;
+    }
+
+    try {
+      setCreatingStaff(true);
+      const password = generateSecurePassword();
+      setGeneratedPassword(password);
+
+      const { data, error } = await supabase.functions.invoke('create-support-user', {
+        body: {
+          action: 'create',
+          email: newStaffEmail.trim(),
+          name: newStaffName.trim(),
+          password
+        }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setStaffCreated(true);
+      toast.success('Funcionário criado com sucesso!');
+      fetchSupportStaff();
+    } catch (error: any) {
+      console.error('Erro ao criar funcionário:', error);
+      toast.error(error.message || 'Erro ao criar funcionário');
+      setGeneratedPassword('');
+    } finally {
+      setCreatingStaff(false);
+    }
+  };
+
+  const handleRemoveStaffAccess = async (userId: string, userName: string) => {
+    try {
+      setProcessingStaffAction(userId);
+
+      const { data, error } = await supabase.functions.invoke('create-support-user', {
+        body: {
+          action: 'remove_access',
+          userId
+        }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success(`Acesso de ${userName} removido`);
+      fetchSupportStaff();
+    } catch (error: any) {
+      console.error('Erro ao remover acesso:', error);
+      toast.error(error.message || 'Erro ao remover acesso');
+    } finally {
+      setProcessingStaffAction(null);
+    }
+  };
+
+  const handleDeleteStaffAccount = async (userId: string, userName: string) => {
+    if (!confirm(`Tem certeza que deseja EXCLUIR completamente a conta de ${userName}? Esta ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    try {
+      setProcessingStaffAction(userId);
+
+      const { data, error } = await supabase.functions.invoke('create-support-user', {
+        body: {
+          action: 'delete',
+          userId
+        }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success(`Conta de ${userName} excluída`);
+      fetchSupportStaff();
+    } catch (error: any) {
+      console.error('Erro ao excluir conta:', error);
+      toast.error(error.message || 'Erro ao excluir conta');
+    } finally {
+      setProcessingStaffAction(null);
+    }
+  };
+
+  const handleResetStaffPassword = async () => {
+    if (!selectedStaffForReset) return;
+
+    try {
+      setProcessingStaffAction(selectedStaffForReset.id);
+      const newPassword = generateSecurePassword();
+
+      const { data, error } = await supabase.functions.invoke('create-support-user', {
+        body: {
+          action: 'reset_password',
+          userId: selectedStaffForReset.id,
+          password: newPassword
+        }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setNewGeneratedPassword(newPassword);
+      toast.success('Senha resetada com sucesso!');
+    } catch (error: any) {
+      console.error('Erro ao resetar senha:', error);
+      toast.error(error.message || 'Erro ao resetar senha');
+    } finally {
+      setProcessingStaffAction(null);
     }
   };
 
@@ -3771,6 +3959,146 @@ export default function Admin() {
               </Card>
             </div>}
 
+            {/* Tab Funcionários de Suporte */}
+            {currentTab === 'funcionarios' && (
+              <div className="space-y-4 md:space-y-6">
+                <Card className="bg-white border-gray-200">
+                  <CardHeader className="p-3 md:p-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                      <div>
+                        <CardTitle className="text-gray-900 text-base md:text-lg flex items-center gap-2">
+                          <UserCog className="h-5 w-5" />
+                          Funcionários de Suporte
+                        </CardTitle>
+                        <p className="text-xs md:text-sm text-gray-500 mt-1">
+                          Gerencie contas de funcionários que acessam o portal de tickets
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          onClick={() => {
+                            setNewStaffName('');
+                            setNewStaffEmail('');
+                            setGeneratedPassword('');
+                            setStaffCreated(false);
+                            setShowCreateStaffDialog(true);
+                          }}
+                          size="sm" 
+                          className="h-8 md:h-9 text-xs md:text-sm"
+                        >
+                          + Novo Funcionário
+                        </Button>
+                        <Button onClick={fetchSupportStaff} variant="outline" size="sm" disabled={loadingSupportStaff} className="h-8 md:h-9 text-xs md:text-sm">
+                          {loadingSupportStaff ? <Loader2 className="h-3 w-3 md:h-4 md:w-4 animate-spin" /> : <RefreshCw className="h-3 w-3 md:h-4 md:w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-3 md:p-6 pt-0">
+                    {loadingSupportStaff ? (
+                      <div className="flex justify-center py-8">
+                        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                      </div>
+                    ) : supportStaff.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <UserCog className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                        <p>Nenhum funcionário de suporte cadastrado</p>
+                        <p className="text-xs mt-1">Clique em "Novo Funcionário" para adicionar</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {supportStaff.map((staff) => (
+                          <Card key={staff.id} className="border border-gray-200">
+                            <CardContent className="p-4">
+                              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                                <div className="flex-1">
+                                  <p className="font-medium text-gray-900">{staff.name}</p>
+                                  <p className="text-sm text-gray-600">{staff.email}</p>
+                                  <p className="text-xs text-gray-400 mt-1">
+                                    Desde: {new Date(staff.role_created_at || staff.created_at).toLocaleDateString('pt-BR')}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Badge className="bg-blue-100 text-blue-800">Suporte</Badge>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="outline" size="sm" disabled={processingStaffAction === staff.id}>
+                                        {processingStaffAction === staff.id ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <MoreVertical className="h-4 w-4" />
+                                        )}
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="bg-white border-gray-200">
+                                      <DropdownMenuItem 
+                                        onClick={() => {
+                                          setSelectedStaffForReset(staff);
+                                          setNewGeneratedPassword('');
+                                          setShowResetPasswordDialog(true);
+                                        }}
+                                        className="text-gray-900 hover:bg-gray-100 cursor-pointer"
+                                      >
+                                        <RefreshCw className="h-4 w-4 mr-2" />
+                                        Resetar Senha
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem 
+                                        onClick={() => handleRemoveStaffAccess(staff.id, staff.name)}
+                                        className="text-orange-600 hover:bg-orange-50 cursor-pointer"
+                                      >
+                                        <UserMinus className="h-4 w-4 mr-2" />
+                                        Remover Acesso
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem 
+                                        onClick={() => handleDeleteStaffAccount(staff.id, staff.name)}
+                                        className="text-red-600 hover:bg-red-50 cursor-pointer"
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Excluir Conta
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Card de informações */}
+                <Card className="bg-blue-50 border-blue-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Monitor className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-blue-900">Acesso ao Portal de Suporte</p>
+                        <p className="text-sm text-blue-700 mt-1">
+                          Funcionários acessam pelo login normal em <span className="font-mono bg-blue-100 px-1 rounded">souartista.app/login</span> e são redirecionados automaticamente para o portal de tickets.
+                        </p>
+                        <p className="text-sm text-blue-700 mt-1">
+                          O acesso funciona <strong>apenas na versão web</strong> - não funciona no app mobile.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Stats */}
+                <Card className="bg-white border-gray-200">
+                  <CardContent className="p-4">
+                    <p className="text-sm text-gray-600">
+                      Total de funcionários ativos: <strong className="text-primary">{supportStaff.length}</strong>
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
             {/* Tab LGPD */}
             {currentTab === 'lgpd' && (
               <div className="space-y-4 md:space-y-6">
@@ -4362,6 +4690,167 @@ export default function Admin() {
               ) : null}
               {selectedLgpdRequest?.status === 'pending' ? '❌ Rejeitar' : '✅ Concluir'}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Staff Dialog */}
+      <Dialog open={showCreateStaffDialog} onOpenChange={(open) => {
+        if (!open && !creatingStaff) {
+          setShowCreateStaffDialog(false);
+          setStaffCreated(false);
+        }
+      }}>
+        <DialogContent className="bg-white text-gray-900 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 flex items-center gap-2">
+              <UserCog className="h-5 w-5" />
+              {staffCreated ? 'Funcionário Criado!' : 'Novo Funcionário de Suporte'}
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              {staffCreated 
+                ? 'Copie as credenciais abaixo. A senha não será exibida novamente.'
+                : 'Preencha os dados para criar uma nova conta de funcionário.'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {!staffCreated ? (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="staff-name" className="text-gray-900">Nome</Label>
+                <Input
+                  id="staff-name"
+                  value={newStaffName}
+                  onChange={e => setNewStaffName(e.target.value)}
+                  placeholder="Nome completo"
+                  className="bg-white text-gray-900 border-gray-200"
+                  disabled={creatingStaff}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="staff-email" className="text-gray-900">Email</Label>
+                <Input
+                  id="staff-email"
+                  type="email"
+                  value={newStaffEmail}
+                  onChange={e => setNewStaffEmail(e.target.value)}
+                  placeholder="email@exemplo.com"
+                  className="bg-white text-gray-900 border-gray-200"
+                  disabled={creatingStaff}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4 py-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-3">
+                <div>
+                  <p className="text-xs text-gray-600">Email:</p>
+                  <p className="font-mono text-sm text-gray-900">{newStaffEmail}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600">Senha:</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono text-sm text-gray-900 flex-1">
+                      {showPassword ? generatedPassword : '••••••••••••'}
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(generatedPassword);
+                        toast.success('Senha copiada!');
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex justify-end gap-2">
+            {!staffCreated ? (
+              <>
+                <Button variant="outline" onClick={() => setShowCreateStaffDialog(false)} disabled={creatingStaff}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleCreateStaff} disabled={creatingStaff}>
+                  {creatingStaff ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Criar Conta
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => setShowCreateStaffDialog(false)}>
+                Fechar
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={showResetPasswordDialog} onOpenChange={setShowResetPasswordDialog}>
+        <DialogContent className="bg-white text-gray-900 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">Resetar Senha</DialogTitle>
+            <DialogDescription className="text-gray-600">
+              {selectedStaffForReset && `Resetar senha de ${selectedStaffForReset.name}`}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {!newGeneratedPassword ? (
+            <div className="py-4">
+              <p className="text-gray-700">Uma nova senha será gerada automaticamente.</p>
+            </div>
+          ) : (
+            <div className="py-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-xs text-gray-600 mb-1">Nova senha:</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-mono text-sm text-gray-900 flex-1">{newGeneratedPassword}</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(newGeneratedPassword);
+                      toast.success('Senha copiada!');
+                    }}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex justify-end gap-2">
+            {!newGeneratedPassword ? (
+              <>
+                <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleResetStaffPassword} disabled={processingStaffAction !== null}>
+                  {processingStaffAction ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Gerar Nova Senha
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => {
+                setShowResetPasswordDialog(false);
+                setNewGeneratedPassword('');
+                setSelectedStaffForReset(null);
+              }}>
+                Fechar
+              </Button>
+            )}
           </div>
         </DialogContent>
       </Dialog>
