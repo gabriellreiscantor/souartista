@@ -19,6 +19,7 @@ import logo from '@/assets/logo.png';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
 
 // Formatação de CPF: 000.000.000-00
 const formatCPF = (value: string) => {
@@ -77,6 +78,7 @@ const Register = () => {
   // Estados para modais de Termos e Privacidade
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // NÃO redireciona automaticamente - deixa o fluxo do formulário seguir
   // O redirecionamento acontece apenas após verificar o OTP no step 4
@@ -719,32 +721,46 @@ const Register = () => {
                   )}
                 </div>
 
-                {/* Texto de aceite dos Termos e Privacidade */}
-                <p className="text-xs text-center text-[#C8BAD4]">
-                  Ao criar sua conta, você concorda com os{' '}
-                  <button
-                    type="button"
-                    onClick={() => setTermsModalOpen(true)}
-                    className="text-[#B96FFF] hover:underline font-medium"
-                  >
-                    Termos de Uso
-                  </button>{' '}
-                  e a{' '}
-                  <button
-                    type="button"
-                    onClick={() => setPrivacyModalOpen(true)}
-                    className="text-[#B96FFF] hover:underline font-medium"
-                  >
-                    Política de Privacidade
-                  </button>
-                </p>
+                {/* Checkbox de aceite dos Termos e Privacidade */}
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="accept-terms"
+                    checked={acceptedTerms}
+                    onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                    className="mt-0.5 border-[#B96FFF] data-[state=checked]:bg-[#B96FFF] data-[state=checked]:border-[#B96FFF]"
+                  />
+                  <label htmlFor="accept-terms" className="text-xs text-[#C8BAD4] cursor-pointer leading-relaxed">
+                    Li e aceito os{' '}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setTermsModalOpen(true);
+                      }}
+                      className="text-[#B96FFF] hover:underline font-medium"
+                    >
+                      Termos de Uso
+                    </button>{' '}
+                    e a{' '}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPrivacyModalOpen(true);
+                      }}
+                      className="text-[#B96FFF] hover:underline font-medium"
+                    >
+                      Política de Privacidade
+                    </button>
+                  </label>
+                </div>
 
                 <div className="flex gap-2">
                   <Button type="button" onClick={handleBack} variant="outline" className="flex-1 h-11" disabled={loading}>
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Voltar
                   </Button>
-                  <Button type="submit" className="flex-1 h-11" disabled={loading}>
+                  <Button type="submit" className="flex-1 h-11" disabled={loading || !acceptedTerms}>
                     {loading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
