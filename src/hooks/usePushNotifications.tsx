@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 import { Device } from '@capacitor/device';
 import { useNativePlatform } from './useNativePlatform';
@@ -9,12 +9,15 @@ import { toast } from '@/hooks/use-toast';
 export const usePushNotifications = () => {
   const { isNative, platform } = useNativePlatform();
   const { user } = useAuth();
+  const hasInitialized = useRef(false);
+  const currentToken = useRef<string | null>(null);
 
   useEffect(() => {
     console.log('[PushNotifications] ========== HOOK MOUNTED ==========');
     console.log('[PushNotifications] isNative:', isNative);
     console.log('[PushNotifications] platform:', platform);
     console.log('[PushNotifications] user:', user?.id || 'NO USER');
+    console.log('[PushNotifications] hasInitialized:', hasInitialized.current);
     
     if (!isNative) {
       console.log('[PushNotifications] ❌ Skipping - NOT native platform');
@@ -26,10 +29,17 @@ export const usePushNotifications = () => {
       return;
     }
 
+    // Prevent multiple initializations
+    if (hasInitialized.current) {
+      console.log('[PushNotifications] ⏭️ Already initialized, skipping...');
+      return;
+    }
+
     console.log('[PushNotifications] ✅ Conditions met, initializing...');
 
     const initPushNotifications = async () => {
       try {
+        hasInitialized.current = true;
         console.log('[PushNotifications] ========== INITIALIZING FIREBASE MESSAGING ==========');
         console.log('[PushNotifications] Platform:', platform);
         console.log('[PushNotifications] User ID:', user.id);
@@ -50,12 +60,13 @@ export const usePushNotifications = () => {
 
         if (permStatus.receive !== 'granted') {
           console.log('[PushNotifications] ❌ Permission DENIED or not granted');
+          hasInitialized.current = false; // Allow retry
           return;
         }
 
         console.log('[PushNotifications] ✅ Permission GRANTED');
         
-        // Get FCM token directly (this is the key difference!)
+        // Get FCM token directly
         console.log('[PushNotifications] Getting FCM token...');
         const tokenResult = await FirebaseMessaging.getToken();
         const fcmToken = tokenResult.token;
@@ -66,8 +77,12 @@ export const usePushNotifications = () => {
         
         if (!fcmToken) {
           console.error('[PushNotifications] ❌ No FCM token received');
+          hasInitialized.current = false; // Allow retry
           return;
         }
+
+        // Store current token for comparison
+        currentToken.current = fcmToken;
         
         // Get device information
         console.log('[PushNotifications] Getting device info...');
@@ -80,6 +95,48 @@ export const usePushNotifications = () => {
         
         const deviceNameStr = `${deviceName.manufacturer || 'Unknown'} ${deviceName.model || 'Device'}`;
         console.log('[PushNotifications] Device name string:', deviceNameStr);
+        
+        // Check if this token already exists for this user
+        console.log('[PushNotifications] Checking for existing device token...');
+        const { data: existingDevice, error: checkError } = await supabase
+          .from('user_devices')
+          .select('id, fcm_token')
+          .eq('user_id', user.id)
+          .eq('device_id', deviceInfo.identifier)
+          .maybeSingle();
+        
+        if (checkError) {
+          console.error('[PushNotifications] Error checking existing device:', checkError);
+        }
+
+        // Only update if token is different or device doesn't exist
+        if (existingDevice) {
+          if (existingDevice.fcm_token === fcmToken) {
+            console.log('[PushNotifications] ✅ Token unchanged, updating last_used_at only');
+            await supabase
+              .from('user_devices')
+              .update({ last_used_at: new Date().toISOString() })
+              .eq('id', existingDevice.id);
+            console.log('[PushNotifications] ✅ last_used_at updated');
+            return;
+          } else {
+            console.log('[PushNotifications] 🔄 Token changed, updating...');
+          }
+        }
+
+        // Remove any other devices with the same token (cleanup duplicates)
+        console.log('[PushNotifications] Cleaning up duplicate tokens...');
+        const { error: cleanupError } = await supabase
+          .from('user_devices')
+          .delete()
+          .eq('fcm_token', fcmToken)
+          .neq('device_id', deviceInfo.identifier);
+        
+        if (cleanupError) {
+          console.error('[PushNotifications] Error cleaning up duplicates:', cleanupError);
+        } else {
+          console.log('[PushNotifications] ✅ Duplicate tokens cleaned up');
+        }
         
         // Save token to user_devices table
         console.log('[PushNotifications] Saving FCM token to database...');
@@ -131,8 +188,19 @@ export const usePushNotifications = () => {
         await FirebaseMessaging.addListener('tokenReceived', async (event) => {
           console.log('[PushNotifications] 🔄 Token refreshed:', event.token?.substring(0, 80) + '...');
           
-          // Update token in database
-          if (event.token) {
+          // Only update if token is different
+          if (event.token && event.token !== currentToken.current) {
+            currentToken.current = event.token;
+            console.log('[PushNotifications] Token is different, updating in database...');
+            
+            // Clean up old token entries
+            await supabase
+              .from('user_devices')
+              .delete()
+              .eq('fcm_token', event.token)
+              .neq('device_id', deviceInfo.identifier);
+            
+            // Update token in database
             await supabase
               .from('user_devices')
               .upsert({ 
@@ -145,6 +213,10 @@ export const usePushNotifications = () => {
               }, {
                 onConflict: 'user_id,device_id'
               });
+            
+            console.log('[PushNotifications] ✅ Refreshed token saved to database');
+          } else {
+            console.log('[PushNotifications] Token unchanged after refresh event');
           }
         });
 
@@ -152,6 +224,7 @@ export const usePushNotifications = () => {
         
       } catch (error) {
         console.error('[PushNotifications] ❌ Error initializing Firebase Messaging:', error);
+        hasInitialized.current = false; // Allow retry on error
       }
     };
 
