@@ -1,7 +1,6 @@
 import { User, Settings, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,14 +26,10 @@ const getInitials = (name?: string) => {
 
 export function UserMenu({ userName, userRole, photoUrl }: UserMenuProps) {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      console.log('Logout error (ignored):', error);
-    }
-    window.location.href = '/login';
+    await signOut();
   };
 
   const handleProfile = () => {
