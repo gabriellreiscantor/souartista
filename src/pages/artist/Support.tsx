@@ -482,7 +482,7 @@ const ArtistSupport = () => {
                             onChange={(e) => setNewResponse(e.target.value)}
                             placeholder="Digite sua resposta..."
                             rows={3}
-                            className="bg-white"
+                            className="bg-white text-black"
                           />
                           <Button 
                             onClick={handleSendResponse}
