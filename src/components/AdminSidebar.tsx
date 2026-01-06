@@ -66,7 +66,7 @@ export function AdminSidebar() {
     >
       <SidebarContent className="bg-sidebar-background" onClick={handleSidebarClick}>
         {/* Logo */}
-        <div className="p-4 border-b border-sidebar-border">
+        <div className="p-4 pt-8 border-b border-sidebar-border">
           {!collapsed ? (
             <img src={logo} alt="Sou Artista Admin" className="h-12 w-auto mx-auto" />
           ) : (
