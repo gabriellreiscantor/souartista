@@ -3179,6 +3179,30 @@ export default function Admin() {
                                         🔔 Notificar
                                       </Button>
                                     )}
+                                    {ticket.status !== 'closed' && ticket.status !== 'resolved' && (
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                                        onClick={async () => {
+                                          try {
+                                            const { error } = await supabase
+                                              .from('support_tickets')
+                                              .update({ status: 'resolved', updated_at: new Date().toISOString() })
+                                              .eq('id', ticket.id);
+                                            
+                                            if (error) throw error;
+                                            toast.success('Ticket marcado como resolvido!');
+                                            fetchSupportTickets();
+                                          } catch (error) {
+                                            console.error('Erro ao resolver ticket:', error);
+                                            toast.error('Erro ao resolver ticket');
+                                          }
+                                        }}
+                                      >
+                                        ✅ Resolvido
+                                      </Button>
+                                    )}
                                     {ticket.status !== 'closed' && (
                                       <Button 
                                         variant="outline" 
