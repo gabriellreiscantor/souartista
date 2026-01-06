@@ -123,6 +123,42 @@ export type Database = {
           },
         ]
       }
+      fcm_token_history: {
+        Row: {
+          action: string
+          created_at: string | null
+          device_id: string
+          device_name: string | null
+          fcm_token: string
+          id: string
+          old_token: string | null
+          platform: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          device_id: string
+          device_name?: string | null
+          fcm_token: string
+          id?: string
+          old_token?: string | null
+          platform: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          device_id?: string
+          device_name?: string | null
+          fcm_token?: string
+          id?: string
+          old_token?: string | null
+          platform?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       locomotion_expenses: {
         Row: {
           cost: number
@@ -518,6 +554,54 @@ export type Database = {
           plan_type?: string | null
           status_plano?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      push_notification_logs: {
+        Row: {
+          body: string
+          device_id: string | null
+          error_code: string | null
+          error_message: string | null
+          fcm_token_preview: string | null
+          id: string
+          notification_id: string | null
+          platform: string | null
+          response_data: Json | null
+          sent_at: string | null
+          status: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          device_id?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          fcm_token_preview?: string | null
+          id?: string
+          notification_id?: string | null
+          platform?: string | null
+          response_data?: Json | null
+          sent_at?: string | null
+          status: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          device_id?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          fcm_token_preview?: string | null
+          id?: string
+          notification_id?: string | null
+          platform?: string | null
+          response_data?: Json | null
+          sent_at?: string | null
+          status?: string
+          title?: string
+          user_id?: string
         }
         Relationships: []
       }

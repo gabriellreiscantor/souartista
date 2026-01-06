@@ -11,6 +11,43 @@ interface PushNotificationRequest {
   body: string;
   link?: string;
   platform?: 'ios' | 'android' | 'all';
+  notificationId?: string;
+}
+
+// Function to log push attempt
+async function logPushAttempt(
+  supabaseAdmin: any,
+  params: {
+    notificationId?: string;
+    userId: string;
+    deviceId?: string;
+    platform?: string;
+    fcmToken?: string;
+    title: string;
+    body: string;
+    status: 'sent' | 'failed' | 'invalid_token';
+    errorMessage?: string;
+    errorCode?: string;
+    responseData?: any;
+  }
+) {
+  try {
+    await supabaseAdmin.from('push_notification_logs').insert({
+      notification_id: params.notificationId || null,
+      user_id: params.userId,
+      device_id: params.deviceId || null,
+      platform: params.platform || null,
+      fcm_token_preview: params.fcmToken ? params.fcmToken.substring(0, 20) + '...' : null,
+      title: params.title,
+      body: params.body,
+      status: params.status,
+      error_message: params.errorMessage || null,
+      error_code: params.errorCode || null,
+      response_data: params.responseData || null,
+    });
+  } catch (error) {
+    console.error('[send-push-notification] ⚠️ Failed to log push attempt:', error);
+  }
 }
 
 // Function to get OAuth2 access token from service account
@@ -80,7 +117,7 @@ Deno.serve(async (req) => {
   console.log('[send-push-notification] 🚀 Function invoked at:', new Date().toISOString());
 
   try {
-    const { userId, title, body, link, platform = 'all' }: PushNotificationRequest = await req.json();
+    const { userId, title, body, link, platform = 'all', notificationId }: PushNotificationRequest = await req.json();
 
     console.log('[send-push-notification] 📤 Request details:');
     console.log('[send-push-notification]   - userId:', userId || 'ALL USERS');
@@ -88,6 +125,7 @@ Deno.serve(async (req) => {
     console.log('[send-push-notification]   - body:', body?.substring(0, 50) + '...');
     console.log('[send-push-notification]   - link:', link || 'none');
     console.log('[send-push-notification]   - platform:', platform);
+    console.log('[send-push-notification]   - notificationId:', notificationId || 'none');
 
     if (!title || !body) {
       console.error('[send-push-notification] ❌ Missing required fields');
@@ -102,7 +140,7 @@ Deno.serve(async (req) => {
     // Build query for user devices
     let devicesQuery = supabaseAdmin
       .from('user_devices')
-      .select('id, user_id, fcm_token, platform, device_name, last_used_at')
+      .select('id, user_id, fcm_token, platform, device_name, device_id, last_used_at')
       .not('fcm_token', 'is', null);
 
     // Filter by userId if provided
@@ -254,13 +292,30 @@ Deno.serve(async (req) => {
 
           errors.push({ deviceId: device.id, error: errorMessage });
 
-          if (errorCode === 404 || 
+          const isInvalidToken = errorCode === 404 || 
               errorCode === 400 ||
               errorStatus === 'NOT_FOUND' || 
               errorStatus === 'INVALID_ARGUMENT' ||
               isUnregistered ||
               errorMessage.includes('not a valid FCM registration token') ||
-              errorMessage.includes('Requested entity was not found')) {
+              errorMessage.includes('Requested entity was not found');
+
+          // Log the failed attempt
+          await logPushAttempt(supabaseAdmin, {
+            notificationId,
+            userId: device.user_id,
+            deviceId: device.device_id,
+            platform: device.platform,
+            fcmToken: device.fcm_token,
+            title,
+            body,
+            status: isInvalidToken ? 'invalid_token' : 'failed',
+            errorMessage,
+            errorCode: String(errorCode || errorStatus),
+            responseData: fcmResult,
+          });
+
+          if (isInvalidToken) {
             console.log(`[send-push-notification] 🗑️ Invalid/expired FCM token, removing device ${device.id}`);
             const { error: deleteError } = await supabaseAdmin
               .from('user_devices')
@@ -279,6 +334,19 @@ Deno.serve(async (req) => {
           console.log(`[send-push-notification] ✅ Push sent successfully to device ${device.id} (${device.platform})`);
           console.log(`[send-push-notification]    FCM message ID:`, fcmResult.name);
           
+          // Log the successful attempt
+          await logPushAttempt(supabaseAdmin, {
+            notificationId,
+            userId: device.user_id,
+            deviceId: device.device_id,
+            platform: device.platform,
+            fcmToken: device.fcm_token,
+            title,
+            body,
+            status: 'sent',
+            responseData: { messageId: fcmResult.name },
+          });
+          
           // Update last_used_at
           await supabaseAdmin
             .from('user_devices')
@@ -291,6 +359,20 @@ Deno.serve(async (req) => {
         const errorMsg = err instanceof Error ? err.message : 'Unknown error';
         console.error(`[send-push-notification] ❌ Exception sending to device ${device.id}:`, errorMsg);
         errors.push({ deviceId: device.id, error: errorMsg });
+        
+        // Log the exception
+        await logPushAttempt(supabaseAdmin, {
+          notificationId,
+          userId: device.user_id,
+          deviceId: device.device_id,
+          platform: device.platform,
+          fcmToken: device.fcm_token,
+          title,
+          body,
+          status: 'failed',
+          errorMessage: errorMsg,
+        });
+        
         errorCount++;
       }
     }
