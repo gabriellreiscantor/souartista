@@ -66,12 +66,12 @@ export const useAppUpdate = () => {
     const dismissedAt = localStorage.getItem('app_update_dismissed');
     if (!dismissedAt) return true;
     
-    // Show again after 24 hours
+    // Show again after 1 week (168 hours)
     const dismissedDate = new Date(dismissedAt);
     const now = new Date();
     const hoursSinceDismissed = (now.getTime() - dismissedDate.getTime()) / (1000 * 60 * 60);
     
-    return hoursSinceDismissed >= 24;
+    return hoursSinceDismissed >= 168;
   }, [updateAvailable]);
 
   useEffect(() => {
