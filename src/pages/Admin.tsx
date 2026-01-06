@@ -19,6 +19,7 @@ import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, 
 import { Textarea } from '@/components/ui/textarea';
 import { RouteSelector } from '@/components/RouteSelector';
 import { PushNotificationLogs } from '@/components/PushNotificationLogs';
+import { EscalatedTicketsTab } from '@/components/EscalatedTicketsTab';
 import * as XLSX from 'xlsx';
 interface UserProfile {
   id: string;
@@ -3584,6 +3585,11 @@ export default function Admin() {
                   )}
                 </CardContent>
               </Card>}
+
+            {/* Tickets Escalados */}
+            {currentTab === 'escalados' && (
+              <EscalatedTicketsTab />
+            )}
 
             {/* Atualizações */}
             {currentTab === 'atualizacoes' && (
