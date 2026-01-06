@@ -4008,8 +4008,8 @@ export default function Admin() {
                     ) : (
                       <div className="space-y-3">
                         {supportStaff.map((staff) => (
-                          <Card key={staff.id} className="border border-gray-200">
-                            <CardContent className="p-4">
+                          <Card key={staff.id} className="bg-white border border-gray-200">
+                            <CardContent className="p-4 bg-white">
                               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                                 <div className="flex-1">
                                   <p className="font-medium text-gray-900">{staff.name}</p>
