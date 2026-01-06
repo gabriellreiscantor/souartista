@@ -224,22 +224,22 @@ export function PushNotificationLogs() {
               <Loader2 className="w-6 h-6 animate-spin text-primary" />
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-2 w-full">
-              <div className="bg-gray-50 rounded-lg p-2 md:p-3 text-center min-w-0">
-                <p className="text-lg md:text-2xl font-bold text-gray-900">{stats.total}</p>
-                <p className="text-[10px] md:text-xs text-gray-500">Total</p>
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
+              <div className="bg-gray-50 rounded-lg p-2 text-center shrink-0 min-w-[70px]">
+                <p className="text-lg font-bold text-gray-900">{stats.total}</p>
+                <p className="text-[10px] text-gray-500">Total</p>
               </div>
-              <div className="bg-green-50 rounded-lg p-2 md:p-3 text-center min-w-0">
-                <p className="text-lg md:text-2xl font-bold text-green-600">{stats.sent}</p>
-                <p className="text-[10px] md:text-xs text-gray-500">Enviados</p>
+              <div className="bg-green-50 rounded-lg p-2 text-center shrink-0 min-w-[70px]">
+                <p className="text-lg font-bold text-green-600">{stats.sent}</p>
+                <p className="text-[10px] text-gray-500">Enviados</p>
               </div>
-              <div className="bg-red-50 rounded-lg p-2 md:p-3 text-center min-w-0">
-                <p className="text-lg md:text-2xl font-bold text-red-600">{stats.failed}</p>
-                <p className="text-[10px] md:text-xs text-gray-500">Falharam</p>
+              <div className="bg-red-50 rounded-lg p-2 text-center shrink-0 min-w-[70px]">
+                <p className="text-lg font-bold text-red-600">{stats.failed}</p>
+                <p className="text-[10px] text-gray-500">Falharam</p>
               </div>
-              <div className="bg-blue-50 rounded-lg p-2 md:p-3 text-center min-w-0">
-                <p className="text-lg md:text-2xl font-bold text-blue-600">{successRate}%</p>
-                <p className="text-[10px] md:text-xs text-gray-500">Taxa Sucesso</p>
+              <div className="bg-blue-50 rounded-lg p-2 text-center shrink-0 min-w-[70px]">
+                <p className="text-lg font-bold text-blue-600">{successRate}%</p>
+                <p className="text-[10px] text-gray-500">Taxa</p>
               </div>
             </div>
           )}
