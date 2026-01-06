@@ -44,7 +44,7 @@ const ArtistTerms = () => {
           }}>
             <div className="max-w-3xl mx-auto prose prose-slate prose-headings:text-gray-900 prose-p:text-gray-900 prose-li:text-gray-900">
               <h1 className="text-gray-900">Termos de Uso</h1>
-              <p className="text-gray-600">Última atualização: {new Date().toLocaleDateString('pt-BR')}</p>
+              <p className="text-gray-600">Última atualização: Janeiro de 2026</p>
 
               <h2 className="text-gray-900">1. Aceitação dos Termos</h2>
               <p className="text-gray-900">
@@ -64,31 +64,46 @@ const ArtistTerms = () => {
                 imediatamente sobre qualquer uso não autorizado de sua conta.
               </p>
 
-              <h2 className="text-gray-900">4. Propriedade Intelectual</h2>
+              <h2 className="text-gray-900">4. Acesso Administrativo e Uso de Dados</h2>
+              <p className="text-gray-900">
+                Para fins de operação, suporte, segurança, análise e gestão da plataforma, os administradores 
+                do SouArtista (incluindo perfis de CEO, COO ou funções equivalentes) poderão acessar dados 
+                cadastrais e operacionais dos usuários, tais como nome, e-mail, telefone, CPF, informações 
+                de plano, bem como dados financeiros inseridos na plataforma relacionados à atividade 
+                profissional do usuário, incluindo registros de shows, cachês, receitas, despesas e 
+                indicadores financeiros agregados.
+              </p>
+              <p className="text-gray-900">
+                O SouArtista não acessa senhas, códigos de autenticação, dados completos de cartões de 
+                crédito ou informações bancárias sensíveis, os quais são processados exclusivamente por 
+                parceiros de pagamento externos.
+              </p>
+
+              <h2 className="text-gray-900">5. Propriedade Intelectual</h2>
               <p className="text-gray-900">
                 Todo o conteúdo da plataforma, incluindo textos, gráficos, logos e software, é propriedade 
                 da empresa e protegido por leis de direitos autorais.
               </p>
 
-              <h2 className="text-gray-900">5. Dados e Privacidade</h2>
+              <h2 className="text-gray-900">6. Dados e Privacidade</h2>
               <p className="text-gray-900">
                 Seus dados são tratados de acordo com nossa Política de Privacidade. Não compartilhamos 
                 suas informações pessoais com terceiros sem seu consentimento.
               </p>
 
-              <h2 className="text-gray-900">6. Limitação de Responsabilidade</h2>
+              <h2 className="text-gray-900">7. Limitação de Responsabilidade</h2>
               <p className="text-gray-900">
                 A plataforma é fornecida "como está". Não garantimos que o serviço será ininterrupto ou 
                 livre de erros.
               </p>
 
-              <h2 className="text-gray-900">7. Modificações nos Termos</h2>
+              <h2 className="text-gray-900">8. Modificações nos Termos</h2>
               <p className="text-gray-900">
                 Reservamo-nos o direito de modificar estes termos a qualquer momento. Alterações entrarão 
                 em vigor imediatamente após a publicação.
               </p>
 
-              <h2 className="text-gray-900">8. Termos Adicionais para Compras via App Store (iOS)</h2>
+              <h2 className="text-gray-900">9. Termos Adicionais para Compras via App Store (iOS)</h2>
               <p className="text-gray-900">
                 Para assinaturas adquiridas através da App Store da Apple, aplicam-se também os termos
                 do Contrato de Licença de Usuário Final (EULA) padrão da Apple.
@@ -106,7 +121,7 @@ const ArtistTerms = () => {
                 </a>.
               </p>
 
-              <h2 className="text-gray-900">9. Contato</h2>
+              <h2 className="text-gray-900">10. Contato</h2>
               <p className="text-gray-900">
                 Para dúvidas sobre estes termos, entre em contato:{' '}
                 <a 

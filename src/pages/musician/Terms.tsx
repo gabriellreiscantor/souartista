@@ -16,7 +16,9 @@ const MusicianTerms = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  return <SidebarProvider>
+
+  return (
+    <SidebarProvider>
       <div className="flex min-h-screen w-full bg-white">
         <MusicianSidebar />
         
@@ -36,13 +38,13 @@ const MusicianTerms = () => {
           </header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6 scrollbar-hide" style={{
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          WebkitOverflowScrolling: 'touch'
-        }}>
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}>
             <div className="max-w-3xl mx-auto prose prose-slate">
               <h1 className="text-stone-950">Termos de Uso</h1>
-              <p className="text-gray-600">Última atualização: {new Date().toLocaleDateString('pt-BR')}</p>
+              <p className="text-gray-600">Última atualização: Janeiro de 2026</p>
 
               <h2 className="text-stone-950 text-xl">1. Aceitação dos Termos</h2>
               <p className="text-zinc-950">
@@ -62,31 +64,46 @@ const MusicianTerms = () => {
                 imediatamente sobre qualquer uso não autorizado de sua conta.
               </p>
 
-              <h2 className="text-stone-950 text-xl">4. Propriedade Intelectual</h2>
+              <h2 className="text-stone-950 text-xl">4. Acesso Administrativo e Uso de Dados</h2>
+              <p className="text-stone-950">
+                Para fins de operação, suporte, segurança, análise e gestão da plataforma, os administradores 
+                do SouArtista (incluindo perfis de CEO, COO ou funções equivalentes) poderão acessar dados 
+                cadastrais e operacionais dos usuários, tais como nome, e-mail, telefone, CPF, informações 
+                de plano, bem como dados financeiros inseridos na plataforma relacionados à atividade 
+                profissional do usuário, incluindo registros de shows, cachês, receitas, despesas e 
+                indicadores financeiros agregados.
+              </p>
+              <p className="text-stone-950">
+                O SouArtista não acessa senhas, códigos de autenticação, dados completos de cartões de 
+                crédito ou informações bancárias sensíveis, os quais são processados exclusivamente por 
+                parceiros de pagamento externos.
+              </p>
+
+              <h2 className="text-stone-950 text-xl">5. Propriedade Intelectual</h2>
               <p className="text-stone-950">
                 Todo o conteúdo da plataforma, incluindo textos, gráficos, logos e software, é propriedade 
                 da empresa e protegido por leis de direitos autorais.
               </p>
 
-              <h2 className="text-stone-950 text-xl">5. Dados e Privacidade</h2>
+              <h2 className="text-stone-950 text-xl">6. Dados e Privacidade</h2>
               <p className="text-stone-950">
                 Seus dados são tratados de acordo com nossa Política de Privacidade. Não compartilhamos 
                 suas informações pessoais com terceiros sem seu consentimento.
               </p>
 
-              <h2 className="text-xl">6. Limitação de Responsabilidade</h2>
+              <h2 className="text-xl">7. Limitação de Responsabilidade</h2>
               <p className="text-stone-950">
                 A plataforma é fornecida "como está". Não garantimos que o serviço será ininterrupto ou 
                 livre de erros.
               </p>
 
-              <h2 className="text-stone-950">7. Modificações nos Termos</h2>
+              <h2 className="text-stone-950">8. Modificações nos Termos</h2>
               <p className="text-stone-950">
                 Reservamo-nos o direito de modificar estes termos a qualquer momento. Alterações entrarão 
                 em vigor imediatamente após a publicação.
               </p>
 
-              <h2 className="text-stone-950">8. Termos Adicionais para Compras via App Store (iOS)</h2>
+              <h2 className="text-stone-950">9. Termos Adicionais para Compras via App Store (iOS)</h2>
               <p className="text-stone-950">
                 Para assinaturas adquiridas através da App Store da Apple, aplicam-se também os termos
                 do Contrato de Licença de Usuário Final (EULA) padrão da Apple.
@@ -104,7 +121,7 @@ const MusicianTerms = () => {
                 </a>.
               </p>
 
-              <h2 className="text-stone-950">9. Contato</h2>
+              <h2 className="text-stone-950">10. Contato</h2>
               <p className="text-stone-950">
                 Para dúvidas sobre estes termos, entre em contato:{' '}
                 <a 
@@ -120,6 +137,8 @@ const MusicianTerms = () => {
           <MobileBottomNav role="musician" />
         </div>
       </div>
-    </SidebarProvider>;
+    </SidebarProvider>
+  );
 };
+
 export default MusicianTerms;
