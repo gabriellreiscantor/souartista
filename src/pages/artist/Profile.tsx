@@ -362,7 +362,7 @@ const ArtistProfile = () => {
               {isReviewAvailable && (
                 <div className="bg-white border border-border rounded-lg p-6 text-center">
                   <Star className="w-8 h-8 mx-auto mb-2 text-yellow-500 fill-yellow-500" />
-                  <h3 className="font-semibold text-lg mb-1 text-foreground">Gostando do Sou Artista?</h3>
+                  <h3 className="font-semibold text-lg mb-1 text-gray-900">Gostando do Sou Artista?</h3>
                   <p className="text-muted-foreground text-sm mb-4">
                     Sua avaliação nos ajuda a melhorar o app!
                   </p>
