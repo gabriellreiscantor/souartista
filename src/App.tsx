@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { OfflineBanner } from "@/components/OfflineBanner";
+import { UpdateBanner } from "@/components/UpdateBanner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
@@ -148,6 +149,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <OfflineBanner />
+      <UpdateBanner />
       {/* Safe area wrapper for iOS native app */}
       <div className="safe-area-status-bar fixed top-0 left-0 right-0 z-[9999]" />
       <div className="safe-area-top">
