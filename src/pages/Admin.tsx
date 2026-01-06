@@ -1707,24 +1707,26 @@ export default function Admin() {
               </Card>}
 
             {currentTab === 'buscar' && <Card className="bg-white border-gray-200">
-                <CardHeader>
-                  <CardTitle className="text-gray-900">Buscar por ID</CardTitle>
+                <CardHeader className="p-3 md:p-6">
+                  <CardTitle className="text-gray-900 text-base md:text-lg">🔍 Buscar por ID</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Input ref={setSearchInputRef} placeholder="Cole o ID do usuário aqui..." value={searchId} onChange={e => setSearchId(e.target.value)} className="bg-white text-gray-900 border-gray-200 flex-1" />
-                      <Button variant="outline" onClick={handlePasteClick} className="w-full sm:w-auto">
-                        <Clipboard className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Colar</span>
-                      </Button>
-                      {(searchId || searchedUser) && <Button variant="outline" onClick={handleClearSearch} className="w-full sm:w-auto">
-                          <X className="h-4 w-4 sm:mr-2" />
-                          <span className="hidden sm:inline">Limpar</span>
-                        </Button>}
-                      <Button onClick={handleSearchUser} disabled={searching} className="w-full sm:w-auto">
-                        {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Buscar'}
-                      </Button>
+                <CardContent className="p-3 md:p-6 pt-0">
+                  <div className="space-y-4 md:space-y-6">
+                    <div className="flex flex-col gap-2">
+                      <Input ref={setSearchInputRef} placeholder="Cole o ID do usuário..." value={searchId} onChange={e => setSearchId(e.target.value)} className="bg-white text-gray-900 border-gray-200" />
+                      <div className="grid grid-cols-3 gap-2">
+                        <Button variant="outline" onClick={handlePasteClick} className="h-9 text-xs md:text-sm">
+                          <Clipboard className="h-3 w-3 md:h-4 md:w-4 mr-1" />
+                          <span className="hidden sm:inline">Colar</span>
+                        </Button>
+                        {(searchId || searchedUser) && <Button variant="outline" onClick={handleClearSearch} className="h-9 text-xs md:text-sm">
+                            <X className="h-3 w-3 md:h-4 md:w-4 mr-1" />
+                            <span className="hidden sm:inline">Limpar</span>
+                          </Button>}
+                        <Button onClick={handleSearchUser} disabled={searching} className={`h-9 text-xs md:text-sm ${!searchId && !searchedUser ? 'col-span-2' : ''}`}>
+                          {searching ? <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin" /> : 'Buscar'}
+                        </Button>
+                      </div>
                     </div>
 
                     {searchedUser && <div className="space-y-4 pt-4 border-t border-gray-200">
@@ -1972,17 +1974,17 @@ export default function Admin() {
 
             {currentTab === 'importacao' && (
               <Card className="bg-white border-gray-200">
-                <CardHeader>
-                  <CardTitle className="text-gray-900">📥 Importação Firebase</CardTitle>
-                  <p className="text-sm text-gray-600 mt-2">
-                    Importe seus shows, músicos e venues do Firebase para o Supabase
+                <CardHeader className="p-3 md:p-6">
+                  <CardTitle className="text-gray-900 text-base md:text-lg">📥 Importação Firebase</CardTitle>
+                  <p className="text-xs md:text-sm text-gray-600 mt-1 md:mt-2">
+                    Importe shows, músicos e venues do Firebase
                   </p>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 md:p-6 pt-0">
                   {!importReport ? (
-                    <div className="space-y-6">
+                    <div className="space-y-4 md:space-y-6">
                       {/* Upload do arquivo */}
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 md:p-8 text-center">
                         <input
                           type="file"
                           accept=".json"
@@ -1996,12 +1998,12 @@ export default function Admin() {
                           className="cursor-pointer block"
                         >
                           <div className="space-y-2">
-                            <Download className="w-12 h-12 mx-auto text-gray-400" />
-                            <p className="text-lg font-medium text-gray-900">
+                            <Download className="w-8 h-8 md:w-12 md:h-12 mx-auto text-gray-400" />
+                            <p className="text-sm md:text-lg font-medium text-gray-900">
                               {importFile ? importFile.name : 'Selecione o arquivo JSON'}
                             </p>
-                            <p className="text-sm text-gray-500">
-                              Clique para selecionar ou arraste o arquivo
+                            <p className="text-xs md:text-sm text-gray-500">
+                              Clique para selecionar
                             </p>
                           </div>
                         </label>
@@ -2010,42 +2012,42 @@ export default function Admin() {
                       {/* Preview dos dados */}
                       {importData && (
                         <div className="space-y-4">
-                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <h3 className="font-semibold text-blue-900 mb-3">
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 md:p-4">
+                            <h3 className="font-semibold text-blue-900 mb-2 md:mb-3 text-sm md:text-base">
                               Preview dos Dados
                             </h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                              <div className="bg-white p-3 rounded border border-blue-200">
-                                <p className="text-xs text-gray-600">Total de Shows</p>
-                                <p className="text-2xl font-bold text-blue-600">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
+                              <div className="bg-white p-2 md:p-3 rounded border border-blue-200">
+                                <p className="text-[10px] md:text-xs text-gray-600">Shows</p>
+                                <p className="text-lg md:text-2xl font-bold text-blue-600">
                                   {importData.length}
                                 </p>
                               </div>
-                              <div className="bg-white p-3 rounded border border-green-200">
-                                <p className="text-xs text-gray-600">Receita Bruta</p>
-                                <p className="text-2xl font-bold text-green-600">
-                                  R$ {importData.reduce((sum: number, show: any) => sum + (show.fee || 0), 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                              <div className="bg-white p-2 md:p-3 rounded border border-green-200">
+                                <p className="text-[10px] md:text-xs text-gray-600">Receita</p>
+                                <p className="text-sm md:text-2xl font-bold text-green-600">
+                                  R$ {importData.reduce((sum: number, show: any) => sum + (show.fee || 0), 0).toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
                                 </p>
                               </div>
-                              <div className="bg-white p-3 rounded border border-red-200">
-                                <p className="text-xs text-gray-600">Despesas Totais</p>
-                                <p className="text-2xl font-bold text-red-600">
+                              <div className="bg-white p-2 md:p-3 rounded border border-red-200">
+                                <p className="text-[10px] md:text-xs text-gray-600">Despesas</p>
+                                <p className="text-sm md:text-2xl font-bold text-red-600">
                                   R$ {(() => {
                                     try {
                                       return importData.reduce((sum: number, show: any) => {
                                         const despesasEquipe = (show.expenses?.team || []).reduce((s: number, exp: any) => s + (exp.cost || 0), 0);
                                         const despesasOutras = (show.expenses?.other || []).reduce((s: number, exp: any) => s + (exp.amount || exp.cost || 0), 0);
                                         return sum + despesasEquipe + despesasOutras;
-                                      }, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                                      }, 0).toLocaleString('pt-BR', { minimumFractionDigits: 0 });
                                     } catch (e) {
-                                      return '0,00';
+                                      return '0';
                                     }
                                   })()}
                                 </p>
                               </div>
-                              <div className="bg-white p-3 rounded border border-purple-200">
-                                <p className="text-xs text-gray-600">Venues Únicos</p>
-                                <p className="text-2xl font-bold text-purple-600">
+                              <div className="bg-white p-2 md:p-3 rounded border border-purple-200">
+                                <p className="text-[10px] md:text-xs text-gray-600">Venues</p>
+                                <p className="text-lg md:text-2xl font-bold text-purple-600">
                                   {new Set(importData.map((s: any) => s.venueName)).size}
                                 </p>
                               </div>
@@ -2191,13 +2193,13 @@ export default function Admin() {
 
             {currentTab === 'administradores' && (
               <Card className="bg-white border-gray-200">
-                <CardHeader>
-                  <CardTitle className="text-gray-900">🛡️ Gerenciar Permissões</CardTitle>
-                  <p className="text-sm text-gray-600 mt-2">
-                    Adicione ou remova permissões de Administrador e Suporte para usuários do sistema
+                <CardHeader className="p-3 md:p-6">
+                  <CardTitle className="text-gray-900 text-base md:text-lg">🛡️ Gerenciar Permissões</CardTitle>
+                  <p className="text-xs md:text-sm text-gray-600 mt-1">
+                    Adicione ou remova permissões de Administrador e Suporte
                   </p>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 md:p-6 pt-0">
                   {loadingAdmins ? (
                     <div className="flex justify-center py-8">
                       <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
@@ -2205,13 +2207,13 @@ export default function Admin() {
                   ) : (
                     <>
                       {/* Header com busca e botão de refresh */}
-                      <div className="mb-6 space-y-3">
-                        <div className="flex gap-2">
+                      <div className="mb-4 md:mb-6 space-y-2 md:space-y-3">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <Input
-                            placeholder="Buscar por nome, email, CPF, telefone ou ID..."
+                            placeholder="Buscar por nome, email, CPF..."
                             value={adminSearchQuery}
                             onChange={(e) => setAdminSearchQuery(e.target.value)}
-                            className="bg-white text-gray-900 border-gray-200 flex-1"
+                            className="bg-white text-gray-900 border-gray-200 flex-1 text-sm"
                           />
                           <Button
                             variant="outline"
@@ -2219,14 +2221,15 @@ export default function Admin() {
                               fetchAdminUsers();
                               toast.success('Lista atualizada!');
                             }}
-                            className="shrink-0"
+                            className="shrink-0 h-9 text-xs md:text-sm"
                           >
-                            <Loader2 className="w-4 h-4 mr-2" />
-                            Atualizar
+                            <Loader2 className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                            <span className="hidden sm:inline">Atualizar</span>
+                            <span className="sm:hidden">↻</span>
                           </Button>
                         </div>
                         {lastUpdate && (
-                          <p className="text-xs text-gray-500">
+                          <p className="text-[10px] md:text-xs text-gray-500">
                             Última atualização: {lastUpdate.toLocaleTimeString('pt-BR')}
                           </p>
                         )}
@@ -2264,20 +2267,20 @@ export default function Admin() {
                             }).map((user: any) => (
                               <div
                                 key={user.id}
-                                className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200"
+                                className="flex flex-col sm:flex-row sm:items-center justify-between p-2 md:p-3 bg-purple-50 rounded-lg border border-purple-200 gap-2"
                               >
-                                <div className="flex-1">
-                                  <p className="font-medium text-gray-900">{user.name}</p>
-                                  <p className="text-xs text-gray-600">{user.email}</p>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-gray-900 text-sm truncate">{user.name}</p>
+                                  <p className="text-[10px] md:text-xs text-gray-600 truncate">{user.email}</p>
                                 </div>
-                                <div className="flex items-center gap-2 flex-wrap">
+                                <div className="flex flex-wrap items-center gap-1.5">
                                   {user.isAdmin && (
-                                    <Badge className="bg-purple-100 text-purple-800">
+                                    <Badge className="bg-purple-100 text-purple-800 text-[10px] md:text-xs">
                                       👑 Admin
                                     </Badge>
                                   )}
                                   {user.isSupport && (
-                                    <Badge className="bg-blue-100 text-blue-800">
+                                    <Badge className="bg-blue-100 text-blue-800 text-[10px] md:text-xs">
                                       🎧 Suporte
                                     </Badge>
                                   )}
@@ -2287,9 +2290,10 @@ export default function Admin() {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handleRevokeAdmin(user.id, user.name)}
-                                        className="text-red-600 hover:text-red-700 text-xs"
+                                        className="text-red-600 hover:text-red-700 text-[10px] md:text-xs h-7 px-2"
                                       >
-                                        Remover Admin
+                                        <span className="hidden sm:inline">Remover Admin</span>
+                                        <span className="sm:hidden">- Admin</span>
                                       </Button>
                                     )}
                                     {user.isSupport && (
@@ -2297,9 +2301,10 @@ export default function Admin() {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handleRevokeSupport(user.id, user.name)}
-                                        className="text-red-600 hover:text-red-700 text-xs"
+                                        className="text-red-600 hover:text-red-700 text-[10px] md:text-xs h-7 px-2"
                                       >
-                                        Remover Suporte
+                                        <span className="hidden sm:inline">Remover Suporte</span>
+                                        <span className="sm:hidden">- Suporte</span>
                                       </Button>
                                     )}
                                   </div>
@@ -2340,13 +2345,13 @@ export default function Admin() {
                             }).map((user: any) => (
                               <div
                                 key={user.id}
-                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                                className="flex flex-col sm:flex-row sm:items-center justify-between p-2 md:p-3 bg-gray-50 rounded-lg border border-gray-200 gap-2"
                               >
-                                <div className="flex-1">
-                                  <p className="font-medium text-gray-900">{user.name}</p>
-                                  <p className="text-xs text-gray-600">{user.email}</p>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-gray-900 text-sm truncate">{user.name}</p>
+                                  <p className="text-[10px] md:text-xs text-gray-600 truncate">{user.email}</p>
                                 </div>
-                                <div className="flex items-center gap-2 flex-wrap">
+                                <div className="flex flex-wrap items-center gap-1.5">
                                   {getStatusBadge(user.status_plano)}
                                   <div className="flex gap-1">
                                     {!user.isAdmin && (
@@ -2354,9 +2359,9 @@ export default function Admin() {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handlePromoteToAdmin(user.id, user.name)}
-                                        className="text-purple-600 hover:text-purple-700 text-xs"
+                                        className="text-purple-600 hover:text-purple-700 text-[10px] md:text-xs h-7 px-2"
                                       >
-                                        👑 Admin
+                                        👑 <span className="hidden sm:inline">Admin</span>
                                       </Button>
                                     )}
                                     {!user.isSupport && (
@@ -2364,9 +2369,9 @@ export default function Admin() {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handlePromoteToSupport(user.id, user.name)}
-                                        className="text-blue-600 hover:text-blue-700 text-xs"
+                                        className="text-blue-600 hover:text-blue-700 text-[10px] md:text-xs h-7 px-2"
                                       >
-                                        🎧 Suporte
+                                        🎧 <span className="hidden sm:inline">Suporte</span>
                                       </Button>
                                     )}
                                   </div>
@@ -2382,27 +2387,27 @@ export default function Admin() {
               </Card>
             )}
 
-            {currentTab === 'financeiro' && <div className="space-y-6">
+            {currentTab === 'financeiro' && <div className="space-y-4 md:space-y-6">
                 {/* Configuração de Taxas */}
                 <Card className="bg-white border-gray-200">
-                  <CardHeader>
-                    <CardTitle className="text-gray-900">Configuração de Taxas</CardTitle>
+                  <CardHeader className="p-3 md:p-6">
+                    <CardTitle className="text-gray-900 text-base md:text-lg">⚙️ Configuração de Taxas</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                        <div className="space-y-2">
-                          <Label htmlFor="google-tax" className="text-gray-900">Taxa Google Play (%)</Label>
-                          <Input id="google-tax" type="number" value={googleTax} onChange={e => setGoogleTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200" min="0" max="100" />
+                  <CardContent className="p-3 md:p-6 pt-0">
+                    <div className="space-y-3 md:space-y-4">
+                      <div className="grid gap-3 md:gap-4 grid-cols-2">
+                        <div className="space-y-1 md:space-y-2">
+                          <Label htmlFor="google-tax" className="text-gray-900 text-xs md:text-sm">Taxa Google (%)</Label>
+                          <Input id="google-tax" type="number" value={googleTax} onChange={e => setGoogleTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200 h-9 text-sm" min="0" max="100" />
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="apple-tax" className="text-gray-900">Taxa Apple Store (%)</Label>
-                          <Input id="apple-tax" type="number" value={appleTax} onChange={e => setAppleTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200" min="0" max="100" />
+                        <div className="space-y-1 md:space-y-2">
+                          <Label htmlFor="apple-tax" className="text-gray-900 text-xs md:text-sm">Taxa Apple (%)</Label>
+                          <Input id="apple-tax" type="number" value={appleTax} onChange={e => setAppleTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200 h-9 text-sm" min="0" max="100" />
                         </div>
                       </div>
-                      <Button onClick={handleSaveTax} disabled={savingTax} className="w-full md:w-auto">
+                      <Button onClick={handleSaveTax} disabled={savingTax} className="w-full h-9 text-sm">
                         {savingTax ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                        Salvar Configuração
+                        Salvar
                       </Button>
                     </div>
                   </CardContent>
@@ -2410,52 +2415,52 @@ export default function Admin() {
 
                 {/* Resumo Financeiro */}
                 <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
-                  <CardHeader>
-                    <CardTitle className="text-gray-900">💰 Resumo de Receita Mensal</CardTitle>
+                  <CardHeader className="p-3 md:p-6">
+                    <CardTitle className="text-gray-900 text-base md:text-lg">💰 Receita Mensal</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
-                      <div className="p-4 bg-white rounded-lg border border-gray-200">
-                        <p className="text-xs text-gray-600 mb-1">Usuários Ativos</p>
-                        <p className="text-2xl font-bold text-purple-600">{activeUsersCount}</p>
-                        <p className="text-xs text-gray-500 mt-1">Com pagamento confirmado</p>
+                  <CardContent className="p-3 md:p-6 pt-0">
+                    <div className="grid gap-2 md:gap-4 grid-cols-2 lg:grid-cols-5">
+                      <div className="p-2 md:p-4 bg-white rounded-lg border border-gray-200">
+                        <p className="text-[10px] md:text-xs text-gray-600 mb-0.5 md:mb-1">Ativos</p>
+                        <p className="text-lg md:text-2xl font-bold text-purple-600">{activeUsersCount}</p>
+                        <p className="text-[9px] md:text-xs text-gray-500 hidden md:block">Com pagamento</p>
                       </div>
 
-                      <div className="p-4 bg-white rounded-lg border border-gray-200">
-                        <p className="text-xs text-gray-600 mb-1">Receita Bruta</p>
-                        <p className="text-2xl font-bold text-green-600">
-                          R$ {(activeUsersCount * 29.90).toFixed(2)}
+                      <div className="p-2 md:p-4 bg-white rounded-lg border border-gray-200">
+                        <p className="text-[10px] md:text-xs text-gray-600 mb-0.5 md:mb-1">Receita</p>
+                        <p className="text-base md:text-2xl font-bold text-green-600">
+                          R$ {(activeUsersCount * 29.90).toFixed(0)}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">R$ 29,90 × {activeUsersCount} pagos</p>
+                        <p className="text-[9px] md:text-xs text-gray-500 hidden md:block">R$ 29,90 × {activeUsersCount}</p>
                       </div>
 
-                      <div className="p-4 bg-white rounded-lg border border-gray-200">
-                        <p className="text-xs text-gray-600 mb-1">Cancelados</p>
-                        <p className="text-2xl font-bold text-red-600">{cancelledUsersCount}</p>
-                        <p className="text-xs text-gray-500 mt-1">Subscriptions canceladas</p>
+                      <div className="p-2 md:p-4 bg-white rounded-lg border border-gray-200">
+                        <p className="text-[10px] md:text-xs text-gray-600 mb-0.5 md:mb-1">Cancelados</p>
+                        <p className="text-lg md:text-2xl font-bold text-red-600">{cancelledUsersCount}</p>
+                        <p className="text-[9px] md:text-xs text-gray-500 hidden md:block">Subscriptions</p>
                       </div>
 
-                      <div className="p-4 bg-white rounded-lg border border-gray-200">
-                        <p className="text-xs text-gray-600 mb-1">Taxa Apple ({appleTax}%)</p>
-                        <p className="text-2xl font-bold text-red-600">
-                          - R$ {(activeUsersCount * 29.90 * (appleTax / 100)).toFixed(2)}
+                      <div className="p-2 md:p-4 bg-white rounded-lg border border-gray-200">
+                        <p className="text-[10px] md:text-xs text-gray-600 mb-0.5 md:mb-1">Apple ({appleTax}%)</p>
+                        <p className="text-base md:text-2xl font-bold text-red-600">
+                          -R$ {(activeUsersCount * 29.90 * (appleTax / 100)).toFixed(0)}
                         </p>
                       </div>
 
-                      <div className="p-4 bg-white rounded-lg border border-gray-200">
-                        <p className="text-xs text-gray-600 mb-1">Taxa Google ({googleTax}%)</p>
-                        <p className="text-2xl font-bold text-red-600">
-                          - R$ {(activeUsersCount * 29.90 * (googleTax / 100)).toFixed(2)}
+                      <div className="p-2 md:p-4 bg-white rounded-lg border border-gray-200">
+                        <p className="text-[10px] md:text-xs text-gray-600 mb-0.5 md:mb-1">Google ({googleTax}%)</p>
+                        <p className="text-base md:text-2xl font-bold text-red-600">
+                          -R$ {(activeUsersCount * 29.90 * (googleTax / 100)).toFixed(0)}
                         </p>
                       </div>
                     </div>
 
-                    <div className="mt-4 p-4 bg-white rounded-lg border-2 border-purple-300">
-                      <p className="text-sm text-gray-600 mb-1">Receita Líquida Estimada</p>
-                      <p className="text-3xl font-bold text-purple-600">
+                    <div className="mt-3 md:mt-4 p-2 md:p-4 bg-white rounded-lg border-2 border-purple-300">
+                      <p className="text-xs md:text-sm text-gray-600 mb-0.5 md:mb-1">Receita Líquida Estimada</p>
+                      <p className="text-xl md:text-3xl font-bold text-purple-600">
                         R$ {(activeUsersCount * 29.90 * (1 - appleTax / 100 - googleTax / 100)).toFixed(2)}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-[9px] md:text-xs text-gray-500 mt-0.5 md:mt-1">
                         Após taxas Apple e Google
                       </p>
                     </div>
@@ -2463,42 +2468,39 @@ export default function Admin() {
                 </Card>
               </div>}
 
-            {currentTab === 'notificacoes' && <div className="space-y-6">
+            {currentTab === 'notificacoes' && <div className="space-y-4 md:space-y-6">
                 {/* Formulário de Envio */}
                 <Card className="bg-white border-gray-200">
-                  <CardHeader>
-                    <CardTitle className="text-gray-900">📢 Enviar Broadcast</CardTitle>
+                  <CardHeader className="p-3 md:p-6">
+                    <CardTitle className="text-gray-900 text-base md:text-lg">📢 Enviar Broadcast</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="notif-title" className="text-gray-900">Título</Label>
-                        <Input id="notif-title" placeholder="Ex: Nova atualização disponível" value={notificationTitle} onChange={e => setNotificationTitle(e.target.value)} className="bg-white text-gray-900 border-gray-200" />
+                  <CardContent className="p-3 md:p-6 pt-0">
+                    <div className="space-y-3 md:space-y-4">
+                      <div className="space-y-1 md:space-y-2">
+                        <Label htmlFor="notif-title" className="text-gray-900 text-xs md:text-sm">Título</Label>
+                        <Input id="notif-title" placeholder="Ex: Nova atualização" value={notificationTitle} onChange={e => setNotificationTitle(e.target.value)} className="bg-white text-gray-900 border-gray-200 h-9 text-sm" />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="notif-message" className="text-gray-900">Mensagem</Label>
-                        <Textarea id="notif-message" placeholder="Escreva sua mensagem aqui..." value={notificationMessage} onChange={e => setNotificationMessage(e.target.value)} className="bg-white text-gray-900 border-gray-200 min-h-[100px]" />
+                      <div className="space-y-1 md:space-y-2">
+                        <Label htmlFor="notif-message" className="text-gray-900 text-xs md:text-sm">Mensagem</Label>
+                        <Textarea id="notif-message" placeholder="Escreva sua mensagem..." value={notificationMessage} onChange={e => setNotificationMessage(e.target.value)} className="bg-white text-gray-900 border-gray-200 min-h-[80px] md:min-h-[100px] text-sm" />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="notif-link" className="text-gray-900">Link (Opcional)</Label>
+                      <div className="space-y-1 md:space-y-2">
+                        <Label htmlFor="notif-link" className="text-gray-900 text-xs md:text-sm">Link (Opcional)</Label>
                         <div className="flex gap-2">
-                          <Input id="notif-link" placeholder="https://... ou /artist/dashboard" value={notificationLink} onChange={e => setNotificationLink(e.target.value)} className="bg-white text-gray-900 border-gray-200 flex-1" />
-                          <Button type="button" variant="outline" onClick={() => setShowRouteSelector(true)} className="flex-shrink-0">
-                            <LinkIcon className="w-4 h-4 mr-2" />
-                            Páginas
+                          <Input id="notif-link" placeholder="https://... ou /artist/..." value={notificationLink} onChange={e => setNotificationLink(e.target.value)} className="bg-white text-gray-900 border-gray-200 flex-1 h-9 text-sm" />
+                          <Button type="button" variant="outline" onClick={() => setShowRouteSelector(true)} className="flex-shrink-0 h-9 px-2 md:px-3 text-xs md:text-sm">
+                            <LinkIcon className="w-3 h-3 md:w-4 md:h-4 md:mr-1" />
+                            <span className="hidden md:inline">Páginas</span>
                           </Button>
                         </div>
-                        <p className="text-xs text-gray-500">
-                          Clique em "Páginas" para selecionar uma página do app ou digite um link externo
-                        </p>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="notif-filter" className="text-gray-900">Destinatários</Label>
+                      <div className="space-y-1 md:space-y-2">
+                        <Label htmlFor="notif-filter" className="text-gray-900 text-xs md:text-sm">Destinatários</Label>
                         <Select value={notificationFilter} onValueChange={setNotificationFilter}>
-                          <SelectTrigger className="bg-white text-gray-900 border-gray-200">
+                          <SelectTrigger className="bg-white text-gray-900 border-gray-200 h-9 text-sm">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="bg-white text-gray-900 border border-gray-200">
@@ -2509,9 +2511,9 @@ export default function Admin() {
                         </Select>
                       </div>
 
-                      <Button onClick={handleSendNotification} disabled={sendingNotification} className="w-full text-slate-50">
+                      <Button onClick={handleSendNotification} disabled={sendingNotification} className="w-full text-slate-50 h-9 text-sm">
                         {sendingNotification ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
-                        Enviar Notificação
+                        Enviar
                       </Button>
                     </div>
                   </CardContent>
@@ -2529,28 +2531,28 @@ export default function Admin() {
 
                 {/* Histórico */}
                 <Card className="bg-white border-gray-200">
-                  <CardHeader>
-                    <CardTitle className="text-gray-900">Histórico de Broadcasts</CardTitle>
+                  <CardHeader className="p-3 md:p-6">
+                    <CardTitle className="text-gray-900 text-base md:text-lg">📋 Histórico</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {notifications.length === 0 ? <p className="text-gray-500 text-center py-4">Nenhuma notificação enviada ainda</p> : notifications.map(notif => <div key={notif.id} className="p-4 border border-gray-200 rounded-lg">
-                            <div className="flex justify-between items-start mb-2">
-                              <h3 className="font-semibold text-gray-900">{notif.title}</h3>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-500">
+                  <CardContent className="p-3 md:p-6 pt-0">
+                    <div className="space-y-2 md:space-y-3">
+                      {notifications.length === 0 ? <p className="text-gray-500 text-center py-4 text-sm">Nenhuma notificação enviada</p> : notifications.map(notif => <div key={notif.id} className="p-2 md:p-4 border border-gray-200 rounded-lg">
+                            <div className="flex justify-between items-start gap-2 mb-1 md:mb-2">
+                              <h3 className="font-semibold text-gray-900 text-sm">{notif.title}</h3>
+                              <div className="flex items-center gap-1 md:gap-2 shrink-0">
+                                <span className="text-[10px] md:text-xs text-gray-500">
                                   {new Date(notif.created_at).toLocaleDateString('pt-BR')}
                                 </span>
                                 <Button variant="ghost" size="sm" onClick={() => {
                           setDeletingNotificationId(notif.id);
                           setShowDeleteDialog(true);
-                        }} className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0">
-                                  <X className="h-4 w-4" />
+                        }} className="text-red-600 hover:text-red-700 hover:bg-red-50 h-6 w-6 md:h-8 md:w-8 p-0">
+                                  <X className="h-3 w-3 md:h-4 md:w-4" />
                                 </Button>
                               </div>
                             </div>
-                            <p className="text-sm text-gray-700 mb-2">{notif.message}</p>
-                            {notif.link && <a href={notif.link} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-600 hover:underline">
+                            <p className="text-xs md:text-sm text-gray-700 mb-1 md:mb-2">{notif.message}</p>
+                            {notif.link && <a href={notif.link} target="_blank" rel="noopener noreferrer" className="text-[10px] md:text-xs text-purple-600 hover:underline break-all">
                                 {notif.link}
                               </a>}
                           </div>)}
@@ -2559,49 +2561,46 @@ export default function Admin() {
                 </Card>
               </div>}
 
-            {currentTab === 'push-mobile' && <div className="space-y-6">
+            {currentTab === 'push-mobile' && <div className="space-y-4 md:space-y-6">
                 <Card className="bg-white border-gray-200">
-                  <CardHeader>
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                      <div className="flex-1">
-                        <CardTitle className="text-gray-900">📱 Enviar Push Notification</CardTitle>
-                        <p className="text-sm text-gray-500 mt-2">
-                          Envie notificações push em massa para usuários do app mobile
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
+                  <CardHeader className="p-3 md:p-6">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <CardTitle className="text-gray-900 text-base md:text-lg">📱 Push Notification</CardTitle>
                         {loadingFcmCount ? (
                           <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
                         ) : (
                           <>
                             {fcmUsersCount > 0 ? (
-                              <Badge className="bg-green-100 text-green-800 border-green-200">
-                                ✓ {fcmUsersCount} com app instalado
+                              <Badge className="bg-green-100 text-green-800 border-green-200 text-[10px] md:text-xs">
+                                ✓ {fcmUsersCount} com app
                               </Badge>
                             ) : (
-                              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
-                                ⚠ Nenhum usuário com app
+                              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 text-[10px] md:text-xs">
+                                ⚠ 0 com app
                               </Badge>
                             )}
                           </>
                         )}
                       </div>
+                      <p className="text-xs md:text-sm text-gray-500">
+                        Envie notificações push para o app mobile
+                      </p>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
+                  <CardContent className="p-3 md:p-6 pt-0">
+                    <div className="space-y-3 md:space-y-4">
                       {/* Status Info */}
                       {fcmUsersCount === 0 && !loadingFcmCount && (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                          <div className="flex gap-3">
-                            <div className="text-yellow-600 mt-0.5">⚠️</div>
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2 md:p-4">
+                          <div className="flex gap-2">
+                            <div className="text-yellow-600 text-sm">⚠️</div>
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-yellow-900 mb-1">
-                                Nenhum usuário instalou o app mobile ainda
+                              <p className="text-xs md:text-sm font-medium text-yellow-900">
+                                Nenhum usuário instalou o app
                               </p>
-                              <p className="text-xs text-yellow-700">
-                                Após instalarem o APK e aceitarem notificações, eles aparecerão aqui.
-                                A notificação ainda será salva e ficará visível no app web.
+                              <p className="text-[10px] md:text-xs text-yellow-700 mt-0.5">
+                                A notificação ficará visível no app web
                               </p>
                             </div>
                           </div>
@@ -2609,15 +2608,15 @@ export default function Admin() {
                       )}
 
                       {fcmUsersCount > 0 && !loadingFcmCount && (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                          <div className="flex gap-3">
-                            <div className="text-green-600 mt-0.5">✓</div>
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-2 md:p-4">
+                          <div className="flex gap-2">
+                            <div className="text-green-600 text-sm">✓</div>
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-green-900">
-                                {fcmUsersCount} usuário(s) receberão esta notificação push
+                              <p className="text-xs md:text-sm font-medium text-green-900">
+                                {fcmUsersCount} usuário(s) receberão push
                               </p>
-                              <p className="text-xs text-green-700 mt-1">
-                                Todos os demais verão a notificação no sino do app web
+                              <p className="text-[10px] md:text-xs text-green-700 mt-0.5">
+                                Os demais verão no app web
                               </p>
                             </div>
                           </div>
@@ -2625,115 +2624,116 @@ export default function Admin() {
                       )}
 
                       {/* Filtro de destinatários */}
-                      <div className="space-y-2">
-                        <Label htmlFor="push-filter" className="text-gray-900">Destinatários</Label>
-                        <Select 
-                          value={pushUserSearch} 
-                          onValueChange={(value) => {
-                            setPushUserSearch(value);
-                            // Atualizar contagem quando mudar filtro
-                            setTimeout(() => fetchFcmUsersCount(), 100);
-                          }}
-                        >
-                          <SelectTrigger className="bg-white text-gray-900 border-gray-200">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-white text-gray-900 border border-gray-200">
-                            <SelectItem value="todos">Todos os usuários</SelectItem>
-                            <SelectItem value="artistas">Apenas Artistas</SelectItem>
-                            <SelectItem value="musicos">Apenas Músicos</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      <div className="grid grid-cols-2 gap-2 md:gap-3">
+                        <div className="space-y-1">
+                          <Label htmlFor="push-filter" className="text-gray-900 text-xs md:text-sm">Destinatários</Label>
+                          <Select 
+                            value={pushUserSearch} 
+                            onValueChange={(value) => {
+                              setPushUserSearch(value);
+                              setTimeout(() => fetchFcmUsersCount(), 100);
+                            }}
+                          >
+                            <SelectTrigger className="bg-white text-gray-900 border-gray-200 h-9 text-xs md:text-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white text-gray-900 border border-gray-200">
+                              <SelectItem value="todos">Todos</SelectItem>
+                              <SelectItem value="artistas">Artistas</SelectItem>
+                              <SelectItem value="musicos">Músicos</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
 
-                      {/* Filtro de plataforma */}
-                      <div className="space-y-2">
-                        <Label htmlFor="push-platform" className="text-gray-900">Plataforma</Label>
-                        <Select 
-                          value={pushPlatformFilter} 
-                          onValueChange={(value) => {
-                            setPushPlatformFilter(value);
-                            // Atualizar contagem quando mudar filtro
-                            setTimeout(() => fetchFcmUsersCount(), 100);
-                          }}
-                        >
-                          <SelectTrigger className="bg-white text-gray-900 border-gray-200">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-white text-gray-900 border border-gray-200">
-                            <SelectItem value="all">Todas as plataformas</SelectItem>
-                            <SelectItem value="ios">📱 Somente iOS</SelectItem>
-                            <SelectItem value="android">🤖 Somente Android</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <div className="space-y-1">
+                          <Label htmlFor="push-platform" className="text-gray-900 text-xs md:text-sm">Plataforma</Label>
+                          <Select 
+                            value={pushPlatformFilter} 
+                            onValueChange={(value) => {
+                              setPushPlatformFilter(value);
+                              setTimeout(() => fetchFcmUsersCount(), 100);
+                            }}
+                          >
+                            <SelectTrigger className="bg-white text-gray-900 border-gray-200 h-9 text-xs md:text-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white text-gray-900 border border-gray-200">
+                              <SelectItem value="all">Todas</SelectItem>
+                              <SelectItem value="ios">📱 iOS</SelectItem>
+                              <SelectItem value="android">🤖 Android</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
 
                       {/* Título */}
-                      <div className="space-y-2">
-                        <Label htmlFor="push-title" className="text-gray-900">Título</Label>
+                      <div className="space-y-1">
+                        <Label htmlFor="push-title" className="text-gray-900 text-xs md:text-sm">Título</Label>
                         <Input
                           id="push-title"
-                          placeholder="Ex: Nova atualização disponível"
+                          placeholder="Ex: Nova atualização"
                           value={pushTitle}
                           onChange={e => setPushTitle(e.target.value)}
-                          className="bg-white text-gray-900 border-gray-200"
+                          className="bg-white text-gray-900 border-gray-200 h-9 text-sm"
                         />
                       </div>
 
                       {/* Mensagem */}
-                      <div className="space-y-2">
-                        <Label htmlFor="push-message" className="text-gray-900">Mensagem</Label>
+                      <div className="space-y-1">
+                        <Label htmlFor="push-message" className="text-gray-900 text-xs md:text-sm">Mensagem</Label>
                         <Textarea
                           id="push-message"
-                          placeholder="Escreva sua mensagem aqui..."
+                          placeholder="Escreva sua mensagem..."
                           value={pushMessage}
                           onChange={e => setPushMessage(e.target.value)}
-                          className="bg-white text-gray-900 border-gray-200 min-h-[100px]"
+                          className="bg-white text-gray-900 border-gray-200 min-h-[80px] md:min-h-[100px] text-sm"
                         />
                       </div>
 
                       {/* Link - Categoria */}
-                      <div className="space-y-2">
-                        <Label className="text-gray-900">Link (Opcional)</Label>
-                        <Select
-                          value={pushLinkCategory}
-                          onValueChange={(value: 'none' | 'artist' | 'musician') => {
-                            setPushLinkCategory(value);
-                            setPushLink(''); // Limpa o link ao trocar categoria
-                          }}
-                        >
-                          <SelectTrigger className="bg-white text-gray-900 border-gray-200">
-                            <SelectValue placeholder="Selecione..." />
-                          </SelectTrigger>
-                          <SelectContent className="bg-white">
-                            <SelectItem value="none">Nenhum link</SelectItem>
-                            <SelectItem value="artist">Página de Artista</SelectItem>
-                            <SelectItem value="musician">Página de Músico</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Link - Página específica */}
-                      {pushLinkCategory !== 'none' && (
-                        <div className="space-y-2">
-                          <Label className="text-gray-900">Página</Label>
+                      <div className="grid grid-cols-2 gap-2 md:gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-gray-900 text-xs md:text-sm">Link</Label>
                           <Select
-                            value={pushLink}
-                            onValueChange={setPushLink}
+                            value={pushLinkCategory}
+                            onValueChange={(value: 'none' | 'artist' | 'musician') => {
+                              setPushLinkCategory(value);
+                              setPushLink('');
+                            }}
                           >
-                            <SelectTrigger className="bg-white text-gray-900 border-gray-200">
-                              <SelectValue placeholder="Selecione a página..." />
+                            <SelectTrigger className="bg-white text-gray-900 border-gray-200 h-9 text-xs md:text-sm">
+                              <SelectValue placeholder="Nenhum" />
                             </SelectTrigger>
                             <SelectContent className="bg-white">
-                              {pushLinkRoutes[pushLinkCategory].map(route => (
-                                <SelectItem key={route.path} value={route.path}>
-                                  {route.label}
-                                </SelectItem>
-                              ))}
+                              <SelectItem value="none">Nenhum</SelectItem>
+                              <SelectItem value="artist">Artista</SelectItem>
+                              <SelectItem value="musician">Músico</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
-                      )}
+
+                        {/* Link - Página específica */}
+                        {pushLinkCategory !== 'none' && (
+                          <div className="space-y-1">
+                            <Label className="text-gray-900 text-xs md:text-sm">Página</Label>
+                            <Select
+                              value={pushLink}
+                              onValueChange={setPushLink}
+                            >
+                              <SelectTrigger className="bg-white text-gray-900 border-gray-200 h-9 text-xs md:text-sm">
+                                <SelectValue placeholder="Selecione..." />
+                              </SelectTrigger>
+                              <SelectContent className="bg-white">
+                                {pushLinkRoutes[pushLinkCategory].map(route => (
+                                  <SelectItem key={route.path} value={route.path}>
+                                    {route.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+                      </div>
 
                       {/* Botão de envio */}
                       <Button
@@ -3260,11 +3260,11 @@ export default function Admin() {
             {/* Atualizações */}
             {currentTab === 'atualizacoes' && (
               <Card className="bg-white border-gray-200">
-                <CardHeader>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <CardHeader className="p-3 md:p-6">
+                  <div className="flex flex-col gap-3">
                     <div>
-                      <CardTitle className="text-gray-900">✨ Gerenciar Atualizações</CardTitle>
-                      <p className="text-sm text-gray-500 mt-1">Adicione ou edite atualizações exibidas aos usuários</p>
+                      <CardTitle className="text-gray-900 text-base md:text-lg">✨ Gerenciar Atualizações</CardTitle>
+                      <p className="text-xs md:text-sm text-gray-500 mt-1">Adicione ou edite atualizações</p>
                     </div>
                     <Button onClick={() => {
                       setEditingUpdate(null);
@@ -3273,53 +3273,49 @@ export default function Admin() {
                       setUpdateDescription('');
                       setUpdateIsPublished(true);
                       setShowUpdateDialog(true);
-                    }}>
+                    }} className="h-9 text-sm">
                       + Nova Atualização
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 md:p-6 pt-0">
                   {loadingUpdates ? (
                     <div className="flex justify-center py-8">
                       <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2 md:space-y-3">
                       {appUpdates.map((update) => (
                         <Card key={update.id} className="bg-white border-gray-200">
-                          <CardContent className="p-4">
-                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <h3 className="font-semibold text-gray-900">Versão {update.version}</h3>
-                                  <Badge className={update.is_published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                                    {update.is_published ? 'Publicado' : 'Rascunho'}
-                                  </Badge>
-                                  <Badge className="bg-blue-100 text-blue-800">{update.title}</Badge>
-                                </div>
-                                <p className="text-sm text-gray-700 whitespace-pre-line">{update.description}</p>
-                                <p className="text-xs text-gray-500 mt-2">
-                                  {new Date(update.release_date).toLocaleDateString('pt-BR', {
-                                    day: 'numeric',
-                                    month: 'long',
-                                    year: 'numeric'
-                                  })}
-                                </p>
+                          <CardContent className="p-2 md:p-4">
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap items-center gap-1.5 mb-1 md:mb-2">
+                                <h3 className="font-semibold text-gray-900 text-sm">v{update.version}</h3>
+                                <Badge className={`${update.is_published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} text-[10px] md:text-xs`}>
+                                  {update.is_published ? 'Publicado' : 'Rascunho'}
+                                </Badge>
+                                <Badge className="bg-blue-100 text-blue-800 text-[10px] md:text-xs">{update.title}</Badge>
                               </div>
-                              <div className="flex gap-2">
-                                <Button variant="outline" size="sm" onClick={() => handleEditUpdate(update)}>
-                                  Editar
-                                </Button>
-                                <Button variant="destructive" size="sm" onClick={() => handleDeleteUpdate(update.id)}>
-                                  Deletar
-                                </Button>
+                              <p className="text-xs md:text-sm text-gray-700 whitespace-pre-line line-clamp-3">{update.description}</p>
+                              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 pt-2">
+                                <p className="text-[10px] md:text-xs text-gray-500">
+                                  {new Date(update.release_date).toLocaleDateString('pt-BR')}
+                                </p>
+                                <div className="flex gap-1.5">
+                                  <Button variant="outline" size="sm" onClick={() => handleEditUpdate(update)} className="h-7 text-xs px-2">
+                                    Editar
+                                  </Button>
+                                  <Button variant="destructive" size="sm" onClick={() => handleDeleteUpdate(update.id)} className="h-7 text-xs px-2">
+                                    Deletar
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           </CardContent>
                         </Card>
                       ))}
                       {appUpdates.length === 0 && (
-                        <div className="text-center py-8 text-gray-500">
+                        <div className="text-center py-8 text-gray-500 text-sm">
                           Nenhuma atualização cadastrada
                         </div>
                       )}
@@ -3332,15 +3328,15 @@ export default function Admin() {
             {/* Feedback dos Usuários */}
             {currentTab === 'feedback' && (
               <Card className="bg-white border-gray-200">
-                <CardHeader>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <CardHeader className="p-3 md:p-6">
+                  <div className="flex flex-col gap-3">
                     <div>
-                      <CardTitle className="text-gray-900">💬 Feedback dos Usuários</CardTitle>
-                      <p className="text-sm text-gray-500 mt-1">Sugestões e críticas enviadas pelos usuários</p>
+                      <CardTitle className="text-gray-900 text-base md:text-lg">💬 Feedback dos Usuários</CardTitle>
+                      <p className="text-xs md:text-sm text-gray-500 mt-1">Sugestões e críticas</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Select value={feedbackFilter} onValueChange={setFeedbackFilter}>
-                        <SelectTrigger className="bg-white text-gray-900 border-gray-200 w-[150px]">
+                        <SelectTrigger className="bg-white text-gray-900 border-gray-200 w-[120px] md:w-[150px] h-8 md:h-9 text-xs md:text-sm">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-white text-gray-900">
@@ -3351,20 +3347,21 @@ export default function Admin() {
                           <SelectItem value="dismissed">Descartados</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button onClick={fetchFeedback} variant="outline" size="sm" disabled={loadingFeedback}>
-                        {loadingFeedback ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                        Atualizar
+                      <Button onClick={fetchFeedback} variant="outline" size="sm" disabled={loadingFeedback} className="h-8 md:h-9 text-xs md:text-sm">
+                        {loadingFeedback ? <Loader2 className="h-3 w-3 md:h-4 md:w-4 animate-spin mr-1" /> : null}
+                        <span className="hidden sm:inline">Atualizar</span>
+                        <span className="sm:hidden">↻</span>
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 md:p-6 pt-0">
                   {loadingFeedback ? (
                     <div className="flex justify-center py-8">
                       <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2 md:space-y-3">
                       {feedbackList
                         .filter(fb => feedbackFilter === 'all' || fb.status === feedbackFilter)
                         .map((feedback) => {
@@ -3390,32 +3387,30 @@ export default function Admin() {
 
                           return (
                             <Card key={feedback.id} className="bg-white border-gray-200">
-                              <CardContent className="p-4">
-                                <div className="space-y-3">
-                                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
-                                    <div className="flex-1">
-                                      <h3 className="font-semibold text-gray-900">{feedback.title}</h3>
-                                      <p className="text-sm text-gray-600 mt-1">
-                                        Por: {feedback.profile?.name} ({feedback.profile?.email})
-                                      </p>
-                                    </div>
-                                    <Badge className={getStatusColor(feedback.status)}>
+                              <CardContent className="p-2 md:p-4">
+                                <div className="space-y-2">
+                                  <div className="flex flex-wrap items-start gap-1.5">
+                                    <Badge className={`${getStatusColor(feedback.status)} text-[10px] md:text-xs`}>
                                       {getStatusLabel(feedback.status)}
                                     </Badge>
+                                    <h3 className="font-semibold text-gray-900 text-sm flex-1">{feedback.title}</h3>
                                   </div>
+                                  <p className="text-[10px] md:text-xs text-gray-600 break-words">
+                                    Por: {feedback.profile?.name}
+                                  </p>
                                   
-                                  <p className="text-sm text-gray-700 whitespace-pre-line">{feedback.message}</p>
+                                  <p className="text-xs md:text-sm text-gray-700 whitespace-pre-line line-clamp-3">{feedback.message}</p>
                                   
-                                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                                    <span>Enviado em: {new Date(feedback.created_at).toLocaleDateString('pt-BR')}</span>
+                                  <div className="text-[10px] md:text-xs text-gray-500">
+                                    Enviado: {new Date(feedback.created_at).toLocaleDateString('pt-BR')}
                                   </div>
 
-                                  <div className="flex gap-2 pt-2 border-t border-gray-200">
+                                  <div className="flex flex-col sm:flex-row gap-1.5 pt-2 border-t border-gray-200">
                                     <Select
                                       value={feedback.status}
                                       onValueChange={(value) => handleUpdateFeedbackStatus(feedback.id, value)}
                                     >
-                                      <SelectTrigger className="bg-white text-gray-900 border-gray-200 w-[150px]">
+                                      <SelectTrigger className="bg-white text-gray-900 border-gray-200 w-full sm:w-[130px] h-7 md:h-8 text-xs">
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent className="bg-white text-gray-900">
@@ -3429,6 +3424,7 @@ export default function Admin() {
                                       variant="destructive"
                                       size="sm"
                                       onClick={() => handleDeleteFeedback(feedback.id)}
+                                      className="h-7 md:h-8 text-xs"
                                     >
                                       Deletar
                                     </Button>
@@ -3450,39 +3446,37 @@ export default function Admin() {
             )}
 
             {/* Logs do Sistema */}
-            {currentTab === 'logs' && <div className="space-y-6">
+            {currentTab === 'logs' && <div className="space-y-4 md:space-y-6">
                 {/* Seção 1: Atividades de Usuários */}
                 <Card className="bg-white border-gray-200">
-                  <CardHeader>
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <CardHeader className="p-3 md:p-6">
+                    <div className="flex flex-col gap-3">
                       <div>
-                        <CardTitle className="text-gray-900">👥 Atividades de Usuários</CardTitle>
-                        <p className="text-sm text-gray-500 mt-1">Cadastros, shows e notificações recentes</p>
+                        <CardTitle className="text-gray-900 text-base md:text-lg">👥 Atividades de Usuários</CardTitle>
+                        <p className="text-xs md:text-sm text-gray-500 mt-1">Cadastros, shows e notificações</p>
                       </div>
-                      <Button onClick={fetchSystemLogs} variant="outline" size="sm" disabled={loadingLogs}>
-                        {loadingLogs ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                        Atualizar
-                      </Button>
+                      <div className="flex flex-wrap gap-2">
+                        <Select value={logFilter} onValueChange={setLogFilter}>
+                          <SelectTrigger className="bg-white text-gray-900 border-gray-200 w-[140px] md:w-[200px] h-8 md:h-9 text-xs md:text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white text-gray-900 border border-gray-200">
+                            <SelectItem value="all">Todos</SelectItem>
+                            <SelectItem value="user_created">Novos Usuários</SelectItem>
+                            <SelectItem value="show_created">Novos Shows</SelectItem>
+                            <SelectItem value="notification_sent">Notificações</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button onClick={fetchSystemLogs} variant="outline" size="sm" disabled={loadingLogs} className="h-8 md:h-9 text-xs md:text-sm">
+                          {loadingLogs ? <Loader2 className="h-3 w-3 md:h-4 md:w-4 animate-spin mr-1" /> : null}
+                          <span className="hidden sm:inline">Atualizar</span>
+                          <span className="sm:hidden">↻</span>
+                        </Button>
+                      </div>
                     </div>
                   </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {/* Filtro de Logs */}
-                    <div className="flex gap-2">
-                      <Select value={logFilter} onValueChange={setLogFilter}>
-                        <SelectTrigger className="bg-white text-gray-900 border-gray-200 w-full sm:w-[200px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white text-gray-900 border border-gray-200">
-                          <SelectItem value="all">Todos os Logs</SelectItem>
-                          <SelectItem value="user_created">Novos Usuários</SelectItem>
-                          <SelectItem value="show_created">Novos Shows</SelectItem>
-                          <SelectItem value="notification_sent">Notificações</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Lista de Logs */}
+                <CardContent className="p-3 md:p-6 pt-0">
+                  <div className="space-y-2 md:space-y-4">
                     {loadingLogs ? <div className="flex justify-center py-8">
                         <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
                       </div> : <div className="space-y-2 max-h-[500px] overflow-y-auto">
@@ -3529,30 +3523,44 @@ export default function Admin() {
 
               {/* Seção 2: Logs Técnicos do Sistema */}
               <Card className="bg-white border-gray-200">
-                <CardHeader>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <CardHeader className="p-3 md:p-6">
+                  <div className="flex flex-col gap-3">
                     <div>
-                      <CardTitle className="text-gray-900">🔧 Logs Técnicos do Sistema</CardTitle>
-                      <p className="text-sm text-gray-500 mt-1">Erros, performance e alertas de segurança</p>
+                      <CardTitle className="text-gray-900 text-base md:text-lg">🔧 Logs Técnicos</CardTitle>
+                      <p className="text-xs md:text-sm text-gray-500 mt-1">Erros, performance e alertas</p>
                     </div>
-                    <Button onClick={fetchTechnicalLogs} variant="outline" size="sm" disabled={loadingTechnicalLogs}>
-                      {loadingTechnicalLogs ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                      Atualizar
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                      <Select value={technicalLogFilter} onValueChange={setTechnicalLogFilter}>
+                        <SelectTrigger className="bg-white text-gray-900 border-gray-200 w-[140px] md:w-[200px] h-8 md:h-9 text-xs md:text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white text-gray-900 border border-gray-200">
+                          <SelectItem value="all">Todos</SelectItem>
+                          <SelectItem value="database">Banco de Dados</SelectItem>
+                          <SelectItem value="auth">Autenticação</SelectItem>
+                          <SelectItem value="edge_function">Edge Functions</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button onClick={fetchTechnicalLogs} variant="outline" size="sm" disabled={loadingTechnicalLogs} className="h-8 md:h-9 text-xs md:text-sm">
+                        {loadingTechnicalLogs ? <Loader2 className="h-3 w-3 md:h-4 md:w-4 animate-spin mr-1" /> : null}
+                        <span className="hidden sm:inline">Atualizar</span>
+                        <span className="sm:hidden">↻</span>
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
+                <CardContent className="p-3 md:p-6 pt-0">
+                  <div className="space-y-2 md:space-y-4">
                     {/* Alertas do Sistema */}
                     {systemAlerts.length > 0 && (
                       <div className="space-y-2">
-                        <h3 className="text-sm font-semibold text-gray-900">🚨 Alertas Importantes</h3>
+                        <h3 className="text-xs md:text-sm font-semibold text-gray-900">🚨 Alertas</h3>
                         {systemAlerts.map((alert, idx) => (
                           <Card key={idx} className={`border ${
                             alert.severity === 'error' ? 'bg-red-50 border-red-300' : 'bg-yellow-50 border-yellow-300'
                           }`}>
-                            <CardContent className="p-3">
-                              <p className={`text-sm font-medium ${
+                            <CardContent className="p-2 md:p-3">
+                              <p className={`text-xs md:text-sm font-medium ${
                                 alert.severity === 'error' ? 'text-red-900' : 'text-yellow-900'
                               }`}>
                                 {alert.message}
@@ -3562,21 +3570,6 @@ export default function Admin() {
                         ))}
                       </div>
                     )}
-
-                    {/* Filtro de Logs Técnicos */}
-                    <div className="flex gap-2">
-                      <Select value={technicalLogFilter} onValueChange={setTechnicalLogFilter}>
-                        <SelectTrigger className="bg-white text-gray-900 border-gray-200 w-full sm:w-[200px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white text-gray-900 border border-gray-200">
-                          <SelectItem value="all">Todos os Logs</SelectItem>
-                          <SelectItem value="database">Banco de Dados</SelectItem>
-                          <SelectItem value="auth">Autenticação</SelectItem>
-                          <SelectItem value="edge_function">Edge Functions</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
 
                     {/* Lista de Logs Técnicos */}
                     {loadingTechnicalLogs ? (

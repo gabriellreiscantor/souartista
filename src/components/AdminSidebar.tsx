@@ -85,9 +85,14 @@ export function AdminSidebar() {
                       to={item.url}
                       className="hover:bg-sidebar-accent"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+                      onClick={() => {
+                        if (isMobile) {
+                          setOpenMobile(false);
+                        }
+                      }}
                     >
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && <span className="text-sm">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
