@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Music, Loader2, ArrowLeft, Home } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { supabase } from '@/integrations/supabase/client';
+import { useNativePlatform } from '@/hooks/useNativePlatform';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,13 +19,31 @@ const Login = () => {
   const { signIn, resendOtp, user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isNative } = useNativePlatform();
 
   // Redireciona automaticamente se já estiver logado
   useEffect(() => {
-    if (!authLoading && user && session) {
-      navigate('/app');
-    }
-  }, [user, session, authLoading, navigate]);
+    const checkUserAndRedirect = async () => {
+      if (!authLoading && user && session) {
+        // Check if user is support staff
+        const { data: supportRole } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'support')
+          .maybeSingle();
+        
+        if (supportRole && !isNative) {
+          // Support staff on web - redirect to support-tickets
+          navigate('/support-tickets');
+        } else {
+          navigate('/app');
+        }
+      }
+    };
+    
+    checkUserAndRedirect();
+  }, [user, session, authLoading, navigate, isNative]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

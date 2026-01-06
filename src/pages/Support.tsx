@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useSupport } from '@/hooks/useSupport';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useNativePlatform } from '@/hooks/useNativePlatform';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -23,7 +24,8 @@ import {
   CheckCircle,
   XCircle,
   ArrowLeft,
-  LogOut
+  LogOut,
+  Monitor
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -60,6 +62,7 @@ export default function Support() {
   const { user, signOut } = useAuth();
   const { isSupport, loading: supportLoading } = useSupport();
   const { isAdmin, loading: adminLoading } = useAdmin();
+  const { isNative } = useNativePlatform();
   
   const [loading, setLoading] = useState(true);
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
@@ -307,6 +310,40 @@ export default function Support() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Block mobile access - show friendly message
+  if (isNative) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <Card className="max-w-md text-center">
+          <CardHeader className="pb-4">
+            <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <Monitor className="h-8 w-8 text-primary" />
+            </div>
+            <CardTitle className="text-xl">Acesso apenas via Web</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              O Portal de Suporte está disponível apenas na versão web do aplicativo.
+            </p>
+            <div className="bg-muted/50 rounded-lg p-4">
+              <p className="text-sm text-muted-foreground mb-2">Acesse pelo navegador:</p>
+              <p className="font-mono text-primary font-medium">
+                souartista.app/support-tickets
+              </p>
+            </div>
+            <Button 
+              variant="outline" 
+              className="w-full mt-4"
+              onClick={() => navigate('/app')}
+            >
+              Voltar ao App
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
