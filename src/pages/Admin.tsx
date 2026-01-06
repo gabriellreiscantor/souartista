@@ -2951,7 +2951,7 @@ export default function Admin() {
                 </Card>
               </div>}
 
-            {currentTab === 'contatos' && <Card className="bg-white border-gray-200 mx-2 sm:mx-0">
+            {currentTab === 'contatos' && <Card className="bg-white border-gray-200">
                 <CardHeader className="p-3 sm:p-6">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4">
                     <CardTitle className="text-gray-900 text-base sm:text-lg">📱 Contatos WhatsApp</CardTitle>
@@ -2985,7 +2985,7 @@ export default function Admin() {
                         <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
                       </div> : <>
                         {/* Versão Mobile - Cards */}
-                        <div className="md:hidden space-y-3">
+                        <div className="md:hidden space-y-2">
                           {contacts.filter(contact => {
                             if (contactFilter === 'todos') return true;
                             if (contactFilter === 'ativos') return contact.status_plano === 'ativo';
@@ -2993,28 +2993,32 @@ export default function Admin() {
                             if (contactFilter === 'artistas') return contact.role === 'artist';
                             if (contactFilter === 'musicos') return contact.role === 'musician';
                             return true;
-                          }).map(contact => <Card key={contact.id} className="bg-white border-gray-200">
-                              <CardContent className="p-4 space-y-3">
-                                <div className="flex justify-between items-start gap-2">
-                                  <h3 className="font-semibold text-gray-900 flex-1">{contact.name}</h3>
-                                  {getStatusBadge(contact.status_plano)}
+                          }).map(contact => (
+                            <div key={contact.id} className="border border-gray-200 rounded-lg p-3 bg-white">
+                              <div className="flex justify-between items-start gap-2">
+                                <p className="font-medium text-sm text-gray-900 truncate flex-1">{contact.name}</p>
+                                {getStatusBadge(contact.status_plano)}
+                              </div>
+                              <div className="mt-2 space-y-1 text-xs">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-gray-500">Telefone:</span>
+                                  {contact.phone ? (
+                                    <a href={`https://wa.me/55${contact.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline font-mono">
+                                      {contact.phone}
+                                    </a>
+                                  ) : (
+                                    <span className="text-gray-400">Não informado</span>
+                                  )}
                                 </div>
-                                <div className="space-y-2 text-sm">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-gray-500 min-w-[70px]">Telefone:</span>
-                                    {contact.phone ? <a href={`https://wa.me/55${contact.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline font-mono">
-                                        {contact.phone}
-                                      </a> : <span className="text-gray-400">Não informado</span>}
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-gray-500 min-w-[70px]">Tipo:</span>
-                                    <Badge className="bg-purple-100 text-purple-800">
-                                      {contact.role}
-                                    </Badge>
-                                  </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-gray-500">Tipo:</span>
+                                  <Badge className={`text-xs ${contact.role === 'artist' ? 'bg-purple-100 text-purple-800' : contact.role === 'musician' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>
+                                    {contact.role || 'Não definido'}
+                                  </Badge>
                                 </div>
-                              </CardContent>
-                            </Card>)}
+                              </div>
+                            </div>
+                          ))}
                         </div>
 
                         {/* Versão Desktop - Tabela */}
