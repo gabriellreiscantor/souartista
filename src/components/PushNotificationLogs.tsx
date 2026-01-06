@@ -199,7 +199,7 @@ export function PushNotificationLogs() {
     : logs.filter(log => (log.source || 'manual') === sourceFilter);
 
   return (
-    <div className="space-y-4 mt-6">
+    <div className="space-y-4 mt-6 overflow-x-hidden w-full">
       {/* Estatísticas */}
       <Card className="bg-white border-gray-200">
         <CardHeader className="p-3 md:p-4">
@@ -218,7 +218,7 @@ export function PushNotificationLogs() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="p-3 md:p-4 pt-0">
+        <CardContent className="p-3 md:p-4 pt-0 overflow-hidden">
           {loading ? (
             <div className="flex justify-center py-4">
               <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -263,25 +263,27 @@ export function PushNotificationLogs() {
           <CollapsibleContent>
             <CardContent className="p-3 md:p-4 pt-0">
               {/* Filter by source */}
-              <div className="flex items-center gap-2 mb-3">
-                <Filter className="w-4 h-4 text-gray-500" />
-                <Select value={sourceFilter} onValueChange={setSourceFilter}>
-                  <SelectTrigger className="w-40 h-8 text-xs">
-                    <SelectValue placeholder="Filtrar por fonte" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="manual">Manual</SelectItem>
-                    <SelectItem value="marketing">Marketing</SelectItem>
-                    <SelectItem value="show_reminder">Show Reminder</SelectItem>
-                    <SelectItem value="engagement">Engajamento</SelectItem>
-                    <SelectItem value="subscription">Assinatura</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex flex-col gap-2 mb-3">
+                <div className="flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-gray-500 shrink-0" />
+                  <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                    <SelectTrigger className="w-40 h-8 text-xs">
+                      <SelectValue placeholder="Filtrar por fonte" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="manual">Manual</SelectItem>
+                      <SelectItem value="marketing">Marketing</SelectItem>
+                      <SelectItem value="show_reminder">Show Reminder</SelectItem>
+                      <SelectItem value="engagement">Engajamento</SelectItem>
+                      <SelectItem value="subscription">Assinatura</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 {Object.keys(stats.bySource).length > 0 && (
-                  <div className="flex gap-1 flex-wrap">
+                  <div className="flex gap-1 overflow-x-auto pb-1">
                     {Object.entries(stats.bySource).map(([src, count]) => (
-                      <Badge key={src} variant="outline" className="text-xs">
+                      <Badge key={src} variant="outline" className="text-xs shrink-0">
                         {src}: {count}
                       </Badge>
                     ))}
