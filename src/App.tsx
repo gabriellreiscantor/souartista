@@ -49,6 +49,7 @@ import MusicianTutorial from "./pages/musician/Tutorial";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import Admin from "./pages/Admin";
+import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 import DemoSelectRole from "./pages/DemoSelectRole";
 import DemoArtistDashboard from "./pages/demo/artist/Dashboard";
@@ -118,6 +119,7 @@ const AppRoutes = () => {
       <Route path="/musician/updates" element={<MusicianUpdates />} />
       <Route path="/musician/tutorial" element={<MusicianTutorial />} />
       <Route path="/admin" element={<Admin />} />
+      <Route path="/support" element={<Support />} />
       {/* Demo Routes */}
       <Route path="/demo" element={<DemoSelectRole />} />
       <Route path="/demo/artist/dashboard" element={<DemoArtistDashboard />} />
