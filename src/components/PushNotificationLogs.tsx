@@ -199,9 +199,9 @@ export function PushNotificationLogs() {
     : logs.filter(log => (log.source || 'manual') === sourceFilter);
 
   return (
-    <div className="space-y-4 mt-6 overflow-x-hidden w-full">
+    <div className="space-y-4 mt-6 w-full max-w-full overflow-hidden">
       {/* Estatísticas */}
-      <Card className="bg-white border-gray-200">
+      <Card className="bg-white border-gray-200 w-full">
         <CardHeader className="p-3 md:p-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-gray-900 text-sm md:text-base flex items-center gap-2">
@@ -212,34 +212,34 @@ export function PushNotificationLogs() {
               size="sm" 
               onClick={fetchData} 
               disabled={loading}
-              className="h-7 text-xs"
+              className="h-7 text-xs shrink-0"
             >
               {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="p-3 md:p-4 pt-0 overflow-hidden">
+        <CardContent className="p-3 md:p-4 pt-0">
           {loading ? (
             <div className="flex justify-center py-4">
               <Loader2 className="w-6 h-6 animate-spin text-primary" />
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-gray-50 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-                <p className="text-xs text-gray-500">Total</p>
+            <div className="grid grid-cols-2 gap-2 w-full">
+              <div className="bg-gray-50 rounded-lg p-2 md:p-3 text-center min-w-0">
+                <p className="text-lg md:text-2xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-[10px] md:text-xs text-gray-500">Total</p>
               </div>
-              <div className="bg-green-50 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-green-600">{stats.sent}</p>
-                <p className="text-xs text-gray-500">Enviados</p>
+              <div className="bg-green-50 rounded-lg p-2 md:p-3 text-center min-w-0">
+                <p className="text-lg md:text-2xl font-bold text-green-600">{stats.sent}</p>
+                <p className="text-[10px] md:text-xs text-gray-500">Enviados</p>
               </div>
-              <div className="bg-red-50 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-red-600">{stats.failed}</p>
-                <p className="text-xs text-gray-500">Falharam</p>
+              <div className="bg-red-50 rounded-lg p-2 md:p-3 text-center min-w-0">
+                <p className="text-lg md:text-2xl font-bold text-red-600">{stats.failed}</p>
+                <p className="text-[10px] md:text-xs text-gray-500">Falharam</p>
               </div>
-              <div className="bg-blue-50 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-blue-600">{successRate}%</p>
-                <p className="text-xs text-gray-500">Taxa Sucesso</p>
+              <div className="bg-blue-50 rounded-lg p-2 md:p-3 text-center min-w-0">
+                <p className="text-lg md:text-2xl font-bold text-blue-600">{successRate}%</p>
+                <p className="text-[10px] md:text-xs text-gray-500">Taxa Sucesso</p>
               </div>
             </div>
           )}
