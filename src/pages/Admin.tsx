@@ -1582,7 +1582,7 @@ export default function Admin() {
             </div>
 
             {/* Content based on tab */}
-            {currentTab === 'usuarios' && <Card className="bg-white border-gray-200 mx-2 sm:mx-0">
+            {currentTab === 'usuarios' && <Card className="bg-white border-gray-200">
                 <CardHeader className="p-3 sm:p-6">
                   <CardTitle className="text-gray-900 text-base sm:text-lg">Usuários Cadastrados</CardTitle>
                   <div className="flex flex-wrap gap-1 sm:gap-2 mt-2 sm:mt-4 text-xs sm:text-sm">
@@ -1614,7 +1614,7 @@ export default function Admin() {
                                 <td className="p-2 md:p-3">
                                   <div>
                                     <p className="font-medium text-sm text-gray-900">{user.name}</p>
-                                    <p className="text-xs text-gray-600 md:hidden">{user.email}</p>
+                                    <p className="text-xs text-gray-600 md:hidden truncate max-w-[160px]">{user.email}</p>
                                   </div>
                                 </td>
                                 <td className="p-2 md:p-3 hidden md:table-cell text-gray-700">{user.email}</td>
@@ -1627,8 +1627,8 @@ export default function Admin() {
                                     <span className="text-xs text-gray-400">-</span>
                                   )}
                                 </td>
-                                <td className="p-2 md:p-3">
-                                  <div className="flex flex-wrap gap-1">
+                                <td className="p-1.5 md:p-3">
+                                  <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-1">
                                     {getStatusBadge(user.status_plano)}
                                     {getPlanTypeBadge(user.plan_type)}
                                   </div>
