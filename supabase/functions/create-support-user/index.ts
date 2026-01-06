@@ -83,25 +83,9 @@ serve(async (req) => {
         });
       }
 
-      // Create profile
-      const { error: profileError } = await supabaseAdmin
-        .from('profiles')
-        .insert({
-          id: newUser.user.id,
-          email,
-          name,
-          status_plano: 'inativo'
-        });
-
-      if (profileError) {
-        console.error('Error creating profile:', profileError);
-        // Rollback user creation
-        await supabaseAdmin.auth.admin.deleteUser(newUser.user.id);
-        return new Response(JSON.stringify({ error: 'Erro ao criar perfil' }), {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
+      // Profile is created automatically by the handle_new_user trigger
+      // Just wait a moment for the trigger to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Add support role
       const { error: roleError } = await supabaseAdmin
