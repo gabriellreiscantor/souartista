@@ -1509,73 +1509,74 @@ export default function Admin() {
       <div className="flex min-h-screen w-full bg-white">
         <AdminSidebar />
         <SidebarInset className="flex-1 bg-white">
-          <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white border-gray-200 px-4 md:px-6">
-            <SidebarTrigger />
-            <h1 className="text-lg md:text-2xl font-bold text-gray-900">🛡️ Admin</h1>
+          <header className="sticky top-0 z-10 flex h-14 md:h-16 items-center gap-2 md:gap-4 border-b bg-white border-gray-200 px-3 md:px-6">
+            <SidebarTrigger className="h-8 w-8 md:h-9 md:w-9" />
+            <h1 className="text-base md:text-2xl font-bold text-gray-900">🛡️ Admin</h1>
             <Button variant="outline" size="sm" onClick={() => {
             const userRole = localStorage.getItem('userRole');
             navigate(userRole === 'artist' ? '/artist/dashboard' : '/musician/dashboard');
-          }} className="ml-auto">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar para app
+          }} className="ml-auto text-xs md:text-sm px-2 md:px-3 h-8 md:h-9">
+              <ArrowLeft className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Voltar para app</span>
+              <span className="sm:hidden">Voltar</span>
             </Button>
           </header>
 
-          <main className="p-4 md:p-6 pb-20 md:pb-6 bg-gray-50">
+          <main className="p-3 md:p-6 pb-20 md:pb-6 bg-gray-50">
             {/* Stats Cards */}
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-6">
+            <div className="grid gap-2 md:gap-4 grid-cols-2 sm:grid-cols-3 mb-4 md:mb-6">
               <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Total de Usuários</CardTitle>
-                  <Users className="h-4 w-4 text-gray-500" />
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 md:p-4 pb-1 md:pb-2">
+                  <CardTitle className="text-xs md:text-sm font-medium text-gray-700">Usuários</CardTitle>
+                  <Users className="h-3 w-3 md:h-4 md:w-4 text-gray-500" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">{stats.totalUsers}</div>
+                <CardContent className="p-3 md:p-4 pt-0">
+                  <div className="text-lg md:text-2xl font-bold text-gray-900">{stats.totalUsers}</div>
                 </CardContent>
               </Card>
               <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Total de Artistas</CardTitle>
-                  <Music className="h-4 w-4 text-gray-500" />
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 md:p-4 pb-1 md:pb-2">
+                  <CardTitle className="text-xs md:text-sm font-medium text-gray-700">Artistas</CardTitle>
+                  <Music className="h-3 w-3 md:h-4 md:w-4 text-gray-500" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">{stats.totalArtists}</div>
+                <CardContent className="p-3 md:p-4 pt-0">
+                  <div className="text-lg md:text-2xl font-bold text-gray-900">{stats.totalArtists}</div>
                 </CardContent>
               </Card>
               <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Total de Músicos</CardTitle>
-                  <Mic2 className="h-4 w-4 text-gray-500" />
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 md:p-4 pb-1 md:pb-2">
+                  <CardTitle className="text-xs md:text-sm font-medium text-gray-700">Músicos</CardTitle>
+                  <Mic2 className="h-3 w-3 md:h-4 md:w-4 text-gray-500" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">{stats.totalMusicians}</div>
+                <CardContent className="p-3 md:p-4 pt-0">
+                  <div className="text-lg md:text-2xl font-bold text-gray-900">{stats.totalMusicians}</div>
                 </CardContent>
               </Card>
               <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Total de Tickets</CardTitle>
-                  <MessageCircle className="h-4 w-4 text-gray-500" />
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 md:p-4 pb-1 md:pb-2">
+                  <CardTitle className="text-xs md:text-sm font-medium text-gray-700">Tickets</CardTitle>
+                  <MessageCircle className="h-3 w-3 md:h-4 md:w-4 text-gray-500" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">{stats.totalTickets}</div>
+                <CardContent className="p-3 md:p-4 pt-0">
+                  <div className="text-lg md:text-2xl font-bold text-gray-900">{stats.totalTickets}</div>
                 </CardContent>
               </Card>
               <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Usuários com Plano</CardTitle>
-                  <Users className="h-4 w-4 text-green-500" />
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 md:p-4 pb-1 md:pb-2">
+                  <CardTitle className="text-xs md:text-sm font-medium text-gray-700">Com Plano</CardTitle>
+                  <Users className="h-3 w-3 md:h-4 md:w-4 text-green-500" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">{usersWithPlanCount}</div>
+                <CardContent className="p-3 md:p-4 pt-0">
+                  <div className="text-lg md:text-2xl font-bold text-green-600">{usersWithPlanCount}</div>
                 </CardContent>
               </Card>
               <Card className="bg-white border-gray-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Total de Feedback</CardTitle>
-                  <MessageCircle className="h-4 w-4 text-purple-500" />
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 md:p-4 pb-1 md:pb-2">
+                  <CardTitle className="text-xs md:text-sm font-medium text-gray-700">Feedback</CardTitle>
+                  <MessageCircle className="h-3 w-3 md:h-4 md:w-4 text-purple-500" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-purple-600">{feedbackCount}</div>
+                <CardContent className="p-3 md:p-4 pt-0">
+                  <div className="text-lg md:text-2xl font-bold text-purple-600">{feedbackCount}</div>
                 </CardContent>
               </Card>
             </div>
@@ -3012,15 +3013,15 @@ export default function Admin() {
 
             {/* Suporte */}
             {currentTab === 'suporte' && <Card className="bg-white border-gray-200">
-                <CardHeader>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <CardHeader className="p-3 md:p-6">
+                  <div className="flex flex-col gap-3">
                     <div>
-                      <CardTitle className="text-gray-900">🎧 Tickets de Suporte</CardTitle>
-                      <p className="text-sm text-gray-500 mt-1">Gerencie solicitações de suporte dos usuários</p>
+                      <CardTitle className="text-gray-900 text-base md:text-lg">🎧 Tickets de Suporte</CardTitle>
+                      <p className="text-xs md:text-sm text-gray-500 mt-1">Gerencie solicitações de suporte</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Select value={supportFilter} onValueChange={setSupportFilter}>
-                        <SelectTrigger className="bg-white text-gray-900 border-gray-200 w-[150px]">
+                        <SelectTrigger className="bg-white text-gray-900 border-gray-200 w-[130px] md:w-[150px] h-8 md:h-9 text-xs md:text-sm">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-white text-gray-900 border border-gray-200">
@@ -3030,9 +3031,10 @@ export default function Admin() {
                           <SelectItem value="closed">Fechados</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button onClick={fetchSupportTickets} variant="outline" size="sm" disabled={loadingSupportTickets}>
-                        {loadingSupportTickets ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                        Atualizar
+                      <Button onClick={fetchSupportTickets} variant="outline" size="sm" disabled={loadingSupportTickets} className="h-8 md:h-9 text-xs md:text-sm">
+                        {loadingSupportTickets ? <Loader2 className="h-3 w-3 md:h-4 md:w-4 animate-spin mr-1 md:mr-2" /> : null}
+                        <span className="hidden sm:inline">Atualizar</span>
+                        <span className="sm:hidden">↻</span>
                       </Button>
                     </div>
                   </div>
@@ -3085,26 +3087,26 @@ export default function Admin() {
 
                           return (
                             <Card key={ticket.id} className="bg-white border-gray-200">
-                              <CardContent className="p-4 bg-white">
-                                <div className="space-y-3">
-                                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
-                                    <div className="flex-1">
-                                      <h3 className="font-semibold text-gray-900">{ticket.subject}</h3>
-                                      <p className="text-sm text-gray-600 mt-1">
-                                        {ticket.profile?.name} ({ticket.profile?.email})
-                                      </p>
-                                    </div>
-                                    <div className="flex gap-2">
-                                      <Badge className={getStatusColor(ticket.status)}>
+                              <CardContent className="p-3 md:p-4 bg-white">
+                                <div className="space-y-2 md:space-y-3">
+                                  <div className="flex flex-col gap-2">
+                                    <div className="flex flex-wrap gap-1.5">
+                                      <Badge className={`${getStatusColor(ticket.status)} text-xs`}>
                                         {getStatusLabel(ticket.status)}
                                       </Badge>
-                                      <Badge variant="outline" className={`bg-white border-gray-300 ${getPriorityColor(ticket.priority)}`}>
+                                      <Badge variant="outline" className={`bg-white border-gray-300 text-xs ${getPriorityColor(ticket.priority)}`}>
                                         {getPriorityLabel(ticket.priority)}
                                       </Badge>
                                     </div>
+                                    <div className="flex-1">
+                                      <h3 className="font-semibold text-gray-900 text-sm md:text-base">{ticket.subject}</h3>
+                                      <p className="text-xs md:text-sm text-gray-600 mt-0.5 break-words">
+                                        {ticket.profile?.name} <span className="text-gray-400">•</span> <span className="text-gray-500 break-all">{ticket.profile?.email}</span>
+                                      </p>
+                                    </div>
                                   </div>
                                   
-                                  <p className="text-sm text-gray-700">{ticket.message}</p>
+                                  <p className="text-xs md:text-sm text-gray-700 break-words">{ticket.message}</p>
                                   
                                   {ticket.attachment_url && (
                                     <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
@@ -3140,23 +3142,23 @@ export default function Admin() {
                                     </div>
                                   )}
                                   
-                                  <div className="flex gap-2 pt-2">
+                                  <div className="grid grid-cols-2 sm:flex gap-1.5 md:gap-2 pt-2">
                                     <Button 
                                       variant="outline" 
                                       size="sm"
-                                      className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+                                      className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 h-8 text-xs md:text-sm px-2 md:px-3"
                                       onClick={() => {
                                         setRespondingTicket(ticket);
                                         setShowResponseDialog(true);
                                       }}
                                     >
-                                      💬 Responder
+                                      💬 <span className="hidden sm:inline ml-1">Responder</span>
                                     </Button>
                                     {ticket.status !== 'open' && (
                                       <Button 
                                         variant="outline" 
                                         size="sm"
-                                        className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                                        className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 h-8 text-xs md:text-sm px-2 md:px-3"
                                         onClick={async () => {
                                           try {
                                             const { error } = await supabase.functions.invoke('create-notification', {
@@ -3176,14 +3178,14 @@ export default function Admin() {
                                           }
                                         }}
                                       >
-                                        🔔 Notificar
+                                        🔔 <span className="hidden sm:inline ml-1">Notificar</span>
                                       </Button>
                                     )}
                                     {ticket.status !== 'closed' && ticket.status !== 'resolved' && (
                                       <Button 
                                         variant="outline" 
                                         size="sm"
-                                        className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                                        className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 h-8 text-xs md:text-sm px-2 md:px-3"
                                         onClick={async () => {
                                           try {
                                             const { error } = await supabase
@@ -3200,14 +3202,14 @@ export default function Admin() {
                                           }
                                         }}
                                       >
-                                        ✅ Resolvido
+                                        ✅ <span className="hidden sm:inline ml-1">Resolvido</span>
                                       </Button>
                                     )}
                                     {ticket.status !== 'closed' && (
                                       <Button 
                                         variant="outline" 
                                         size="sm"
-                                        className="bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                                        className="bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 h-8 text-xs md:text-sm px-2 md:px-3"
                                         onClick={async () => {
                                           try {
                                             const { error } = await supabase
@@ -3224,14 +3226,14 @@ export default function Admin() {
                                           }
                                         }}
                                       >
-                                        ✓ Fechar
+                                        ✓ <span className="hidden sm:inline ml-1">Fechar</span>
                                       </Button>
                                     )}
                                   </div>
                                   
-                                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs text-gray-500 pt-2 border-t border-gray-200">
+                                  <div className="flex flex-col gap-0.5 text-[10px] md:text-xs text-gray-500 pt-2 border-t border-gray-200">
                                     <span>
-                                      Criado em: {new Date(ticket.created_at).toLocaleString('pt-BR')}
+                                      Criado: {new Date(ticket.created_at).toLocaleString('pt-BR')}
                                     </span>
                                     {ticket.updated_at !== ticket.created_at && (
                                       <span>
