@@ -213,10 +213,8 @@ Deno.serve(async (req) => {
               android: {
                 priority: 'high',
                 notification: {
-                  channel_id: 'default',
-                  priority: 'high',
-                  default_sound: true,
-                  default_vibrate_timings: true,
+                  channelId: 'default',
+                  sound: 'default',
                 },
               },
               apns: {
