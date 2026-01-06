@@ -1582,17 +1582,17 @@ export default function Admin() {
             </div>
 
             {/* Content based on tab */}
-            {currentTab === 'usuarios' && <Card className="bg-white border-gray-200">
-                <CardHeader>
-                  <CardTitle className="text-gray-900">Usuários Cadastrados</CardTitle>
-                  <div className="flex gap-2 mt-4 text-sm">
-                    <Badge className="bg-yellow-100 text-yellow-800">⏳ Pendente</Badge>
-                    <Badge className="bg-green-100 text-green-800">✓ Ativo</Badge>
-                    <Badge className="bg-gray-100 text-gray-800">○ Inativo</Badge>
-                    <Badge className="bg-red-100 text-red-800">✕ Cancelado</Badge>
+            {currentTab === 'usuarios' && <Card className="bg-white border-gray-200 mx-2 sm:mx-0">
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-gray-900 text-base sm:text-lg">Usuários Cadastrados</CardTitle>
+                  <div className="flex flex-wrap gap-1 sm:gap-2 mt-2 sm:mt-4 text-xs sm:text-sm">
+                    <Badge className="bg-yellow-100 text-yellow-800 text-xs">⏳ Pendente</Badge>
+                    <Badge className="bg-green-100 text-green-800 text-xs">✓ Ativo</Badge>
+                    <Badge className="bg-gray-100 text-gray-800 text-xs">○ Inativo</Badge>
+                    <Badge className="bg-red-100 text-red-800 text-xs">✕ Cancelado</Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 sm:p-6 pt-0">
                   {loading ? <div className="flex justify-center py-8">
                       <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
                     </div> : <>
@@ -2903,18 +2903,17 @@ export default function Admin() {
                 </Card>
               </div>}
 
-            {currentTab === 'contatos' && <Card className="bg-white border-gray-200">
-                <CardHeader>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <CardTitle className="text-gray-900">📱 Contatos WhatsApp</CardTitle>
-                    <Button onClick={handleExportContacts} variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      <span className="hidden sm:inline">Exportar XLSX</span>
-                      <span className="sm:hidden">Exportar</span>
+            {currentTab === 'contatos' && <Card className="bg-white border-gray-200 mx-2 sm:mx-0">
+                <CardHeader className="p-3 sm:p-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4">
+                    <CardTitle className="text-gray-900 text-base sm:text-lg">📱 Contatos WhatsApp</CardTitle>
+                    <Button onClick={handleExportContacts} variant="outline" size="sm" className="h-8 text-xs sm:text-sm">
+                      <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      Exportar
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 sm:p-6 pt-0">
                   <div className="space-y-4">
                     {/* Filtros */}
                     <div className="flex flex-col sm:flex-row gap-2">
