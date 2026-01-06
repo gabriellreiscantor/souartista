@@ -3152,6 +3152,33 @@ export default function Admin() {
                                     >
                                       💬 Responder
                                     </Button>
+                                    {ticket.status !== 'open' && (
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                                        onClick={async () => {
+                                          try {
+                                            const { error } = await supabase.functions.invoke('create-notification', {
+                                              body: {
+                                                userId: ticket.user_id,
+                                                title: '💬 Resposta no seu ticket de suporte',
+                                                message: `Seu ticket "${ticket.subject}" recebeu uma resposta. Toque para ver.`,
+                                                link: '/app-hub'
+                                              }
+                                            });
+                                            
+                                            if (error) throw error;
+                                            toast.success('Notificação enviada!');
+                                          } catch (error) {
+                                            console.error('Erro ao enviar notificação:', error);
+                                            toast.error('Erro ao enviar notificação');
+                                          }
+                                        }}
+                                      >
+                                        🔔 Notificar
+                                      </Button>
+                                    )}
                                     {ticket.status !== 'closed' && (
                                       <Button 
                                         variant="outline" 
