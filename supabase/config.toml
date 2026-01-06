@@ -1,5 +1,8 @@
 project_id = "wjutvzmnvemrplpwbkyf"
 
+[functions.create-support-user]
+verify_jwt = false
+
 [functions.import-firebase-shows]
 verify_jwt = true
 
