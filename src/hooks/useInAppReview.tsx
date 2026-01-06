@@ -52,9 +52,32 @@ export const useInAppReview = () => {
     }
   }, [canRequestReview]);
 
+  // Force review request - bypasses time and show count validations
+  const forceRequestReview = useCallback(async (): Promise<void> => {
+    if (!isNative) {
+      console.log('[InAppReview] Force review skipped - not native');
+      return;
+    }
+
+    try {
+      const { InAppReview } = await import('@capacitor-community/in-app-review');
+      
+      console.log('[InAppReview] Force requesting review...');
+      await InAppReview.requestReview();
+      
+      // Save the request timestamp to avoid spam
+      localStorage.setItem(REVIEW_KEY, new Date().toISOString());
+      console.log('[InAppReview] Force review requested successfully');
+    } catch (error) {
+      console.error('[InAppReview] Error force requesting review:', error);
+    }
+  }, [isNative]);
+
   return {
     requestReview,
+    forceRequestReview,
     canRequestReview,
-    isAvailable: isNative
+    isAvailable: isNative,
+    isIOS
   };
 };
