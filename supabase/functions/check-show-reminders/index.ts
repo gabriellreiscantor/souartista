@@ -170,6 +170,7 @@ Deno.serve(async (req) => {
               title,
               body: message,
               link: show.uid === userId ? '/artist/shows' : '/musician/shows',
+              source: 'show_reminder',
             });
             console.log(`[check-show-reminders] Push result: sent=${pushResult.sent}, failed=${pushResult.failed}`);
           } catch (pushError) {
