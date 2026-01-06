@@ -286,32 +286,41 @@ export function PushNotificationLogs() {
                 ) : (
                   <div className="space-y-2">
                     {filteredLogs.map(log => (
-                      <div key={log.id} className="border border-gray-100 rounded-lg p-2 bg-gray-50">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              {getStatusBadge(log.status)}
-                              {getSourceBadge(log.source)}
-                              <span className="text-xs text-gray-500">
-                                {format(new Date(log.sent_at), "dd/MM HH:mm", { locale: ptBR })}
-                              </span>
-                              <Badge className="bg-gray-100 text-gray-600 text-xs">
-                                {log.platform || '?'}
-                              </Badge>
-                            </div>
-                            <p className="text-xs font-medium text-gray-900 mt-1 truncate">
-                              {log.user_name}
-                            </p>
-                            <p className="text-xs text-gray-700 mt-0.5 truncate">
-                              <strong>{log.title}</strong>: {log.body}
-                            </p>
-                            {log.error_message && (
-                              <p className="text-xs text-red-600 mt-1">
-                                ❌ {log.error_message}
-                              </p>
-                            )}
+                      <div key={log.id} className="border border-gray-100 rounded-lg p-3 bg-gray-50">
+                        {/* Header: Status + Source + Date */}
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-1.5">
+                            {getStatusBadge(log.status)}
+                            {getSourceBadge(log.source)}
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] text-gray-400">
+                              {format(new Date(log.sent_at), "dd/MM HH:mm", { locale: ptBR })}
+                            </span>
+                            <Badge className="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0">
+                              {log.platform || '?'}
+                            </Badge>
                           </div>
                         </div>
+                        
+                        {/* User name */}
+                        <p className="text-xs font-medium text-gray-900">
+                          {log.user_name}
+                        </p>
+                        
+                        {/* Message content - allow wrapping */}
+                        <p className="text-xs text-gray-600 mt-1 break-words">
+                          <span className="font-semibold text-gray-800">{log.title}</span>
+                          <span className="text-gray-400 mx-1">•</span>
+                          {log.body}
+                        </p>
+                        
+                        {/* Error message */}
+                        {log.error_message && (
+                          <p className="text-xs text-red-600 mt-2 bg-red-50 rounded p-1.5">
+                            ❌ {log.error_message}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>
