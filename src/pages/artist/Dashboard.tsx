@@ -36,7 +36,9 @@ const ArtistDashboard = () => {
   const defaultPeriod = `${currentYear}-${currentMonth}`;
   const [selectedPeriod, setSelectedPeriod] = useState<string>(defaultPeriod);
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
-  const { settings } = useReportVisibility();
+  const {
+    settings
+  } = useReportVisibility();
   const stats = useArtistStats(selectedPeriod);
   const {
     data: monthlyData
@@ -93,10 +95,10 @@ const ArtistDashboard = () => {
               {/* Greeting Section */}
               <div className="mb-6 md:mb-8 text-center">
                 <h2 className="text-2xl md:text-3xl font-bold mb-2 text-gray-900">
-                  Olá, {userData?.gender === 'female' ? 'minha' : 'meu'} artista {userData?.name}! 👋
+                  Olá, meu artista {userData?.name}! 👋
                 </h2>
                 <p className="text-sm md:text-base text-gray-600 mb-4">
-                  Aqui está um resumo rápido do seu progresso.
+                  Aqui está um resumo rápido do seu progresso
                 </p>
               
                 <PeriodFilter value={selectedPeriod} onChange={setSelectedPeriod} className="mx-auto" />
