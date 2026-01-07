@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Check, Shield, Mail, Building2, Copy, QrCode, AlertCircle, CheckCircle2, ArrowLeft, Smartphone } from 'lucide-react';
+import { Check, Shield, Mail, Building2, Copy, QrCode, AlertCircle, CheckCircle2, ArrowLeft, Smartphone, ShieldCheck } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -527,6 +527,16 @@ const Subscribe = () => {
                 <span className="text-sm text-muted-foreground">{plans.monthly.period}</span>
               </div>
             </div>
+
+            {/* Aviso de cancelamento - apenas quando trial está disponível */}
+            {((isIOS && isNative) || paymentMethod === 'CREDIT_CARD') && (
+              <div className="flex items-start gap-2 p-3 mb-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-green-700 dark:text-green-400 leading-relaxed">
+                  Cancele a qualquer momento durante os 7 dias grátis — você não será cobrado!
+                </p>
+              </div>
+            )}
 
             <ul className="space-y-2 mb-6">
               {plans.monthly.features.map((feature, idx) => <Feature key={idx} text={feature} />)}
