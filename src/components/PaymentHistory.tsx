@@ -61,9 +61,9 @@ export function PaymentHistory({ subscription_id, paymentMethod, subscriptionSta
 
   if (loading) {
     return (
-      <Card className="bg-card border border-border shadow-sm">
+      <Card className="bg-white border border-gray-200 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-lg text-foreground">Histórico de Pagamentos</CardTitle>
+          <CardTitle className="text-lg text-gray-900">Histórico de Pagamentos</CardTitle>
         </CardHeader>
         <CardContent className="flex justify-center py-8">
           <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -84,12 +84,12 @@ export function PaymentHistory({ subscription_id, paymentMethod, subscriptionSta
     };
 
     return (
-      <Card className="bg-card border border-border shadow-sm">
+      <Card className="bg-white border border-gray-200 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-lg text-foreground">Histórico de Pagamentos</CardTitle>
+          <CardTitle className="text-lg text-gray-900">Histórico de Pagamentos</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-center py-4">
+          <p className="text-gray-600 text-center py-4">
             {getEmptyMessage()}
           </p>
         </CardContent>
@@ -98,29 +98,29 @@ export function PaymentHistory({ subscription_id, paymentMethod, subscriptionSta
   }
 
   return (
-    <Card className="bg-card border border-border shadow-sm">
+    <Card className="bg-white border border-gray-200 shadow-sm">
       <CardHeader>
-        <CardTitle className="text-lg text-foreground">Histórico de Pagamentos</CardTitle>
+        <CardTitle className="text-lg text-gray-900">Histórico de Pagamentos</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
           {payments.map((payment) => (
             <div
               key={payment.id}
-              className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-border rounded-lg gap-2 bg-background/50"
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-gray-200 rounded-lg gap-2 bg-gray-50"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   {getStatusBadge(payment.status)}
-                  <span className="text-sm font-medium text-foreground">
+                  <span className="text-sm font-medium text-gray-900">
                     R$ {Number(payment.amount).toFixed(2)}
                   </span>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-600">
                   Vencimento: {format(new Date(payment.due_date), "dd 'de' MMMM, yyyy", { locale: ptBR })}
                 </p>
                 {payment.payment_date && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-gray-500">
                     Pago em: {format(new Date(payment.payment_date), "dd/MM/yyyy", { locale: ptBR })}
                   </p>
                 )}
