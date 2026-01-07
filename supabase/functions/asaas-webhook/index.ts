@@ -187,9 +187,19 @@ serve(async (req) => {
         break;
       }
 
-      case 'SUBSCRIPTION_CREATED':
+      case 'SUBSCRIPTION_CREATED': {
+        // Don't update next_due_date here - it was already saved correctly by create-asaas-subscription
+        // This prevents date format bugs from Asaas webhook overwriting correct data
+        console.log('📋 SUBSCRIPTION_CREATED event received:', subscription?.id);
+        console.log('📅 Asaas sent nextDueDate:', subscription?.nextDueDate, '- NOT updating (already saved correctly)');
+        break;
+      }
+
       case 'SUBSCRIPTION_UPDATED': {
         if (subscription?.id) {
+          console.log('📋 SUBSCRIPTION_UPDATED event - updating subscription');
+          console.log('📅 Received nextDueDate from Asaas:', subscription.nextDueDate);
+          
           const { data: existingSubscription } = await supabase
             .from('subscriptions')
             .select('*')
@@ -205,7 +215,7 @@ serve(async (req) => {
               })
               .eq('id', existingSubscription.id);
 
-            console.log('Subscription updated:', subscription.id);
+            console.log('✅ Subscription updated:', subscription.id);
           }
         }
         break;
