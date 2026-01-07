@@ -166,32 +166,73 @@ const Subscribe = () => {
     checkReturningUser();
   }, [user, userRole]);
 
+  // Realtime listener for subscription status changes
+  useEffect(() => {
+    if (!user?.id) return;
+    
+    const channel = supabase
+      .channel('subscription-status-change')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'subscriptions',
+          filter: `user_id=eq.${user.id}`
+        },
+        async (payload) => {
+          console.log('📡 Realtime subscription update:', payload);
+          if (payload.new && (payload.new as any).status === 'active') {
+            setShowPixDialog(false);
+            toast.success('🎉 Pagamento confirmado! Seu plano foi ativado.');
+            await refetchUserData();
+            const role = userRole || localStorage.getItem('userRole');
+            setTimeout(() => {
+              if (role === 'artist') {
+                navigate('/artist/dashboard', { replace: true });
+              } else if (role === 'musician') {
+                navigate('/musician/dashboard', { replace: true });
+              }
+            }, 1000);
+          }
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, userRole, navigate, refetchUserData]);
+
   // Poll for payment confirmation when PIX dialog is open
   useEffect(() => {
     if (!showPixDialog || !user) return;
     setIsCheckingPayment(true);
+    
     const checkPaymentStatus = async () => {
       try {
-        const {
-          data: profile
-        } = await supabase.from('profiles').select('status_plano, plan_type').eq('id', user.id).single();
-        if (profile?.status_plano === 'ativo') {
+        // Check profiles table for status change
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('status_plano, plan_type')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile?.status_plano === 'ativo' || profile?.status_plano === 'active') {
+          console.log('✅ Payment confirmed via polling!');
           setIsCheckingPayment(false);
           setShowPixDialog(false);
-          toast.success('Pagamento confirmado! Redirecionando...');
+          toast.success('🎉 Pagamento confirmado! Redirecionando...');
           await refetchUserData();
-          const userRole = localStorage.getItem('userRole');
+          const role = userRole || localStorage.getItem('userRole');
           setTimeout(() => {
-            if (userRole === 'artist') {
-              navigate('/artist/dashboard', {
-                replace: true
-              });
-            } else if (userRole === 'musician') {
-              navigate('/musician/dashboard', {
-                replace: true
-              });
+            if (role === 'artist') {
+              navigate('/artist/dashboard', { replace: true });
+            } else if (role === 'musician') {
+              navigate('/musician/dashboard', { replace: true });
             }
-          }, 1500);
+          }, 1000);
+          return;
         }
       } catch (error) {
         console.error('Error checking payment status:', error);
@@ -207,7 +248,7 @@ const Subscribe = () => {
       clearInterval(interval);
       setIsCheckingPayment(false);
     };
-  }, [showPixDialog, user, navigate, refetchUserData]);
+  }, [showPixDialog, user, userRole, navigate, refetchUserData]);
   const handleSubscribe = async (plan: 'monthly' | 'annual') => {
     try {
       const {
