@@ -638,7 +638,7 @@ const Subscribe = () => {
       <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
         <DialogContent className="sm:max-w-md dark bg-background border-border">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-foreground">
               <Building2 className="w-5 h-5 text-primary" />
               Plano Enterprise
             </DialogTitle>
