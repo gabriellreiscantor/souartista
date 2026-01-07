@@ -121,11 +121,12 @@ serve(async (req) => {
         break;
       }
 
-      case 'PAYMENT_OVERDUE':
-      case 'PAYMENT_DELETED': {
-        // CORREÇÃO: Para eventos de pagamento, o ID da assinatura está em payment.subscription (string)
+      case 'PAYMENT_OVERDUE': {
+        // ⚠️ IMPORTANTE: NÃO desativar status_plano imediatamente!
+        // O usuário mantém acesso até next_due_date
+        // A função check-expired-subscriptions cuida da desativação
         const subscriptionId = payment?.subscription;
-        console.log('🔔 Looking for subscription ID:', subscriptionId);
+        console.log('🔔 PAYMENT_OVERDUE - Looking for subscription ID:', subscriptionId);
         
         if (subscriptionId) {
           const { data: existingSubscription } = await supabase
@@ -135,34 +136,30 @@ serve(async (req) => {
             .maybeSingle();
 
           if (existingSubscription) {
+            // Apenas marca como overdue, NÃO desativa o acesso
             await supabase
               .from('subscriptions')
               .update({
-                status: 'expired',
+                status: 'overdue',
                 updated_at: new Date().toISOString(),
               })
               .eq('id', existingSubscription.id);
 
-            // Update user profile
-            await supabase
-              .from('profiles')
-              .update({
-                status_plano: 'inactive',
-              })
-              .eq('id', existingSubscription.user_id);
+            // NÃO atualizar status_plano aqui!
+            // O usuário mantém acesso até next_due_date
 
-            // Create notification (USER-SPECIFIC - different for credit card vs PIX)
+            // Enviar notificação de lembrete
             const notificationData = payment.billingType === 'CREDIT_CARD' 
               ? {
-                  title: '❌ Cartão de crédito recusado',
-                  message: 'Não conseguimos processar seu cartão de crédito. Atualize seus dados de pagamento para não perder o acesso.',
+                  title: '⚠️ Problema com cartão de crédito',
+                  message: 'Houve um problema ao processar seu cartão. Verifique seus dados de pagamento.',
                   link: '/artist/subscription',
                   user_id: existingSubscription.user_id,
                   created_by: existingSubscription.user_id,
                 }
               : {
-                  title: '❌ Pagamento vencido',
-                  message: 'Seu pagamento PIX está vencido. Realize o pagamento para manter seu acesso.',
+                  title: '⚠️ Pagamento pendente',
+                  message: 'Seu pagamento PIX está pendente. Realize o pagamento para manter seu acesso.',
                   link: '/artist/subscription',
                   user_id: existingSubscription.user_id,
                   created_by: existingSubscription.user_id,
@@ -172,9 +169,21 @@ serve(async (req) => {
               .from('notifications')
               .insert(notificationData);
 
-            console.log('❌ Subscription expired:', subscriptionId);
+            console.log('⚠️ Subscription marked as overdue (user keeps access):', subscriptionId);
           }
         }
+        break;
+      }
+
+      case 'PAYMENT_DELETED': {
+        // ⚠️ IMPORTANTE: PAYMENT_DELETED geralmente indica recriação de cobrança
+        // NÃO desativar o usuário aqui!
+        const subscriptionId = payment?.subscription;
+        console.log('🔔 PAYMENT_DELETED - Subscription ID:', subscriptionId);
+        console.log('ℹ️ PAYMENT_DELETED geralmente indica recriação de cobrança, não desativando usuário');
+        
+        // Apenas logar, não fazer nada que afete o acesso do usuário
+        // A desativação será feita pela função check-expired-subscriptions se necessário
         break;
       }
 
