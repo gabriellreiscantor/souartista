@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -25,6 +26,7 @@ interface PaymentRecord {
 export function PaymentHistory({ subscription_id, paymentMethod, subscriptionStatus }: PaymentHistoryProps) {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
   useEffect(() => {
     fetchPaymentHistory();
@@ -46,6 +48,37 @@ export function PaymentHistory({ subscription_id, paymentMethod, subscriptionSta
     } finally {
       setLoading(false);
     }
+  };
+
+  // Extrair anos disponíveis (mais recente primeiro)
+  const availableYears = useMemo(() => {
+    const years = [...new Set(payments.map(p => new Date(p.due_date).getFullYear()))];
+    return years.sort((a, b) => b - a);
+  }, [payments]);
+
+  // Atualizar ano selecionado quando os pagamentos carregarem
+  useEffect(() => {
+    if (availableYears.length > 0 && !availableYears.includes(selectedYear)) {
+      setSelectedYear(availableYears[0]);
+    }
+  }, [availableYears]);
+
+  // Filtrar pagamentos pelo ano selecionado
+  const filteredPayments = useMemo(() => {
+    return payments.filter(p => new Date(p.due_date).getFullYear() === selectedYear);
+  }, [payments, selectedYear]);
+
+  // Navegação entre anos
+  const currentYearIndex = availableYears.indexOf(selectedYear);
+  const canGoNext = currentYearIndex > 0;
+  const canGoPrev = currentYearIndex < availableYears.length - 1;
+
+  const goToNextYear = () => {
+    if (canGoNext) setSelectedYear(availableYears[currentYearIndex - 1]);
+  };
+
+  const goToPrevYear = () => {
+    if (canGoPrev) setSelectedYear(availableYears[currentYearIndex + 1]);
   };
 
   const getStatusBadge = (status: string) => {
@@ -101,10 +134,37 @@ export function PaymentHistory({ subscription_id, paymentMethod, subscriptionSta
     <Card className="bg-white border border-black shadow-sm">
       <CardHeader>
         <CardTitle className="text-lg text-gray-900">Histórico de Pagamentos</CardTitle>
+        
+        {/* Navegação por Ano */}
+        {availableYears.length > 1 && (
+          <div className="flex items-center justify-center gap-4 mt-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={goToPrevYear}
+              disabled={!canGoPrev}
+              className="h-8 w-8"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-lg font-semibold text-gray-900 min-w-[60px] text-center">
+              {selectedYear}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={goToNextYear}
+              disabled={!canGoNext}
+              className="h-8 w-8"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {payments.map((payment) => (
+          {filteredPayments.map((payment) => (
             <div
               key={payment.id}
               className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-gray-200 rounded-lg gap-2 bg-gray-50"
