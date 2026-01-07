@@ -17,27 +17,31 @@ interface Announcement {
 const typeConfig = {
   info: {
     icon: Info,
-    bgClass: "bg-blue-100 dark:bg-blue-900/30",
-    iconClass: "text-blue-600 dark:text-blue-400",
-    borderClass: "border-blue-200 dark:border-blue-800",
+    gradientFrom: "from-blue-500",
+    gradientTo: "to-cyan-400",
+    bgGlow: "bg-blue-500/20",
+    shadowColor: "shadow-blue-500/25",
   },
   warning: {
     icon: AlertTriangle,
-    bgClass: "bg-orange-100 dark:bg-orange-900/30",
-    iconClass: "text-orange-600 dark:text-orange-400",
-    borderClass: "border-orange-200 dark:border-orange-800",
+    gradientFrom: "from-orange-500",
+    gradientTo: "to-amber-400",
+    bgGlow: "bg-orange-500/20",
+    shadowColor: "shadow-orange-500/25",
   },
   success: {
     icon: CheckCircle,
-    bgClass: "bg-green-100 dark:bg-green-900/30",
-    iconClass: "text-green-600 dark:text-green-400",
-    borderClass: "border-green-200 dark:border-green-800",
+    gradientFrom: "from-emerald-500",
+    gradientTo: "to-green-400",
+    bgGlow: "bg-emerald-500/20",
+    shadowColor: "shadow-emerald-500/25",
   },
   update: {
     icon: Sparkles,
-    bgClass: "bg-purple-100 dark:bg-purple-900/30",
-    iconClass: "text-purple-600 dark:text-purple-400",
-    borderClass: "border-purple-200 dark:border-purple-800",
+    gradientFrom: "from-violet-500",
+    gradientTo: "to-purple-400",
+    bgGlow: "bg-violet-500/20",
+    shadowColor: "shadow-violet-500/25",
   },
 };
 
@@ -118,23 +122,37 @@ export const GlobalAnnouncementModal = () => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader className="text-center sm:text-center">
-          <div className="flex justify-center mb-4">
-            <div className={`p-4 rounded-full ${config.bgClass} ${config.borderClass} border-2`}>
-              <IconComponent className={`h-8 w-8 ${config.iconClass}`} />
+      <DialogContent className="sm:max-w-md overflow-hidden border-0 shadow-2xl">
+        {/* Background glow effect */}
+        <div className={`absolute inset-0 ${config.bgGlow} blur-3xl opacity-50 -z-10`} />
+        
+        <DialogHeader className="text-center sm:text-center pt-2">
+          <div className="flex justify-center mb-5">
+            <div className="relative">
+              {/* Animated glow ring */}
+              <div className={`absolute inset-0 bg-gradient-to-r ${config.gradientFrom} ${config.gradientTo} rounded-full blur-lg opacity-60 animate-pulse`} />
+              
+              {/* Icon container */}
+              <div className={`relative p-5 rounded-full bg-gradient-to-br ${config.gradientFrom} ${config.gradientTo} shadow-xl ${config.shadowColor}`}>
+                <IconComponent className="h-8 w-8 text-white drop-shadow-md" />
+              </div>
             </div>
           </div>
-          <DialogTitle className="text-xl text-center">{announcement.title}</DialogTitle>
-          <DialogDescription className="text-center pt-2 whitespace-pre-wrap">
+          
+          <DialogTitle className="text-2xl font-bold text-center bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+            {announcement.title}
+          </DialogTitle>
+          
+          <DialogDescription className="text-center pt-3 text-base text-muted-foreground whitespace-pre-wrap leading-relaxed">
             {announcement.message}
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="sm:justify-center pt-4">
+        
+        <DialogFooter className="sm:justify-center pt-6 pb-2">
           <Button 
             onClick={handleDismiss} 
             disabled={loading}
-            className="w-full sm:w-auto min-w-[120px]"
+            className={`w-full sm:w-auto min-w-[140px] h-12 text-base font-semibold bg-gradient-to-r ${config.gradientFrom} ${config.gradientTo} hover:opacity-90 transition-all duration-300 shadow-lg ${config.shadowColor} hover:shadow-xl hover:scale-[1.02]`}
           >
             {loading ? "..." : "Entendi"}
           </Button>
