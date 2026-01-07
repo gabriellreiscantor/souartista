@@ -260,48 +260,31 @@ export const AnnouncementsTab = () => {
                 return (
                   <div
                     key={announcement.id}
-                    className={`p-4 rounded-lg border border-gray-200 ${
+                    className={`p-3 sm:p-4 rounded-lg border border-gray-200 ${
                       announcement.is_active
                         ? "bg-white"
                         : "bg-gray-50 opacity-60"
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3 flex-1 min-w-0">
-                        <div className={`p-2 rounded-full ${typeConfig.color}/20`}>
-                          <IconComponent className={`h-4 w-4 ${typeConfig.color.replace('bg-', 'text-')}`} />
+                    {/* Header com ícone, título e ações */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+                        <div className={`p-1.5 sm:p-2 rounded-full ${typeConfig.color}/20 shrink-0`}>
+                          <IconComponent className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${typeConfig.color.replace('bg-', 'text-')}`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="font-medium truncate text-gray-900">{announcement.title}</h4>
-                            <Badge variant={announcement.is_active ? "default" : "secondary"}>
-                              {announcement.is_active ? "Ativo" : "Inativo"}
-                            </Badge>
-                            {announcement.target_role && (
-                              <Badge variant="outline" className="border-gray-300 text-gray-700">
-                                {announcement.target_role === "artist" ? "Artistas" : "Músicos"}
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                            {announcement.message}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-2">
-                            Criado em {format(new Date(announcement.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                            {announcement.expires_at && (
-                              <> • Expira em {format(new Date(announcement.expires_at), "dd/MM/yyyy", { locale: ptBR })}</>
-                            )}
-                          </p>
+                          <h4 className="font-medium text-sm sm:text-base text-gray-900 line-clamp-1">{announcement.title}</h4>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      {/* Botões de ação */}
+                      <div className="flex items-center gap-1 shrink-0">
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => toggleActive(announcement.id, announcement.is_active)}
                           title={announcement.is_active ? "Desativar" : "Ativar"}
-                          className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                          className="h-8 w-8 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                         >
                           {announcement.is_active ? (
                             <EyeOff className="h-4 w-4" />
@@ -313,12 +296,37 @@ export const AnnouncementsTab = () => {
                           variant="ghost"
                           size="icon"
                           onClick={() => deleteAnnouncement(announcement.id)}
-                          className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                          className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
+
+                    {/* Badges */}
+                    <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                      <Badge variant={announcement.is_active ? "default" : "secondary"} className="text-xs">
+                        {announcement.is_active ? "Ativo" : "Inativo"}
+                      </Badge>
+                      {announcement.target_role && (
+                        <Badge variant="outline" className="border-gray-300 text-gray-700 text-xs">
+                          {announcement.target_role === "artist" ? "Artistas" : "Músicos"}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Mensagem */}
+                    <p className="text-xs sm:text-sm text-gray-600 mt-2 line-clamp-2">
+                      {announcement.message}
+                    </p>
+
+                    {/* Data */}
+                    <p className="text-[10px] sm:text-xs text-gray-500 mt-2">
+                      {format(new Date(announcement.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                      {announcement.expires_at && (
+                        <> • Expira {format(new Date(announcement.expires_at), "dd/MM/yyyy", { locale: ptBR })}</>
+                      )}
+                    </p>
                   </div>
                 );
               })}
