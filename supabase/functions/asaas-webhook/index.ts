@@ -94,6 +94,26 @@ serve(async (req) => {
               })
               .eq('id', existingSubscription.id);
 
+            // NOVO: Registrar pagamento no histórico
+            const { error: historyError } = await supabase
+              .from('payment_history')
+              .insert({
+                subscription_id: existingSubscription.id,
+                user_id: existingSubscription.user_id,
+                amount: payment.value || existingSubscription.amount,
+                payment_date: payment.confirmedDate || new Date().toISOString(),
+                due_date: payment.dueDate || existingSubscription.next_due_date || new Date().toISOString(),
+                status: 'paid',
+                payment_method: payment.billingType,
+                asaas_payment_id: payment.id,
+              });
+
+            if (historyError) {
+              console.error('❌ Error inserting payment history:', historyError);
+            } else {
+              console.log('💰 Payment history record created for:', payment.id);
+            }
+
             // Update user profile
             await supabase
               .from('profiles')
