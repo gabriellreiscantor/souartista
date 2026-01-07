@@ -406,7 +406,7 @@ const Subscribe = () => {
         
         {/* Logo */}
         <div className="flex items-center justify-center mb-8">
-          <img src={logo} alt="Sou Artista" className="h-12 md:h-16 w-auto" />
+          <img src={logo} alt="Sou Artista" className="h-16 md:h-20 w-auto" />
         </div>
 
         {/* Header */}
