@@ -249,10 +249,22 @@ const Subscribe = () => {
         }
       });
       toast.dismiss();
+      
+      console.log('📦 Response from edge function:', JSON.stringify(data, null, 2));
+      console.log('❌ Error:', error);
+      
       if (error) {
         console.error('Error creating subscription:', error);
         throw error;
       }
+      
+      console.log('🔍 Checking conditions:', {
+        success: data?.success,
+        billingType: data?.billingType,
+        hasPixQrCode: !!data?.pixQrCode,
+        hasPixImage: !!data?.pixQrCodeImage
+      });
+      
       if (data.success && data.billingType === 'PIX' && data.pixQrCode) {
         setPixData({
           code: data.pixQrCode,
