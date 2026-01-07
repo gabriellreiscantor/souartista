@@ -528,12 +528,19 @@ const Subscribe = () => {
               </div>
             </div>
 
-            {/* Aviso de cancelamento - apenas quando trial está disponível */}
-            {((isIOS && isNative) || paymentMethod === 'CREDIT_CARD') && (
+            {/* Aviso de cancelamento/cobrança */}
+            {((isIOS && isNative) || paymentMethod === 'CREDIT_CARD') ? (
               <div className="flex items-start gap-2 p-3 mb-4 rounded-lg bg-green-500/10 border border-green-500/20">
                 <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-green-700 dark:text-green-400 leading-relaxed">
                   Cancele a qualquer momento durante os 7 dias grátis — você não será cobrado!
+                </p>
+              </div>
+            ) : paymentMethod === 'PIX' && (
+              <div className="flex items-start gap-2 p-3 mb-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                <ShieldCheck className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
+                  A cobrança é imediata após a confirmação do pagamento. Cancele quando quiser!
                 </p>
               </div>
             )}
