@@ -117,13 +117,18 @@ Deno.serve(async (req) => {
         if (show.date_local === today) {
           notificationTypes.push('today');
           
-          // Check if ~3 hours before the show in user's timezone
+          // Check time-based notifications (3 hours and 30 minutes before)
           if (show.time_local) {
             const minutesUntilShow = getMinutesUntilShowTime(show.time_local, userTimezone);
             
-            // Between 2h45 and 3h15 before the show
+            // Between 2h45 and 3h15 before the show (~3 hours)
             if (minutesUntilShow >= 165 && minutesUntilShow <= 195) {
               notificationTypes.push('3_hours');
+            }
+            
+            // Between 25 and 35 minutes before the show (~30 minutes)
+            if (minutesUntilShow >= 25 && minutesUntilShow <= 35) {
+              notificationTypes.push('30_minutes');
             }
           }
         }
@@ -188,6 +193,12 @@ Deno.serve(async (req) => {
               message = isOwner
                 ? `Seu show no ${show.venue_name} às ${show.time_local} - Hora de se preparar!`
                 : `Show com ${artistName} no ${show.venue_name} às ${show.time_local} - Hora de se preparar!`;
+              break;
+            case '30_minutes':
+              title = isOwner ? '⚡ Faltam 30 minutos!' : '⚡ Faltam 30 minutos para o show!';
+              message = isOwner
+                ? `Seu show no ${show.venue_name} às ${show.time_local} está quase começando!`
+                : `Show com ${artistName} no ${show.venue_name} às ${show.time_local} está quase começando!`;
               break;
           }
 
