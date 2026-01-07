@@ -142,13 +142,13 @@ export const AnnouncementsTab = () => {
   return (
     <div className="space-y-6">
       {/* Form para criar novo aviso */}
-      <Card>
+      <Card className="bg-white border-gray-200">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-gray-900">
             <Megaphone className="h-5 w-5" />
             Criar Novo Aviso
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-gray-500">
             Envie um pop-up para todos os usuários do app
           </CardDescription>
         </CardHeader>
@@ -156,25 +156,26 @@ export const AnnouncementsTab = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="title">Título</Label>
+                <Label htmlFor="title" className="text-gray-700">Título</Label>
                 <Input
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Ex: Nova funcionalidade!"
                   required
+                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="type">Tipo</Label>
+                <Label htmlFor="type" className="text-gray-700">Tipo</Label>
                 <Select value={type} onValueChange={setType}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white border-gray-200">
                     {typeOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
+                      <SelectItem key={option.value} value={option.value} className="text-gray-900 focus:bg-gray-100">
                         <div className="flex items-center gap-2">
                           <option.icon className="h-4 w-4" />
                           {option.label}
@@ -187,7 +188,7 @@ export const AnnouncementsTab = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="message">Mensagem</Label>
+              <Label htmlFor="message" className="text-gray-700">Mensagem</Label>
               <Textarea
                 id="message"
                 value={message}
@@ -195,31 +196,33 @@ export const AnnouncementsTab = () => {
                 placeholder="Escreva a mensagem do aviso..."
                 rows={4}
                 required
+                className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
               />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="target">Destinatários</Label>
+                <Label htmlFor="target" className="text-gray-700">Destinatários</Label>
                 <Select value={targetRole} onValueChange={setTargetRole}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os usuários</SelectItem>
-                    <SelectItem value="artist">Apenas Artistas</SelectItem>
-                    <SelectItem value="musician">Apenas Músicos</SelectItem>
+                  <SelectContent className="bg-white border-gray-200">
+                    <SelectItem value="all" className="text-gray-900 focus:bg-gray-100">Todos os usuários</SelectItem>
+                    <SelectItem value="artist" className="text-gray-900 focus:bg-gray-100">Apenas Artistas</SelectItem>
+                    <SelectItem value="musician" className="text-gray-900 focus:bg-gray-100">Apenas Músicos</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="expires">Expira em (opcional)</Label>
+                <Label htmlFor="expires" className="text-gray-700">Expira em (opcional)</Label>
                 <Input
                   id="expires"
                   type="datetime-local"
                   value={expiresAt}
                   onChange={(e) => setExpiresAt(e.target.value)}
+                  className="bg-white border-gray-300 text-gray-900"
                 />
               </div>
             </div>
@@ -232,20 +235,20 @@ export const AnnouncementsTab = () => {
       </Card>
 
       {/* Lista de avisos */}
-      <Card>
+      <Card className="bg-white border-gray-200">
         <CardHeader>
-          <CardTitle>Avisos Enviados</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-gray-900">Avisos Enviados</CardTitle>
+          <CardDescription className="text-gray-500">
             Gerencie os avisos já enviados
           </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-gray-500">
               Carregando...
             </div>
           ) : announcements.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-gray-500">
               Nenhum aviso enviado ainda
             </div>
           ) : (
@@ -257,10 +260,10 @@ export const AnnouncementsTab = () => {
                 return (
                   <div
                     key={announcement.id}
-                    className={`p-4 rounded-lg border ${
+                    className={`p-4 rounded-lg border border-gray-200 ${
                       announcement.is_active
-                        ? "bg-card"
-                        : "bg-muted/50 opacity-60"
+                        ? "bg-white"
+                        : "bg-gray-50 opacity-60"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-4">
@@ -270,20 +273,20 @@ export const AnnouncementsTab = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="font-medium truncate">{announcement.title}</h4>
+                            <h4 className="font-medium truncate text-gray-900">{announcement.title}</h4>
                             <Badge variant={announcement.is_active ? "default" : "secondary"}>
                               {announcement.is_active ? "Ativo" : "Inativo"}
                             </Badge>
                             {announcement.target_role && (
-                              <Badge variant="outline">
+                              <Badge variant="outline" className="border-gray-300 text-gray-700">
                                 {announcement.target_role === "artist" ? "Artistas" : "Músicos"}
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                             {announcement.message}
                           </p>
-                          <p className="text-xs text-muted-foreground mt-2">
+                          <p className="text-xs text-gray-500 mt-2">
                             Criado em {format(new Date(announcement.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                             {announcement.expires_at && (
                               <> • Expira em {format(new Date(announcement.expires_at), "dd/MM/yyyy", { locale: ptBR })}</>
@@ -298,6 +301,7 @@ export const AnnouncementsTab = () => {
                           size="icon"
                           onClick={() => toggleActive(announcement.id, announcement.is_active)}
                           title={announcement.is_active ? "Desativar" : "Ativar"}
+                          className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                         >
                           {announcement.is_active ? (
                             <EyeOff className="h-4 w-4" />
@@ -309,7 +313,7 @@ export const AnnouncementsTab = () => {
                           variant="ghost"
                           size="icon"
                           onClick={() => deleteAnnouncement(announcement.id)}
-                          className="text-destructive hover:text-destructive"
+                          className="text-red-500 hover:text-red-600 hover:bg-red-50"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
