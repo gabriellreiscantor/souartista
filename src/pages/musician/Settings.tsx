@@ -115,7 +115,13 @@ const MusicianSettings = () => {
                     </div>
                     <Switch 
                       checked={settings.showGrossRevenue} 
-                      onCheckedChange={(checked) => updateSettings({ showGrossRevenue: checked })} 
+                      onCheckedChange={(checked) => {
+                        updateSettings({ showGrossRevenue: checked });
+                        toast({
+                          title: checked ? "Configuração ativada" : "Configuração desativada",
+                          description: "Suas preferências foram salvas com sucesso.",
+                        });
+                      }} 
                     />
                   </div>
 
@@ -128,7 +134,13 @@ const MusicianSettings = () => {
                     </div>
                     <Switch 
                       checked={settings.showShowCosts} 
-                      onCheckedChange={(checked) => updateSettings({ showShowCosts: checked })} 
+                      onCheckedChange={(checked) => {
+                        updateSettings({ showShowCosts: checked });
+                        toast({
+                          title: checked ? "Configuração ativada" : "Configuração desativada",
+                          description: "Suas preferências foram salvas com sucesso.",
+                        });
+                      }} 
                     />
                   </div>
 
@@ -141,7 +153,13 @@ const MusicianSettings = () => {
                     </div>
                     <Switch 
                       checked={settings.showNetProfit} 
-                      onCheckedChange={(checked) => updateSettings({ showNetProfit: checked })} 
+                      onCheckedChange={(checked) => {
+                        updateSettings({ showNetProfit: checked });
+                        toast({
+                          title: checked ? "Configuração ativada" : "Configuração desativada",
+                          description: "Suas preferências foram salvas com sucesso.",
+                        });
+                      }} 
                     />
                   </div>
 
@@ -154,7 +172,13 @@ const MusicianSettings = () => {
                     </div>
                     <Switch 
                       checked={settings.showLocomotion} 
-                      onCheckedChange={(checked) => updateSettings({ showLocomotion: checked })} 
+                      onCheckedChange={(checked) => {
+                        updateSettings({ showLocomotion: checked });
+                        toast({
+                          title: checked ? "Configuração ativada" : "Configuração desativada",
+                          description: "Suas preferências foram salvas com sucesso.",
+                        });
+                      }} 
                     />
                   </div>
                 </div>
