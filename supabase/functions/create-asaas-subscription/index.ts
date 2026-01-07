@@ -103,6 +103,16 @@ serve(async (req) => {
     if (existingSubscription?.asaas_customer_id) {
       customerId = existingSubscription.asaas_customer_id;
     } else {
+      // Clean CPF - remove all non-digit characters
+      const cleanCpf = profile.cpf ? profile.cpf.replace(/\D/g, '') : '';
+      
+      if (!cleanCpf || cleanCpf.length !== 11) {
+        console.error('Invalid CPF format:', profile.cpf, '-> cleaned:', cleanCpf);
+        throw new Error('CPF inválido. Por favor, atualize seu perfil com um CPF válido.');
+      }
+
+      console.log('Creating Asaas customer with cleaned CPF:', cleanCpf.substring(0, 3) + '***');
+      
       // Create new customer
       const customerResponse = await fetch('https://api.asaas.com/v3/customers', {
         method: 'POST',
@@ -113,8 +123,8 @@ serve(async (req) => {
         body: JSON.stringify({
           name: profile.name,
           email: profile.email,
-          cpfCnpj: profile.cpf,
-          phone: profile.phone,
+          cpfCnpj: cleanCpf,
+          phone: profile.phone ? profile.phone.replace(/\D/g, '') : undefined,
         }),
       });
 
