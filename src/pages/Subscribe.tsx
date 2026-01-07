@@ -540,7 +540,7 @@ const Subscribe = () => {
               <div className="flex items-start gap-2 p-3 mb-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
                 <ShieldCheck className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
-                  A cobrança é imediata após a confirmação do pagamento. Cancele quando quiser!
+                  PIX: cobrança imediata (sem período de teste)
                 </p>
               </div>
             )}
