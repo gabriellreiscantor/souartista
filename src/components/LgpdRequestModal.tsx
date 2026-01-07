@@ -96,15 +96,15 @@ export const LgpdRequestModal = ({ open, onOpenChange }: LgpdRequestModalProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white sm:max-w-md">
+      <DialogContent className="bg-white sm:max-w-md border-gray-200">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Shield className="w-6 h-6 text-purple-600" />
+            <div className="p-2 bg-gray-100 rounded-lg">
+              <Shield className="w-6 h-6 text-gray-600" />
             </div>
-            <DialogTitle className="text-xl">Direitos LGPD</DialogTitle>
+            <DialogTitle className="text-xl text-gray-900">Direitos LGPD</DialogTitle>
           </div>
-          <DialogDescription>
+          <DialogDescription className="text-gray-600">
             Exerça seus direitos de proteção de dados conforme a Lei Geral de Proteção de Dados (LGPD).
           </DialogDescription>
         </DialogHeader>
