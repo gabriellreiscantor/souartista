@@ -1,10 +1,13 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { sendPushToUser } from '../_shared/fcm-sender.ts';
+import { isWithinPushWindow, getTodayStartInTimezone } from '../_shared/timezone-utils.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const DEFAULT_TIMEZONE = 'America/Sao_Paulo';
 
 // Mensagens de CONVERSÃO - para quem NÃO assinou (20 mensagens)
 const CONVERSION_MESSAGES = [
@@ -93,12 +96,12 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    console.log('[send-marketing-notifications] 🚀 Starting marketing notification job');
+    console.log('[send-marketing-notifications] 🚀 Starting timezone-aware marketing notification job');
 
-    // Get all users with their subscription status and activity
+    // Get all users with their timezone
     const { data: users, error: usersError } = await supabaseAdmin
       .from('profiles')
-      .select('id, name, email, status_plano, last_seen_at, created_at')
+      .select('id, name, email, status_plano, last_seen_at, created_at, timezone')
       .not('id', 'is', null);
 
     if (usersError) {
@@ -108,10 +111,10 @@ Deno.serve(async (req) => {
 
     console.log(`[send-marketing-notifications] 📊 Found ${users?.length || 0} users`);
 
-    // Get users who have devices registered (can receive push)
+    // Get users who have devices registered with their timezones
     const { data: devicesData, error: devicesError } = await supabaseAdmin
       .from('user_devices')
-      .select('user_id')
+      .select('user_id, timezone')
       .not('fcm_token', 'is', null);
 
     if (devicesError) {
@@ -119,11 +122,20 @@ Deno.serve(async (req) => {
       throw devicesError;
     }
 
-    const usersWithDevices = new Set(devicesData?.map(d => d.user_id) || []);
+    // Create timezone lookup from devices (more accurate than profile)
+    const deviceTimezones: Record<string, string> = {};
+    const usersWithDevices = new Set<string>();
+    for (const device of devicesData || []) {
+      usersWithDevices.add(device.user_id);
+      if (device.timezone) {
+        deviceTimezones[device.user_id] = device.timezone;
+      }
+    }
+    
     console.log(`[send-marketing-notifications] 📱 Users with devices: ${usersWithDevices.size}`);
 
     // Get show counts per user
-    const { data: showCounts, error: showCountsError } = await supabaseAdmin
+    const { data: showCounts } = await supabaseAdmin
       .from('shows')
       .select('uid');
 
@@ -136,17 +148,9 @@ Deno.serve(async (req) => {
 
     let sentCount = 0;
     let skippedCount = 0;
+    let outsideWindowCount = 0;
     const now = new Date();
-    
-    // Calculate start of TODAY in BRT (UTC-3) - this ensures one notification per calendar day
-    const nowBRT = new Date(now.getTime() - 3 * 60 * 60 * 1000);
-    const todayStartBRT = new Date(Date.UTC(nowBRT.getUTCFullYear(), nowBRT.getUTCMonth(), nowBRT.getUTCDate(), 0, 0, 0, 0));
-    const todayStartUTC = new Date(todayStartBRT.getTime() + 3 * 60 * 60 * 1000); // Convert back to UTC
-    
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-    console.log(`[send-marketing-notifications] 📅 Today start (BRT): ${todayStartBRT.toISOString()}`);
-    console.log(`[send-marketing-notifications] 📅 Today start (UTC): ${todayStartUTC.toISOString()}`);
 
     for (const user of users || []) {
       // Skip users without devices
@@ -155,8 +159,21 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Check if user received a marketing notification TODAY (not last 24h)
-      const { data: recentLogs, error: logsError } = await supabaseAdmin
+      // Get user's timezone (prefer device, fallback to profile, then default)
+      const userTimezone = deviceTimezones[user.id] || user.timezone || DEFAULT_TIMEZONE;
+
+      // Check if user is within push notification window (8:00 - 21:00 local time)
+      if (!isWithinPushWindow(userTimezone)) {
+        console.log(`[send-marketing-notifications] ⏰ Skipping ${user.id} - outside push window (tz: ${userTimezone})`);
+        outsideWindowCount++;
+        continue;
+      }
+
+      // Get start of today in user's timezone for daily limit check
+      const todayStartUTC = getTodayStartInTimezone(userTimezone);
+
+      // Check if user received a marketing notification TODAY in their timezone
+      const { data: recentLogs } = await supabaseAdmin
         .from('marketing_notification_logs')
         .select('id, sent_at')
         .eq('user_id', user.id)
@@ -164,7 +181,7 @@ Deno.serve(async (req) => {
         .limit(1);
 
       if (recentLogs && recentLogs.length > 0) {
-        console.log(`[send-marketing-notifications] ⏭️ Skipping ${user.id} - already received today at ${recentLogs[0].sent_at}`);
+        console.log(`[send-marketing-notifications] ⏭️ Skipping ${user.id} - already received today (tz: ${userTimezone})`);
         skippedCount++;
         continue;
       }
@@ -174,13 +191,10 @@ Deno.serve(async (req) => {
       let notificationType = 'engagement';
       let link = '/app-hub';
 
-      // FIX: Check both 'active' and 'ativo' for subscription status
       const isActive = user.status_plano === 'active' || user.status_plano === 'ativo';
       const lastSeen = user.last_seen_at ? new Date(user.last_seen_at) : null;
       const isInactive = lastSeen && lastSeen < sevenDaysAgo;
       const hasShows = (userShowCounts[user.id] || 0) > 0;
-      
-      console.log(`[send-marketing-notifications] 👤 User ${user.id}: status_plano=${user.status_plano}, isActive=${isActive}, hasShows=${hasShows}, isInactive=${isInactive}`);
 
       // Get messages already sent to this user
       const { data: sentMessages } = await supabaseAdmin
@@ -192,7 +206,6 @@ Deno.serve(async (req) => {
 
       // Priority logic for message selection
       if (!isActive) {
-        // User without subscription - send conversion messages
         notificationType = 'conversion';
         link = '/subscribe';
         
@@ -200,11 +213,9 @@ Deno.serve(async (req) => {
         if (availableMessages.length > 0) {
           selectedMessage = availableMessages[Math.floor(Math.random() * availableMessages.length)];
         } else {
-          // Reset - all messages sent, pick random
           selectedMessage = CONVERSION_MESSAGES[Math.floor(Math.random() * CONVERSION_MESSAGES.length)];
         }
       } else if (isInactive) {
-        // Active user but hasn't opened app in 7+ days
         notificationType = 'engagement';
         link = '/app-hub';
         
@@ -215,7 +226,6 @@ Deno.serve(async (req) => {
           selectedMessage = INACTIVE_USER_MESSAGES[Math.floor(Math.random() * INACTIVE_USER_MESSAGES.length)];
         }
       } else if (!hasShows) {
-        // Active user but never added a show
         notificationType = 'engagement';
         link = '/artist/shows';
         
@@ -226,7 +236,6 @@ Deno.serve(async (req) => {
           selectedMessage = NEW_USER_MESSAGES[Math.floor(Math.random() * NEW_USER_MESSAGES.length)];
         }
       } else {
-        // Regular active user with shows - send engagement tips
         notificationType = 'engagement';
         link = '/artist/dashboard';
         
@@ -244,7 +253,7 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      console.log(`[send-marketing-notifications] 📤 Sending to ${user.id}: ${selectedMessage.id} (${notificationType})`);
+      console.log(`[send-marketing-notifications] 📤 Sending to ${user.id} (tz: ${userTimezone}): ${selectedMessage.id}`);
 
       // Create in-app notification
       await supabaseAdmin.from('notifications').insert({
@@ -255,7 +264,7 @@ Deno.serve(async (req) => {
         created_by: user.id,
       });
 
-      // Send push notification directly via FCM (not via functions.invoke)
+      // Send push notification
       try {
         const pushResult = await sendPushToUser({
           supabaseAdmin,
@@ -265,7 +274,7 @@ Deno.serve(async (req) => {
           link: link,
           source: 'marketing',
         });
-        console.log(`[send-marketing-notifications] Push result for ${user.id}: sent=${pushResult.sent}, failed=${pushResult.failed}`);
+        console.log(`[send-marketing-notifications] Push for ${user.id}: sent=${pushResult.sent}, failed=${pushResult.failed}`);
       } catch (pushError) {
         console.error(`[send-marketing-notifications] ⚠️ Push failed for ${user.id}:`, pushError);
       }
@@ -280,14 +289,15 @@ Deno.serve(async (req) => {
       sentCount++;
     }
 
-    console.log(`[send-marketing-notifications] ✅ Completed: ${sentCount} sent, ${skippedCount} skipped`);
+    console.log(`[send-marketing-notifications] ✅ Completed: ${sentCount} sent, ${skippedCount} skipped, ${outsideWindowCount} outside window`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Marketing notifications sent: ${sentCount}, skipped: ${skippedCount}`,
+        message: `Marketing notifications sent: ${sentCount}, skipped: ${skippedCount}, outside_window: ${outsideWindowCount}`,
         sent: sentCount,
         skipped: skippedCount,
+        outsideWindow: outsideWindowCount,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

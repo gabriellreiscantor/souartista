@@ -593,6 +593,7 @@ export type Database = {
           plan_purchased_at: string | null
           plan_type: string | null
           status_plano: string | null
+          timezone: string | null
           updated_at: string
         }
         Insert: {
@@ -610,6 +611,7 @@ export type Database = {
           plan_purchased_at?: string | null
           plan_type?: string | null
           status_plano?: string | null
+          timezone?: string | null
           updated_at?: string
         }
         Update: {
@@ -627,6 +629,7 @@ export type Database = {
           plan_purchased_at?: string | null
           plan_type?: string | null
           status_plano?: string | null
+          timezone?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -999,6 +1002,7 @@ export type Database = {
           id: string
           last_used_at: string | null
           platform: string
+          timezone: string | null
           user_id: string
         }
         Insert: {
@@ -1009,6 +1013,7 @@ export type Database = {
           id?: string
           last_used_at?: string | null
           platform: string
+          timezone?: string | null
           user_id: string
         }
         Update: {
@@ -1019,6 +1024,7 @@ export type Database = {
           id?: string
           last_used_at?: string | null
           platform?: string
+          timezone?: string | null
           user_id?: string
         }
         Relationships: []

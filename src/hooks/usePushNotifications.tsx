@@ -94,6 +94,10 @@ export const usePushNotifications = () => {
         console.log('[PushNotifications] Device model:', deviceName.model);
         
         const deviceNameStr = `${deviceName.manufacturer || 'Unknown'} ${deviceName.model || 'Device'}`;
+        
+        // Get device timezone
+        const deviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Paulo';
+        console.log('[PushNotifications] Device timezone:', deviceTimezone);
         console.log('[PushNotifications] Device name string:', deviceNameStr);
         
         // Check if this token already exists for this user
@@ -149,6 +153,7 @@ export const usePushNotifications = () => {
             platform: platform,
             fcm_token: fcmToken,
             device_name: deviceNameStr,
+            timezone: deviceTimezone,
             last_used_at: new Date().toISOString()
           }, {
             onConflict: 'user_id,device_id'
@@ -161,6 +166,12 @@ export const usePushNotifications = () => {
           console.log('[PushNotifications] ✅ FCM token saved to database successfully!');
           console.log('[PushNotifications] Saved data:', JSON.stringify(data));
         }
+        
+        // Also update timezone in profile
+        await supabase
+          .from('profiles')
+          .update({ timezone: deviceTimezone })
+          .eq('id', user.id);
 
         // Listen for incoming notifications (foreground)
         await FirebaseMessaging.addListener('notificationReceived', (notification) => {
@@ -209,6 +220,7 @@ export const usePushNotifications = () => {
                 platform: platform,
                 fcm_token: event.token,
                 device_name: deviceNameStr,
+                timezone: deviceTimezone,
                 last_used_at: new Date().toISOString()
               }, {
                 onConflict: 'user_id,device_id'
