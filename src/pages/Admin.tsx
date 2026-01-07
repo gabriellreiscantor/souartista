@@ -20,6 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RouteSelector } from '@/components/RouteSelector';
 import { PushNotificationLogs } from '@/components/PushNotificationLogs';
 import { EscalatedTicketsTab } from '@/components/EscalatedTicketsTab';
+import { AnnouncementsTab } from '@/components/admin/AnnouncementsTab';
 import * as XLSX from 'xlsx';
 interface UserProfile {
   id: string;
@@ -3589,6 +3590,11 @@ export default function Admin() {
             {/* Tickets Escalados */}
             {currentTab === 'escalados' && (
               <EscalatedTicketsTab />
+            )}
+
+            {/* Avisos Globais */}
+            {currentTab === 'avisos' && (
+              <AnnouncementsTab />
             )}
 
             {/* Atualizações */}
