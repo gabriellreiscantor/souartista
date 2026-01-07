@@ -61,7 +61,7 @@ export function PaymentHistory({ subscription_id, paymentMethod, subscriptionSta
 
   if (loading) {
     return (
-      <Card className="bg-white border border-gray-200 shadow-sm">
+      <Card className="bg-white border border-black shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg text-gray-900">Histórico de Pagamentos</CardTitle>
         </CardHeader>
@@ -84,7 +84,7 @@ export function PaymentHistory({ subscription_id, paymentMethod, subscriptionSta
     };
 
     return (
-      <Card className="bg-white border border-gray-200 shadow-sm">
+      <Card className="bg-white border border-black shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg text-gray-900">Histórico de Pagamentos</CardTitle>
         </CardHeader>
@@ -98,7 +98,7 @@ export function PaymentHistory({ subscription_id, paymentMethod, subscriptionSta
   }
 
   return (
-    <Card className="bg-white border border-gray-200 shadow-sm">
+    <Card className="bg-white border border-black shadow-sm">
       <CardHeader>
         <CardTitle className="text-lg text-gray-900">Histórico de Pagamentos</CardTitle>
       </CardHeader>
