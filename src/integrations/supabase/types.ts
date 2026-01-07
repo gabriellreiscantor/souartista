@@ -584,6 +584,7 @@ export type Database = {
           created_at: string
           email: string
           fcm_token: string | null
+          gender: string | null
           id: string
           is_verified: boolean | null
           last_seen_at: string | null
@@ -602,6 +603,7 @@ export type Database = {
           created_at?: string
           email: string
           fcm_token?: string | null
+          gender?: string | null
           id: string
           is_verified?: boolean | null
           last_seen_at?: string | null
@@ -620,6 +622,7 @@ export type Database = {
           created_at?: string
           email?: string
           fcm_token?: string | null
+          gender?: string | null
           id?: string
           is_verified?: boolean | null
           last_seen_at?: string | null
