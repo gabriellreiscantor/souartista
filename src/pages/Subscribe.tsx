@@ -834,7 +834,7 @@ const Subscribe = () => {
             </div>
             <DialogTitle className="text-center text-2xl text-primary">Pagamento Validado!</DialogTitle>
             <DialogDescription className="text-center space-y-3 pt-4">
-              <p className="text-base">
+              <p className="text-base text-gray-900 font-medium">
                 Seu cartão foi validado com sucesso! Você está no período de teste de 7 dias.
               </p>
               {nextChargeDate && (
@@ -849,7 +849,7 @@ const Subscribe = () => {
                   </p>
                 </div>
               )}
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-gray-700">
                 Cancele a qualquer momento durante o período de teste sem custos.
               </p>
             </DialogDescription>
