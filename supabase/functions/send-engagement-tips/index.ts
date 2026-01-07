@@ -1,10 +1,13 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { sendPushToUser } from '../_shared/fcm-sender.ts';
+import { isWithinPushWindow } from '../_shared/timezone-utils.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const DEFAULT_TIMEZONE = 'America/Sao_Paulo';
 
 // Lista de 15 dicas de engajamento
 const ENGAGEMENT_TIPS = [
@@ -103,7 +106,6 @@ const ENGAGEMENT_TIPS = [
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -113,12 +115,12 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('🎯 Starting engagement tips job...');
+    console.log('🎯 Starting timezone-aware engagement tips job...');
 
-    // Buscar usuários ativos (com plano ativo)
+    // Fetch active users with timezone
     const { data: activeUsers, error: usersError } = await supabase
       .from('profiles')
-      .select('id, name, status_plano')
+      .select('id, name, status_plano, timezone')
       .eq('status_plano', 'active');
 
     if (usersError) {
@@ -128,12 +130,36 @@ Deno.serve(async (req) => {
 
     console.log(`📋 Found ${activeUsers?.length || 0} active users`);
 
+    // Get device timezones for more accuracy
+    const { data: devices } = await supabase
+      .from('user_devices')
+      .select('user_id, timezone')
+      .not('fcm_token', 'is', null);
+
+    const deviceTimezones: Record<string, string> = {};
+    for (const device of devices || []) {
+      if (device.timezone) {
+        deviceTimezones[device.user_id] = device.timezone;
+      }
+    }
+
     let tipsSent = 0;
     let usersSkipped = 0;
+    let outsideWindowCount = 0;
 
     for (const user of activeUsers || []) {
       try {
-        // Verificar se o usuário recebeu alguma dica nos últimos 3 dias
+        // Get user's timezone (prefer device, fallback to profile, then default)
+        const userTimezone = deviceTimezones[user.id] || user.timezone || DEFAULT_TIMEZONE;
+
+        // Check if user is within push notification window (8:00 - 21:00 local time)
+        if (!isWithinPushWindow(userTimezone)) {
+          console.log(`⏰ Skipping ${user.id} - outside push window (tz: ${userTimezone})`);
+          outsideWindowCount++;
+          continue;
+        }
+
+        // Check if user received a tip in the last 3 days
         const threeDaysAgo = new Date(Date.now() - THREE_DAYS_MS).toISOString();
         
         const { data: recentTip, error: recentError } = await supabase
@@ -148,14 +174,13 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Se recebeu dica recentemente, pular
         if (recentTip && recentTip.length > 0) {
           console.log(`⏭️ User ${user.id} received tip recently, skipping`);
           usersSkipped++;
           continue;
         }
 
-        // Buscar quais dicas o usuário já recebeu
+        // Get tips already received by user
         const { data: receivedTips, error: receivedError } = await supabase
           .from('engagement_tip_logs')
           .select('tip_id')
@@ -167,11 +192,9 @@ Deno.serve(async (req) => {
         }
 
         const receivedTipIds = (receivedTips || []).map(t => t.tip_id);
-        
-        // Filtrar dicas não recebidas
         let availableTips = ENGAGEMENT_TIPS.filter(tip => !receivedTipIds.includes(tip.id));
 
-        // Se todas foram recebidas, limpar o log e reiniciar o ciclo
+        // If all tips received, reset cycle
         if (availableTips.length === 0) {
           console.log(`🔄 User ${user.id} received all tips, resetting cycle`);
           
@@ -183,13 +206,13 @@ Deno.serve(async (req) => {
           availableTips = ENGAGEMENT_TIPS;
         }
 
-        // Escolher dica aleatória
+        // Select random tip
         const randomIndex = Math.floor(Math.random() * availableTips.length);
         const selectedTip = availableTips[randomIndex];
 
-        console.log(`📨 Sending tip "${selectedTip.id}" to user ${user.id}`);
+        console.log(`📨 Sending tip "${selectedTip.id}" to ${user.id} (tz: ${userTimezone})`);
 
-        // Criar notificação no banco
+        // Create in-app notification
         const { error: notifError } = await supabase
           .from('notifications')
           .insert({
@@ -204,7 +227,7 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Enviar push notification diretamente via FCM (não via functions.invoke)
+        // Send push notification
         try {
           const pushResult = await sendPushToUser({
             supabaseAdmin: supabase,
@@ -214,13 +237,12 @@ Deno.serve(async (req) => {
             link: selectedTip.link,
             source: 'engagement',
           });
-          console.log(`📱 Push result for ${user.id}: sent=${pushResult.sent}, failed=${pushResult.failed}`);
+          console.log(`📱 Push for ${user.id}: sent=${pushResult.sent}, failed=${pushResult.failed}`);
         } catch (pushError) {
           console.warn(`⚠️ Push notification failed for user ${user.id}:`, pushError);
-          // Continua mesmo se push falhar
         }
 
-        // Registrar no log
+        // Log the tip
         const { error: logError } = await supabase
           .from('engagement_tip_logs')
           .insert({
@@ -238,13 +260,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`✅ Engagement tips job completed: ${tipsSent} tips sent, ${usersSkipped} users skipped`);
+    console.log(`✅ Engagement tips completed: ${tipsSent} sent, ${usersSkipped} skipped, ${outsideWindowCount} outside window`);
 
     return new Response(
       JSON.stringify({
         success: true,
         tipsSent,
         usersSkipped,
+        outsideWindow: outsideWindowCount,
         totalUsers: activeUsers?.length || 0
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
