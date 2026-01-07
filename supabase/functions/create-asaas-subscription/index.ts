@@ -281,9 +281,10 @@ serve(async (req) => {
       nextDueDateToSave = subscriptionData.nextDueDate;
     }
 
-    const { error: insertError } = await supabase
+    // Use upsert to handle existing subscriptions (user may be renewing)
+    const { error: upsertError } = await supabase
       .from('subscriptions')
-      .insert({
+      .upsert({
         user_id: user.id,
         asaas_customer_id: customerId,
         asaas_subscription_id: subscriptionData.id,
@@ -291,13 +292,19 @@ serve(async (req) => {
         status: billingType === 'CREDIT_CARD' ? 'active' : 'pending',
         amount,
         payment_method: billingType,
+        payment_platform: 'asaas',
         next_due_date: nextDueDateToSave,
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'user_id',
       });
 
-    if (insertError) {
-      console.error('Database insert error:', insertError);
+    if (upsertError) {
+      console.error('Database upsert error:', upsertError);
       throw new Error('Failed to save subscription');
     }
+    
+    console.log('✅ Subscription saved/updated in database');
 
     // For credit card, grant immediate access (trial period)
     if (billingType === 'CREDIT_CARD') {
