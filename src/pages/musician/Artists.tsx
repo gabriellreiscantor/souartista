@@ -155,20 +155,20 @@ const MusicianArtists = () => {
                   <p className="text-gray-500 font-medium">Carregando artistas...</p>
                 </div>
               ) : artists.length === 0 ? (
-                <Card className="overflow-hidden border-0 shadow-lg animate-fade-in">
-                  <div className="bg-gradient-to-br from-purple-600 via-purple-500 to-purple-700 p-8 text-center text-white">
-                    <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full mx-auto mb-6 flex items-center justify-center">
+                <Card className="overflow-hidden border-0 shadow-lg animate-fade-in bg-white">
+                  <div className="p-8 text-center">
+                    <div className="w-20 h-20 bg-purple-600 rounded-full mx-auto mb-6 flex items-center justify-center">
                       <Mic2 className="w-10 h-10 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold mb-3">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">
                       Nenhum artista encontrado
                     </h3>
-                    <p className="text-purple-100 mb-6 max-w-md mx-auto">
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
                       Você ainda não trabalhou com nenhum artista. Cadastre um show para começar!
                     </p>
                     <Button 
                       onClick={() => navigate('/musician/shows')}
-                      className="bg-white text-purple-600 hover:bg-purple-50 font-semibold"
+                      className="bg-purple-600 text-white hover:bg-purple-700 font-semibold"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       Cadastrar Show
