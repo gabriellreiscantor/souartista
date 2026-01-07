@@ -61,9 +61,9 @@ export function PaymentHistory({ subscription_id, paymentMethod, subscriptionSta
 
   if (loading) {
     return (
-      <Card className="bg-white">
+      <Card className="bg-card border border-border shadow-sm">
         <CardHeader>
-          <CardTitle className="text-lg text-gray-900">Histórico de Pagamentos</CardTitle>
+          <CardTitle className="text-lg text-foreground">Histórico de Pagamentos</CardTitle>
         </CardHeader>
         <CardContent className="flex justify-center py-8">
           <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -84,12 +84,12 @@ export function PaymentHistory({ subscription_id, paymentMethod, subscriptionSta
     };
 
     return (
-      <Card className="bg-white">
+      <Card className="bg-card border border-border shadow-sm">
         <CardHeader>
-          <CardTitle className="text-lg text-gray-900">Histórico de Pagamentos</CardTitle>
+          <CardTitle className="text-lg text-foreground">Histórico de Pagamentos</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-600 text-center py-4">
+          <p className="text-muted-foreground text-center py-4">
             {getEmptyMessage()}
           </p>
         </CardContent>
@@ -98,21 +98,21 @@ export function PaymentHistory({ subscription_id, paymentMethod, subscriptionSta
   }
 
   return (
-    <Card className="bg-white">
+    <Card className="bg-card border border-border shadow-sm">
       <CardHeader>
-        <CardTitle className="text-lg text-gray-900">Histórico de Pagamentos</CardTitle>
+        <CardTitle className="text-lg text-foreground">Histórico de Pagamentos</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
           {payments.map((payment) => (
             <div
               key={payment.id}
-              className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-2"
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-border rounded-lg gap-2 bg-background/50"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   {getStatusBadge(payment.status)}
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium text-foreground">
                     R$ {Number(payment.amount).toFixed(2)}
                   </span>
                 </div>
