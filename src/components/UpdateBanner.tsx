@@ -1,6 +1,14 @@
-import { X, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppUpdate } from '@/hooks/useAppUpdate';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export const UpdateBanner = () => {
   const { 
@@ -12,43 +20,55 @@ export const UpdateBanner = () => {
     isAndroid
   } = useAppUpdate();
 
+  // Não mostrar em web
+  if (!isIOS && !isAndroid) return null;
   if (!updateAvailable) return null;
 
-  const storeName = isIOS ? 'App Store' : isAndroid ? 'Play Store' : 'loja';
+  const storeName = isIOS ? 'App Store' : 'Play Store';
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[100] bg-primary text-primary-foreground px-4 py-3 shadow-lg animate-in slide-in-from-top duration-300">
-      <div className="flex items-center justify-between max-w-lg mx-auto gap-3">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <Download className="h-5 w-5 flex-shrink-0" />
-          <div className="min-w-0">
-            <p className="font-medium text-sm truncate">
-              Nova versão disponível{availableVersion ? ` (${availableVersion})` : ''}!
-            </p>
-            <p className="text-xs opacity-90">
-              Atualize para a melhor experiência
-            </p>
+    <Dialog open={updateAvailable} onOpenChange={(open) => !open && dismissUpdate()}>
+      <DialogContent className="sm:max-w-md bg-white border border-gray-200 shadow-xl">
+        <DialogHeader className="text-center sm:text-center pt-2">
+          <div className="flex justify-center mb-5">
+            <div className="p-4 rounded-full bg-primary shadow-lg">
+              <Download className="h-8 w-8 text-white" />
+            </div>
           </div>
-        </div>
-        
-        <div className="flex items-center gap-2 flex-shrink-0">
+          
+          <DialogTitle className="text-2xl font-bold text-center text-gray-900">
+            Nova versão disponível!
+          </DialogTitle>
+          
+          <DialogDescription className="text-center pt-3 text-base text-gray-600 leading-relaxed">
+            {availableVersion ? (
+              <>Versão <span className="font-semibold">{availableVersion}</span> disponível na {storeName}</>
+            ) : (
+              <>Uma nova versão está disponível na {storeName}</>
+            )}
+          </DialogDescription>
+          
+          <p className="text-center text-sm text-gray-500 mt-2">
+            Atualize para ter a melhor experiência
+          </p>
+        </DialogHeader>
+
+        <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-4">
           <Button
-            size="sm"
-            variant="secondary"
-            className="text-xs px-3 h-8"
+            variant="outline"
+            onClick={dismissUpdate}
+            className="w-full sm:w-auto text-gray-600 border-gray-300 hover:bg-gray-50"
+          >
+            Depois
+          </Button>
+          <Button 
             onClick={openStore}
+            className="w-full sm:w-auto min-w-[140px] h-12 text-base font-semibold bg-primary hover:bg-primary/90 text-white shadow-md hover:shadow-lg transition-all duration-200"
           >
             Atualizar
           </Button>
-          <button
-            onClick={dismissUpdate}
-            className="p-1 hover:bg-primary-foreground/10 rounded-full transition-colors"
-            aria-label="Fechar"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
