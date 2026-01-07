@@ -143,7 +143,7 @@ export const LgpdRequestModal = ({ open, onOpenChange }: LgpdRequestModalProps) 
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting} className="hover:bg-red-50 hover:text-red-600 hover:border-red-300">
+          <Button onClick={() => onOpenChange(false)} disabled={isSubmitting} className="bg-red-500 text-white border-red-500 hover:bg-red-500 hover:text-white">
             Cancelar
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting || !requestType}>
