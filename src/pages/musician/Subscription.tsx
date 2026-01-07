@@ -577,6 +577,37 @@ const MusicianSubscription = () => {
                     </Card>
                   )}
 
+                  {/* Histórico de Pagamentos */}
+                  {subscription && (
+                    <PaymentHistory 
+                      subscription_id={subscription.id}
+                      paymentMethod={subscription.payment_method}
+                      subscriptionStatus={subscription.status}
+                    />
+                  )}
+
+                  {/* Card de Ajuda */}
+                  <Card className="bg-white">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-gray-900">
+                        <HelpCircle className="h-5 w-5 text-primary" />
+                        Precisa de ajuda?
+                      </CardTitle>
+                      <CardDescription className="text-gray-600">
+                        Nossa equipe está pronta para te ajudar com qualquer dúvida sobre assinatura.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button 
+                        onClick={() => navigate('/musician/support')}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        Falar com Suporte
+                      </Button>
+                    </CardContent>
+                  </Card>
+
                   {/* Cancel Subscription Card - Only show if not cancelled */}
                   {subscription.status !== 'cancelled' && (
                     <Card className="bg-white">
@@ -623,37 +654,6 @@ const MusicianSubscription = () => {
                       </CardContent>
                     </Card>
                   )}
-
-                  {/* Histórico de Pagamentos */}
-                  {subscription && (
-                    <PaymentHistory 
-                      subscription_id={subscription.id}
-                      paymentMethod={subscription.payment_method}
-                      subscriptionStatus={subscription.status}
-                    />
-                  )}
-
-                  {/* Card de Ajuda */}
-                  <Card className="bg-white">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-gray-900">
-                        <HelpCircle className="h-5 w-5 text-primary" />
-                        Precisa de ajuda?
-                      </CardTitle>
-                      <CardDescription className="text-gray-600">
-                        Nossa equipe está pronta para te ajudar com qualquer dúvida sobre assinatura.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Button 
-                        onClick={() => navigate('/musician/support')}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        Falar com Suporte
-                      </Button>
-                    </CardContent>
-                  </Card>
                 </>
               )}
             </div>
