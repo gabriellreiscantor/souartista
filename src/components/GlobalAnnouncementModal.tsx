@@ -17,31 +17,23 @@ interface Announcement {
 const typeConfig = {
   info: {
     icon: Info,
-    gradientFrom: "from-blue-500",
-    gradientTo: "to-cyan-400",
-    bgGlow: "bg-blue-500/20",
-    shadowColor: "shadow-blue-500/25",
+    bgColor: "bg-primary/10",
+    iconBg: "bg-primary",
   },
   warning: {
     icon: AlertTriangle,
-    gradientFrom: "from-orange-500",
-    gradientTo: "to-amber-400",
-    bgGlow: "bg-orange-500/20",
-    shadowColor: "shadow-orange-500/25",
+    bgColor: "bg-orange-100",
+    iconBg: "bg-orange-500",
   },
   success: {
     icon: CheckCircle,
-    gradientFrom: "from-emerald-500",
-    gradientTo: "to-green-400",
-    bgGlow: "bg-emerald-500/20",
-    shadowColor: "shadow-emerald-500/25",
+    bgColor: "bg-emerald-100",
+    iconBg: "bg-emerald-500",
   },
   update: {
     icon: Sparkles,
-    gradientFrom: "from-violet-500",
-    gradientTo: "to-purple-400",
-    bgGlow: "bg-violet-500/20",
-    shadowColor: "shadow-violet-500/25",
+    bgColor: "bg-primary/10",
+    iconBg: "bg-primary",
   },
 };
 
@@ -122,28 +114,19 @@ export const GlobalAnnouncementModal = () => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-md overflow-hidden border-0 shadow-2xl">
-        {/* Background glow effect */}
-        <div className={`absolute inset-0 ${config.bgGlow} blur-3xl opacity-50 -z-10`} />
-        
+      <DialogContent className="sm:max-w-md bg-white border border-gray-200 shadow-xl">
         <DialogHeader className="text-center sm:text-center pt-2">
           <div className="flex justify-center mb-5">
-            <div className="relative">
-              {/* Animated glow ring */}
-              <div className={`absolute inset-0 bg-gradient-to-r ${config.gradientFrom} ${config.gradientTo} rounded-full blur-lg opacity-60 animate-pulse`} />
-              
-              {/* Icon container */}
-              <div className={`relative p-5 rounded-full bg-gradient-to-br ${config.gradientFrom} ${config.gradientTo} shadow-xl ${config.shadowColor}`}>
-                <IconComponent className="h-8 w-8 text-white drop-shadow-md" />
-              </div>
+            <div className={`p-4 rounded-full ${config.iconBg} shadow-lg`}>
+              <IconComponent className="h-8 w-8 text-white" />
             </div>
           </div>
           
-          <DialogTitle className="text-2xl font-bold text-center bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+          <DialogTitle className="text-2xl font-bold text-center text-gray-900">
             {announcement.title}
           </DialogTitle>
           
-          <DialogDescription className="text-center pt-3 text-base text-muted-foreground whitespace-pre-wrap leading-relaxed">
+          <DialogDescription className="text-center pt-3 text-base text-gray-600 whitespace-pre-wrap leading-relaxed">
             {announcement.message}
           </DialogDescription>
         </DialogHeader>
@@ -152,7 +135,7 @@ export const GlobalAnnouncementModal = () => {
           <Button 
             onClick={handleDismiss} 
             disabled={loading}
-            className={`w-full sm:w-auto min-w-[140px] h-12 text-base font-semibold bg-gradient-to-r ${config.gradientFrom} ${config.gradientTo} hover:opacity-90 transition-all duration-300 shadow-lg ${config.shadowColor} hover:shadow-xl hover:scale-[1.02]`}
+            className="w-full sm:w-auto min-w-[140px] h-12 text-base font-semibold bg-primary hover:bg-primary/90 text-white shadow-md hover:shadow-lg transition-all duration-200"
           >
             {loading ? "..." : "Entendi"}
           </Button>
