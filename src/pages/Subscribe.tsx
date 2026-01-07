@@ -395,8 +395,13 @@ const Subscribe = () => {
             variant="ghost"
             size="icon"
             onClick={async () => {
-              await supabase.auth.signOut();
-              navigate('/');
+              try {
+                await supabase.auth.signOut();
+              } catch (error) {
+                console.error('Erro ao fazer logout:', error);
+              } finally {
+                navigate('/');
+              }
             }}
             className="hover:bg-primary/10"
           >
