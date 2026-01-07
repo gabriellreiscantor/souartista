@@ -111,14 +111,14 @@ export const LgpdRequestModal = ({ open, onOpenChange }: LgpdRequestModalProps) 
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="request-type">Tipo de Solicitação *</Label>
+            <Label htmlFor="request-type" className="text-gray-700">Tipo de Solicitação *</Label>
             <Select value={requestType} onValueChange={setRequestType}>
-              <SelectTrigger id="request-type">
+              <SelectTrigger id="request-type" className="bg-white border-gray-300 text-gray-900">
                 <SelectValue placeholder="Selecione o tipo de solicitação" />
               </SelectTrigger>
-              <SelectContent className="bg-white">
+              <SelectContent className="bg-white border-gray-200">
                 {requestTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
+                  <SelectItem key={type.value} value={type.value} className="text-gray-900">
                     <div>
                       <span className="font-medium">{type.label}</span>
                       <span className="text-gray-500 ml-2 text-sm">- {type.description}</span>
@@ -130,9 +130,10 @@ export const LgpdRequestModal = ({ open, onOpenChange }: LgpdRequestModalProps) 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Descrição (opcional)</Label>
+            <Label htmlFor="description" className="text-gray-700">Descrição (opcional)</Label>
             <Textarea
               id="description"
+              className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
               placeholder="Forneça detalhes adicionais sobre sua solicitação..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
