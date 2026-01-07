@@ -544,15 +544,6 @@ const Subscribe = () => {
 
           {/* Annual Plan */}
           <Card className={`glass-card rounded-2xl p-6 transition-all relative ${billingCycle === 'annual' ? 'border-2 border-primary shadow-lg opacity-100' : 'border border-border/30 opacity-50'}`}>
-            {/* Badge 7 dias grátis - apenas iOS ou Cartão de Crédito */}
-            {((isIOS && isNative) || paymentMethod === 'CREDIT_CARD') && (
-              <div className="absolute -top-2 -right-2 z-10">
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-green-500 text-white text-[10px] font-bold shadow-md">
-                  7 dias grátis
-                </span>
-              </div>
-            )}
-            
             {/* Badge Mais Popular */}
             {billingCycle === 'annual' && <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
                 <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium shadow-md">
