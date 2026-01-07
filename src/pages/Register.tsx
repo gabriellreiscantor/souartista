@@ -91,6 +91,7 @@ const Register = () => {
     phone: '+55 ',
     password: '',
     confirmPassword: '',
+    gender: '' as 'male' | 'female' | '',
   });
 
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -214,6 +215,14 @@ const Register = () => {
         setPhoneError('Por favor, preencha o WhatsApp completo');
         hasError = true;
       }
+
+      if (!formData.gender) {
+        toast({
+          title: 'Selecione seu sexo',
+          variant: 'destructive',
+        });
+        hasError = true;
+      }
       
       if (hasError) return;
     }
@@ -315,6 +324,7 @@ const Register = () => {
         cpf: cleanCpf,
         birth_date: formData.birthDate,
         phone: formData.phone,
+        gender: formData.gender as 'male' | 'female',
       });
 
       if (error) {
@@ -693,6 +703,34 @@ const Register = () => {
                   {phoneError && (
                     <p className="text-red-500 text-xs mt-1">{phoneError}</p>
                   )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white">Sexo</Label>
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, gender: 'male' })}
+                      className={`flex-1 h-11 rounded-md border-2 text-sm font-medium transition-all ${
+                        formData.gender === 'male'
+                          ? 'bg-[#B96FFF] border-[#B96FFF] text-white'
+                          : 'bg-[#1B0D29] border-[#B96FFF]/50 text-[#C8BAD4] hover:border-[#B96FFF]'
+                      }`}
+                    >
+                      Masculino
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, gender: 'female' })}
+                      className={`flex-1 h-11 rounded-md border-2 text-sm font-medium transition-all ${
+                        formData.gender === 'female'
+                          ? 'bg-[#B96FFF] border-[#B96FFF] text-white'
+                          : 'bg-[#1B0D29] border-[#B96FFF]/50 text-[#C8BAD4] hover:border-[#B96FFF]'
+                      }`}
+                    >
+                      Feminino
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex gap-2">

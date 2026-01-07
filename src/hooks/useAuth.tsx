@@ -14,6 +14,7 @@ interface UserData {
   plan_type?: 'monthly' | 'annual' | null;
   plan_purchased_at?: string;
   is_verified?: boolean;
+  gender?: 'male' | 'female' | null;
 }
 
 interface UserRole {
@@ -233,6 +234,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             photo_url: userData.photo_url,
             status_plano: userData.status_plano || 'inactive',
             is_verified: false,
+            gender: userData.gender,
           },
         },
       });

@@ -33,6 +33,7 @@ const MusicianProfile = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
+  const [gender, setGender] = useState<'male' | 'female' | ''>('');
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
@@ -41,6 +42,7 @@ const MusicianProfile = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [imageEditorOpen, setImageEditorOpen] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [showGenderField, setShowGenderField] = useState(false);
 
   const handlePhotoSelected = (file: File) => {
     // Validate file size (max 5MB)
@@ -65,6 +67,9 @@ const MusicianProfile = () => {
       setEmail(userData.email || '');
       setPhone(userData.phone || '');
       setPhotoUrl(userData.photo_url || '');
+      // Mostrar campo de gênero apenas se o usuário não tiver gênero definido
+      setShowGenderField(!userData.gender);
+      setGender((userData.gender as 'male' | 'female') || '');
     }
   }, [userData]);
 
@@ -156,16 +161,29 @@ const MusicianProfile = () => {
     try {
       setSaving(true);
 
+      const updateData: Record<string, string> = {
+        name: name.trim(),
+        phone: phone.trim()
+      };
+      
+      // Incluir gênero apenas se o usuário selecionou um
+      if (gender) {
+        updateData.gender = gender;
+      }
+
       const { error } = await supabase
         .from('profiles')
-        .update({
-          name: name.trim(),
-          phone: phone.trim()
-        })
+        .update(updateData)
         .eq('id', user?.id);
 
       if (error) throw error;
 
+      // Se salvou o gênero, esconder o campo
+      if (gender) {
+        setShowGenderField(false);
+      }
+
+      await refetchUserData();
       toast.success('Alterações salvas com sucesso!');
     } catch (error) {
       console.error('Error saving changes:', error);
@@ -347,6 +365,42 @@ const MusicianProfile = () => {
                     className="bg-white text-black border-gray-300"
                   />
                 </div>
+
+                {showGenderField && (
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2 text-black">
+                      <User className="w-4 h-4" />
+                      Sexo
+                    </Label>
+                    <div className="flex gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setGender('male')}
+                        className={`flex-1 h-10 rounded-md border-2 text-sm font-medium transition-all ${
+                          gender === 'male'
+                            ? 'bg-primary border-primary text-white'
+                            : 'bg-white border-gray-300 text-gray-700 hover:border-primary'
+                        }`}
+                      >
+                        Masculino
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setGender('female')}
+                        className={`flex-1 h-10 rounded-md border-2 text-sm font-medium transition-all ${
+                          gender === 'female'
+                            ? 'bg-primary border-primary text-white'
+                            : 'bg-white border-gray-300 text-gray-700 hover:border-primary'
+                        }`}
+                      >
+                        Feminino
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Selecione seu sexo para personalizarmos sua experiência
+                    </p>
+                  </div>
+                )}
 
                 <Button 
                   onClick={handleSaveChanges}
