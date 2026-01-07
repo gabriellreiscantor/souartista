@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ArtistSidebar } from '@/components/ArtistSidebar';
 import { UserMenu } from '@/components/UserMenu';
@@ -8,10 +8,12 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { useNavigate } from 'react-router-dom';
+import { LgpdRequestModal } from '@/components/LgpdRequestModal';
 
 const ArtistPrivacy = () => {
   const { userData } = useAuth();
   const navigate = useNavigate();
+  const [showLgpdModal, setShowLgpdModal] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -106,6 +108,15 @@ const ArtistPrivacy = () => {
                 <li className="text-gray-900">Solicitar a exclusão de seus dados</li>
                 <li className="text-gray-900">Retirar seu consentimento a qualquer momento</li>
               </ul>
+              <p className="text-gray-900 mt-2">
+                Para exercer seus direitos,{' '}
+                <button 
+                  onClick={() => setShowLgpdModal(true)}
+                  className="text-primary hover:underline font-medium"
+                >
+                  clique aqui para fazer uma solicitação LGPD
+                </button>.
+              </p>
 
               <h2 className="text-gray-900">6. Cookies e Tecnologias Semelhantes</h2>
               <p className="text-gray-900">
@@ -134,6 +145,8 @@ const ArtistPrivacy = () => {
 
           <MobileBottomNav role="artist" />
         </div>
+
+        <LgpdRequestModal open={showLgpdModal} onOpenChange={setShowLgpdModal} />
       </div>
     </SidebarProvider>
   );

@@ -9,7 +9,7 @@ import { useReportVisibility } from '@/hooks/useReportVisibility';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { FileText, Shield, MessageCircle, Rocket, BookOpen, Trash2, UserCheck } from 'lucide-react';
+import { FileText, Shield, MessageCircle, Rocket, BookOpen, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -232,17 +232,6 @@ const ArtistSettings = () => {
                     <div>
                       <h4 className="font-semibold text-gray-900">Tutorial</h4>
                       <p className="text-sm text-gray-600">Aprenda a usar os recursos.</p>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => setShowLgpdModal(true)}
-                    className="w-full flex items-center gap-4 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left border border-purple-200"
-                  >
-                    <UserCheck className="w-5 h-5 text-purple-600" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900">Direitos LGPD</h4>
-                      <p className="text-sm text-gray-600">Solicite acesso, correção ou exclusão dos seus dados.</p>
                     </div>
                   </button>
                 </div>
