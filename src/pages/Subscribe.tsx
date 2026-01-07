@@ -602,7 +602,11 @@ const Subscribe = () => {
         </div>
 
         <p className="text-center text-sm text-muted-foreground">
-          {paymentMethod === 'CREDIT_CARD' ? 'Todos os planos com cartão incluem 7 dias de teste grátis. Cancele quando quiser.' : 'Com PIX, o acesso é liberado imediatamente após o pagamento. Cancele quando quiser.'}
+          {isIOS && isNative 
+            ? 'Todos os planos incluem 7 dias de teste grátis. Cancele quando quiser.' 
+            : paymentMethod === 'CREDIT_CARD' 
+              ? 'Todos os planos com cartão incluem 7 dias de teste grátis. Cancele quando quiser.' 
+              : 'Com PIX, o acesso é liberado imediatamente após o pagamento. Cancele quando quiser.'}
         </p>
 
         {/* Restore Purchases Button - iOS only */}
