@@ -1,10 +1,13 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { sendPushToUser } from '../_shared/fcm-sender.ts';
+import { isWithinPushWindow } from '../_shared/timezone-utils.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const DEFAULT_TIMEZONE = 'America/Sao_Paulo';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -22,9 +25,23 @@ Deno.serve(async (req) => {
     // Buscar assinaturas canceladas que ainda não expiraram
     const { data: subscriptions, error: fetchError } = await supabaseAdmin
       .from('subscriptions')
-      .select('*, profiles!inner(id, name, email)')
+      .select('*, profiles!inner(id, name, email, timezone)')
       .eq('status', 'cancelled')
       .gt('next_due_date', new Date().toISOString());
+
+    // Buscar timezones dos dispositivos dos usuários
+    const { data: userDevices } = await supabaseAdmin
+      .from('user_devices')
+      .select('user_id, timezone')
+      .not('fcm_token', 'is', null);
+
+    // Criar mapa de timezones (prioridade: device > profile > default)
+    const deviceTimezones: Record<string, string> = {};
+    for (const device of userDevices || []) {
+      if (device.timezone && !deviceTimezones[device.user_id]) {
+        deviceTimezones[device.user_id] = device.timezone;
+      }
+    }
 
     if (fetchError) {
       console.error('Error fetching subscriptions:', fetchError);
@@ -38,6 +55,18 @@ Deno.serve(async (req) => {
 
     for (const subscription of subscriptions || []) {
       try {
+        // Verificar timezone do usuário (prioridade: device > profile > default)
+        const userTimezone = 
+          deviceTimezones[subscription.user_id] || 
+          subscription.profiles?.timezone || 
+          DEFAULT_TIMEZONE;
+
+        // Verificar se está dentro da janela de push (8h-21h no horário local)
+        if (!isWithinPushWindow(userTimezone)) {
+          console.log(`⏰ Skipping ${subscription.user_id} - outside push window in ${userTimezone}`);
+          continue;
+        }
+
         const now = new Date();
         const nextDueDate = new Date(subscription.next_due_date);
         const daysUntilExpiration = Math.ceil((nextDueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
