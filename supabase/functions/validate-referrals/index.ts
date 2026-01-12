@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendPushToUser } from "../_shared/fcm-sender.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -81,6 +82,29 @@ serve(async (req) => {
         } else {
           console.log(`✅ Referral ${referral.id} validated successfully`);
           referrersToCheck.add(referral.referrer_id);
+          
+          // Contar progresso atual e enviar notificação de progresso
+          const { count: currentValidated } = await supabase
+            .from('referrals')
+            .select('*', { count: 'exact', head: true })
+            .eq('referrer_id', referral.referrer_id)
+            .eq('status', 'validated');
+
+          // Enviar push de progresso (se ainda não atingiu 5)
+          if (currentValidated && currentValidated < 5) {
+            const remaining = 5 - currentValidated;
+            await sendPushToUser({
+              supabaseAdmin: supabase,
+              userId: referral.referrer_id,
+              title: '✅ Indicação validada!',
+              body: remaining === 1
+                ? 'Falta apenas 1 indicação para ganhar 1 mês grátis!'
+                : `Faltam ${remaining} indicações para ganhar 1 mês grátis!`,
+              link: '/artist/subscription',
+              source: 'referral' as any,
+            });
+            console.log(`📱 Progress notification sent to ${referral.referrer_id} (${currentValidated}/5)`);
+          }
         }
       } else {
         // Marcar como cancelled (assinatura foi cancelada/expirou)
@@ -276,7 +300,7 @@ async function checkAndGrantReward(supabase: any, referrerId: string) {
   // Calcular número do ciclo para mensagem
   const cycleNumber = totalRewardedAfter / 5;
 
-  // Notificar o usuário
+  // Notificar o usuário (in-app)
   const { error: notifError } = await supabase
     .from('notifications')
     .insert({
@@ -290,6 +314,16 @@ async function checkAndGrantReward(supabase: any, referrerId: string) {
   if (notifError) {
     console.error(`❌ Error creating notification for ${referrerId}:`, notifError);
   }
+
+  // Enviar push notification de recompensa
+  await sendPushToUser({
+    supabaseAdmin: supabase,
+    userId: referrerId,
+    title: '🎁 Parabéns! Você ganhou 1 mês grátis!',
+    body: `Este é seu ${cycleNumber}º mês grátis por indicações! Seu próximo pagamento foi adiado em 30 dias.`,
+    link: '/artist/subscription',
+    source: 'referral' as any,
+  });
 
   console.log(`🎁 REWARD #${cycleNumber} GRANTED to ${referrerId}! Next due date extended by 30 days.`);
 }
