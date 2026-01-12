@@ -80,7 +80,7 @@ export function ReferralProgress() {
         {/* Botão de Compartilhar */}
         <Button 
           onClick={shareOnWhatsApp} 
-          className="w-full bg-green-600 hover:bg-green-700"
+          className="w-full bg-green-600 hover:bg-green-700 text-white"
         >
           <Share2 className="h-4 w-4 mr-2" />
           Compartilhar no WhatsApp
