@@ -411,6 +411,52 @@ const Register = () => {
       }
     }
 
+    // === SISTEMA DE INDICAÇÃO: Capturar referral code ===
+    const referralCode = localStorage.getItem('referral_code');
+    if (referralCode) {
+      try {
+        // Obter session para pegar o user_id
+        const { data: sessionData } = await supabase.auth.getSession();
+        const newUserId = sessionData?.session?.user?.id;
+
+        if (newUserId) {
+          // Buscar quem é o dono do código
+          const { data: codeData } = await supabase
+            .from('referral_codes')
+            .select('user_id')
+            .eq('code', referralCode.toUpperCase())
+            .maybeSingle();
+
+          // Validar: código existe e não é auto-indicação
+          if (codeData && codeData.user_id !== newUserId) {
+            // Criar referral pendente
+            const { error: refError } = await supabase
+              .from('referrals')
+              .insert({
+                referrer_id: codeData.user_id,
+                referred_id: newUserId,
+                status: 'pending',
+              });
+
+            if (refError) {
+              console.error('❌ Error creating referral:', refError);
+            } else {
+              console.log('✅ Referral created successfully for code:', referralCode);
+            }
+          } else if (codeData?.user_id === newUserId) {
+            console.warn('⚠️ Self-referral attempted and blocked');
+          } else {
+            console.warn('⚠️ Invalid referral code:', referralCode);
+          }
+        }
+      } catch (refError) {
+        console.error('❌ Error processing referral:', refError);
+      } finally {
+        // Sempre remover o código do localStorage após processar
+        localStorage.removeItem('referral_code');
+      }
+    }
+
     toast({
       title: 'Conta verificada!',
       description: 'Bem-vindo ao Sou Artista',

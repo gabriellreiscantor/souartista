@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, CreditCard, Calendar, DollarSign, AlertCircle, HelpCircle, ExternalLink, QrCode, Copy, Clock, CheckCircle2, RefreshCw } from 'lucide-react';
+import { ReferralProgress } from '@/components/ReferralProgress';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -280,6 +281,9 @@ const MusicianSubscription = () => {
 
           <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
             <div className="max-w-4xl mx-auto space-y-6">
+              {/* Card de Indicações */}
+              {!isDemo && <ReferralProgress />}
+              
               {/* Conta de Teste/Demo - Acesso total */}
               {isDemo ? (
                 <>

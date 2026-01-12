@@ -88,7 +88,6 @@ Deno.serve(async (req) => {
     // Process based on event type
     switch (eventType) {
       case 'INITIAL_PURCHASE':
-      case 'RENEWAL':
       case 'PRODUCT_CHANGE':
       case 'UNCANCELLATION':
         console.log(`✅ Processing ${eventType} - Activating subscription`);
@@ -160,6 +159,46 @@ Deno.serve(async (req) => {
         }
         break;
 
+      case 'RENEWAL':
+        console.log(`✅ Processing RENEWAL - Activating subscription and processing referral`);
+        
+        // Update subscription
+        const { data: renewalSub } = await supabaseClient
+          .from('subscriptions')
+          .select('id')
+          .eq('user_id', appUserId)
+          .maybeSingle();
+
+        if (renewalSub) {
+          await supabaseClient
+            .from('subscriptions')
+            .update({
+              status: 'active',
+              plan_type: planType,
+              amount: amount,
+              apple_product_id: productId,
+              next_due_date: nextDueDate,
+              payment_platform: 'apple',
+              payment_method: 'APPLE_IAP',
+              updated_at: new Date().toISOString(),
+            })
+            .eq('user_id', appUserId);
+        }
+
+        // Update profile
+        await supabaseClient
+          .from('profiles')
+          .update({
+            status_plano: 'ativo',
+            plan_type: planType,
+          })
+          .eq('id', appUserId);
+
+        // === SISTEMA DE INDICAÇÃO: Processar apenas em RENEWAL ===
+        // RENEWAL significa que o trial de 7 dias passou e o usuário PAGOU de verdade
+        await processAppleReferralOnRenewal(supabaseClient, appUserId, productId);
+        break;
+
       case 'CANCELLATION':
       case 'EXPIRATION':
         console.log(`⚠️ Processing ${eventType} - Deactivating subscription`);
@@ -190,6 +229,9 @@ Deno.serve(async (req) => {
         } else {
           console.log('✅ Profile deactivated');
         }
+
+        // === SISTEMA DE INDICAÇÃO: Invalidar referral pendente ===
+        await invalidateAppleReferralOnCancel(supabaseClient, appUserId);
         break;
 
       case 'BILLING_ISSUE':
@@ -253,3 +295,74 @@ Deno.serve(async (req) => {
     );
   }
 });
+
+// === SISTEMA DE INDICAÇÃO: Funções auxiliares ===
+
+/**
+ * Processa referral apenas em evento RENEWAL (após trial de 7 dias)
+ * ANTI-FRAUDE: Trial não conta - só pagamento real após renovação
+ */
+async function processAppleReferralOnRenewal(supabase: any, userId: string, productId: string) {
+  console.log('🔗 APPLE REFERRAL: Processing RENEWAL for user:', userId);
+
+  const { data: referral, error: refError } = await supabase
+    .from('referrals')
+    .select('*')
+    .eq('referred_id', userId)
+    .in('status', ['pending', 'paid'])
+    .maybeSingle();
+
+  if (refError) {
+    console.error('❌ APPLE REFERRAL: Error fetching referral:', refError);
+    return;
+  }
+
+  if (!referral) {
+    console.log('ℹ️ APPLE REFERRAL: No pending referral found for user');
+    return;
+  }
+
+  // Marcar como awaiting_validation (15 dias de quarentena)
+  const validationDeadline = new Date();
+  validationDeadline.setDate(validationDeadline.getDate() + 15);
+
+  const { error: updateError } = await supabase
+    .from('referrals')
+    .update({
+      status: 'awaiting_validation',
+      paid_at: new Date().toISOString(),
+      validation_deadline: validationDeadline.toISOString(),
+      payment_platform: 'apple',
+      first_payment_id: productId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', referral.id);
+
+  if (updateError) {
+    console.error('❌ APPLE REFERRAL: Error updating referral:', updateError);
+  } else {
+    console.log('✅ APPLE REFERRAL: Moved to awaiting_validation after RENEWAL');
+  }
+}
+
+/**
+ * Invalida referral quando assinatura Apple é cancelada/expirada
+ */
+async function invalidateAppleReferralOnCancel(supabase: any, userId: string) {
+  console.log('🔗 APPLE REFERRAL: Invalidating referral for user:', userId);
+
+  const { error } = await supabase
+    .from('referrals')
+    .update({ 
+      status: 'cancelled',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('referred_id', userId)
+    .in('status', ['pending', 'paid', 'awaiting_validation']);
+
+  if (error) {
+    console.error('❌ APPLE REFERRAL: Error invalidating referral:', error);
+  } else {
+    console.log('✅ APPLE REFERRAL: Invalidated pending referral due to cancellation/expiration');
+  }
+}

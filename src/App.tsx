@@ -53,6 +53,7 @@ import VerifyEmail from "./pages/VerifyEmail";
 import Admin from "./pages/Admin";
 import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
+import ReferralRedirect from "./pages/ReferralRedirect";
 import DemoSelectRole from "./pages/DemoSelectRole";
 import DemoArtistDashboard from "./pages/demo/artist/Dashboard";
 import DemoArtistShows from "./pages/demo/artist/Shows";
@@ -88,6 +89,7 @@ const AppRoutes = () => {
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
+      <Route path="/r/:code" element={<ReferralRedirect />} />
       <Route path="/complete-profile" element={<CompleteProfile />} />
       <Route path="/select-role" element={<SelectRole />} />
       <Route path="/subscribe" element={<Subscribe />} />

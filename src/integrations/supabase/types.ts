@@ -688,6 +688,133 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_codes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_rewards: {
+        Row: {
+          days_added: number
+          granted_at: string
+          id: string
+          original_next_due_date: string | null
+          referrals_count: number
+          reward_type: string
+          user_id: string
+        }
+        Insert: {
+          days_added?: number
+          granted_at?: string
+          id?: string
+          original_next_due_date?: string | null
+          referrals_count?: number
+          reward_type?: string
+          user_id: string
+        }
+        Update: {
+          days_added?: number
+          granted_at?: string
+          id?: string
+          original_next_due_date?: string | null
+          referrals_count?: number
+          reward_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_rewards_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          created_at: string
+          first_payment_id: string | null
+          id: string
+          paid_at: string | null
+          payment_platform: string | null
+          referred_at: string
+          referred_id: string
+          referrer_id: string
+          status: string
+          updated_at: string
+          validated_at: string | null
+          validation_deadline: string | null
+        }
+        Insert: {
+          created_at?: string
+          first_payment_id?: string | null
+          id?: string
+          paid_at?: string | null
+          payment_platform?: string | null
+          referred_at?: string
+          referred_id: string
+          referrer_id: string
+          status?: string
+          updated_at?: string
+          validated_at?: string | null
+          validation_deadline?: string | null
+        }
+        Update: {
+          created_at?: string
+          first_payment_id?: string | null
+          id?: string
+          paid_at?: string | null
+          payment_platform?: string | null
+          referred_at?: string
+          referred_id?: string
+          referrer_id?: string
+          status?: string
+          updated_at?: string
+          validated_at?: string | null
+          validation_deadline?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       show_notification_logs: {
         Row: {
           id: string
