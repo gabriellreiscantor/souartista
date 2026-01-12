@@ -448,6 +448,20 @@ const Register = () => {
               console.error('❌ Error creating referral:', refError);
             } else {
               console.log('✅ Referral created successfully for code:', referralCode);
+              
+              // Enviar push notification para o indicador
+              try {
+                await supabase.functions.invoke('send-referral-notification', {
+                  body: {
+                    type: 'new_signup',
+                    referrerId: codeData.user_id,
+                    referredName: formData.name,
+                  }
+                });
+                console.log('✅ Push notification sent to referrer');
+              } catch (pushError) {
+                console.error('⚠️ Push notification error (non-blocking):', pushError);
+              }
             }
           } else if (codeData?.user_id === newUserId) {
             console.warn('⚠️ Self-referral attempted and blocked');
