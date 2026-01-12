@@ -31,7 +31,10 @@ export function useReferrals() {
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [rewards, setRewards] = useState<ReferralReward[]>([]);
-  const [validatedCount, setValidatedCount] = useState(0);
+  
+  // Contadores para sistema multi-ciclo
+  const [currentCycleProgress, setCurrentCycleProgress] = useState(0); // 0-5 do ciclo atual
+  const [totalRewardsEarned, setTotalRewardsEarned] = useState(0); // Total de meses grátis ganhos
 
   const fetchReferralData = useCallback(async () => {
     if (!userData?.id) return;
@@ -75,17 +78,29 @@ export function useReferrals() {
 
       setReferrals(referralsWithNames as Referral[]);
 
-      // Contar indicações validadas (validated ou rewarded)
-      const validated = referralsWithNames.filter(
-        (r: { status: string }) => r.status === 'validated' || r.status === 'rewarded'
-      ).length;
-      setValidatedCount(validated);
+      // Contar indicações por status para sistema multi-ciclo
+      const rewardedReferrals = referralsWithNames.filter(
+        (r: { status: string }) => r.status === 'rewarded'
+      );
+      const validatedReferrals = referralsWithNames.filter(
+        (r: { status: string }) => r.status === 'validated'
+      );
+
+      // Progresso do ciclo atual (0-5)
+      // Se tem 5 validated, ainda mostra 5/5 até o sistema processar e mudar para rewarded
+      const cycleProgress = validatedReferrals.length >= 5 ? 5 : validatedReferrals.length;
+      setCurrentCycleProgress(cycleProgress);
+
+      // Total de ciclos completados (cada 5 rewarded = 1 mês ganho)
+      const completedCycles = Math.floor(rewardedReferrals.length / 5);
+      setTotalRewardsEarned(completedCycles);
 
       // Buscar recompensas
       const { data: rewardsData, error: rewardsError } = await supabase
         .from('referral_rewards')
         .select('*')
-        .eq('user_id', userData.id);
+        .eq('user_id', userData.id)
+        .order('granted_at', { ascending: false });
 
       if (rewardsError) throw rewardsError;
       setRewards(rewardsData || []);
@@ -161,11 +176,16 @@ export function useReferrals() {
   const getStatusInfo = useCallback((status: Referral['status']) => {
     switch (status) {
       case 'validated':
-      case 'rewarded':
         return {
           label: 'Validado',
           color: 'bg-green-100 text-green-800',
           icon: '✅',
+        };
+      case 'rewarded':
+        return {
+          label: 'Recompensado',
+          color: 'bg-purple-100 text-purple-800',
+          icon: '🎁',
         };
       case 'awaiting_validation':
         return {
@@ -205,9 +225,12 @@ export function useReferrals() {
     referralCode,
     referrals,
     rewards,
-    validatedCount,
-    progressPercentage: Math.min((validatedCount / 5) * 100, 100),
-    hasEarnedReward: rewards.some(r => r.referrals_count === 5),
+    // Sistema multi-ciclo
+    currentCycleProgress, // 0-5 do ciclo atual
+    totalRewardsEarned, // Total de meses grátis ganhos
+    progressPercentage: (currentCycleProgress / 5) * 100,
+    hasEarnedReward: totalRewardsEarned > 0,
+    // Funções de compartilhamento
     copyReferralCode,
     shareOnWhatsApp,
     shareGeneric,

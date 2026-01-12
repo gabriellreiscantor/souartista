@@ -92,6 +92,7 @@ const Register = () => {
     password: '',
     confirmPassword: '',
     gender: '' as 'male' | 'female' | '',
+    referralCode: '', // Campo opcional para código de indicação
   });
 
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -412,7 +413,12 @@ const Register = () => {
     }
 
     // === SISTEMA DE INDICAÇÃO: Capturar referral code ===
-    const referralCode = localStorage.getItem('referral_code');
+    // Prioridade 1: localStorage (veio pelo link)
+    // Prioridade 2: formData.referralCode (digitou manualmente)
+    let referralCode = localStorage.getItem('referral_code');
+    if (!referralCode && formData.referralCode.trim()) {
+      referralCode = formData.referralCode.trim().toUpperCase();
+    }
     if (referralCode) {
       try {
         // Obter session para pegar o user_id
@@ -645,6 +651,27 @@ const Register = () => {
                   {emailError && (
                     <p className="text-red-500 text-xs mt-1">{emailError}</p>
                   )}
+                </div>
+
+                {/* Campo opcional de código de indicação */}
+                <div className="space-y-2">
+                  <Label htmlFor="referralCode" className="text-white">
+                    Código de indicação <span className="text-[#C8BAD4] text-xs">(opcional)</span>
+                  </Label>
+                  <Input
+                    id="referralCode"
+                    type="text"
+                    placeholder="Ex: ABC12345"
+                    value={formData.referralCode}
+                    onChange={(e) => {
+                      setFormData({ ...formData, referralCode: e.target.value.toUpperCase() });
+                    }}
+                    maxLength={10}
+                    className="h-11 bg-[#1B0D29] text-white placeholder:text-[#C8BAD4] border-[#B96FFF] uppercase"
+                  />
+                  <p className="text-xs text-[#C8BAD4]">
+                    Recebeu um código de um amigo? Digite aqui!
+                  </p>
                 </div>
 
                 <Button type="button" onClick={handleNext} className="w-full h-11">

@@ -129,35 +129,52 @@ serve(async (req) => {
 
 /**
  * Verifica se o usuário tem 5 indicações validadas e concede a recompensa
+ * Suporta múltiplos ciclos: 5, 10, 15, 20... indicações = 1, 2, 3, 4... meses grátis
  */
 async function checkAndGrantReward(supabase: any, referrerId: string) {
   console.log(`\n🔍 Checking reward for referrer ${referrerId}`);
 
-  // Contar APENAS indicações validated (não rewarded ainda)
-  const { count, error: countError } = await supabase
+  // Contar indicações já recompensadas (usadas em ciclos anteriores)
+  const { count: rewardedCount, error: rewardedError } = await supabase
+    .from('referrals')
+    .select('*', { count: 'exact', head: true })
+    .eq('referrer_id', referrerId)
+    .eq('status', 'rewarded');
+
+  if (rewardedError) {
+    console.error(`❌ Error counting rewarded referrals for ${referrerId}:`, rewardedError);
+    return;
+  }
+
+  // Contar indicações validated (prontas para próxima recompensa)
+  const { count: validatedCount, error: validatedError } = await supabase
     .from('referrals')
     .select('*', { count: 'exact', head: true })
     .eq('referrer_id', referrerId)
     .eq('status', 'validated');
 
-  if (countError) {
-    console.error(`❌ Error counting validated referrals for ${referrerId}:`, countError);
+  if (validatedError) {
+    console.error(`❌ Error counting validated referrals for ${referrerId}:`, validatedError);
     return;
   }
 
-  console.log(`📊 Validated referrals count: ${count}`);
+  console.log(`📊 Rewarded: ${rewardedCount || 0}, Validated: ${validatedCount || 0}`);
 
-  if (!count || count < 5) {
-    console.log(`⏳ Not enough validated referrals yet (${count}/5)`);
+  // Precisa de 5 indicações validated para ganhar recompensa
+  if (!validatedCount || validatedCount < 5) {
+    console.log(`⏳ Not enough validated referrals yet (${validatedCount}/5)`);
     return;
   }
 
-  // Verificar se já ganhou esta recompensa
+  // Calcular qual ciclo de recompensa será este (5, 10, 15, 20...)
+  const totalRewardedAfter = (rewardedCount || 0) + 5;
+
+  // Verificar se já existe recompensa para ESTE ciclo específico
   const { data: existingReward, error: rewardCheckError } = await supabase
     .from('referral_rewards')
     .select('id')
     .eq('user_id', referrerId)
-    .eq('referrals_count', 5)
+    .eq('referrals_count', totalRewardedAfter)
     .maybeSingle();
 
   if (rewardCheckError) {
@@ -166,7 +183,7 @@ async function checkAndGrantReward(supabase: any, referrerId: string) {
   }
 
   if (existingReward) {
-    console.log(`ℹ️ Reward already granted for ${referrerId}`);
+    console.log(`ℹ️ Reward for cycle ${totalRewardedAfter} already granted`);
     return;
   }
 
@@ -214,12 +231,12 @@ async function checkAndGrantReward(supabase: any, referrerId: string) {
     return;
   }
 
-  // Registrar recompensa
+  // Registrar recompensa com o total acumulado (5, 10, 15...)
   const { error: insertRewardError } = await supabase
     .from('referral_rewards')
     .insert({
       user_id: referrerId,
-      referrals_count: 5,
+      referrals_count: totalRewardedAfter, // 5, 10, 15, 20...
       reward_type: 'free_month',
       days_added: 30,
       original_next_due_date: subscription.next_due_date,
@@ -230,25 +247,42 @@ async function checkAndGrantReward(supabase: any, referrerId: string) {
     return;
   }
 
-  // Marcar as 5 indicações validadas como rewarded
-  const { error: updateRefsError } = await supabase
+  // Buscar exatamente 5 indicações validated para marcar como rewarded
+  const { data: toReward, error: fetchToRewardError } = await supabase
     .from('referrals')
-    .update({ status: 'rewarded', updated_at: new Date().toISOString() })
+    .select('id')
     .eq('referrer_id', referrerId)
     .eq('status', 'validated')
+    .order('validated_at', { ascending: true })
     .limit(5);
 
-  if (updateRefsError) {
-    console.error(`❌ Error updating referrals to rewarded for ${referrerId}:`, updateRefsError);
+  if (fetchToRewardError) {
+    console.error(`❌ Error fetching referrals to reward for ${referrerId}:`, fetchToRewardError);
+  } else if (toReward && toReward.length > 0) {
+    const idsToUpdate = toReward.map((r: { id: string }) => r.id);
+    
+    const { error: updateRefsError } = await supabase
+      .from('referrals')
+      .update({ status: 'rewarded', updated_at: new Date().toISOString() })
+      .in('id', idsToUpdate);
+
+    if (updateRefsError) {
+      console.error(`❌ Error updating referrals to rewarded for ${referrerId}:`, updateRefsError);
+    } else {
+      console.log(`✅ Marked ${idsToUpdate.length} referrals as rewarded`);
+    }
   }
+
+  // Calcular número do ciclo para mensagem
+  const cycleNumber = totalRewardedAfter / 5;
 
   // Notificar o usuário
   const { error: notifError } = await supabase
     .from('notifications')
     .insert({
       user_id: referrerId,
-      title: '🎉 Parabéns! Você ganhou 1 mês grátis!',
-      message: 'Suas 5 indicações foram validadas. Seu próximo pagamento foi adiado em 30 dias!',
+      title: '🎉 Parabéns! Você ganhou mais 1 mês grátis!',
+      message: `Suas ${totalRewardedAfter} indicações foram validadas. Este é seu ${cycleNumber}º mês grátis! Seu próximo pagamento foi adiado em 30 dias.`,
       link: '/artist/subscription',
       created_by: referrerId,
     });
@@ -257,5 +291,5 @@ async function checkAndGrantReward(supabase: any, referrerId: string) {
     console.error(`❌ Error creating notification for ${referrerId}:`, notifError);
   }
 
-  console.log(`🎁 REWARD GRANTED to ${referrerId}! Next due date extended by 30 days.`);
+  console.log(`🎁 REWARD #${cycleNumber} GRANTED to ${referrerId}! Next due date extended by 30 days.`);
 }

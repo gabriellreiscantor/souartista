@@ -1,4 +1,4 @@
-import { Gift, Copy, Share2, Loader2, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import { Gift, Copy, Share2, Loader2, CheckCircle2, Clock, Trophy } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -13,9 +13,9 @@ export function ReferralProgress() {
     loading,
     referralCode,
     referrals,
-    validatedCount,
+    currentCycleProgress,
+    totalRewardsEarned,
     progressPercentage,
-    hasEarnedReward,
     copyReferralCode,
     shareOnWhatsApp,
     getStatusInfo,
@@ -40,26 +40,45 @@ export function ReferralProgress() {
   return (
     <Card className="bg-white border-purple-200">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-purple-800">
-          <Gift className="h-5 w-5" />
-          Indicações para 1 mês grátis
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-purple-800">
+            <Gift className="h-5 w-5" />
+            Indicações para mês grátis
+          </CardTitle>
+          {totalRewardsEarned > 0 && (
+            <Badge className="bg-purple-100 text-purple-800 border-purple-300">
+              <Trophy className="h-3 w-3 mr-1" />
+              {totalRewardsEarned} {totalRewardsEarned === 1 ? 'mês ganho' : 'meses ganhos'}
+            </Badge>
+          )}
+        </div>
         <CardDescription className="text-gray-600">
-          Indique 5 amigos que assinem e ganhe 1 mês grátis!
+          Indique 5 amigos que assinem e ganhe 1 mês grátis! Pode repetir quantas vezes quiser.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Barra de Progresso */}
+        {/* Barra de Progresso do Ciclo Atual */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Progresso</span>
-            <span className="font-medium text-purple-800">{validatedCount}/5</span>
+            <span className="text-gray-600">Progresso do ciclo atual</span>
+            <span className="font-medium text-purple-800">{currentCycleProgress}/5</span>
           </div>
           <Progress value={progressPercentage} className="h-3 bg-purple-100" />
-          {hasEarnedReward && (
+          
+          {currentCycleProgress === 5 && (
             <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 p-2 rounded-lg">
               <CheckCircle2 className="h-4 w-4" />
-              <span>Parabéns! Você ganhou 1 mês grátis!</span>
+              <span>Você atingiu 5 indicações! O sistema irá processar sua recompensa em breve.</span>
+            </div>
+          )}
+          
+          {totalRewardsEarned > 0 && currentCycleProgress < 5 && (
+            <div className="flex items-center gap-2 text-sm text-purple-700 bg-purple-50 p-2 rounded-lg">
+              <Trophy className="h-4 w-4" />
+              <span>
+                Você já ganhou {totalRewardsEarned} {totalRewardsEarned === 1 ? 'mês grátis' : 'meses grátis'}! 
+                Continue indicando para ganhar mais.
+              </span>
             </div>
           )}
         </div>
@@ -131,7 +150,7 @@ export function ReferralProgress() {
             <Clock className="h-4 w-4 mt-0.5 flex-shrink-0" />
             <span>
               Uma indicação é validada após 15 dias do pagamento confirmado do indicado.
-              Indicações canceladas ou reembolsadas não contam.
+              Indicações canceladas ou reembolsadas não contam. Você pode ganhar múltiplos meses grátis!
             </span>
           </p>
         </div>
