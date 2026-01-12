@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.test-push-notification]
 verify_jwt = true
+
+[functions.validate-referrals]
+verify_jwt = false

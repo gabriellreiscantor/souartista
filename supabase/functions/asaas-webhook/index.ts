@@ -136,6 +136,9 @@ serve(async (req) => {
               });
 
             console.log('✅ Subscription activated:', subscriptionId);
+
+            // === SISTEMA DE INDICAÇÃO: Processar referral ===
+            await processReferralOnPayment(supabase, existingSubscription.user_id, payment);
           }
         }
         break;
@@ -278,6 +281,9 @@ serve(async (req) => {
 
             console.log('Subscription marked as canceled:', subscription.id);
             console.log('User will maintain access until next_due_date:', existingSubscription.next_due_date);
+
+            // === SISTEMA DE INDICAÇÃO: Invalidar referral pendente ===
+            await invalidateReferralOnCancel(supabase, existingSubscription.user_id);
           }
         }
         break;
@@ -304,3 +310,94 @@ serve(async (req) => {
     );
   }
 });
+
+// === SISTEMA DE INDICAÇÃO: Funções auxiliares ===
+
+/**
+ * Processa referral quando um pagamento é confirmado
+ * ANTI-FRAUDE: Só conta se não for primeiro pagamento de trial (cartão)
+ */
+async function processReferralOnPayment(supabase: any, userId: string, payment: any) {
+  console.log('🔗 REFERRAL: Checking for pending referral for user:', userId);
+
+  const { data: referral, error: refError } = await supabase
+    .from('referrals')
+    .select('*')
+    .eq('referred_id', userId)
+    .eq('status', 'pending')
+    .maybeSingle();
+
+  if (refError) {
+    console.error('❌ REFERRAL: Error fetching referral:', refError);
+    return;
+  }
+
+  if (!referral) {
+    console.log('ℹ️ REFERRAL: No pending referral found for user');
+    return;
+  }
+
+  // ANTI-FRAUDE: Verificar se é primeiro pagamento de trial (cartão tem 7 dias de trial)
+  // Para PIX, não tem trial, então sempre conta
+  const { data: subscription } = await supabase
+    .from('subscriptions')
+    .select('created_at, payment_method')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (subscription?.payment_method === 'CREDIT_CARD') {
+    const subCreatedAt = new Date(subscription.created_at).getTime();
+    const now = Date.now();
+    const daysSinceCreation = (now - subCreatedAt) / (1000 * 60 * 60 * 24);
+    
+    // Se a assinatura foi criada há menos de 7 dias, é trial - não conta
+    if (daysSinceCreation < 7) {
+      console.log('⏳ REFERRAL: Trial payment detected (cartão < 7 dias), waiting for real payment');
+      return;
+    }
+  }
+
+  // Marcar como awaiting_validation (15 dias de quarentena)
+  const validationDeadline = new Date();
+  validationDeadline.setDate(validationDeadline.getDate() + 15);
+
+  const { error: updateError } = await supabase
+    .from('referrals')
+    .update({
+      status: 'awaiting_validation',
+      paid_at: new Date().toISOString(),
+      validation_deadline: validationDeadline.toISOString(),
+      payment_platform: 'asaas',
+      first_payment_id: payment.id,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', referral.id);
+
+  if (updateError) {
+    console.error('❌ REFERRAL: Error updating referral to awaiting_validation:', updateError);
+  } else {
+    console.log('✅ REFERRAL: Moved to awaiting_validation, deadline:', validationDeadline.toISOString());
+  }
+}
+
+/**
+ * Invalida referral quando assinatura é cancelada antes da validação
+ */
+async function invalidateReferralOnCancel(supabase: any, userId: string) {
+  console.log('🔗 REFERRAL: Checking for referral to invalidate for user:', userId);
+
+  const { error } = await supabase
+    .from('referrals')
+    .update({ 
+      status: 'cancelled',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('referred_id', userId)
+    .in('status', ['pending', 'paid', 'awaiting_validation']);
+
+  if (error) {
+    console.error('❌ REFERRAL: Error invalidating referral:', error);
+  } else {
+    console.log('✅ REFERRAL: Invalidated pending/awaiting referral due to cancellation');
+  }
+}
