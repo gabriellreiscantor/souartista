@@ -3,6 +3,87 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
+
+// Função para enviar email via Brevo (fallback)
+const sendEmailViaBrevo = async (
+  email: string, 
+  otpCode: string
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    console.log("🔄 Tentando enviar via Brevo...");
+    
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY || "",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        sender: {
+          name: "Seu Artista",
+          email: "noreply@souartista.app"
+        },
+        to: [{ email }],
+        subject: "Seu código de verificação - Seu Artista",
+        htmlContent: `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+                <tr>
+                  <td align="center">
+                    <table width="600" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; border: 2px solid #B96FFF; overflow: hidden;">
+                      <tr>
+                        <td style="padding: 40px; text-align: center; background: linear-gradient(135deg, #f8f5ff 0%, #ffffff 100%);">
+                          <h1 style="color: #B96FFF; margin: 0; font-size: 32px; font-weight: 700;">Seu Artista</h1>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 0 40px 40px 40px;">
+                          <h2 style="color: #333333; font-size: 24px; margin: 0 0 16px 0;">Bem-vindo ao Seu Artista! 🎉</h2>
+                          <p style="color: #666666; font-size: 16px; margin: 0 0 32px 0;">Use o código abaixo para verificar seu email:</p>
+                          <div style="background: linear-gradient(135deg, #f8f5ff 0%, #fff 100%); border: 3px solid #B96FFF; border-radius: 12px; padding: 24px; text-align: center;">
+                            <p style="color: #999999; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px;">Seu código</p>
+                            <p style="color: #B96FFF; font-size: 36px; font-weight: 700; margin: 0; letter-spacing: 8px; font-family: monospace;">${otpCode}</p>
+                          </div>
+                          <p style="color: #999999; font-size: 14px; margin: 32px 0 0 0;">Este código expira em 10 minutos.</p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 24px 40px; background: #f8f5ff; border-top: 2px solid #f0e6ff;">
+                          <p style="color: #999999; font-size: 12px; margin: 0; text-align: center;">© 2025 Seu Artista. Todos os direitos reservados.</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </body>
+          </html>
+        `,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error("❌ Brevo API error:", response.status, errorData);
+      return { success: false, error: `Brevo error: ${response.status}` };
+    }
+
+    const data = await response.json();
+    console.log("✅ Email enviado via Brevo:", data);
+    return { success: true };
+  } catch (error: any) {
+    console.error("❌ Brevo exception:", error);
+    return { success: false, error: error.message };
+  }
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -61,88 +142,137 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("OTP saved to database, sending email...");
 
-    // Send email with OTP
-    const emailResponse = await resend.emails.send({
-      from: "Seu Artista <noreply@souartista.app>",
-      to: [email],
-      subject: "Seu código de verificação - Seu Artista",
-      html: `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Código de Verificação</title>
-          </head>
-          <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-              <tr>
-                <td align="center">
-                  <table width="600" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; border: 2px solid #B96FFF; overflow: hidden; box-shadow: 0 4px 12px rgba(185, 111, 255, 0.15);">
-                    
-                    <!-- Header -->
-                    <tr>
-                      <td style="padding: 40px; text-align: center; background: linear-gradient(135deg, #f8f5ff 0%, #ffffff 100%);">
-                        <h1 style="color: #B96FFF; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(185, 111, 255, 0.1);">
-                          Seu Artista
-                        </h1>
-                      </td>
-                    </tr>
+    // Tentar enviar pelo Resend primeiro
+    let emailSent = false;
+    let usedFallback = false;
+    let lastError = "";
 
-                    <!-- Content -->
-                    <tr>
-                      <td style="padding: 0 40px 40px 40px;">
-                        <h2 style="color: #333333; font-size: 24px; margin: 0 0 16px 0; font-weight: 600;">
-                          Bem-vindo ao Seu Artista! 🎉
-                        </h2>
-                        
-                        <p style="color: #666666; font-size: 16px; line-height: 1.6; margin: 0 0 32px 0;">
-                          Use o código abaixo para verificar seu email e começar a usar o Seu Artista:
-                        </p>
+    try {
+      const emailResponse = await resend.emails.send({
+        from: "Seu Artista <noreply@souartista.app>",
+        to: [email],
+        subject: "Seu código de verificação - Seu Artista",
+        html: `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Código de Verificação</title>
+            </head>
+            <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+                <tr>
+                  <td align="center">
+                    <table width="600" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; border: 2px solid #B96FFF; overflow: hidden; box-shadow: 0 4px 12px rgba(185, 111, 255, 0.15);">
+                      
+                      <!-- Header -->
+                      <tr>
+                        <td style="padding: 40px; text-align: center; background: linear-gradient(135deg, #f8f5ff 0%, #ffffff 100%);">
+                          <h1 style="color: #B96FFF; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(185, 111, 255, 0.1);">
+                            Seu Artista
+                          </h1>
+                        </td>
+                      </tr>
 
-                        <!-- OTP Code Box -->
-                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 32px;">
-                          <tr>
-                            <td align="center">
-                              <div style="background: linear-gradient(135deg, #f8f5ff 0%, #fff 100%); border: 3px solid #B96FFF; border-radius: 12px; padding: 24px; display: inline-block; box-shadow: 0 4px 12px rgba(185, 111, 255, 0.2);">
-                                <p style="color: #999999; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
-                                  Seu código de verificação
-                                </p>
-                                <p style="color: #B96FFF; font-size: 36px; font-weight: 700; margin: 0; letter-spacing: 8px; font-family: 'Courier New', monospace; text-shadow: 0 2px 4px rgba(185, 111, 255, 0.15);">
-                                  ${otpCode}
-                                </p>
-                              </div>
-                            </td>
-                          </tr>
-                        </table>
+                      <!-- Content -->
+                      <tr>
+                        <td style="padding: 0 40px 40px 40px;">
+                          <h2 style="color: #333333; font-size: 24px; margin: 0 0 16px 0; font-weight: 600;">
+                            Bem-vindo ao Seu Artista! 🎉
+                          </h2>
+                          
+                          <p style="color: #666666; font-size: 16px; line-height: 1.6; margin: 0 0 32px 0;">
+                            Use o código abaixo para verificar seu email e começar a usar o Seu Artista:
+                          </p>
 
-                        <p style="color: #999999; font-size: 14px; line-height: 1.6; margin: 0;">
-                          Este código expira em 10 minutos. Se você não solicitou este código, pode ignorar este email com segurança.
-                        </p>
-                      </td>
-                    </tr>
+                          <!-- OTP Code Box -->
+                          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 32px;">
+                            <tr>
+                              <td align="center">
+                                <div style="background: linear-gradient(135deg, #f8f5ff 0%, #fff 100%); border: 3px solid #B96FFF; border-radius: 12px; padding: 24px; display: inline-block; box-shadow: 0 4px 12px rgba(185, 111, 255, 0.2);">
+                                  <p style="color: #999999; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
+                                    Seu código de verificação
+                                  </p>
+                                  <p style="color: #B96FFF; font-size: 36px; font-weight: 700; margin: 0; letter-spacing: 8px; font-family: 'Courier New', monospace; text-shadow: 0 2px 4px rgba(185, 111, 255, 0.15);">
+                                    ${otpCode}
+                                  </p>
+                                </div>
+                              </td>
+                            </tr>
+                          </table>
 
-                    <!-- Footer -->
-                    <tr>
-                      <td style="padding: 24px 40px; background: #f8f5ff; border-top: 2px solid #f0e6ff;">
-                        <p style="color: #999999; font-size: 12px; line-height: 1.6; margin: 0; text-align: center;">
-                          © 2025 Seu Artista. Todos os direitos reservados.<br>
-                          Este é um email automático, por favor não responda.
-                        </p>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-          </body>
-        </html>
-      `,
-    });
+                          <p style="color: #999999; font-size: 14px; line-height: 1.6; margin: 0;">
+                            Este código expira em 10 minutos. Se você não solicitou este código, pode ignorar este email com segurança.
+                          </p>
+                        </td>
+                      </tr>
 
-    console.log("Email sent successfully:", emailResponse);
+                      <!-- Footer -->
+                      <tr>
+                        <td style="padding: 24px 40px; background: #f8f5ff; border-top: 2px solid #f0e6ff;">
+                          <p style="color: #999999; font-size: 12px; line-height: 1.6; margin: 0; text-align: center;">
+                            © 2025 Seu Artista. Todos os direitos reservados.<br>
+                            Este é um email automático, por favor não responda.
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </body>
+          </html>
+        `,
+      });
 
-    return new Response(JSON.stringify({ success: true }), {
+      // Verificar se realmente foi enviado
+      if (emailResponse.data?.id) {
+        emailSent = true;
+        console.log("✅ Email enviado via Resend:", emailResponse.data.id);
+      } else if (emailResponse.error) {
+        console.error("❌ Resend retornou erro:", emailResponse.error);
+        lastError = emailResponse.error.message || "Resend error";
+      }
+    } catch (resendError: any) {
+      console.error("❌ Resend falhou com exceção:", resendError);
+      lastError = resendError.message || "Resend exception";
+    }
+
+    // Se Resend falhou, tentar fallback via Brevo
+    if (!emailSent && BREVO_API_KEY) {
+      console.log("🔄 Resend falhou, tentando fallback via Brevo...");
+      
+      const brevoResult = await sendEmailViaBrevo(email, otpCode);
+      
+      if (brevoResult.success) {
+        emailSent = true;
+        usedFallback = true;
+        console.log("✅ Email enviado via fallback Brevo");
+      } else {
+        lastError = brevoResult.error || "Brevo failed";
+      }
+    }
+
+    // Se nenhum método funcionou, retornar erro
+    if (!emailSent) {
+      console.error("❌ Nenhum método de email funcionou. Último erro:", lastError);
+      return new Response(
+        JSON.stringify({ 
+          error: "Não foi possível enviar o email. Tente novamente.",
+          details: lastError 
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    return new Response(JSON.stringify({ 
+      success: true,
+      fallback: usedFallback 
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -150,7 +280,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: any) {
-    console.error("Error sending OTP email:", error);
+    console.error("Error in send-otp-email:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
