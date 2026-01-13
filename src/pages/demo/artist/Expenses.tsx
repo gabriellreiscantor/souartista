@@ -68,8 +68,8 @@ export default function DemoArtistExpenses() {
             <DemoUserMenu />
           </header>
           <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
-            <div className="max-w-4xl mx-auto space-y-6">
-              <Card className="bg-white border-gray-200">
+            <div className="w-full max-w-4xl mx-auto space-y-6">
+              <Card className="bg-white border-gray-200 overflow-hidden">
                 <CardHeader className="pb-3"><CardTitle className="text-lg text-gray-900">Categoria</CardTitle></CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -86,7 +86,7 @@ export default function DemoArtistExpenses() {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="bg-white border-gray-200">
+              <Card className="bg-white border-gray-200 overflow-hidden">
                 <CardHeader className="pb-3"><CardTitle className="text-lg text-gray-900 flex items-center gap-2"><CategoryIcon className="h-5 w-5" />Adicionar {categoryConfig[selectedCategory].label}</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -103,7 +103,7 @@ export default function DemoArtistExpenses() {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="bg-white border-gray-200">
+              <Card className="bg-white border-gray-200 overflow-hidden">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg text-gray-900 flex items-center gap-2"><Calendar className="h-5 w-5" />Histórico</CardTitle>
