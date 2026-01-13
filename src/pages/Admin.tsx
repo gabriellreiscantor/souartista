@@ -100,9 +100,27 @@ export default function Admin() {
   // Estados para Financeiro Global
   const [googleTax, setGoogleTax] = useState(30);
   const [appleTax, setAppleTax] = useState(15);
+  const [asaasCreditCardTax, setAsaasCreditCardTax] = useState(3.49);
+  const [asaasPixTax, setAsaasPixTax] = useState(1.99);
   const [activeUsersCount, setActiveUsersCount] = useState(0);
   const [cancelledUsersCount, setCancelledUsersCount] = useState(0);
   const [savingTax, setSavingTax] = useState(false);
+  
+  // Estados para Financeiro por Plataforma
+  const [appleActiveCount, setAppleActiveCount] = useState(0);
+  const [appleRevenue, setAppleRevenue] = useState(0);
+  const [asaasCreditCardCount, setAsaasCreditCardCount] = useState(0);
+  const [asaasCreditCardRevenue, setAsaasCreditCardRevenue] = useState(0);
+  const [asaasPixCount, setAsaasPixCount] = useState(0);
+  const [asaasPixRevenue, setAsaasPixRevenue] = useState(0);
+  const [platformSubscribers, setPlatformSubscribers] = useState<Array<{
+    id: string;
+    name: string;
+    email: string;
+    platform: string;
+    method: string;
+    amount: number;
+  }>>([]);
 
   // Estados para deletar usuário
   const [showDeleteUserDialog, setShowDeleteUserDialog] = useState(false);
@@ -795,7 +813,6 @@ export default function Admin() {
   const fetchFinancialData = async () => {
     try {
       // Usuários Ativos (Receita) = profiles com status_plano='ativo' E plan_purchased_at não null
-      // Isso garante que não contamos trials que ainda não pagaram
       const { count: activeCount } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true })
@@ -811,24 +828,115 @@ export default function Admin() {
       setActiveUsersCount(activeCount || 0);
       setCancelledUsersCount(cancelledCount || 0);
 
+      // Buscar dados de assinatura por plataforma
+      const { data: subscriptionsData, error: subsError } = await supabase
+        .from('subscriptions')
+        .select(`
+          id,
+          payment_platform,
+          payment_method,
+          amount,
+          user_id,
+          profiles!inner(id, name, email, status_plano, plan_purchased_at)
+        `)
+        .eq('status', 'active')
+        .eq('profiles.status_plano', 'ativo')
+        .not('profiles.plan_purchased_at', 'is', null);
+
+      if (subsError) {
+        console.error('Erro ao buscar assinaturas por plataforma:', subsError);
+      } else {
+        // Processar dados por plataforma
+        let appleCount = 0, appleTotal = 0;
+        let creditCardCount = 0, creditCardTotal = 0;
+        let pixCount = 0, pixTotal = 0;
+        const subscribers: typeof platformSubscribers = [];
+
+        subscriptionsData?.forEach((sub: any) => {
+          const amount = sub.amount || 29.90;
+          const profile = sub.profiles;
+          
+          if (sub.payment_platform === 'apple') {
+            appleCount++;
+            appleTotal += amount;
+            subscribers.push({
+              id: profile.id,
+              name: profile.name,
+              email: profile.email,
+              platform: 'iOS (Apple)',
+              method: 'Apple IAP',
+              amount
+            });
+          } else if (sub.payment_method === 'CREDIT_CARD') {
+            creditCardCount++;
+            creditCardTotal += amount;
+            subscribers.push({
+              id: profile.id,
+              name: profile.name,
+              email: profile.email,
+              platform: 'Android/Web',
+              method: 'Cartão de Crédito',
+              amount
+            });
+          } else if (sub.payment_method === 'PIX') {
+            pixCount++;
+            pixTotal += amount;
+            subscribers.push({
+              id: profile.id,
+              name: profile.name,
+              email: profile.email,
+              platform: 'Android/Web',
+              method: 'PIX',
+              amount
+            });
+          } else {
+            // Método desconhecido - assume cartão de crédito
+            creditCardCount++;
+            creditCardTotal += amount;
+            subscribers.push({
+              id: profile.id,
+              name: profile.name,
+              email: profile.email,
+              platform: 'Android/Web',
+              method: sub.payment_method || 'Desconhecido',
+              amount
+            });
+          }
+        });
+
+        setAppleActiveCount(appleCount);
+        setAppleRevenue(appleTotal);
+        setAsaasCreditCardCount(creditCardCount);
+        setAsaasCreditCardRevenue(creditCardTotal);
+        setAsaasPixCount(pixCount);
+        setAsaasPixRevenue(pixTotal);
+        setPlatformSubscribers(subscribers);
+      }
+
       // Carregar taxas salvas
       const savedGoogleTax = localStorage.getItem('admin_google_tax');
-      if (savedGoogleTax) {
-        setGoogleTax(Number(savedGoogleTax));
-      }
+      if (savedGoogleTax) setGoogleTax(Number(savedGoogleTax));
+      
       const savedAppleTax = localStorage.getItem('admin_apple_tax');
-      if (savedAppleTax) {
-        setAppleTax(Number(savedAppleTax));
-      }
+      if (savedAppleTax) setAppleTax(Number(savedAppleTax));
+      
+      const savedAsaasCreditCardTax = localStorage.getItem('admin_asaas_cc_tax');
+      if (savedAsaasCreditCardTax) setAsaasCreditCardTax(Number(savedAsaasCreditCardTax));
+      
+      const savedAsaasPixTax = localStorage.getItem('admin_asaas_pix_tax');
+      if (savedAsaasPixTax) setAsaasPixTax(Number(savedAsaasPixTax));
     } catch (error) {
       console.error('Erro ao buscar dados financeiros:', error);
     }
   };
+
   const handleSaveTax = () => {
     setSavingTax(true);
     try {
       localStorage.setItem('admin_google_tax', googleTax.toString());
       localStorage.setItem('admin_apple_tax', appleTax.toString());
+      localStorage.setItem('admin_asaas_cc_tax', asaasCreditCardTax.toString());
+      localStorage.setItem('admin_asaas_pix_tax', asaasPixTax.toString());
       toast.success('Taxas salvas com sucesso!');
     } catch (error) {
       console.error('Erro ao salvar taxas:', error);
@@ -3071,77 +3179,235 @@ export default function Admin() {
                   </CardHeader>
                   <CardContent className="p-3 md:p-6 pt-0">
                     <div className="space-y-3 md:space-y-4">
-                      <div className="grid gap-3 md:gap-4 grid-cols-2">
+                      <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4">
                         <div className="space-y-1 md:space-y-2">
-                          <Label htmlFor="google-tax" className="text-gray-900 text-xs md:text-sm">Taxa Google (%)</Label>
-                          <Input id="google-tax" type="number" value={googleTax} onChange={e => setGoogleTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200 h-9 text-sm" min="0" max="100" />
+                          <Label htmlFor="apple-tax" className="text-gray-900 text-xs md:text-sm">🍎 Taxa Apple (%)</Label>
+                          <Input id="apple-tax" type="number" step="0.01" value={appleTax} onChange={e => setAppleTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200 h-9 text-sm" min="0" max="100" />
                         </div>
                         <div className="space-y-1 md:space-y-2">
-                          <Label htmlFor="apple-tax" className="text-gray-900 text-xs md:text-sm">Taxa Apple (%)</Label>
-                          <Input id="apple-tax" type="number" value={appleTax} onChange={e => setAppleTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200 h-9 text-sm" min="0" max="100" />
+                          <Label htmlFor="google-tax" className="text-gray-900 text-xs md:text-sm">🤖 Taxa Google (%)</Label>
+                          <Input id="google-tax" type="number" step="0.01" value={googleTax} onChange={e => setGoogleTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200 h-9 text-sm" min="0" max="100" />
+                        </div>
+                        <div className="space-y-1 md:space-y-2">
+                          <Label htmlFor="asaas-cc-tax" className="text-gray-900 text-xs md:text-sm">💳 Asaas Cartão (%)</Label>
+                          <Input id="asaas-cc-tax" type="number" step="0.01" value={asaasCreditCardTax} onChange={e => setAsaasCreditCardTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200 h-9 text-sm" min="0" max="100" />
+                        </div>
+                        <div className="space-y-1 md:space-y-2">
+                          <Label htmlFor="asaas-pix-tax" className="text-gray-900 text-xs md:text-sm">📱 Asaas PIX (%)</Label>
+                          <Input id="asaas-pix-tax" type="number" step="0.01" value={asaasPixTax} onChange={e => setAsaasPixTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200 h-9 text-sm" min="0" max="100" />
                         </div>
                       </div>
                       <Button onClick={handleSaveTax} disabled={savingTax} className="w-full h-9 text-sm">
                         {savingTax ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                        Salvar
+                        Salvar Taxas
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Resumo Financeiro */}
-                <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
+                {/* Receita por Plataforma */}
+                <div className="grid gap-4 md:grid-cols-2">
+                  {/* iOS (Apple) */}
+                  <Card className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-300">
+                    <CardHeader className="p-3 md:p-6 pb-2">
+                      <CardTitle className="text-gray-900 text-base md:text-lg flex items-center gap-2">
+                        🍎 iOS (Apple)
+                        <Badge variant="outline" className="ml-auto text-xs">
+                          {appleActiveCount} usuários
+                        </Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3 md:p-6 pt-0">
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center p-2 bg-white rounded-lg">
+                          <span className="text-sm text-gray-600">Receita Bruta</span>
+                          <span className="text-lg font-bold text-green-600">R$ {appleRevenue.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between items-center p-2 bg-white rounded-lg">
+                          <span className="text-sm text-gray-600">Taxa Apple ({appleTax}%)</span>
+                          <span className="text-lg font-bold text-red-600">-R$ {(appleRevenue * appleTax / 100).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-purple-100 rounded-lg border-2 border-purple-300">
+                          <span className="text-sm font-medium text-purple-900">Líquido iOS</span>
+                          <span className="text-xl font-bold text-purple-600">R$ {(appleRevenue * (1 - appleTax / 100)).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Android/Web (Asaas) */}
+                  <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-300">
+                    <CardHeader className="p-3 md:p-6 pb-2">
+                      <CardTitle className="text-gray-900 text-base md:text-lg flex items-center gap-2">
+                        🤖 Android/Web (Asaas)
+                        <Badge variant="outline" className="ml-auto text-xs">
+                          {asaasCreditCardCount + asaasPixCount} usuários
+                        </Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3 md:p-6 pt-0">
+                      <div className="space-y-3">
+                        {/* Cartão de Crédito */}
+                        <div className="p-3 bg-white rounded-lg border border-gray-200">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium text-gray-700">💳 Cartão de Crédito</span>
+                            <Badge variant="secondary" className="text-xs">{asaasCreditCardCount} usuários</Badge>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2 text-center">
+                            <div>
+                              <p className="text-xs text-gray-500">Bruto</p>
+                              <p className="text-sm font-bold text-green-600">R$ {asaasCreditCardRevenue.toFixed(2)}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Taxa ({asaasCreditCardTax}%)</p>
+                              <p className="text-sm font-bold text-red-600">-R$ {(asaasCreditCardRevenue * asaasCreditCardTax / 100).toFixed(2)}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Líquido</p>
+                              <p className="text-sm font-bold text-purple-600">R$ {(asaasCreditCardRevenue * (1 - asaasCreditCardTax / 100)).toFixed(2)}</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* PIX */}
+                        <div className="p-3 bg-white rounded-lg border border-gray-200">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium text-gray-700">📱 PIX</span>
+                            <Badge variant="secondary" className="text-xs">{asaasPixCount} usuários</Badge>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2 text-center">
+                            <div>
+                              <p className="text-xs text-gray-500">Bruto</p>
+                              <p className="text-sm font-bold text-green-600">R$ {asaasPixRevenue.toFixed(2)}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Taxa ({asaasPixTax}%)</p>
+                              <p className="text-sm font-bold text-red-600">-R$ {(asaasPixRevenue * asaasPixTax / 100).toFixed(2)}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Líquido</p>
+                              <p className="text-sm font-bold text-purple-600">R$ {(asaasPixRevenue * (1 - asaasPixTax / 100)).toFixed(2)}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Total Asaas */}
+                        <div className="flex justify-between items-center p-3 bg-green-100 rounded-lg border-2 border-green-300">
+                          <span className="text-sm font-medium text-green-900">Líquido Android/Web</span>
+                          <span className="text-xl font-bold text-green-600">
+                            R$ {((asaasCreditCardRevenue * (1 - asaasCreditCardTax / 100)) + (asaasPixRevenue * (1 - asaasPixTax / 100))).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Resumo Consolidado */}
+                <Card className="bg-gradient-to-br from-purple-100 to-blue-100 border-purple-300">
                   <CardHeader className="p-3 md:p-6">
-                    <CardTitle className="text-gray-900 text-base md:text-lg">💰 Receita Mensal</CardTitle>
+                    <CardTitle className="text-gray-900 text-base md:text-lg">📊 Resumo Financeiro Consolidado</CardTitle>
                   </CardHeader>
                   <CardContent className="p-3 md:p-6 pt-0">
-                    <div className="grid gap-2 md:gap-4 grid-cols-2 lg:grid-cols-5">
-                      <div className="p-2 md:p-4 bg-white rounded-lg border border-gray-200">
-                        <p className="text-[10px] md:text-xs text-gray-600 mb-0.5 md:mb-1">Ativos</p>
-                        <p className="text-lg md:text-2xl font-bold text-purple-600">{activeUsersCount}</p>
-                        <p className="text-[9px] md:text-xs text-gray-500 hidden md:block">Com pagamento</p>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-4">
+                      <div className="p-3 bg-white rounded-lg border border-gray-200 text-center">
+                        <p className="text-xs text-gray-500 mb-1">Total Ativos</p>
+                        <p className="text-2xl font-bold text-purple-600">{activeUsersCount}</p>
                       </div>
-
-                      <div className="p-2 md:p-4 bg-white rounded-lg border border-gray-200">
-                        <p className="text-[10px] md:text-xs text-gray-600 mb-0.5 md:mb-1">Receita</p>
-                        <p className="text-base md:text-2xl font-bold text-green-600">
-                          R$ {(activeUsersCount * 29.90).toFixed(0)}
-                        </p>
-                        <p className="text-[9px] md:text-xs text-gray-500 hidden md:block">R$ 29,90 × {activeUsersCount}</p>
-                      </div>
-
-                      <div className="p-2 md:p-4 bg-white rounded-lg border border-gray-200">
-                        <p className="text-[10px] md:text-xs text-gray-600 mb-0.5 md:mb-1">Cancelados</p>
-                        <p className="text-lg md:text-2xl font-bold text-red-600">{cancelledUsersCount}</p>
-                        <p className="text-[9px] md:text-xs text-gray-500 hidden md:block">Subscriptions</p>
-                      </div>
-
-                      <div className="p-2 md:p-4 bg-white rounded-lg border border-gray-200">
-                        <p className="text-[10px] md:text-xs text-gray-600 mb-0.5 md:mb-1">Apple ({appleTax}%)</p>
-                        <p className="text-base md:text-2xl font-bold text-red-600">
-                          -R$ {(activeUsersCount * 29.90 * (appleTax / 100)).toFixed(0)}
+                      <div className="p-3 bg-white rounded-lg border border-gray-200 text-center">
+                        <p className="text-xs text-gray-500 mb-1">Receita Bruta Total</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          R$ {(appleRevenue + asaasCreditCardRevenue + asaasPixRevenue).toFixed(2)}
                         </p>
                       </div>
-
-                      <div className="p-2 md:p-4 bg-white rounded-lg border border-gray-200">
-                        <p className="text-[10px] md:text-xs text-gray-600 mb-0.5 md:mb-1">Google ({googleTax}%)</p>
-                        <p className="text-base md:text-2xl font-bold text-red-600">
-                          -R$ {(activeUsersCount * 29.90 * (googleTax / 100)).toFixed(0)}
+                      <div className="p-3 bg-white rounded-lg border border-gray-200 text-center">
+                        <p className="text-xs text-gray-500 mb-1">Total Taxas</p>
+                        <p className="text-2xl font-bold text-red-600">
+                          -R$ {(
+                            (appleRevenue * appleTax / 100) +
+                            (asaasCreditCardRevenue * asaasCreditCardTax / 100) +
+                            (asaasPixRevenue * asaasPixTax / 100)
+                          ).toFixed(2)}
                         </p>
+                      </div>
+                      <div className="p-3 bg-white rounded-lg border border-gray-200 text-center">
+                        <p className="text-xs text-gray-500 mb-1">Cancelados</p>
+                        <p className="text-2xl font-bold text-gray-600">{cancelledUsersCount}</p>
                       </div>
                     </div>
 
-                    <div className="mt-3 md:mt-4 p-2 md:p-4 bg-white rounded-lg border-2 border-purple-300">
-                      <p className="text-xs md:text-sm text-gray-600 mb-0.5 md:mb-1">Receita Líquida Estimada</p>
-                      <p className="text-xl md:text-3xl font-bold text-purple-600">
-                        R$ {(activeUsersCount * 29.90 * (1 - appleTax / 100 - googleTax / 100)).toFixed(2)}
-                      </p>
-                      <p className="text-[9px] md:text-xs text-gray-500 mt-0.5 md:mt-1">
-                        Após taxas Apple e Google
-                      </p>
+                    {/* Lucro Líquido Total */}
+                    <div className="p-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-white">
+                      <div className="flex flex-col md:flex-row justify-between items-center gap-2">
+                        <div>
+                          <p className="text-sm opacity-90">💰 Lucro Líquido Mensal</p>
+                          <p className="text-xs opacity-75 mt-1">
+                            iOS: R$ {(appleRevenue * (1 - appleTax / 100)).toFixed(2)} | 
+                            Cartão: R$ {(asaasCreditCardRevenue * (1 - asaasCreditCardTax / 100)).toFixed(2)} | 
+                            PIX: R$ {(asaasPixRevenue * (1 - asaasPixTax / 100)).toFixed(2)}
+                          </p>
+                        </div>
+                        <p className="text-3xl md:text-4xl font-bold">
+                          R$ {(
+                            (appleRevenue * (1 - appleTax / 100)) +
+                            (asaasCreditCardRevenue * (1 - asaasCreditCardTax / 100)) +
+                            (asaasPixRevenue * (1 - asaasPixTax / 100))
+                          ).toFixed(2)}
+                        </p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Tabela de Assinantes por Plataforma */}
+                {platformSubscribers.length > 0 && (
+                  <Card className="bg-white border-gray-200">
+                    <CardHeader className="p-3 md:p-6">
+                      <CardTitle className="text-gray-900 text-base md:text-lg">👥 Assinantes Ativos por Plataforma</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3 md:p-6 pt-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-gray-200">
+                              <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Nome</th>
+                              <th className="text-left py-2 px-2 text-xs font-medium text-gray-500 hidden md:table-cell">Email</th>
+                              <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Plataforma</th>
+                              <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Método</th>
+                              <th className="text-right py-2 px-2 text-xs font-medium text-gray-500">Valor</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {platformSubscribers.map((sub) => (
+                              <tr key={sub.id} className="border-b border-gray-100 hover:bg-gray-50">
+                                <td className="py-2 px-2 font-medium text-gray-900 truncate max-w-[120px]">{sub.name}</td>
+                                <td className="py-2 px-2 text-gray-600 truncate max-w-[180px] hidden md:table-cell">{sub.email}</td>
+                                <td className="py-2 px-2">
+                                  <Badge variant={sub.platform.includes('iOS') ? 'outline' : 'secondary'} className="text-xs">
+                                    {sub.platform.includes('iOS') ? '🍎' : '🤖'} {sub.platform}
+                                  </Badge>
+                                </td>
+                                <td className="py-2 px-2">
+                                  <Badge 
+                                    variant="outline" 
+                                    className={`text-xs ${
+                                      sub.method.includes('Apple') ? 'border-gray-400' :
+                                      sub.method.includes('Cartão') ? 'border-blue-400 text-blue-700' :
+                                      sub.method.includes('PIX') ? 'border-green-400 text-green-700' : ''
+                                    }`}
+                                  >
+                                    {sub.method.includes('Apple') ? '🍎' : sub.method.includes('Cartão') ? '💳' : '📱'} {sub.method}
+                                  </Badge>
+                                </td>
+                                <td className="py-2 px-2 text-right font-medium text-green-600">R$ {sub.amount.toFixed(2)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>}
 
             {currentTab === 'notificacoes' && <div className="space-y-4 md:space-y-6">
