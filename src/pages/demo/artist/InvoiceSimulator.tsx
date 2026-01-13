@@ -81,9 +81,11 @@ const DemoInvoiceSimulator = () => {
         iss = valorBrutoNum * (issPercentualNum / 100);
         break;
       case 'mei':
-        iss = valorBrutoNum * (issPercentualNum / 100);
+        // MEI - NÃO tem retenção por show. Paga DAS mensal fixo que já inclui INSS + ISS
+        iss = 0;
         break;
       case 'cnpj':
+        // CNPJ ME/Simples - ISS pode ser retido na fonte
         iss = valorBrutoNum * (issPercentualNum / 100);
         break;
     }
@@ -269,20 +271,43 @@ const DemoInvoiceSimulator = () => {
                           </div>
                         )}
 
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-gray-500">(-) ISS ({issPercentualNum}%)</span>
-                          <span className="text-red-600">- R$ {formatCurrency(calculos.iss)}</span>
-                        </div>
+                        {tipoRecebimento === 'mei' ? (
+                          <>
+                            <div className="py-3 px-3 bg-green-50 border border-green-200 rounded-lg mt-2">
+                              <p className="text-sm text-green-800">
+                                <strong>✓ Sem descontos por show!</strong><br />
+                                Como MEI, você paga apenas o DAS mensal fixo (~R$ 75-80), que já inclui INSS e ISS.
+                              </p>
+                            </div>
+                            <div className="flex justify-between items-center py-3 bg-purple-100 rounded-lg px-3 mt-2">
+                              <span className="font-semibold text-gray-900">💵 VALOR LÍQUIDO</span>
+                              <span className="text-xl font-bold text-purple-600">R$ {formatCurrency(valorBrutoNum)}</span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-gray-500">(-) ISS ({issPercentualNum}%)</span>
+                              <span className="text-red-600">- R$ {formatCurrency(calculos.iss)}</span>
+                            </div>
 
-                        <div className="flex justify-between items-center py-2 border-t border-dashed border-gray-300">
-                          <span className="text-gray-500">Total Descontos</span>
-                          <span className="font-medium text-red-600">- R$ {formatCurrency(calculos.totalDescontos)}</span>
-                        </div>
+                            <div className="flex justify-between items-center py-2 border-t border-dashed border-gray-300">
+                              <span className="text-gray-500">Total Descontos</span>
+                              <span className="font-medium text-red-600">- R$ {formatCurrency(calculos.totalDescontos)}</span>
+                            </div>
 
-                        <div className="flex justify-between items-center py-3 bg-purple-100 rounded-lg px-3 mt-2">
-                          <span className="font-semibold text-gray-900">💵 VALOR LÍQUIDO</span>
-                          <span className="text-xl font-bold text-purple-600">R$ {formatCurrency(calculos.valorLiquido)}</span>
-                        </div>
+                            <div className="flex justify-between items-center py-3 bg-purple-100 rounded-lg px-3 mt-2">
+                              <span className="font-semibold text-gray-900">💵 VALOR LÍQUIDO</span>
+                              <span className="text-xl font-bold text-purple-600">R$ {formatCurrency(calculos.valorLiquido)}</span>
+                            </div>
+
+                            {tipoRecebimento === 'cnpj' && (
+                              <p className="text-xs text-gray-500 mt-2">
+                                * Além do ISS, você paga o DAS mensal baseado no faturamento acumulado (varia conforme anexo do Simples).
+                              </p>
+                            )}
+                          </>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -328,12 +353,16 @@ const DemoInvoiceSimulator = () => {
                         <div>
                           <p className="font-medium text-gray-900 mb-1">MEI - Microempreendedor Individual</p>
                           <p>
-                            Como MEI, você não tem retenção de INSS ou IRRF por show. Você paga apenas o DAS mensal 
-                            (valor fixo em torno de R$ 75-80 em 2026, que já inclui INSS + ISS + contribuições).
+                            Como MEI, você <strong>não tem retenção por show</strong>. Você paga apenas o DAS mensal 
+                            (valor fixo em torno de R$ 75-80 em 2026), que já inclui:
                           </p>
+                          <ul className="list-disc ml-5 mt-2 space-y-1">
+                            <li>INSS (contribuição previdenciária)</li>
+                            <li>ISS (Imposto Sobre Serviços)</li>
+                            <li>ICMS (para comércio/indústria)</li>
+                          </ul>
                           <p className="mt-2">
-                            Alguns tomadores (prefeituras) podem ainda reter ISS na fonte - por isso mantemos 
-                            o cálculo do ISS aqui. Confirme antes com o contratante.
+                            Por isso, o valor que você recebe do show é <strong>100% líquido</strong> - sem descontos na fonte.
                           </p>
                         </div>
                       )}
