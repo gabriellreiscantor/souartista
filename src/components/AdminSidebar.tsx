@@ -1,4 +1,4 @@
-import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones, Download, Smartphone, Sparkles, MessageSquare, Scale, UserCog, AlertTriangle, Megaphone, Trash2, Database } from 'lucide-react';
+import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones, Download, Smartphone, Sparkles, MessageSquare, Scale, UserCog, AlertTriangle, Megaphone, Trash2, Database, Apple } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -27,6 +27,7 @@ const mainItems = [
   { title: 'Direitos LGPD', url: '/admin?tab=lgpd', icon: Scale },
   { title: 'Importação Firebase', url: '/admin?tab=importacao', icon: Download },
   { title: 'Financeiro Global', url: '/admin?tab=financeiro', icon: DollarSign },
+  { title: 'RevenueCat', url: '/admin?tab=revenuecat', icon: Apple },
   { title: 'Suporte', url: '/admin?tab=suporte', icon: Headphones },
   { title: 'Tickets Escalados', url: '/admin?tab=escalados', icon: AlertTriangle, showBadge: true },
   { title: 'Avisos Globais', url: '/admin?tab=avisos', icon: Megaphone },
