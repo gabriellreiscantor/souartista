@@ -51,7 +51,134 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    const { userId, email, action } = await req.json()
+    const { userId, email, action, revenueCatId } = await req.json()
+
+    // Action: Search directly by RevenueCat ID (including anonymous IDs)
+    if (action === 'search-by-revenuecat-id') {
+      if (!revenueCatId) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'revenueCatId é obrigatório' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        )
+      }
+
+      console.log(`Searching RevenueCat directly for ID: ${revenueCatId}`)
+      
+      const revenueCatResponse = await fetch(
+        `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(revenueCatId)}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${REVENUECAT_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+
+      if (!revenueCatResponse.ok) {
+        if (revenueCatResponse.status === 404) {
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              found: false,
+              error: 'ID não encontrado no RevenueCat' 
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+          )
+        }
+        const errorText = await revenueCatResponse.text()
+        throw new Error(`Erro RevenueCat: ${revenueCatResponse.status} - ${errorText}`)
+      }
+
+      const revenueCatData: RevenueCatSubscriber = await revenueCatResponse.json()
+      
+      // Parse the data
+      let activeEntitlement = null
+      let activeSubscription = null
+      const subscriptionHistory: any[] = []
+
+      if (revenueCatData?.subscriber) {
+        const { entitlements, subscriptions } = revenueCatData.subscriber
+
+        for (const [key, entitlement] of Object.entries(entitlements || {})) {
+          const expiresDate = entitlement.expires_date ? new Date(entitlement.expires_date) : null
+          if (!expiresDate || expiresDate > new Date()) {
+            activeEntitlement = { key, ...entitlement }
+            break
+          }
+        }
+
+        for (const [productId, subscription] of Object.entries(subscriptions || {})) {
+          const subData = {
+            product_id: productId,
+            expires_date: subscription.expires_date,
+            purchase_date: subscription.purchase_date,
+            original_purchase_date: subscription.original_purchase_date,
+            is_sandbox: subscription.is_sandbox,
+            unsubscribe_detected_at: subscription.unsubscribe_detected_at,
+            billing_issues_detected_at: subscription.billing_issues_detected_at,
+            is_active: subscription.expires_date ? new Date(subscription.expires_date) > new Date() : true
+          }
+          
+          subscriptionHistory.push(subData)
+          if (subData.is_active && !activeSubscription) {
+            activeSubscription = subData
+          }
+        }
+
+        subscriptionHistory.sort((a, b) => 
+          new Date(b.purchase_date).getTime() - new Date(a.purchase_date).getTime()
+        )
+      }
+
+      // Try to find linked local user
+      let localUser = null
+      let localSubscription = null
+      
+      // Check if it's a UUID (could be a real user ID)
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(revenueCatId)
+      
+      if (isUUID) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, name, email')
+          .eq('id', revenueCatId)
+          .maybeSingle()
+        
+        if (profile) {
+          localUser = profile
+          
+          const { data: sub } = await supabase
+            .from('subscriptions')
+            .select('*')
+            .eq('user_id', revenueCatId)
+            .maybeSingle()
+          
+          localSubscription = sub
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          found: true,
+          searchedId: revenueCatId,
+          isAnonymousId: revenueCatId.startsWith('$RCAnonymousID'),
+          localUser,
+          localSubscription,
+          revenueCat: {
+            original_app_user_id: revenueCatData.subscriber.original_app_user_id,
+            first_seen: revenueCatData.subscriber.first_seen,
+            last_seen: revenueCatData.subscriber.last_seen,
+            active_entitlement: activeEntitlement,
+            active_subscription: activeSubscription,
+            subscription_history: subscriptionHistory,
+            raw_entitlements: revenueCatData.subscriber.entitlements,
+            raw_subscriptions: revenueCatData.subscriber.subscriptions
+          }
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     // Action: list all apple subscribers
     if (action === 'list-apple-subscribers') {
@@ -138,10 +265,11 @@ Deno.serve(async (req) => {
       if (!profile) {
         return new Response(
           JSON.stringify({ 
-            success: false, 
-            error: 'Usuário não encontrado com esse email ou nome' 
+            success: true, 
+            found: false,
+            message: 'Usuário não encontrado no banco local. Use a busca por ID do RevenueCat para consultar IDs anônimos diretamente na API.' 
           }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
       targetUserId = profile.id
