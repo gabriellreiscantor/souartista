@@ -17,7 +17,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ArtistSidebar } from '@/components/ArtistSidebar';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { SafeAreaWrapper } from '@/components/SafeAreaWrapper';
+
 import { NotificationBell } from '@/components/NotificationBell';
 import { UserMenu } from '@/components/UserMenu';
 import { useAuth } from '@/hooks/useAuth';
@@ -109,8 +109,7 @@ const InvoiceSimulator = () => {
   }, [valorBrutoNum, tipoRecebimento, issPercentualNum]);
 
   return (
-    <SafeAreaWrapper>
-      <SidebarProvider>
+    <SidebarProvider>
         <div className="min-h-screen flex w-full bg-[#fafafa]">
           <ArtistSidebar />
           
@@ -405,8 +404,7 @@ const InvoiceSimulator = () => {
 
           {isMobile && <MobileBottomNav role="artist" />}
         </div>
-      </SidebarProvider>
-    </SafeAreaWrapper>
+    </SidebarProvider>
   );
 };
 
