@@ -22,14 +22,14 @@ import {
 type ExpenseCategory = 'equipamento' | 'acessorio' | 'manutencao' | 'vestuario' | 'marketing' | 'formacao' | 'software' | 'outros';
 
 const categoryConfig: Record<ExpenseCategory, { label: string; icon: React.ElementType; placeholder: string }> = {
-  equipamento: { label: 'Equipamento', icon: Guitar, placeholder: 'Violão Takamine' },
-  acessorio: { label: 'Acessório', icon: Music, placeholder: 'Jogo de cordas Elixir' },
-  manutencao: { label: 'Manutenção', icon: Wrench, placeholder: 'Luthier' },
-  vestuario: { label: 'Vestuário', icon: Shirt, placeholder: 'Camisa jeans' },
-  marketing: { label: 'Marketing', icon: Megaphone, placeholder: 'Tráfego pago para clipe' },
-  formacao: { label: 'Formação', icon: GraduationCap, placeholder: 'Curso de canto' },
-  software: { label: 'Software', icon: Monitor, placeholder: 'Reaper' },
-  outros: { label: 'Outros', icon: Package, placeholder: 'Descrição da despesa' },
+  equipamento: { label: 'Equipamento', icon: Guitar, placeholder: 'Ex: Violão Takamine' },
+  acessorio: { label: 'Acessório', icon: Music, placeholder: 'Ex: Jogo de cordas Elixir' },
+  manutencao: { label: 'Manutenção', icon: Wrench, placeholder: 'Ex: Luthier' },
+  vestuario: { label: 'Vestuário', icon: Shirt, placeholder: 'Ex: Camisa jeans' },
+  marketing: { label: 'Marketing', icon: Megaphone, placeholder: 'Ex: Tráfego pago para clipe' },
+  formacao: { label: 'Formação', icon: GraduationCap, placeholder: 'Ex: Curso de canto' },
+  software: { label: 'Software', icon: Monitor, placeholder: 'Ex: Reaper' },
+  outros: { label: 'Outros', icon: Package, placeholder: 'Ex: Descrição da despesa' },
 };
 
 const demoExpenses = [
