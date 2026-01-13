@@ -724,7 +724,97 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ===== FASE 3: RESUMO E LOG =====
+    // ===== FASE 3: BACKUP DE USUÁRIOS AUTH =====
+    console.log('\n🔐 FASE 3: Backup de usuários auth...')
+    
+    let authUsersCount = 0
+    let authBackupStatus: 'success' | 'error' | 'skipped' = 'skipped'
+    let authBackupError: string | null = null
+
+    try {
+      // Verificar se a tabela auth_users_backup existe
+      const { data: authTableCheck, error: authTableError } = await backupClient
+        .from('auth_users_backup')
+        .select('id')
+        .limit(1)
+
+      if (authTableError && authTableError.code === '42P01') {
+        console.log('  ⚠️ Tabela auth_users_backup não existe no backup')
+        console.log('  📋 Execute o SQL do backup-schema.sql para criar a tabela')
+        authBackupStatus = 'skipped'
+        authBackupError = 'Tabela auth_users_backup não existe'
+      } else {
+        // Usar Admin API para listar todos os usuários
+        console.log('  🔍 Buscando usuários do auth.users...')
+        
+        const allUsers: any[] = []
+        let page = 1
+        const perPage = 1000
+        let hasMore = true
+
+        while (hasMore) {
+          const { data: { users }, error } = await prodClient.auth.admin.listUsers({
+            page,
+            perPage,
+          })
+
+          if (error) {
+            throw new Error(`Erro ao listar usuários: ${error.message}`)
+          }
+
+          if (users && users.length > 0) {
+            allUsers.push(...users)
+            page++
+            hasMore = users.length === perPage
+          } else {
+            hasMore = false
+          }
+        }
+
+        console.log(`  📊 Encontrados ${allUsers.length} usuários`)
+
+        if (allUsers.length > 0) {
+          // Preparar usuários para backup
+          const usersToBackup = allUsers.map((user) => ({
+            id: user.id,
+            email: user.email,
+            encrypted_password: user.encrypted_password || null,
+            email_confirmed_at: user.email_confirmed_at || null,
+            created_at: user.created_at,
+            updated_at: user.updated_at || null,
+            raw_app_meta_data: user.app_metadata || null,
+            raw_user_meta_data: user.user_metadata || null,
+            phone: user.phone || null,
+            phone_confirmed_at: user.phone_confirmed_at || null,
+            last_sign_in_at: user.last_sign_in_at || null,
+            backed_up_at: new Date().toISOString(),
+          }))
+
+          // Upsert usuários no backup
+          const { error: upsertError } = await backupClient
+            .from('auth_users_backup')
+            .upsert(usersToBackup, { onConflict: 'id' })
+
+          if (upsertError) {
+            throw new Error(`Erro ao salvar usuários: ${upsertError.message}`)
+          }
+
+          authUsersCount = usersToBackup.length
+          authBackupStatus = 'success'
+          console.log(`  ✅ ${authUsersCount} usuários auth salvos no backup`)
+        } else {
+          authBackupStatus = 'success'
+          console.log('  ⚪ Nenhum usuário para backup')
+        }
+      }
+    } catch (authError) {
+      const errorMessage = authError instanceof Error ? authError.message : 'Erro desconhecido'
+      console.error('  ❌ Erro no backup de auth:', errorMessage)
+      authBackupStatus = 'error'
+      authBackupError = errorMessage
+    }
+
+    // ===== FASE 4: RESUMO E LOG =====
     const endTime = Date.now()
     const durationSeconds = (endTime - startTime) / 1000
 
@@ -734,7 +824,7 @@ Deno.serve(async (req) => {
     const fileSuccessCount = fileResults.filter(r => r.status === 'success').length
     const fileErrorCount = fileResults.filter(r => r.status === 'error').length
 
-    const hasErrors = tableErrorCount > 0 || fileErrorCount > 0
+    const hasErrors = tableErrorCount > 0 || fileErrorCount > 0 || authBackupStatus === 'error'
     const hasMissingTables = missingTables.length > 0
     const finalStatus = hasErrors || hasMissingTables ? 'partial' : 'success'
 
@@ -753,6 +843,11 @@ Deno.serve(async (req) => {
         files_copied: totalFiles,
         errors: fileErrorCount,
       },
+      auth_users: {
+        count: authUsersCount,
+        status: authBackupStatus,
+        error: authBackupError,
+      },
       missing_tables: missingTables,
       missing_tables_sql: missingTables.length > 0 
         ? missingTables.map(t => TABLE_SCHEMAS[t]).join('\n')
@@ -768,6 +863,7 @@ Deno.serve(async (req) => {
     console.log(`   - Tabelas puladas: ${tableSkippedCount}`)
     console.log(`   - Registros copiados: ${totalRecords}`)
     console.log(`   - Arquivos copiados: ${totalFiles}`)
+    console.log(`   - Usuários auth: ${authUsersCount} (${authBackupStatus})`)
     console.log(`   - Duração: ${durationSeconds.toFixed(2)}s`)
     console.log(`   - Status: ${finalStatus}`)
 
