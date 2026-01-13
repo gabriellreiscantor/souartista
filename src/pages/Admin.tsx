@@ -24,6 +24,7 @@ import { PushNotificationLogs } from '@/components/PushNotificationLogs';
 import { EscalatedTicketsTab } from '@/components/EscalatedTicketsTab';
 import { AnnouncementsTab } from '@/components/admin/AnnouncementsTab';
 import { BackupGodTab } from '@/components/admin/BackupGodTab';
+import { RevenueCatTab } from '@/components/admin/RevenueCatTab';
 import * as XLSX from 'xlsx';
 interface UserProfile {
   id: string;
@@ -5073,6 +5074,11 @@ export default function Admin() {
             {/* Backup God */}
             {currentTab === 'backup' && (
               <BackupGodTab />
+            )}
+
+            {/* RevenueCat */}
+            {currentTab === 'revenuecat' && (
+              <RevenueCatTab />
             )}
 
             {/* Tab Funcionários de Suporte */}
