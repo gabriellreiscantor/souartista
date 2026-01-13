@@ -28,7 +28,7 @@ interface DeletedUser {
   plan_type: string | null;
   status_plano: string | null;
   status: string;
-  user_roles: any[];
+  user_roles: unknown;
 }
 
 export function DeletedUsersTab() {
@@ -181,8 +181,8 @@ export function DeletedUsersTab() {
     }
   };
 
-  const getRoleBadge = (roles: any[]) => {
-    if (!roles || roles.length === 0) return null;
+  const getRoleBadge = (roles: unknown) => {
+    if (!roles || !Array.isArray(roles) || roles.length === 0) return null;
     const role = roles[0]?.role;
     if (role === 'artist') return <Badge className="bg-purple-100 text-purple-800">🎤 Artista</Badge>;
     if (role === 'musician') return <Badge className="bg-blue-100 text-blue-800">🎸 Músico</Badge>;
