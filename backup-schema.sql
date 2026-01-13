@@ -3,6 +3,33 @@
 -- Execute este SQL no SQL Editor do projeto de backup
 -- ===============================================
 
+-- ===============================================
+-- TABELA CRÍTICA: BACKUP DE USUÁRIOS AUTH
+-- Esta tabela armazena os dados de autenticação para disaster recovery
+-- ===============================================
+
+CREATE TABLE IF NOT EXISTS public.auth_users_backup (
+  id UUID PRIMARY KEY,
+  email TEXT NOT NULL,
+  encrypted_password TEXT,
+  email_confirmed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  raw_app_meta_data JSONB,
+  raw_user_meta_data JSONB,
+  phone TEXT,
+  phone_confirmed_at TIMESTAMPTZ,
+  last_sign_in_at TIMESTAMPTZ,
+  backed_up_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Index para busca rápida por email
+CREATE INDEX IF NOT EXISTS idx_auth_users_backup_email ON public.auth_users_backup(email);
+
+-- ===============================================
+-- TABELAS DE DADOS DO APLICATIVO
+-- ===============================================
+
 -- Tabela: profiles
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY,
