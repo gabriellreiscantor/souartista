@@ -120,6 +120,7 @@ export default function Admin() {
     platform: string;
     method: string;
     amount: number;
+    nextDueDate?: string | null;
   }>>([]);
 
   // Estados para deletar usuário
@@ -812,23 +813,7 @@ export default function Admin() {
 
   const fetchFinancialData = async () => {
     try {
-      // Usuários Ativos (Receita) = profiles com status_plano='ativo' E plan_purchased_at não null
-      const { count: activeCount } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .eq('status_plano', 'ativo')
-        .not('plan_purchased_at', 'is', null);
-
-      // Contar usuários cancelados
-      const { count: cancelledCount } = await supabase
-        .from('subscriptions')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'cancelled');
-
-      setActiveUsersCount(activeCount || 0);
-      setCancelledUsersCount(cancelledCount || 0);
-
-      // Buscar dados de assinatura por plataforma
+      // Buscar TODAS as assinaturas ATIVAS (não filtrar por plan_purchased_at)
       const { data: subscriptionsData, error: subsError } = await supabase
         .from('subscriptions')
         .select(`
@@ -837,11 +822,19 @@ export default function Admin() {
           payment_method,
           amount,
           user_id,
-          profiles!inner(id, name, email, status_plano, plan_purchased_at)
+          next_due_date,
+          status,
+          profiles!inner(id, name, email, status_plano)
         `)
-        .eq('status', 'active')
-        .eq('profiles.status_plano', 'ativo')
-        .not('profiles.plan_purchased_at', 'is', null);
+        .eq('status', 'active');
+
+      // Contar usuários cancelados
+      const { count: cancelledCount } = await supabase
+        .from('subscriptions')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'cancelled');
+
+      setCancelledUsersCount(cancelledCount || 0);
 
       if (subsError) {
         console.error('Erro ao buscar assinaturas por plataforma:', subsError);
@@ -853,8 +846,9 @@ export default function Admin() {
         const subscribers: typeof platformSubscribers = [];
 
         subscriptionsData?.forEach((sub: any) => {
-          const amount = sub.amount || 29.90;
+          const amount = Number(sub.amount) || 29.90;
           const profile = sub.profiles;
+          const nextDueDate = sub.next_due_date;
           
           if (sub.payment_platform === 'apple') {
             appleCount++;
@@ -865,7 +859,8 @@ export default function Admin() {
               email: profile.email,
               platform: 'iOS (Apple)',
               method: 'Apple IAP',
-              amount
+              amount,
+              nextDueDate
             });
           } else if (sub.payment_method === 'CREDIT_CARD') {
             creditCardCount++;
@@ -876,7 +871,8 @@ export default function Admin() {
               email: profile.email,
               platform: 'Android/Web',
               method: 'Cartão de Crédito',
-              amount
+              amount,
+              nextDueDate
             });
           } else if (sub.payment_method === 'PIX') {
             pixCount++;
@@ -887,10 +883,11 @@ export default function Admin() {
               email: profile.email,
               platform: 'Android/Web',
               method: 'PIX',
-              amount
+              amount,
+              nextDueDate
             });
-          } else {
-            // Método desconhecido - assume cartão de crédito
+          } else if (sub.payment_platform === 'asaas') {
+            // Asaas sem método específico - considerar cartão
             creditCardCount++;
             creditCardTotal += amount;
             subscribers.push({
@@ -898,11 +895,29 @@ export default function Admin() {
               name: profile.name,
               email: profile.email,
               platform: 'Android/Web',
+              method: sub.payment_method || 'Cartão',
+              amount,
+              nextDueDate
+            });
+          } else {
+            // Outra plataforma desconhecida
+            creditCardCount++;
+            creditCardTotal += amount;
+            subscribers.push({
+              id: profile.id,
+              name: profile.name,
+              email: profile.email,
+              platform: sub.payment_platform || 'Outro',
               method: sub.payment_method || 'Desconhecido',
-              amount
+              amount,
+              nextDueDate
             });
           }
         });
+
+        // Contagem de ativos = total de assinaturas ativas
+        const totalActive = appleCount + creditCardCount + pixCount;
+        setActiveUsersCount(totalActive);
 
         setAppleActiveCount(appleCount);
         setAppleRevenue(appleTotal);
@@ -913,18 +928,18 @@ export default function Admin() {
         setPlatformSubscribers(subscribers);
       }
 
-      // Carregar taxas salvas
+      // Carregar taxas salvas ou usar padrões corretos
       const savedGoogleTax = localStorage.getItem('admin_google_tax');
-      if (savedGoogleTax) setGoogleTax(Number(savedGoogleTax));
+      setGoogleTax(savedGoogleTax ? Number(savedGoogleTax) : 15); // Google: 15%
       
       const savedAppleTax = localStorage.getItem('admin_apple_tax');
-      if (savedAppleTax) setAppleTax(Number(savedAppleTax));
+      setAppleTax(savedAppleTax ? Number(savedAppleTax) : 15); // Apple: 15%
       
       const savedAsaasCreditCardTax = localStorage.getItem('admin_asaas_cc_tax');
-      if (savedAsaasCreditCardTax) setAsaasCreditCardTax(Number(savedAsaasCreditCardTax));
+      setAsaasCreditCardTax(savedAsaasCreditCardTax ? Number(savedAsaasCreditCardTax) : 3.49); // Asaas Cartão: 3.49%
       
       const savedAsaasPixTax = localStorage.getItem('admin_asaas_pix_tax');
-      if (savedAsaasPixTax) setAsaasPixTax(Number(savedAsaasPixTax));
+      setAsaasPixTax(savedAsaasPixTax ? Number(savedAsaasPixTax) : 1.99); // Asaas PIX: 1.99%
     } catch (error) {
       console.error('Erro ao buscar dados financeiros:', error);
     }
@@ -3469,7 +3484,7 @@ export default function Admin() {
                       <div className="md:hidden space-y-2">
                         {platformSubscribers.map((sub) => (
                           <div key={sub.id} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                            <div className="flex justify-between items-start gap-2 mb-1.5">
+                            <div className="flex justify-between items-start gap-2 mb-1">
                               <span className="font-medium text-sm text-gray-900 truncate flex-1">
                                 {sub.name}
                               </span>
@@ -3477,11 +3492,18 @@ export default function Admin() {
                                 R$ {sub.amount.toFixed(2)}
                               </span>
                             </div>
-                            <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                              <span>{sub.platform.includes('iOS') ? '🍎' : '🤖'}</span>
-                              <span>{sub.platform.includes('iOS') ? 'iOS' : 'Android'}</span>
-                              <span className="text-gray-300">•</span>
-                              <span>{sub.method.includes('Apple') ? '🍎 IAP' : sub.method.includes('Cartão') ? '💳 Cartão' : '📱 PIX'}</span>
+                            <p className="text-xs text-gray-500 truncate mb-1.5">{sub.email}</p>
+                            <div className="flex items-center justify-between gap-1.5 text-xs">
+                              <div className="flex items-center gap-1.5 text-gray-600">
+                                <span>{sub.platform.includes('iOS') ? '🍎 iOS' : '🤖 Android'}</span>
+                                <span className="text-gray-300">•</span>
+                                <span>{sub.method.includes('Apple') ? 'Apple IAP' : sub.method.includes('Cartão') ? '💳 Cartão' : '📱 PIX'}</span>
+                              </div>
+                              {sub.nextDueDate && (
+                                <span className="text-gray-400 text-[10px]">
+                                  Venc: {new Date(sub.nextDueDate).toLocaleDateString('pt-BR')}
+                                </span>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -3496,6 +3518,7 @@ export default function Admin() {
                               <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Email</th>
                               <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Plataforma</th>
                               <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Método</th>
+                              <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Vencimento</th>
                               <th className="text-right py-2 px-2 text-xs font-medium text-gray-500">Valor</th>
                             </tr>
                           </thead>
@@ -3520,6 +3543,9 @@ export default function Admin() {
                                   >
                                     {sub.method.includes('Apple') ? '🍎' : sub.method.includes('Cartão') ? '💳' : '📱'} {sub.method}
                                   </Badge>
+                                </td>
+                                <td className="py-2 px-2 text-gray-600 text-xs">
+                                  {sub.nextDueDate ? new Date(sub.nextDueDate).toLocaleDateString('pt-BR') : '-'}
                                 </td>
                                 <td className="py-2 px-2 text-right font-medium text-green-600 whitespace-nowrap">R$ {sub.amount.toFixed(2)}</td>
                               </tr>
