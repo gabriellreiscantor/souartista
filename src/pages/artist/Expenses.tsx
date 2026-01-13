@@ -36,15 +36,15 @@ interface AdditionalExpense {
   created_at: string;
 }
 
-const categoryConfig: Record<ExpenseCategory, { label: string; icon: React.ElementType }> = {
-  equipamento: { label: 'Equipamento', icon: Guitar },
-  acessorio: { label: 'Acessório', icon: Music },
-  manutencao: { label: 'Manutenção', icon: Wrench },
-  vestuario: { label: 'Vestuário', icon: Shirt },
-  marketing: { label: 'Marketing', icon: Megaphone },
-  formacao: { label: 'Formação', icon: GraduationCap },
-  software: { label: 'Software', icon: Monitor },
-  outros: { label: 'Outros', icon: Package },
+const categoryConfig: Record<ExpenseCategory, { label: string; icon: React.ElementType; placeholder: string }> = {
+  equipamento: { label: 'Equipamento', icon: Guitar, placeholder: 'Violão Takamine' },
+  acessorio: { label: 'Acessório', icon: Music, placeholder: 'Jogo de cordas Elixir' },
+  manutencao: { label: 'Manutenção', icon: Wrench, placeholder: 'Luthier' },
+  vestuario: { label: 'Vestuário', icon: Shirt, placeholder: 'Camisa jeans' },
+  marketing: { label: 'Marketing', icon: Megaphone, placeholder: 'Tráfego pago para clipe' },
+  formacao: { label: 'Formação', icon: GraduationCap, placeholder: 'Curso de canto' },
+  software: { label: 'Software', icon: Monitor, placeholder: 'Reaper' },
+  outros: { label: 'Outros', icon: Package, placeholder: 'Descrição da despesa' },
 };
 
 export default function ArtistExpenses() {
@@ -191,7 +191,7 @@ export default function ArtistExpenses() {
                     <CardTitle className="text-lg text-gray-900">Categoria</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       {(Object.keys(categoryConfig) as ExpenseCategory[]).map((cat) => {
                         const config = categoryConfig[cat];
                         const Icon = config.icon;
@@ -199,14 +199,14 @@ export default function ArtistExpenses() {
                         return (
                           <button
                             key={cat}
-                            className={`flex flex-col items-center gap-1 py-3 px-2 rounded-lg border transition-all ${
+                            className={`flex flex-col items-center justify-center gap-1 py-4 px-3 rounded-lg border transition-all ${
                               isSelected 
                                 ? 'bg-purple-600 text-white font-medium shadow-md' 
                                 : 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100'
                             }`}
                             onClick={() => setSelectedCategory(cat)}
                           >
-                            <Icon className="h-5 w-5" />
+                            <Icon className="w-6 h-6" />
                             <span className="text-xs">{config.label}</span>
                           </button>
                         );
@@ -229,7 +229,7 @@ export default function ArtistExpenses() {
                         <Label htmlFor="description" className="text-gray-900 font-medium">Descrição</Label>
                         <Input
                           id="description"
-                          placeholder="Ex: Jogo de cordas Elixir"
+                          placeholder={categoryConfig[selectedCategory].placeholder}
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
                           className="bg-white border-gray-300 text-gray-900"
