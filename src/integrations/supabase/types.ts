@@ -123,6 +123,45 @@ export type Database = {
           },
         ]
       }
+      backup_logs: {
+        Row: {
+          created_at: string
+          details: Json | null
+          duration_seconds: number | null
+          error_message: string | null
+          executed_at: string
+          files_copied: number
+          id: string
+          records_copied: number
+          status: string
+          tables_copied: number
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          duration_seconds?: number | null
+          error_message?: string | null
+          executed_at?: string
+          files_copied?: number
+          id?: string
+          records_copied?: number
+          status?: string
+          tables_copied?: number
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          duration_seconds?: number | null
+          error_message?: string | null
+          executed_at?: string
+          files_copied?: number
+          id?: string
+          records_copied?: number
+          status?: string
+          tables_copied?: number
+        }
+        Relationships: []
+      }
       deleted_users: {
         Row: {
           artists: Json | null
