@@ -9,6 +9,7 @@ import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -236,12 +237,11 @@ export default function ArtistExpenses() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="cost" className="text-gray-900 font-medium">Valor (R$)</Label>
-                        <Input
+                        <Label htmlFor="cost" className="text-gray-900 font-medium">Valor</Label>
+                        <CurrencyInput
                           id="cost"
-                          placeholder="0,00"
                           value={cost}
-                          onChange={(e) => setCost(e.target.value)}
+                          onChange={setCost}
                           className="bg-white border-gray-300 text-gray-900"
                         />
                       </div>

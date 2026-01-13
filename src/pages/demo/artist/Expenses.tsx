@@ -10,6 +10,7 @@ import { DemoLockedModal } from '@/components/DemoLockedModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -96,7 +97,7 @@ export default function DemoArtistExpenses() {
                   <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2"><CategoryIcon className="h-5 w-5" />Adicionar {categoryConfig[selectedCategory].label}</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2"><Label className="text-gray-900 font-medium">Descrição</Label><Input placeholder={categoryConfig[selectedCategory].placeholder} value={description} onChange={(e) => setDescription(e.target.value)} className="bg-white border-gray-300 text-gray-900" /></div>
-                    <div className="space-y-2"><Label className="text-gray-900 font-medium">Valor (R$)</Label><Input placeholder="0,00" value={cost} onChange={(e) => setCost(e.target.value)} className="bg-white border-gray-300 text-gray-900" /></div>
+                    <div className="space-y-2"><Label className="text-gray-900 font-medium">Valor</Label><CurrencyInput value={cost} onChange={setCost} className="bg-white border-gray-300 text-gray-900" /></div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
