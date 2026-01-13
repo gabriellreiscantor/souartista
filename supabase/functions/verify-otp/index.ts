@@ -112,6 +112,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email confirmed successfully for user:", user.id);
 
+    // Update is_verified in profiles table
+    const { error: profileUpdateError } = await supabaseAdmin
+      .from('profiles')
+      .update({ is_verified: true })
+      .eq('id', user.id);
+
+    if (profileUpdateError) {
+      console.error("Error updating profile is_verified:", profileUpdateError);
+      // Don't fail the operation, just log the error
+    } else {
+      console.log("Profile is_verified updated to true for user:", user.id);
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true,
