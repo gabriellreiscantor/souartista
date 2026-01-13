@@ -688,6 +688,253 @@ Não obrigatoriamente. Com este guia você pode:
 
 ---
 
+## 17. CONTEXTO PARA NOVA IA LOVABLE
+
+Esta seção permite que uma nova instância da IA do Lovable (em outra conta) entenda completamente o projeto e continue o desenvolvimento.
+
+### 17.1 Prompt Inicial para Nova IA
+
+**Cole este texto na primeira conversa com a nova IA:**
+
+```
+Olá! Este é o projeto SouArtista, um app de gestão financeira para artistas e músicos brasileiros.
+
+=== CONTEXTO TÉCNICO ===
+- Frontend: React 18 + TypeScript + Vite
+- Mobile: Capacitor (iOS/Android nativo)
+- UI: shadcn/ui + Tailwind CSS
+- Backend: Supabase (PostgreSQL, Auth, Edge Functions, Storage)
+- Pagamentos: Asaas (PIX/Cartão BR) + RevenueCat/Apple IAP (iOS)
+- Notificações Push: Firebase Cloud Messaging
+- Emails: Resend
+- IA: OpenAI (melhoria de textos)
+
+=== PAPÉIS DE USUÁRIO ===
+1. ARTISTA (role: "artist"):
+   - Cadastra e gerencia shows
+   - Adiciona músicos à equipe
+   - Cadastra locais (venues)
+   - Controla finanças (cachês, despesas)
+   - Gera relatórios
+
+2. MÚSICO (role: "musician"):
+   - Visualiza shows onde foi escalado
+   - Controla suas finanças pessoais
+   - Vê artistas com quem trabalha
+
+3. SUPORTE (role: "support"):
+   - Gerencia tickets de usuários
+   - Acesso limitado ao sistema
+
+4. ADMIN:
+   - Acesso total via admin_users table
+   - Painel em /admin
+
+=== FLUXO DE AUTENTICAÇÃO ===
+1. Landing (/) → Register (/register)
+2. Verificação de email via OTP (/verify-email)
+3. Completar perfil com CPF (/complete-profile)
+4. Escolher papel: Artista ou Músico (/select-role)
+5. Assinar plano (/subscribe) - Trial 7 dias, depois R$14,90/mês
+6. Dashboard (/{role}/dashboard)
+
+=== ESTRUTURA DE PASTAS ===
+- src/pages/artist/ → Páginas do artista
+- src/pages/musician/ → Páginas do músico
+- src/pages/demo/ → Versão demo (sem login)
+- src/components/ → Componentes reutilizáveis
+- src/hooks/ → Hooks customizados
+- supabase/functions/ → 32 Edge Functions
+
+=== EDGE FUNCTIONS PRINCIPAIS ===
+Pagamentos:
+- asaas-webhook: Recebe webhooks do Asaas
+- create-asaas-subscription: Cria assinatura
+- check-payment-status: Verifica pagamento PIX
+- cancel-subscription: Cancela assinatura
+- apple-subscription-webhook: Webhooks Apple
+- verify-apple-receipt: Valida compra iOS
+
+Notificações:
+- send-push-notification: Envia push via FCM
+- check-show-reminders: Lembretes de shows
+- send-subscription-reminders: Avisos de vencimento
+- send-engagement-tips: Dicas de engajamento
+
+Backup:
+- database-backup: Backup diário às 6h (Brasília)
+- backup-auth-users: Backup dos auth.users
+
+Auth:
+- send-otp-email: Envia código verificação
+- verify-otp: Valida código OTP
+
+=== BANCO DE DADOS (35 tabelas) ===
+Principais:
+- profiles: Dados do usuário (extensão de auth.users)
+- shows: Shows cadastrados
+- artists: Artistas criados pelo usuário
+- musicians: Músicos da equipe
+- venues: Locais de shows
+- subscriptions: Assinaturas e status
+- payment_history: Histórico de pagamentos
+- notifications: Notificações do sistema
+- support_tickets: Tickets de suporte
+- backup_logs: Logs de backup
+
+=== PADRÕES DE CÓDIGO ===
+- Idioma da interface: Português brasileiro
+- Data fetching: TanStack Query (@tanstack/react-query)
+- Formulários: react-hook-form + zod
+- Toasts: sonner
+- Ícones: lucide-react
+- Datas: date-fns
+- Componentes UI: shadcn/ui
+- Sempre usar import { supabase } from "@/integrations/supabase/client"
+
+=== SECRETS NECESSÁRIOS (Edge Functions) ===
+- ASAAS_API_KEY: API do Asaas
+- ASAAS_WEBHOOK_TOKEN: Validação webhooks
+- FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY: Push notifications
+- RESEND_API_KEY: Envio de emails
+- OPENAI_API_KEY: Melhoria de textos
+- APPLE_SHARED_SECRET: Validação IAP
+- SUPABASE_BACKUP_URL, SUPABASE_BACKUP_SERVICE_KEY: Backup secundário
+
+=== ESTADO ATUAL (Janeiro 2026) ===
+- App em produção (iOS App Store + Google Play)
+- Sistema de backup automático funcionando
+- Pagamentos via Asaas e Apple IAP
+- Notificações push funcionando
+- Sistema de referral ativo
+
+O repositório foi importado do GitHub e o Supabase de backup foi conectado.
+Por favor, analise o código e me ajude a continuar o desenvolvimento.
+```
+
+### 17.2 Arquitetura do Sistema
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         FRONTEND                                 │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │   React     │  │  Capacitor  │  │    shadcn/ui + Tailwind │  │
+│  │  (Vite+TS)  │  │ (iOS/Android)│  │         (UI)            │  │
+│  └──────┬──────┘  └──────┬──────┘  └─────────────────────────┘  │
+└─────────┼────────────────┼──────────────────────────────────────┘
+          │                │
+          ▼                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     SUPABASE (Backend)                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │ PostgreSQL  │  │    Auth     │  │      32 Edge Functions  │  │
+│  │ (35 tabelas)│  │ (email+OTP) │  │    (Deno/TypeScript)    │  │
+│  └──────┬──────┘  └─────────────┘  └───────────┬─────────────┘  │
+│         │                                      │                 │
+│  ┌──────┴──────┐                              │                 │
+│  │   Storage   │                              │                 │
+│  │(avatars,img)│                              │                 │
+│  └─────────────┘                              │                 │
+└───────────────────────────────────────────────┼─────────────────┘
+                                                │
+              ┌─────────────────────────────────┼─────────────────────┐
+              │                                 │                     │
+              ▼                                 ▼                     ▼
+     ┌─────────────────┐              ┌─────────────────┐    ┌───────────────┐
+     │      Asaas      │              │    Firebase     │    │    Resend     │
+     │ (PIX + Cartão)  │              │  (Push - FCM)   │    │   (Emails)    │
+     └─────────────────┘              └─────────────────┘    └───────────────┘
+              │
+              ▼
+     ┌─────────────────┐
+     │   RevenueCat    │
+     │ (Apple IAP iOS) │
+     └─────────────────┘
+```
+
+### 17.3 Mapa de Tabelas Principais
+
+| Tabela | Descrição | Relacionamentos |
+|--------|-----------|-----------------|
+| `profiles` | Dados do usuário | FK para auth.users |
+| `user_roles` | Papel do usuário (artist/musician) | FK profiles |
+| `shows` | Shows cadastrados | FK profiles (uid) |
+| `artists` | Artistas do usuário | FK profiles (owner_uid) |
+| `musicians` | Músicos da equipe | FK profiles (owner_uid) |
+| `venues` | Locais de shows | FK profiles (owner_uid) |
+| `subscriptions` | Assinaturas | FK profiles (user_id) |
+| `payment_history` | Pagamentos | FK subscriptions |
+| `notifications` | Notificações | target_role ou user_id |
+| `support_tickets` | Tickets suporte | FK user_id |
+| `backup_logs` | Logs de backup | - |
+| `admin_users` | Admins do sistema | FK user_id |
+
+### 17.4 Fluxo de Usuário Visual
+
+```
+┌──────────┐    ┌──────────┐    ┌──────────┐    ┌───────────┐
+│ Landing  │───▶│ Register │───▶│ Verify   │───▶│ Complete  │
+│    /     │    │/register │    │  Email   │    │  Profile  │
+└──────────┘    └──────────┘    └──────────┘    └─────┬─────┘
+                                                      │
+                                                      ▼
+┌──────────────────────────────────────────────────────────────┐
+│                      Select Role                              │
+│         ┌─────────────┐         ┌─────────────┐              │
+│         │   ARTISTA   │         │   MÚSICO    │              │
+│         └──────┬──────┘         └──────┬──────┘              │
+└────────────────┼───────────────────────┼─────────────────────┘
+                 │                       │
+                 ▼                       ▼
+          ┌──────────────┐        ┌──────────────┐
+          │  Subscribe   │        │  Subscribe   │
+          │  (7d trial)  │        │  (7d trial)  │
+          └──────┬───────┘        └──────┬───────┘
+                 │                       │
+                 ▼                       ▼
+          ┌──────────────┐        ┌──────────────┐
+          │   Dashboard  │        │   Dashboard  │
+          │   /artist/*  │        │  /musician/* │
+          └──────────────┘        └──────────────┘
+```
+
+### 17.5 Comandos Úteis
+
+```bash
+# Instalar dependências
+npm install
+
+# Rodar localmente
+npm run dev
+
+# Build
+npm run build
+
+# Sync Capacitor
+npx cap sync
+
+# Abrir iOS
+npx cap open ios
+
+# Abrir Android
+npx cap open android
+```
+
+### 17.6 Checklist Pós-Importação
+
+Após importar o projeto em nova conta Lovable:
+
+- [ ] Conectar Supabase de backup
+- [ ] Configurar todos os secrets nas Edge Functions
+- [ ] Testar login com usuário existente
+- [ ] Verificar se dashboard carrega
+- [ ] Testar criação de show
+- [ ] Verificar notificações push
+- [ ] Atualizar webhooks do Asaas
+- [ ] Fazer deploy e testar
+
+---
+
 ## 📝 NOTAS IMPORTANTES
 
 1. **TESTE ESTE GUIA ANTES** de precisar usá-lo de verdade
