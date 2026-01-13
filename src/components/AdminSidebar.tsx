@@ -1,7 +1,7 @@
 import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones, Download, Smartphone, Sparkles, MessageSquare, Scale, UserCog, AlertTriangle, Megaphone, Trash2, Database } from 'lucide-react';
 import logo from '@/assets/logo.png';
-import { NavLink } from '@/components/NavLink';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
@@ -162,10 +162,14 @@ export function AdminSidebar() {
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink
+                    <Link
                       to={item.url}
-                      className="hover:bg-sidebar-accent relative"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+                      className={cn(
+                        "flex items-center gap-2 relative transition-colors",
+                        isActive(item.url)
+                          ? "bg-sidebar-accent text-white font-medium"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                      )}
                       onClick={() => {
                         if (isMobile) {
                           setOpenMobile(false);
@@ -194,7 +198,7 @@ export function AdminSidebar() {
                           {deletedUsersCount > 9 ? '9+' : deletedUsersCount}
                         </span>
                       )}
-                    </NavLink>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
