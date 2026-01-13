@@ -223,7 +223,7 @@ const InvoiceSimulator = () => {
                 step="0.5"
                 value={issPercentual}
                 onChange={(e) => setIssPercentual(e.target.value)}
-                className="w-24"
+                className="w-24 !bg-white !text-gray-900"
               />
             </div>
           </CardContent>
