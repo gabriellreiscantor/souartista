@@ -187,10 +187,8 @@ export default function ArtistExpenses() {
               <div className="max-w-7xl mx-auto space-y-6">
                 {/* Category Selection */}
                 <Card className="bg-white border-gray-200 overflow-hidden">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg text-gray-900">Categoria</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-4 md:p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Categoria</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       {(Object.keys(categoryConfig) as ExpenseCategory[]).map((cat) => {
                         const config = categoryConfig[cat];
@@ -217,13 +215,11 @@ export default function ArtistExpenses() {
 
                 {/* Add Expense Form */}
                 <Card className="bg-white border-gray-200 overflow-hidden">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
+                  <CardContent className="p-4 md:p-6 space-y-4">
+                    <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                       <CategoryIcon className="h-5 w-5" />
                       Adicionar {categoryConfig[selectedCategory].label}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+                    </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="description" className="text-gray-900 font-medium">Descrição</Label>
@@ -294,12 +290,12 @@ export default function ArtistExpenses() {
 
                 {/* History */}
                 <Card className="bg-white border-gray-200 overflow-hidden">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
+                  <CardContent className="p-4 md:p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                         <Calendar className="h-5 w-5" />
                         Histórico
-                      </CardTitle>
+                      </h2>
                       <div className="flex items-center gap-2">
                         <Button 
                           variant="outline" 
@@ -309,8 +305,8 @@ export default function ArtistExpenses() {
                         >
                           <ChevronLeft className="h-4 w-4 text-gray-900" />
                         </Button>
-                        <span className="min-w-[120px] text-center font-medium text-gray-900">
-                          {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
+                        <span className="min-w-[100px] text-center font-medium text-gray-900 text-sm">
+                          {format(currentMonth, 'MMM yyyy', { locale: ptBR })}
                         </span>
                         <Button 
                           variant="outline" 
@@ -322,8 +318,6 @@ export default function ArtistExpenses() {
                         </Button>
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent>
                     {isLoading ? (
                       <div className="text-center py-8 text-gray-600">Carregando...</div>
                     ) : expenses.length === 0 ? (
