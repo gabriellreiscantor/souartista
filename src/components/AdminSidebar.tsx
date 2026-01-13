@@ -1,4 +1,4 @@
-import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones, Download, Smartphone, Sparkles, MessageSquare, Scale, UserCog, AlertTriangle, Megaphone, Trash2 } from 'lucide-react';
+import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones, Download, Smartphone, Sparkles, MessageSquare, Scale, UserCog, AlertTriangle, Megaphone, Trash2, Database } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -36,6 +36,7 @@ const mainItems = [
   { title: 'Atualizações', url: '/admin?tab=atualizacoes', icon: Sparkles },
   { title: 'Feedback', url: '/admin?tab=feedback', icon: MessageSquare },
   { title: 'Logs do Sistema', url: '/admin?tab=logs', icon: FileText },
+  { title: 'Backup God', url: '/admin?tab=backup', icon: Database },
 ];
 
 export function AdminSidebar() {
