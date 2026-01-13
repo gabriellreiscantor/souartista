@@ -220,7 +220,7 @@ export function BackupGodTab() {
                 <Users className="w-5 h-5 text-purple-600" />
                 <div>
                   <p className="text-xs text-gray-600">Auth Users</p>
-                  <p className="font-bold text-gray-900">{lastBackup.details?.auth_users_backed_up || 0}</p>
+                  <p className="font-bold text-gray-900">{lastBackup.details?.auth_users?.count || 0}</p>
                 </div>
               </div>
             </div>
@@ -303,7 +303,7 @@ export function BackupGodTab() {
                       <td className="text-center py-2 px-2 hidden sm:table-cell">{log.tables_copied}</td>
                       <td className="text-center py-2 px-2 hidden sm:table-cell">{log.records_copied.toLocaleString('pt-BR')}</td>
                       <td className="text-center py-2 px-2 hidden md:table-cell">{log.files_copied}</td>
-                      <td className="text-center py-2 px-2 hidden md:table-cell">{log.details?.auth_users_backed_up || 0}</td>
+                      <td className="text-center py-2 px-2 hidden md:table-cell">{log.details?.auth_users?.count || 0}</td>
                       <td className="text-center py-2 px-2 hidden lg:table-cell">{formatDuration(log.duration_seconds)}</td>
                       <td className="text-right py-2 px-2">
                         <Button
@@ -384,7 +384,7 @@ export function BackupGodTab() {
                 </div>
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-xs text-gray-600 mb-1">Usuários Auth</p>
-                  <p className="font-medium">{selectedLog.details?.auth_users_backed_up || 0}</p>
+                  <p className="font-medium">{selectedLog.details?.auth_users?.count || 0}</p>
                 </div>
               </div>
 
