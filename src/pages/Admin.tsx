@@ -102,6 +102,7 @@ export default function Admin() {
     'ester@souartista.com',           // Apple Tester
     'domingossbaf159@gmail.com',      // Domingos - sócio
     'jackal75353@mailshan.com',       // Teste 15
+    'lucaspressisampaio@gmail.com',   // Lucas Pressi - não aparece no RevenueCat (provavelmente cancelou)
   ];
 
   // Estados para Financeiro Global
@@ -111,8 +112,9 @@ export default function Admin() {
   const [asaasPixTax, setAsaasPixTax] = useState(1.99);
   const [activeUsersCount, setActiveUsersCount] = useState(0);
   const [cancelledUsersCount, setCancelledUsersCount] = useState(0);
+  const [needsVerificationCount, setNeedsVerificationCount] = useState(0);
   const [savingTax, setSavingTax] = useState(false);
-  const [subscriberViewMode, setSubscriberViewMode] = useState<'active' | 'cancelled'>('active');
+  const [subscriberViewMode, setSubscriberViewMode] = useState<'active' | 'cancelled' | 'verify'>('active');
   
   // Estados para Financeiro por Plataforma
   const [appleActiveCount, setAppleActiveCount] = useState(0);
@@ -131,6 +133,7 @@ export default function Admin() {
     nextDueDate?: string | null;
     status: 'active' | 'cancelled' | 'expired';
     isTestAccount?: boolean;
+    needsVerification?: boolean;
   }>>([])
 
   // Estados para deletar usuário
@@ -841,11 +844,15 @@ export default function Admin() {
       if (subsError) {
         console.error('Erro ao buscar assinaturas por plataforma:', subsError);
       } else {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
         // Processar dados por plataforma (apenas ativos que não são contas de teste)
         let appleCount = 0, appleTotal = 0;
         let creditCardCount = 0, creditCardTotal = 0;
         let pixCount = 0, pixTotal = 0;
         let cancelledCount = 0;
+        let verifyCount = 0;
         const subscribers: typeof platformSubscribers = [];
 
         allSubscriptionsData?.forEach((sub: any) => {
@@ -854,6 +861,17 @@ export default function Admin() {
           const nextDueDate = sub.next_due_date;
           const isTestAccount = EXCLUDED_TEST_EMAILS.includes(profile.email?.toLowerCase());
           const subscriptionStatus = sub.status as 'active' | 'cancelled' | 'expired';
+          
+          // Verificar se o next_due_date passou (indica que pode ter cancelado ou precisa verificar)
+          let needsVerification = false;
+          if (subscriptionStatus === 'active' && nextDueDate) {
+            const dueDate = new Date(nextDueDate);
+            dueDate.setHours(0, 0, 0, 0);
+            if (dueDate < today) {
+              needsVerification = true;
+              if (!isTestAccount) verifyCount++;
+            }
+          }
           
           // Contar cancelados (excluindo contas de teste)
           if ((subscriptionStatus === 'cancelled' || subscriptionStatus === 'expired') && !isTestAccount) {
@@ -868,12 +886,18 @@ export default function Admin() {
             amount,
             nextDueDate,
             status: subscriptionStatus,
-            isTestAccount
+            isTestAccount,
+            needsVerification
           };
           
+          // Só contabiliza receita se:
+          // 1. Status = active
+          // 2. Não é conta de teste
+          // 3. NÃO precisa verificar (next_due_date não passou)
+          const shouldCountRevenue = subscriptionStatus === 'active' && !isTestAccount && !needsVerification;
+          
           if (sub.payment_platform === 'apple') {
-            // Contabilizar apenas ativos que não são teste
-            if (subscriptionStatus === 'active' && !isTestAccount) {
+            if (shouldCountRevenue) {
               appleCount++;
               appleTotal += amount;
             }
@@ -883,7 +907,7 @@ export default function Admin() {
               method: 'Apple IAP',
             });
           } else if (sub.payment_method === 'CREDIT_CARD') {
-            if (subscriptionStatus === 'active' && !isTestAccount) {
+            if (shouldCountRevenue) {
               creditCardCount++;
               creditCardTotal += amount;
             }
@@ -893,7 +917,7 @@ export default function Admin() {
               method: 'Cartão de Crédito',
             });
           } else if (sub.payment_method === 'PIX') {
-            if (subscriptionStatus === 'active' && !isTestAccount) {
+            if (shouldCountRevenue) {
               pixCount++;
               pixTotal += amount;
             }
@@ -903,7 +927,7 @@ export default function Admin() {
               method: 'PIX',
             });
           } else if (sub.payment_platform === 'asaas') {
-            if (subscriptionStatus === 'active' && !isTestAccount) {
+            if (shouldCountRevenue) {
               creditCardCount++;
               creditCardTotal += amount;
             }
@@ -913,7 +937,7 @@ export default function Admin() {
               method: sub.payment_method || 'Cartão',
             });
           } else {
-            if (subscriptionStatus === 'active' && !isTestAccount) {
+            if (shouldCountRevenue) {
               creditCardCount++;
               creditCardTotal += amount;
             }
@@ -925,10 +949,11 @@ export default function Admin() {
           }
         });
 
-        // Contagem de ativos = total de assinaturas ativas (excluindo testes)
+        // Contagem de ativos = total de assinaturas ativas com next_due_date válido (excluindo testes)
         const totalActive = appleCount + creditCardCount + pixCount;
         setActiveUsersCount(totalActive);
         setCancelledUsersCount(cancelledCount);
+        setNeedsVerificationCount(verifyCount);
 
         setAppleActiveCount(appleCount);
         setAppleRevenue(appleTotal);
@@ -3417,15 +3442,24 @@ export default function Admin() {
                     <CardTitle className="text-gray-900 text-sm md:text-lg">📊 Resumo Consolidado</CardTitle>
                   </CardHeader>
                   <CardContent className="p-3 md:p-6 pt-0">
-                    <div className="grid grid-cols-2 gap-2 md:gap-4 md:grid-cols-4 mb-4">
-                      <div className="p-2 md:p-3 bg-white rounded-lg border border-gray-200 text-center">
-                        <p className="text-[10px] md:text-xs text-gray-500 mb-0.5">Ativos</p>
-                        <p className="text-lg md:text-2xl font-bold text-purple-600">{activeUsersCount}</p>
+                    {/* Info text */}
+                    <p className="text-[10px] md:text-xs text-gray-500 mb-3">
+                      ℹ️ Só conta receita de assinantes com <strong>next_due_date</strong> válido. Verifique os pendentes no RevenueCat.
+                    </p>
+                    
+                    <div className="grid grid-cols-2 gap-2 md:gap-4 md:grid-cols-5 mb-4">
+                      <div className="p-2 md:p-3 bg-white rounded-lg border border-green-200 text-center">
+                        <p className="text-[10px] md:text-xs text-gray-500 mb-0.5">🟢 Ativos</p>
+                        <p className="text-lg md:text-2xl font-bold text-green-600">{activeUsersCount}</p>
+                      </div>
+                      <div className="p-2 md:p-3 bg-white rounded-lg border border-yellow-200 text-center">
+                        <p className="text-[10px] md:text-xs text-gray-500 mb-0.5">🟡 Verificar</p>
+                        <p className="text-lg md:text-2xl font-bold text-yellow-600">{needsVerificationCount}</p>
                       </div>
                       <div className="p-2 md:p-3 bg-white rounded-lg border border-gray-200 text-center">
                         <p className="text-[10px] md:text-xs text-gray-500 mb-0.5">Receita Bruta</p>
                         <p className="text-base md:text-2xl font-bold text-green-600">
-                          R$ {(appleRevenue + asaasCreditCardRevenue + asaasPixRevenue).toFixed(0)}
+                          R$ {(appleRevenue + asaasCreditCardRevenue + asaasPixRevenue).toFixed(2)}
                         </p>
                       </div>
                       <div className="p-2 md:p-3 bg-white rounded-lg border border-gray-200 text-center">
@@ -3435,11 +3469,11 @@ export default function Admin() {
                             (appleRevenue * appleTax / 100) +
                             (asaasCreditCardRevenue * asaasCreditCardTax / 100) +
                             (asaasPixRevenue * asaasPixTax / 100)
-                          ).toFixed(0)}
+                          ).toFixed(2)}
                         </p>
                       </div>
                       <div className="p-2 md:p-3 bg-white rounded-lg border border-gray-200 text-center">
-                        <p className="text-[10px] md:text-xs text-gray-500 mb-0.5">Cancelados</p>
+                        <p className="text-[10px] md:text-xs text-gray-500 mb-0.5">❌ Cancelados</p>
                         <p className="text-lg md:text-2xl font-bold text-gray-600">{cancelledUsersCount}</p>
                       </div>
                     </div>
@@ -3490,15 +3524,23 @@ export default function Admin() {
                     <CardHeader className="p-3 md:p-6">
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                         <CardTitle className="text-gray-900 text-sm md:text-lg">👥 Assinantes</CardTitle>
-                        {/* Toggle Ativos/Cancelados */}
-                        <div className="flex gap-2">
+                        {/* Toggle Ativos/Verificar/Cancelados */}
+                        <div className="flex flex-wrap gap-2">
                           <Button
                             variant={subscriberViewMode === 'active' ? 'default' : 'outline'}
                             size="sm"
                             onClick={() => setSubscriberViewMode('active')}
                             className={`text-xs ${subscriberViewMode === 'active' ? 'bg-green-600 hover:bg-green-700' : ''}`}
                           >
-                            🟢 Ativos ({platformSubscribers.filter(s => s.status === 'active' && !s.isTestAccount).length})
+                            🟢 Ativos ({platformSubscribers.filter(s => s.status === 'active' && !s.isTestAccount && !s.needsVerification).length})
+                          </Button>
+                          <Button
+                            variant={subscriberViewMode === 'verify' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setSubscriberViewMode('verify')}
+                            className={`text-xs ${subscriberViewMode === 'verify' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}`}
+                          >
+                            🟡 Verificar ({platformSubscribers.filter(s => s.needsVerification && !s.isTestAccount).length})
                           </Button>
                           <Button
                             variant={subscriberViewMode === 'cancelled' ? 'default' : 'outline'}
@@ -3516,7 +3558,8 @@ export default function Admin() {
                       {(() => {
                         const filteredSubscribers = platformSubscribers.filter(s => {
                           if (s.isTestAccount) return false; // Never show test accounts
-                          if (subscriberViewMode === 'active') return s.status === 'active';
+                          if (subscriberViewMode === 'active') return s.status === 'active' && !s.needsVerification;
+                          if (subscriberViewMode === 'verify') return s.needsVerification;
                           return s.status === 'cancelled' || s.status === 'expired';
                         });
 
@@ -3525,6 +3568,8 @@ export default function Admin() {
                             <div className="text-center py-8 text-gray-500">
                               {subscriberViewMode === 'active' 
                                 ? 'Nenhum assinante ativo no momento' 
+                                : subscriberViewMode === 'verify'
+                                ? 'Nenhum assinante pendente de verificação'
                                 : 'Nenhum assinante cancelado para remarketing'}
                             </div>
                           );
@@ -3532,12 +3577,24 @@ export default function Admin() {
 
                         return (
                           <>
+                            {/* Alert for verify mode */}
+                            {subscriberViewMode === 'verify' && (
+                              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <p className="text-xs text-yellow-800">
+                                  ⚠️ Estes assinantes têm <strong>next_due_date</strong> vencido mas status ainda "active" no banco.
+                                  Verifique no RevenueCat se realmente renovaram ou cancelaram.
+                                </p>
+                              </div>
+                            )}
+                            
                             {/* Mobile: Cards empilhados */}
                             <div className="md:hidden space-y-2">
                               {filteredSubscribers.map((sub) => (
                                 <div key={sub.id} className={`p-3 rounded-lg border ${
                                   subscriberViewMode === 'cancelled' 
                                     ? 'bg-red-50 border-red-200' 
+                                    : subscriberViewMode === 'verify'
+                                    ? 'bg-yellow-50 border-yellow-200'
                                     : 'bg-gray-50 border-gray-200'
                                 }`}>
                                   <div className="flex justify-between items-start gap-2 mb-1">
@@ -3550,8 +3607,14 @@ export default function Admin() {
                                           {sub.status === 'expired' ? 'Expirado' : 'Cancelado'}
                                         </Badge>
                                       )}
+                                      {subscriberViewMode === 'verify' && (
+                                        <Badge className="text-[10px] px-1.5 py-0 bg-yellow-500">
+                                          Verificar
+                                        </Badge>
+                                      )}
                                       <span className={`font-bold text-sm whitespace-nowrap ${
-                                        subscriberViewMode === 'cancelled' ? 'text-gray-500' : 'text-green-600'
+                                        subscriberViewMode === 'cancelled' ? 'text-gray-500' : 
+                                        subscriberViewMode === 'verify' ? 'text-yellow-600' : 'text-green-600'
                                       }`}>
                                         R$ {sub.amount.toFixed(2)}
                                       </span>
@@ -3565,8 +3628,8 @@ export default function Admin() {
                                       <span>{sub.method.includes('Apple') ? 'Apple IAP' : sub.method.includes('Cartão') ? '💳 Cartão' : '📱 PIX'}</span>
                                     </div>
                                     {sub.nextDueDate && (
-                                      <span className="text-gray-400 text-[10px]">
-                                        {subscriberViewMode === 'cancelled' ? 'Último:' : 'Venc:'} {new Date(sub.nextDueDate).toLocaleDateString('pt-BR')}
+                                      <span className={`text-[10px] ${subscriberViewMode === 'verify' ? 'text-yellow-600 font-medium' : 'text-gray-400'}`}>
+                                        {subscriberViewMode === 'verify' ? '⚠️ Venceu:' : subscriberViewMode === 'cancelled' ? 'Último:' : 'Venc:'} {new Date(sub.nextDueDate).toLocaleDateString('pt-BR')}
                                       </span>
                                     )}
                                   </div>
@@ -3584,7 +3647,7 @@ export default function Admin() {
                                     <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Plataforma</th>
                                     <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Método</th>
                                     <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">
-                                      {subscriberViewMode === 'cancelled' ? 'Status' : 'Vencimento'}
+                                      {subscriberViewMode === 'cancelled' || subscriberViewMode === 'verify' ? 'Status' : 'Vencimento'}
                                     </th>
                                     <th className="text-right py-2 px-2 text-xs font-medium text-gray-500">Valor</th>
                                   </tr>
@@ -3592,7 +3655,9 @@ export default function Admin() {
                                 <tbody>
                                   {filteredSubscribers.map((sub) => (
                                     <tr key={sub.id} className={`border-b border-gray-100 ${
-                                      subscriberViewMode === 'cancelled' ? 'bg-red-50/50 hover:bg-red-50' : 'hover:bg-gray-50'
+                                      subscriberViewMode === 'cancelled' ? 'bg-red-50/50 hover:bg-red-50' : 
+                                      subscriberViewMode === 'verify' ? 'bg-yellow-50/50 hover:bg-yellow-50' :
+                                      'hover:bg-gray-50'
                                     }`}>
                                       <td className="py-2 px-2 font-medium text-gray-900 truncate max-w-[120px]">{sub.name}</td>
                                       <td className="py-2 px-2 text-gray-600 truncate max-w-[180px]">{sub.email}</td>
@@ -3618,6 +3683,15 @@ export default function Admin() {
                                           <Badge variant="destructive" className="text-xs">
                                             {sub.status === 'expired' ? 'Expirado' : 'Cancelado'}
                                           </Badge>
+                                        ) : subscriberViewMode === 'verify' ? (
+                                          <div className="flex flex-col gap-1">
+                                            <Badge className="text-xs bg-yellow-500">
+                                              ⚠️ Verificar
+                                            </Badge>
+                                            <span className="text-[10px] text-yellow-600">
+                                              Venceu: {sub.nextDueDate ? new Date(sub.nextDueDate).toLocaleDateString('pt-BR') : '-'}
+                                            </span>
+                                          </div>
                                         ) : (
                                           <span className="text-gray-600">
                                             {sub.nextDueDate ? new Date(sub.nextDueDate).toLocaleDateString('pt-BR') : '-'}
@@ -3625,7 +3699,9 @@ export default function Admin() {
                                         )}
                                       </td>
                                       <td className={`py-2 px-2 text-right font-medium whitespace-nowrap ${
-                                        subscriberViewMode === 'cancelled' ? 'text-gray-500' : 'text-green-600'
+                                        subscriberViewMode === 'cancelled' ? 'text-gray-500' : 
+                                        subscriberViewMode === 'verify' ? 'text-yellow-600' : 
+                                        'text-green-600'
                                       }`}>
                                         R$ {sub.amount.toFixed(2)}
                                       </td>
