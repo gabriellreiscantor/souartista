@@ -11,11 +11,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, X, Send, Download, Filter, Link as LinkIcon, MessageCircle, UserCog, Eye, EyeOff, RefreshCw, Trash2, UserMinus, Monitor, Wand2 } from 'lucide-react';
+import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, X, Send, Download, Filter, Link as LinkIcon, MessageCircle, UserCog, Eye, EyeOff, RefreshCw, Trash2, UserMinus, Monitor, Wand2, CheckSquare, Square, MinusSquare } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { RouteSelector } from '@/components/RouteSelector';
 import { PushNotificationLogs } from '@/components/PushNotificationLogs';
@@ -106,6 +108,13 @@ export default function Admin() {
   const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deletingUser, setDeletingUser] = useState(false);
+
+  // Estados para seleção múltipla e ações em lote
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [bulkDeleteConfirmText, setBulkDeleteConfirmText] = useState('');
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [bulkDeleteProgress, setBulkDeleteProgress] = useState(0);
   
 
   // Estados para Notificações
@@ -633,6 +642,108 @@ export default function Admin() {
       setDeletingUser(false);
     }
   };
+
+  // Funções para seleção múltipla
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUsers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    const currentPageIds = paginatedUsers.map(u => u.id);
+    const allSelected = currentPageIds.every(id => selectedUsers.has(id));
+    
+    if (allSelected) {
+      // Desselecionar todos da página atual
+      setSelectedUsers(prev => {
+        const newSet = new Set(prev);
+        currentPageIds.forEach(id => newSet.delete(id));
+        return newSet;
+      });
+    } else {
+      // Selecionar todos da página atual
+      setSelectedUsers(prev => {
+        const newSet = new Set(prev);
+        currentPageIds.forEach(id => newSet.add(id));
+        return newSet;
+      });
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedUsers(new Set());
+  };
+
+  const getSelectedUsersDetails = () => {
+    return users.filter(u => selectedUsers.has(u.id));
+  };
+
+  const handleBulkDelete = async () => {
+    if (bulkDeleteConfirmText !== `deletar ${selectedUsers.size}`) return;
+
+    try {
+      setBulkDeleting(true);
+      setBulkDeleteProgress(0);
+      
+      const usersToDelete = Array.from(selectedUsers);
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (let i = 0; i < usersToDelete.length; i++) {
+        const userId = usersToDelete[i];
+        try {
+          const { data, error } = await supabase.functions.invoke('create-support-user', {
+            body: {
+              action: 'delete',
+              userId
+            }
+          });
+
+          if (error) throw error;
+          if (data?.error) throw new Error(data.error);
+          
+          successCount++;
+        } catch (err) {
+          console.error(`Erro ao deletar usuário ${userId}:`, err);
+          errorCount++;
+        }
+        
+        setBulkDeleteProgress(Math.round(((i + 1) / usersToDelete.length) * 100));
+      }
+
+      if (successCount > 0) {
+        toast.success(`${successCount} usuário(s) excluído(s) com sucesso`);
+      }
+      if (errorCount > 0) {
+        toast.error(`Falha ao excluir ${errorCount} usuário(s)`);
+      }
+
+      setShowBulkDeleteDialog(false);
+      setBulkDeleteConfirmText('');
+      setSelectedUsers(new Set());
+      fetchUsers();
+      fetchStats();
+    } catch (error: any) {
+      console.error('Erro na exclusão em lote:', error);
+      toast.error('Erro ao executar exclusão em lote');
+    } finally {
+      setBulkDeleting(false);
+      setBulkDeleteProgress(0);
+    }
+  };
+
+  // Computed values para seleção
+  const paginatedUsers = users.slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage);
+  const totalPages = Math.ceil(users.length / usersPerPage);
+  const isAllCurrentPageSelected = paginatedUsers.length > 0 && paginatedUsers.every(u => selectedUsers.has(u.id));
+  const isSomeCurrentPageSelected = paginatedUsers.some(u => selectedUsers.has(u.id));
 
   // Funções para Financeiro Global
   // Buscar contagem de usuários com FCM token
@@ -1745,8 +1856,6 @@ export default function Admin() {
         {config.label}
       </Badge>;
   };
-  const paginatedUsers = users.slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage);
-  const totalPages = Math.ceil(users.length / usersPerPage);
 
   // Funções para LGPD
   const fetchLgpdRequests = async () => {
@@ -1999,14 +2108,55 @@ export default function Admin() {
                   {loading ? <div className="flex justify-center py-8">
                       <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
                     </div> : <>
+                      {/* Barra de ações em lote */}
+                      {selectedUsers.size > 0 && (
+                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <CheckSquare className="h-5 w-5 text-purple-600" />
+                            <span className="text-sm font-medium text-purple-800">
+                              {selectedUsers.size} usuário{selectedUsers.size > 1 ? 's' : ''} selecionado{selectedUsers.size > 1 ? 's' : ''}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={clearSelection}
+                              className="text-gray-600 border-gray-300"
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              Limpar
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => setShowBulkDeleteDialog(true)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Deletar Selecionados
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Mobile: Card layout */}
                       <div className="md:hidden space-y-2">
                         {paginatedUsers.map(user => (
-                          <div key={user.id} className="border border-gray-200 rounded-lg p-3 bg-white">
-                            <div className="flex justify-between items-start">
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-sm text-gray-900 truncate">{user.name}</p>
-                                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                          <div 
+                            key={user.id} 
+                            className={`border rounded-lg p-3 bg-white ${selectedUsers.has(user.id) ? 'border-purple-400 bg-purple-50' : 'border-gray-200'}`}
+                          >
+                            <div className="flex justify-between items-start gap-2">
+                              <div className="flex items-start gap-3">
+                                <Checkbox
+                                  checked={selectedUsers.has(user.id)}
+                                  onCheckedChange={() => toggleUserSelection(user.id)}
+                                  className="mt-1"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-sm text-gray-900 truncate">{user.name}</p>
+                                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                </div>
                               </div>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -2085,6 +2235,21 @@ export default function Admin() {
                         <table className="w-full bg-white">
                           <thead>
                             <tr className="border-b bg-gray-50 border-gray-200">
+                              <th className="p-3 w-10">
+                                <button
+                                  onClick={toggleSelectAll}
+                                  className="flex items-center justify-center hover:bg-gray-200 rounded p-1"
+                                  title={isAllCurrentPageSelected ? "Desselecionar todos" : "Selecionar todos da página"}
+                                >
+                                  {isAllCurrentPageSelected ? (
+                                    <CheckSquare className="h-5 w-5 text-purple-600" />
+                                  ) : isSomeCurrentPageSelected ? (
+                                    <MinusSquare className="h-5 w-5 text-purple-400" />
+                                  ) : (
+                                    <Square className="h-5 w-5 text-gray-400" />
+                                  )}
+                                </button>
+                              </th>
                               <th className="p-3 text-left font-medium text-sm text-gray-900">Nome</th>
                               <th className="p-3 text-left font-medium text-sm text-gray-900">Email</th>
                               <th className="p-3 text-left font-medium text-sm text-gray-900 hidden lg:table-cell">Role</th>
@@ -2095,7 +2260,13 @@ export default function Admin() {
                             </tr>
                           </thead>
                           <tbody>
-                            {paginatedUsers.map(user => <tr key={user.id} className="border-b hover:bg-gray-50 border-gray-200">
+                            {paginatedUsers.map(user => <tr key={user.id} className={`border-b hover:bg-gray-50 border-gray-200 ${selectedUsers.has(user.id) ? 'bg-purple-50' : ''}`}>
+                                <td className="p-3">
+                                  <Checkbox
+                                    checked={selectedUsers.has(user.id)}
+                                    onCheckedChange={() => toggleUserSelection(user.id)}
+                                  />
+                                </td>
                                 <td className="p-3">
                                   <p className="font-medium text-sm text-gray-900">{user.name}</p>
                                 </td>
@@ -5238,6 +5409,98 @@ export default function Admin() {
                 <>
                   <Trash2 className="h-4 w-4 mr-2" />
                   Excluir
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <Dialog open={showBulkDeleteDialog} onOpenChange={(open) => {
+        if (!open && !bulkDeleting) {
+          setShowBulkDeleteDialog(false);
+          setBulkDeleteConfirmText('');
+        }
+      }}>
+        <DialogContent className="bg-white text-gray-900 max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-red-600 flex items-center gap-2">
+              <Trash2 className="h-5 w-5" />
+              Excluir {selectedUsers.size} Usuário{selectedUsers.size > 1 ? 's' : ''} Permanentemente
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mt-4">
+                <p className="text-red-800 font-medium">Esta ação é IRREVERSÍVEL!</p>
+                <p className="text-red-700 text-sm mt-2">
+                  Todos os dados dos usuários selecionados serão excluídos permanentemente.
+                </p>
+              </div>
+
+              <div className="bg-gray-100 rounded-lg p-4 mt-4 max-h-48 overflow-y-auto">
+                <p className="text-gray-700 text-sm mb-2 font-medium">Usuários a serem excluídos:</p>
+                <ul className="space-y-1">
+                  {getSelectedUsersDetails().map(u => (
+                    <li key={u.id} className="text-sm text-gray-600 flex items-center gap-2">
+                      <span className="font-medium text-gray-900">{u.name}</span>
+                      <span className="text-xs text-gray-400">({u.email})</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {bulkDeleting && (
+                <div className="mt-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Progresso</span>
+                    <span className="font-medium text-gray-900">{bulkDeleteProgress}%</span>
+                  </div>
+                  <Progress value={bulkDeleteProgress} className="h-2" />
+                </div>
+              )}
+
+              <div className="space-y-2 mt-4">
+                <Label htmlFor="confirmBulkDelete" className="text-gray-900">
+                  Digite <span className="font-bold text-red-600">deletar {selectedUsers.size}</span> para confirmar:
+                </Label>
+                <Input
+                  id="confirmBulkDelete"
+                  value={bulkDeleteConfirmText}
+                  onChange={(e) => setBulkDeleteConfirmText(e.target.value.toLowerCase())}
+                  placeholder={`deletar ${selectedUsers.size}`}
+                  className="bg-white border-gray-300 text-gray-900"
+                  disabled={bulkDeleting}
+                />
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 mt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowBulkDeleteDialog(false);
+                setBulkDeleteConfirmText('');
+              }}
+              disabled={bulkDeleting}
+              className="flex-1"
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={handleBulkDelete}
+              disabled={bulkDeleteConfirmText !== `deletar ${selectedUsers.size}` || bulkDeleting}
+              className="flex-1"
+            >
+              {bulkDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Excluindo... ({bulkDeleteProgress}%)
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Excluir {selectedUsers.size}
                 </>
               )}
             </Button>
