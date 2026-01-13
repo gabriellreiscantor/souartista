@@ -21,15 +21,15 @@ import {
 
 type ExpenseCategory = 'equipamento' | 'acessorio' | 'manutencao' | 'vestuario' | 'marketing' | 'formacao' | 'software' | 'outros';
 
-const categoryConfig: Record<ExpenseCategory, { label: string; icon: React.ElementType }> = {
-  equipamento: { label: 'Equipamento', icon: Guitar },
-  acessorio: { label: 'Acessório', icon: Music },
-  manutencao: { label: 'Manutenção', icon: Wrench },
-  vestuario: { label: 'Vestuário', icon: Shirt },
-  marketing: { label: 'Marketing', icon: Megaphone },
-  formacao: { label: 'Formação', icon: GraduationCap },
-  software: { label: 'Software', icon: Monitor },
-  outros: { label: 'Outros', icon: Package },
+const categoryConfig: Record<ExpenseCategory, { label: string; icon: React.ElementType; placeholder: string }> = {
+  equipamento: { label: 'Equipamento', icon: Guitar, placeholder: 'Violão Takamine' },
+  acessorio: { label: 'Acessório', icon: Music, placeholder: 'Jogo de cordas Elixir' },
+  manutencao: { label: 'Manutenção', icon: Wrench, placeholder: 'Luthier' },
+  vestuario: { label: 'Vestuário', icon: Shirt, placeholder: 'Camisa jeans' },
+  marketing: { label: 'Marketing', icon: Megaphone, placeholder: 'Tráfego pago para clipe' },
+  formacao: { label: 'Formação', icon: GraduationCap, placeholder: 'Curso de canto' },
+  software: { label: 'Software', icon: Monitor, placeholder: 'Reaper' },
+  outros: { label: 'Outros', icon: Package, placeholder: 'Descrição da despesa' },
 };
 
 const demoExpenses = [
@@ -72,14 +72,14 @@ export default function DemoMusicianExpenses() {
               <Card className="bg-white border-gray-200">
                 <CardHeader className="pb-3"><CardTitle className="text-lg text-gray-900">Categoria</CardTitle></CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     {(Object.keys(categoryConfig) as ExpenseCategory[]).map((cat) => {
                       const config = categoryConfig[cat];
                       const Icon = config.icon;
                       const isSelected = selectedCategory === cat;
                       return (
-                        <button key={cat} className={`flex flex-col items-center gap-1 py-3 px-2 rounded-lg border transition-all ${isSelected ? 'bg-purple-600 text-white font-medium shadow-md' : 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100'}`} onClick={() => setSelectedCategory(cat)}>
-                          <Icon className="h-5 w-5" /><span className="text-xs">{config.label}</span>
+                        <button key={cat} className={`flex flex-col items-center justify-center gap-1 py-4 px-3 rounded-lg border transition-all ${isSelected ? 'bg-purple-600 text-white font-medium shadow-md' : 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100'}`} onClick={() => setSelectedCategory(cat)}>
+                          <Icon className="w-6 h-6" /><span className="text-xs">{config.label}</span>
                         </button>
                       );
                     })}
@@ -90,7 +90,7 @@ export default function DemoMusicianExpenses() {
                 <CardHeader className="pb-3"><CardTitle className="text-lg text-gray-900 flex items-center gap-2"><CategoryIcon className="h-5 w-5" />Adicionar {categoryConfig[selectedCategory].label}</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2"><Label className="text-gray-900 font-medium">Descrição</Label><Input placeholder="Ex: Jogo de cordas" value={description} onChange={(e) => setDescription(e.target.value)} className="bg-white border-gray-300 text-gray-900" /></div>
+                    <div className="space-y-2"><Label className="text-gray-900 font-medium">Descrição</Label><Input placeholder={categoryConfig[selectedCategory].placeholder} value={description} onChange={(e) => setDescription(e.target.value)} className="bg-white border-gray-300 text-gray-900" /></div>
                     <div className="space-y-2"><Label className="text-gray-900 font-medium">Valor (R$)</Label><Input placeholder="0,00" value={cost} onChange={(e) => setCost(e.target.value)} className="bg-white border-gray-300 text-gray-900" /></div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -99,7 +99,7 @@ export default function DemoMusicianExpenses() {
                   </div>
                   <div className="flex items-center justify-between pt-2">
                     <div className="text-lg font-semibold text-gray-900">Total do Mês: <span className="text-purple-600">{formatCurrency(totalMonth)}</span></div>
-                    <Button onClick={handleAction} className="gap-2 bg-purple-600 hover:bg-purple-700"><Plus className="h-4 w-4" />Salvar Despesa</Button>
+                    <Button onClick={handleAction} className="gap-2 bg-purple-600 hover:bg-purple-700 text-white"><Plus className="h-4 w-4" />Salvar Despesa</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -108,9 +108,9 @@ export default function DemoMusicianExpenses() {
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg text-gray-900 flex items-center gap-2"><Calendar className="h-5 w-5" />Histórico</CardTitle>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="bg-white border-gray-300 hover:bg-gray-50"><ChevronLeft className="h-4 w-4" /></Button>
+                      <Button variant="outline" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="bg-white border-gray-300 hover:bg-gray-50"><ChevronLeft className="h-4 w-4 text-gray-900" /></Button>
                       <span className="min-w-[120px] text-center font-medium text-gray-900">{format(currentMonth, 'MMMM yyyy', { locale: ptBR })}</span>
-                      <Button variant="outline" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="bg-white border-gray-300 hover:bg-gray-50"><ChevronRight className="h-4 w-4" /></Button>
+                      <Button variant="outline" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="bg-white border-gray-300 hover:bg-gray-50"><ChevronRight className="h-4 w-4 text-gray-900" /></Button>
                     </div>
                   </div>
                 </CardHeader>
