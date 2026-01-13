@@ -53,3 +53,6 @@ verify_jwt = true
 
 [functions.validate-referrals]
 verify_jwt = false
+
+[functions.improve-text]
+verify_jwt = false
