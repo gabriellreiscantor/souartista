@@ -283,7 +283,7 @@ export default function ArtistExpenses() {
                       <Button 
                         onClick={() => addExpenseMutation.mutate()}
                         disabled={addExpenseMutation.isPending}
-                        className="gap-2 bg-purple-600 hover:bg-purple-700"
+                        className="gap-2 bg-purple-600 hover:bg-purple-700 text-white"
                       >
                         <Plus className="h-4 w-4" />
                         Salvar Despesa
