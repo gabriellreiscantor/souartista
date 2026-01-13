@@ -91,15 +91,20 @@ export function DemoWeeklySchedule({ userRole }: DemoWeeklyScheduleProps) {
                   </span>
                 </div>
 
-                {/* Shows List */}
-                <div className="flex-1 space-y-2">
-                  {dayShows.map((show) => (
-                    <div key={show.id} className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-primary" />
-                        <span className="text-sm font-bold text-gray-900">{show.venue_name}</span>
-                      </div>
-                      {userRole === 'musician' && (
+                      {/* Shows List */}
+                      <div className="flex-1 space-y-2">
+                        {dayShows.map((show) => (
+                          <div key={show.id} className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4 text-primary" />
+                              <span className="text-sm font-bold text-gray-900">{show.venue_name}</span>
+                            </div>
+                            {userRole === 'artist' && (
+                              <p className="ml-6 text-xs text-gray-400 mt-1">
+                                Clique para ver os detalhes do show
+                              </p>
+                            )}
+                            {userRole === 'musician' && (
                         <div className="ml-6 space-y-0.5">
                           {show.artist_name && (
                             <p className="text-xs text-gray-600">

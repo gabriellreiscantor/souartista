@@ -226,6 +226,11 @@ export function WeeklySchedule({ userRole }: WeeklyScheduleProps) {
                           <Calendar className="w-4 h-4 text-primary" />
                           <span className="text-sm font-bold text-gray-900">{show.venue_name}</span>
                         </div>
+                        {userRole === 'artist' && (
+                          <p className="ml-6 text-xs text-gray-400 mt-1">
+                            Clique para ver os detalhes do show
+                          </p>
+                        )}
                         {userRole === 'musician' && (
                           <div className="ml-6 space-y-0.5">
                             {show.artist_name && (
