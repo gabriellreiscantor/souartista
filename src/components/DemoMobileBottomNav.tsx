@@ -1,4 +1,4 @@
-import { Music, Calendar, LayoutDashboard, BarChart3, Car } from 'lucide-react';
+import { Music, Calendar, LayoutDashboard, BarChart3, Car, Receipt } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { cn } from '@/lib/utils';
 
@@ -32,6 +32,11 @@ export function DemoMobileBottomNav({ role }: DemoMobileBottomNavProps) {
       title: 'Locomoção', 
       url: `/demo/${role}/transportation`, 
       icon: Car 
+    },
+    { 
+      title: 'Despesas', 
+      url: `/demo/${role}/expenses`, 
+      icon: Receipt 
     },
   ];
 
