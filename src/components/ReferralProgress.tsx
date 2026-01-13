@@ -53,7 +53,7 @@ export function ReferralProgress() {
           )}
         </div>
         <CardDescription className="text-gray-600">
-          Indique 5 amigos que assinem e ganhe 1 mês grátis! Pode repetir quantas vezes quiser.
+          Indique 5 amigos que assinem e ganhe 1 mês grátis! Seu amigo ganha 14 dias de teste grátis (só vale para cartão de crédito).
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -144,13 +144,18 @@ export function ReferralProgress() {
           </Collapsible>
         )}
 
-        {/* Informação sobre validação */}
-        <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
+        {/* Informação sobre benefícios e validação */}
+        <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg space-y-2">
+          <p className="flex items-start gap-2">
+            <Gift className="h-4 w-4 mt-0.5 flex-shrink-0 text-purple-600" />
+            <span>
+              <strong>Benefício para quem você indica:</strong> 14 dias de teste grátis ao invés de 7 (válido apenas para pagamento com cartão de crédito, não funciona com PIX).
+            </span>
+          </p>
           <p className="flex items-start gap-2">
             <Clock className="h-4 w-4 mt-0.5 flex-shrink-0" />
             <span>
-              Uma indicação é validada após 15 dias do pagamento confirmado do indicado.
-              Indicações canceladas ou reembolsadas não contam. Você pode ganhar múltiplos meses grátis!
+              <strong>Seu benefício:</strong> A cada 5 indicações validadas (após 15 dias do pagamento), você ganha 1 mês grátis. Pode repetir!
             </span>
           </p>
         </div>
