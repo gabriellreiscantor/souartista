@@ -37,6 +37,7 @@ interface UserProfile {
   role?: string;
   isAdmin?: boolean;
   isSupport?: boolean;
+  is_verified?: boolean;
 }
 interface Show {
   id: string;
@@ -240,6 +241,10 @@ export default function Admin() {
   const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
   const [selectedStaffForReset, setSelectedStaffForReset] = useState<any | null>(null);
   const [newGeneratedPassword, setNewGeneratedPassword] = useState('');
+
+  // Estados para Reenvio de OTP
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [otpTargetUser, setOtpTargetUser] = useState<UserProfile | null>(null);
   
   const usersPerPage = 50;
   useEffect(() => {
@@ -403,10 +408,10 @@ export default function Admin() {
     try {
       setLoading(true);
       
-      // Buscar profiles
+      // Buscar profiles incluindo is_verified
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, name, email, phone, cpf, birth_date, status_plano, plan_type, created_at, plan_purchased_at, last_seen_at, is_verified')
         .order('created_at', { ascending: false });
       
       if (profilesError) throw profilesError;
@@ -434,6 +439,27 @@ export default function Admin() {
       toast.error('Erro ao carregar usuários');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async (user: UserProfile) => {
+    try {
+      setSendingOtp(true);
+      setOtpTargetUser(user);
+
+      const { data, error } = await supabase.functions.invoke('send-otp-email', {
+        body: { email: user.email }
+      });
+
+      if (error) throw error;
+
+      toast.success(`OTP reenviado para ${user.email}`);
+    } catch (error: any) {
+      console.error('Erro ao reenviar OTP:', error);
+      toast.error(error.message || 'Erro ao reenviar OTP');
+    } finally {
+      setSendingOtp(false);
+      setOtpTargetUser(null);
     }
   };
   const handleUpdateName = async () => {
@@ -1938,10 +1964,22 @@ export default function Admin() {
                                     setEditPlanType(user.plan_type || '');
                                     setShowStatusDialog(true);
                                   }}>
-                                    Gerenciar Plano
+                                      Gerenciar Plano
                                   </DropdownMenuItem>
                                   <DropdownMenuItem className="hover:bg-gray-100" onClick={() => copyToClipboard(user.id)}>
                                     Copiar ID
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    className="hover:bg-gray-100"
+                                    disabled={sendingOtp && otpTargetUser?.id === user.id}
+                                    onClick={() => handleResendOtp(user)}
+                                  >
+                                    {sendingOtp && otpTargetUser?.id === user.id ? (
+                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    ) : (
+                                      <Send className="h-4 w-4 mr-2" />
+                                    )}
+                                    Reenviar OTP
                                   </DropdownMenuItem>
                                   <DropdownMenuItem 
                                     className="text-red-600 hover:bg-red-50"
@@ -1959,6 +1997,11 @@ export default function Admin() {
                             <div className="flex flex-wrap gap-1 mt-2">
                               {getStatusBadge(user.status_plano)}
                               {getPlanTypeBadge(user.plan_type)}
+                              {user.is_verified === false && (
+                                <Badge className="bg-orange-100 text-orange-800 text-xs">
+                                  ⚠️ Não verificado
+                                </Badge>
+                              )}
                               {user.role && (
                                 <Badge className={user.role === 'artist' ? 'bg-purple-100 text-purple-800 text-xs' : 'bg-blue-100 text-blue-800 text-xs'}>
                                   {user.role === 'artist' ? '🎸 Artista' : '🎵 Músico'}
@@ -2048,6 +2091,18 @@ export default function Admin() {
                                       </DropdownMenuItem>
                                       <DropdownMenuItem className="hover:bg-gray-100" onClick={() => copyToClipboard(user.id)}>
                                         Copiar ID
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem 
+                                        className="hover:bg-gray-100"
+                                        disabled={sendingOtp && otpTargetUser?.id === user.id}
+                                        onClick={() => handleResendOtp(user)}
+                                      >
+                                        {sendingOtp && otpTargetUser?.id === user.id ? (
+                                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        ) : (
+                                          <Send className="h-4 w-4 mr-2" />
+                                        )}
+                                        Reenviar OTP
                                       </DropdownMenuItem>
                                       <DropdownMenuItem 
                                         className="text-red-600 hover:bg-red-50"
