@@ -21,15 +21,15 @@ import {
 
 type ExpenseCategory = 'equipamento' | 'acessorio' | 'manutencao' | 'vestuario' | 'marketing' | 'formacao' | 'software' | 'outros';
 
-const categoryConfig: Record<ExpenseCategory, { label: string; icon: React.ElementType; color: string; bgLight: string }> = {
-  equipamento: { label: 'Equipamento', icon: Guitar, color: 'bg-blue-500', bgLight: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100' },
-  acessorio: { label: 'Acessório', icon: Music, color: 'bg-purple-500', bgLight: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100' },
-  manutencao: { label: 'Manutenção', icon: Wrench, color: 'bg-orange-500', bgLight: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100' },
-  vestuario: { label: 'Vestuário', icon: Shirt, color: 'bg-pink-500', bgLight: 'bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100' },
-  marketing: { label: 'Marketing', icon: Megaphone, color: 'bg-green-500', bgLight: 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' },
-  formacao: { label: 'Formação', icon: GraduationCap, color: 'bg-yellow-500', bgLight: 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100' },
-  software: { label: 'Software', icon: Monitor, color: 'bg-cyan-500', bgLight: 'bg-cyan-50 text-cyan-700 border-cyan-200 hover:bg-cyan-100' },
-  outros: { label: 'Outros', icon: Package, color: 'bg-gray-500', bgLight: 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100' },
+const categoryConfig: Record<ExpenseCategory, { label: string; icon: React.ElementType }> = {
+  equipamento: { label: 'Equipamento', icon: Guitar },
+  acessorio: { label: 'Acessório', icon: Music },
+  manutencao: { label: 'Manutenção', icon: Wrench },
+  vestuario: { label: 'Vestuário', icon: Shirt },
+  marketing: { label: 'Marketing', icon: Megaphone },
+  formacao: { label: 'Formação', icon: GraduationCap },
+  software: { label: 'Software', icon: Monitor },
+  outros: { label: 'Outros', icon: Package },
 };
 
 const demoExpenses = [
@@ -78,7 +78,7 @@ export default function DemoMusicianExpenses() {
                       const Icon = config.icon;
                       const isSelected = selectedCategory === cat;
                       return (
-                        <button key={cat} className={`flex flex-col items-center gap-1 py-3 px-2 rounded-lg border transition-all ${isSelected ? `${config.color} text-white font-medium shadow-md` : config.bgLight}`} onClick={() => setSelectedCategory(cat)}>
+                        <button key={cat} className={`flex flex-col items-center gap-1 py-3 px-2 rounded-lg border transition-all ${isSelected ? 'bg-purple-600 text-white font-medium shadow-md' : 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100'}`} onClick={() => setSelectedCategory(cat)}>
                           <Icon className="h-5 w-5" /><span className="text-xs">{config.label}</span>
                         </button>
                       );
@@ -122,7 +122,7 @@ export default function DemoMusicianExpenses() {
                       return (
                         <div key={expense.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors">
                           <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-full ${config.color} text-white`}><Icon className="h-4 w-4" /></div>
+                            <div className="p-2 rounded-full bg-purple-600 text-white"><Icon className="h-4 w-4" /></div>
                             <div><p className="font-medium text-gray-900">{expense.description}</p><p className="text-sm text-gray-600">{format(new Date(expense.expense_date), 'dd/MM/yyyy')} • {config.label}</p></div>
                           </div>
                           <div className="flex items-center gap-3">
