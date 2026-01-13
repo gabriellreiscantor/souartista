@@ -1997,7 +1997,11 @@ export default function Admin() {
                             <div className="flex flex-wrap gap-1 mt-2">
                               {getStatusBadge(user.status_plano)}
                               {getPlanTypeBadge(user.plan_type)}
-                              {user.is_verified === false && (
+                              {user.is_verified === true ? (
+                                <Badge className="bg-green-100 text-green-800 text-xs">
+                                  ✓ Verificado
+                                </Badge>
+                              ) : (
                                 <Badge className="bg-orange-100 text-orange-800 text-xs">
                                   ⚠️ Não verificado
                                 </Badge>
