@@ -217,6 +217,9 @@ export default function Admin() {
   const [feedbackFilter, setFeedbackFilter] = useState('all');
   const [usersWithPlanCount, setUsersWithPlanCount] = useState(0);
   const [feedbackCount, setFeedbackCount] = useState(0);
+  const [respondingFeedback, setRespondingFeedback] = useState<any | null>(null);
+  const [feedbackResponse, setFeedbackResponse] = useState('');
+  const [sendingFeedbackResponse, setSendingFeedbackResponse] = useState(false);
 
   // Estados para LGPD
   const [lgpdRequests, setLgpdRequests] = useState<any[]>([]);
@@ -974,6 +977,34 @@ export default function Admin() {
     } catch (error) {
       console.error('Erro ao remover feedback:', error);
       toast.error('Erro ao remover feedback');
+    }
+  };
+
+  const handleRespondFeedback = async () => {
+    if (!respondingFeedback || !feedbackResponse.trim()) return;
+    
+    setSendingFeedbackResponse(true);
+    try {
+      const { error } = await supabase
+        .from('user_feedback')
+        .update({ 
+          admin_response: feedbackResponse,
+          responded_at: new Date().toISOString(),
+          status: 'reviewed'
+        })
+        .eq('id', respondingFeedback.id);
+      
+      if (error) throw error;
+      
+      toast.success('Resposta enviada com sucesso!');
+      setRespondingFeedback(null);
+      setFeedbackResponse('');
+      fetchFeedback();
+    } catch (error) {
+      console.error('Erro ao enviar resposta:', error);
+      toast.error('Erro ao enviar resposta');
+    } finally {
+      setSendingFeedbackResponse(false);
     }
   };
 
@@ -3861,6 +3892,19 @@ export default function Admin() {
                                     Enviado: {new Date(feedback.created_at).toLocaleDateString('pt-BR')}
                                   </div>
 
+                                  {/* Exibir resposta do admin (se houver) */}
+                                  {feedback.admin_response && (
+                                    <div className="bg-purple-50 p-2 rounded border-l-2 border-purple-500 mt-2">
+                                      <p className="text-[10px] md:text-xs text-purple-700 font-medium">Resposta do Admin:</p>
+                                      <p className="text-xs text-purple-900 whitespace-pre-line">{feedback.admin_response}</p>
+                                      {feedback.responded_at && (
+                                        <p className="text-[10px] text-purple-500 mt-1">
+                                          Respondido em: {new Date(feedback.responded_at).toLocaleDateString('pt-BR')}
+                                        </p>
+                                      )}
+                                    </div>
+                                  )}
+
                                   <div className="flex flex-col sm:flex-row gap-1.5 pt-2 border-t border-gray-200">
                                     <Select
                                       value={feedback.status}
@@ -3876,6 +3920,18 @@ export default function Admin() {
                                         <SelectItem value="dismissed">Descartado</SelectItem>
                                       </SelectContent>
                                     </Select>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => {
+                                        setRespondingFeedback(feedback);
+                                        setFeedbackResponse(feedback.admin_response || '');
+                                      }}
+                                      className="h-7 md:h-8 text-xs"
+                                    >
+                                      <MessageCircle className="h-3 w-3 mr-1" />
+                                      {feedback.admin_response ? 'Editar Resposta' : 'Responder'}
+                                    </Button>
                                     <Button
                                       variant="destructive"
                                       size="sm"
@@ -5064,6 +5120,63 @@ export default function Admin() {
                 <>
                   <Trash2 className="h-4 w-4 mr-2" />
                   Excluir
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Feedback Response Dialog */}
+      <Dialog open={!!respondingFeedback} onOpenChange={(open) => !open && setRespondingFeedback(null)}>
+        <DialogContent className="bg-white text-gray-900 max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">Responder Feedback</DialogTitle>
+            <DialogDescription className="text-gray-600">
+              Feedback de <strong>{respondingFeedback?.profile?.name}</strong>: "{respondingFeedback?.title}"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <p className="text-sm text-gray-600 mb-2">Mensagem do usuário:</p>
+              <p className="text-sm bg-gray-50 p-3 rounded whitespace-pre-line">{respondingFeedback?.message}</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="feedback-response" className="text-gray-900">Sua resposta</Label>
+              <Textarea
+                id="feedback-response"
+                placeholder="Digite sua resposta..."
+                value={feedbackResponse}
+                onChange={(e) => setFeedbackResponse(e.target.value)}
+                className="bg-white text-gray-900 border-gray-200 min-h-[120px]"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setRespondingFeedback(null);
+                setFeedbackResponse('');
+              }}
+              disabled={sendingFeedbackResponse}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleRespondFeedback} 
+              disabled={sendingFeedbackResponse || !feedbackResponse.trim()}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              {sendingFeedbackResponse ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Enviar Resposta
                 </>
               )}
             </Button>

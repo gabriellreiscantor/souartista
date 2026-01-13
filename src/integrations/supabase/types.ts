@@ -1161,9 +1161,11 @@ export type Database = {
       }
       user_feedback: {
         Row: {
+          admin_response: string | null
           created_at: string
           id: string
           message: string
+          responded_at: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
@@ -1171,9 +1173,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          admin_response?: string | null
           created_at?: string
           id?: string
           message: string
+          responded_at?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -1181,9 +1185,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          admin_response?: string | null
           created_at?: string
           id?: string
           message?: string
+          responded_at?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
