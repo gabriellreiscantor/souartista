@@ -2,7 +2,7 @@ import { LayoutDashboard, Music, Calendar, BarChart3, Truck, HelpCircle, User, S
 import logo from '@/assets/logo.png';
 import logoIcon from '@/assets/logo_icon.png';
 import { NavLink } from '@/components/NavLink';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useNativePlatform } from '@/hooks/useNativePlatform';
@@ -42,6 +42,7 @@ const adminItems = [
 export function ArtistSidebar() {
   const { state, setOpenMobile, isMobile, toggleSidebar } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
   const collapsed = state === 'collapsed';
   const { isAdmin } = useAdmin();
@@ -73,13 +74,17 @@ export function ArtistSidebar() {
     >
       <SidebarContent className="bg-sidebar-background" onClick={handleSidebarClick}>
         
-        {/* Logo - clicável para toggle */}
+        {/* Logo - clicável para ir ao dashboard */}
         <div 
           className="p-4 border-b border-sidebar-border cursor-pointer hover:bg-sidebar-accent/50 transition-colors"
-          onClick={toggleSidebar}
+          onClick={() => {
+            navigate('/artist/dashboard');
+            if (isMobile) setOpenMobile(false);
+          }}
           onTouchEnd={(e) => {
             e.preventDefault();
-            toggleSidebar();
+            navigate('/artist/dashboard');
+            if (isMobile) setOpenMobile(false);
           }}
         >
           {!collapsed ? (
