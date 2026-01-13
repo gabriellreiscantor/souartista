@@ -103,22 +103,35 @@ Deno.serve(async (req) => {
 
     if (!targetUserId && email) {
       // First try exact email match
-      let { data: profile, error } = await supabase
+      let { data: profile } = await supabase
         .from('profiles')
         .select('id, name, email')
         .ilike('email', email)
-        .single()
+        .maybeSingle()
 
-      // If not found, try searching by name
-      if (error || !profile) {
-        const { data: profiles, error: nameError } = await supabase
+      // If not found, try searching by email containing the term
+      if (!profile) {
+        const { data: emailProfiles } = await supabase
+          .from('profiles')
+          .select('id, name, email')
+          .ilike('email', `%${email}%`)
+          .limit(1)
+
+        if (emailProfiles && emailProfiles.length > 0) {
+          profile = emailProfiles[0]
+        }
+      }
+
+      // If still not found, try searching by name
+      if (!profile) {
+        const { data: nameProfiles } = await supabase
           .from('profiles')
           .select('id, name, email')
           .ilike('name', `%${email}%`)
           .limit(1)
 
-        if (!nameError && profiles && profiles.length > 0) {
-          profile = profiles[0]
+        if (nameProfiles && nameProfiles.length > 0) {
+          profile = nameProfiles[0]
         }
       }
 
@@ -151,7 +164,7 @@ Deno.serve(async (req) => {
         .from('profiles')
         .select('id, name, email')
         .eq('id', targetUserId)
-        .single()
+        .maybeSingle()
       
       userProfile = profile
     }
@@ -161,7 +174,7 @@ Deno.serve(async (req) => {
       .from('subscriptions')
       .select('*')
       .eq('user_id', targetUserId)
-      .single()
+      .maybeSingle()
 
     // Query RevenueCat API
     console.log(`Querying RevenueCat for user: ${targetUserId}`)
