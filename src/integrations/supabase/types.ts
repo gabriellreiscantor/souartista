@@ -123,6 +123,123 @@ export type Database = {
           },
         ]
       }
+      deleted_users: {
+        Row: {
+          artists: Json | null
+          birth_date: string | null
+          cpf: string | null
+          created_at: string
+          deleted_at: string
+          deleted_by: string
+          email: string
+          fcm_token: string | null
+          gender: string | null
+          id: string
+          locomotion_expenses: Json | null
+          musician_instruments: Json | null
+          musician_venues: Json | null
+          musicians: Json | null
+          name: string
+          original_user_id: string
+          permanently_deleted_at: string | null
+          phone: string | null
+          photo_url: string | null
+          plan_type: string | null
+          referral_codes: Json | null
+          referrals_as_referred: Json | null
+          referrals_as_referrer: Json | null
+          restored_at: string | null
+          restored_by: string | null
+          scheduled_permanent_delete_at: string
+          shows: Json | null
+          status: string
+          status_plano: string | null
+          subscriptions: Json | null
+          support_responses: Json | null
+          support_tickets: Json | null
+          timezone: string | null
+          updated_at: string
+          user_roles: Json | null
+          venues: Json | null
+        }
+        Insert: {
+          artists?: Json | null
+          birth_date?: string | null
+          cpf?: string | null
+          created_at?: string
+          deleted_at?: string
+          deleted_by: string
+          email: string
+          fcm_token?: string | null
+          gender?: string | null
+          id?: string
+          locomotion_expenses?: Json | null
+          musician_instruments?: Json | null
+          musician_venues?: Json | null
+          musicians?: Json | null
+          name: string
+          original_user_id: string
+          permanently_deleted_at?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          plan_type?: string | null
+          referral_codes?: Json | null
+          referrals_as_referred?: Json | null
+          referrals_as_referrer?: Json | null
+          restored_at?: string | null
+          restored_by?: string | null
+          scheduled_permanent_delete_at?: string
+          shows?: Json | null
+          status?: string
+          status_plano?: string | null
+          subscriptions?: Json | null
+          support_responses?: Json | null
+          support_tickets?: Json | null
+          timezone?: string | null
+          updated_at?: string
+          user_roles?: Json | null
+          venues?: Json | null
+        }
+        Update: {
+          artists?: Json | null
+          birth_date?: string | null
+          cpf?: string | null
+          created_at?: string
+          deleted_at?: string
+          deleted_by?: string
+          email?: string
+          fcm_token?: string | null
+          gender?: string | null
+          id?: string
+          locomotion_expenses?: Json | null
+          musician_instruments?: Json | null
+          musician_venues?: Json | null
+          musicians?: Json | null
+          name?: string
+          original_user_id?: string
+          permanently_deleted_at?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          plan_type?: string | null
+          referral_codes?: Json | null
+          referrals_as_referred?: Json | null
+          referrals_as_referrer?: Json | null
+          restored_at?: string | null
+          restored_by?: string | null
+          scheduled_permanent_delete_at?: string
+          shows?: Json | null
+          status?: string
+          status_plano?: string | null
+          subscriptions?: Json | null
+          support_responses?: Json | null
+          support_tickets?: Json | null
+          timezone?: string | null
+          updated_at?: string
+          user_roles?: Json | null
+          venues?: Json | null
+        }
+        Relationships: []
+      }
       engagement_tip_logs: {
         Row: {
           id: string
