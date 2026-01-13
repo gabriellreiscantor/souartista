@@ -6,14 +6,16 @@ interface NavLinkCompatProps extends Omit<NavLinkProps, "className"> {
   className?: string;
   activeClassName?: string;
   pendingClassName?: string;
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
 const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
-  ({ className, activeClassName, pendingClassName, to, ...props }, ref) => {
+  ({ className, activeClassName, pendingClassName, to, onClick, ...props }, ref) => {
     return (
       <RouterNavLink
         ref={ref}
         to={to}
+        onClick={onClick}
         className={({ isActive, isPending }) =>
           cn(className, isActive && activeClassName, isPending && pendingClassName)
         }
