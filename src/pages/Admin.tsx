@@ -97,6 +97,13 @@ export default function Admin() {
   const [userExpenses, setUserExpenses] = useState<LocomotionExpense[]>([]);
   const [searchInputRef, setSearchInputRef] = useState<HTMLInputElement | null>(null);
 
+  // Emails de contas de teste a excluir dos cálculos financeiros
+  const EXCLUDED_TEST_EMAILS = [
+    'ester@souartista.com',           // Apple Tester
+    'domingossbaf159@gmail.com',      // Domingos - sócio
+    'jackal75353@mailshan.com',       // Teste 15
+  ];
+
   // Estados para Financeiro Global
   const [googleTax, setGoogleTax] = useState(30);
   const [appleTax, setAppleTax] = useState(15);
@@ -105,6 +112,7 @@ export default function Admin() {
   const [activeUsersCount, setActiveUsersCount] = useState(0);
   const [cancelledUsersCount, setCancelledUsersCount] = useState(0);
   const [savingTax, setSavingTax] = useState(false);
+  const [subscriberViewMode, setSubscriberViewMode] = useState<'active' | 'cancelled'>('active');
   
   // Estados para Financeiro por Plataforma
   const [appleActiveCount, setAppleActiveCount] = useState(0);
@@ -121,7 +129,9 @@ export default function Admin() {
     method: string;
     amount: number;
     nextDueDate?: string | null;
-  }>>([]);
+    status: 'active' | 'cancelled' | 'expired';
+    isTestAccount?: boolean;
+  }>>([])
 
   // Estados para deletar usuário
   const [showDeleteUserDialog, setShowDeleteUserDialog] = useState(false);
@@ -813,8 +823,8 @@ export default function Admin() {
 
   const fetchFinancialData = async () => {
     try {
-      // Buscar TODAS as assinaturas ATIVAS (não filtrar por plan_purchased_at)
-      const { data: subscriptionsData, error: subsError } = await supabase
+      // Buscar TODAS as assinaturas (ativas e canceladas)
+      const { data: allSubscriptionsData, error: subsError } = await supabase
         .from('subscriptions')
         .select(`
           id,
@@ -826,98 +836,99 @@ export default function Admin() {
           status,
           profiles!inner(id, name, email, status_plano)
         `)
-        .eq('status', 'active');
-
-      // Contar usuários cancelados
-      const { count: cancelledCount } = await supabase
-        .from('subscriptions')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'cancelled');
-
-      setCancelledUsersCount(cancelledCount || 0);
+        .in('status', ['active', 'cancelled', 'expired']);
 
       if (subsError) {
         console.error('Erro ao buscar assinaturas por plataforma:', subsError);
       } else {
-        // Processar dados por plataforma
+        // Processar dados por plataforma (apenas ativos que não são contas de teste)
         let appleCount = 0, appleTotal = 0;
         let creditCardCount = 0, creditCardTotal = 0;
         let pixCount = 0, pixTotal = 0;
+        let cancelledCount = 0;
         const subscribers: typeof platformSubscribers = [];
 
-        subscriptionsData?.forEach((sub: any) => {
+        allSubscriptionsData?.forEach((sub: any) => {
           const amount = Number(sub.amount) || 29.90;
           const profile = sub.profiles;
           const nextDueDate = sub.next_due_date;
+          const isTestAccount = EXCLUDED_TEST_EMAILS.includes(profile.email?.toLowerCase());
+          const subscriptionStatus = sub.status as 'active' | 'cancelled' | 'expired';
+          
+          // Contar cancelados (excluindo contas de teste)
+          if ((subscriptionStatus === 'cancelled' || subscriptionStatus === 'expired') && !isTestAccount) {
+            cancelledCount++;
+          }
+          
+          // Adicionar ao array de subscribers (todos, para poder filtrar na UI)
+          const subscriberData = {
+            id: profile.id,
+            name: profile.name,
+            email: profile.email,
+            amount,
+            nextDueDate,
+            status: subscriptionStatus,
+            isTestAccount
+          };
           
           if (sub.payment_platform === 'apple') {
-            appleCount++;
-            appleTotal += amount;
+            // Contabilizar apenas ativos que não são teste
+            if (subscriptionStatus === 'active' && !isTestAccount) {
+              appleCount++;
+              appleTotal += amount;
+            }
             subscribers.push({
-              id: profile.id,
-              name: profile.name,
-              email: profile.email,
+              ...subscriberData,
               platform: 'iOS (Apple)',
               method: 'Apple IAP',
-              amount,
-              nextDueDate
             });
           } else if (sub.payment_method === 'CREDIT_CARD') {
-            creditCardCount++;
-            creditCardTotal += amount;
+            if (subscriptionStatus === 'active' && !isTestAccount) {
+              creditCardCount++;
+              creditCardTotal += amount;
+            }
             subscribers.push({
-              id: profile.id,
-              name: profile.name,
-              email: profile.email,
+              ...subscriberData,
               platform: 'Android/Web',
               method: 'Cartão de Crédito',
-              amount,
-              nextDueDate
             });
           } else if (sub.payment_method === 'PIX') {
-            pixCount++;
-            pixTotal += amount;
+            if (subscriptionStatus === 'active' && !isTestAccount) {
+              pixCount++;
+              pixTotal += amount;
+            }
             subscribers.push({
-              id: profile.id,
-              name: profile.name,
-              email: profile.email,
+              ...subscriberData,
               platform: 'Android/Web',
               method: 'PIX',
-              amount,
-              nextDueDate
             });
           } else if (sub.payment_platform === 'asaas') {
-            // Asaas sem método específico - considerar cartão
-            creditCardCount++;
-            creditCardTotal += amount;
+            if (subscriptionStatus === 'active' && !isTestAccount) {
+              creditCardCount++;
+              creditCardTotal += amount;
+            }
             subscribers.push({
-              id: profile.id,
-              name: profile.name,
-              email: profile.email,
+              ...subscriberData,
               platform: 'Android/Web',
               method: sub.payment_method || 'Cartão',
-              amount,
-              nextDueDate
             });
           } else {
-            // Outra plataforma desconhecida
-            creditCardCount++;
-            creditCardTotal += amount;
+            if (subscriptionStatus === 'active' && !isTestAccount) {
+              creditCardCount++;
+              creditCardTotal += amount;
+            }
             subscribers.push({
-              id: profile.id,
-              name: profile.name,
-              email: profile.email,
+              ...subscriberData,
               platform: sub.payment_platform || 'Outro',
               method: sub.payment_method || 'Desconhecido',
-              amount,
-              nextDueDate
             });
           }
         });
 
-        // Contagem de ativos = total de assinaturas ativas
+        // Contagem de ativos = total de assinaturas ativas (excluindo testes)
         const totalActive = appleCount + creditCardCount + pixCount;
         setActiveUsersCount(totalActive);
+        setCancelledUsersCount(cancelledCount);
 
         setAppleActiveCount(appleCount);
         setAppleRevenue(appleTotal);
@@ -3477,82 +3488,155 @@ export default function Admin() {
                 {platformSubscribers.length > 0 && (
                   <Card className="bg-white border-gray-200">
                     <CardHeader className="p-3 md:p-6">
-                      <CardTitle className="text-gray-900 text-sm md:text-lg">👥 Assinantes Ativos</CardTitle>
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                        <CardTitle className="text-gray-900 text-sm md:text-lg">👥 Assinantes</CardTitle>
+                        {/* Toggle Ativos/Cancelados */}
+                        <div className="flex gap-2">
+                          <Button
+                            variant={subscriberViewMode === 'active' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setSubscriberViewMode('active')}
+                            className={`text-xs ${subscriberViewMode === 'active' ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                          >
+                            🟢 Ativos ({platformSubscribers.filter(s => s.status === 'active' && !s.isTestAccount).length})
+                          </Button>
+                          <Button
+                            variant={subscriberViewMode === 'cancelled' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setSubscriberViewMode('cancelled')}
+                            className={`text-xs ${subscriberViewMode === 'cancelled' ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                          >
+                            ❌ Cancelados ({platformSubscribers.filter(s => (s.status === 'cancelled' || s.status === 'expired') && !s.isTestAccount).length})
+                          </Button>
+                        </div>
+                      </div>
                     </CardHeader>
                     <CardContent className="p-3 md:p-6 pt-0">
-                      {/* Mobile: Cards empilhados */}
-                      <div className="md:hidden space-y-2">
-                        {platformSubscribers.map((sub) => (
-                          <div key={sub.id} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                            <div className="flex justify-between items-start gap-2 mb-1">
-                              <span className="font-medium text-sm text-gray-900 truncate flex-1">
-                                {sub.name}
-                              </span>
-                              <span className="font-bold text-green-600 text-sm whitespace-nowrap">
-                                R$ {sub.amount.toFixed(2)}
-                              </span>
+                      {/* Filtered subscribers based on view mode */}
+                      {(() => {
+                        const filteredSubscribers = platformSubscribers.filter(s => {
+                          if (s.isTestAccount) return false; // Never show test accounts
+                          if (subscriberViewMode === 'active') return s.status === 'active';
+                          return s.status === 'cancelled' || s.status === 'expired';
+                        });
+
+                        if (filteredSubscribers.length === 0) {
+                          return (
+                            <div className="text-center py-8 text-gray-500">
+                              {subscriberViewMode === 'active' 
+                                ? 'Nenhum assinante ativo no momento' 
+                                : 'Nenhum assinante cancelado para remarketing'}
                             </div>
-                            <p className="text-xs text-gray-500 truncate mb-1.5">{sub.email}</p>
-                            <div className="flex items-center justify-between gap-1.5 text-xs">
-                              <div className="flex items-center gap-1.5 text-gray-600">
-                                <span>{sub.platform.includes('iOS') ? '🍎 iOS' : '🤖 Android'}</span>
-                                <span className="text-gray-300">•</span>
-                                <span>{sub.method.includes('Apple') ? 'Apple IAP' : sub.method.includes('Cartão') ? '💳 Cartão' : '📱 PIX'}</span>
-                              </div>
-                              {sub.nextDueDate && (
-                                <span className="text-gray-400 text-[10px]">
-                                  Venc: {new Date(sub.nextDueDate).toLocaleDateString('pt-BR')}
-                                </span>
-                              )}
+                          );
+                        }
+
+                        return (
+                          <>
+                            {/* Mobile: Cards empilhados */}
+                            <div className="md:hidden space-y-2">
+                              {filteredSubscribers.map((sub) => (
+                                <div key={sub.id} className={`p-3 rounded-lg border ${
+                                  subscriberViewMode === 'cancelled' 
+                                    ? 'bg-red-50 border-red-200' 
+                                    : 'bg-gray-50 border-gray-200'
+                                }`}>
+                                  <div className="flex justify-between items-start gap-2 mb-1">
+                                    <span className="font-medium text-sm text-gray-900 truncate flex-1">
+                                      {sub.name}
+                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                      {subscriberViewMode === 'cancelled' && (
+                                        <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                                          {sub.status === 'expired' ? 'Expirado' : 'Cancelado'}
+                                        </Badge>
+                                      )}
+                                      <span className={`font-bold text-sm whitespace-nowrap ${
+                                        subscriberViewMode === 'cancelled' ? 'text-gray-500' : 'text-green-600'
+                                      }`}>
+                                        R$ {sub.amount.toFixed(2)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <p className="text-xs text-gray-500 truncate mb-1.5">{sub.email}</p>
+                                  <div className="flex items-center justify-between gap-1.5 text-xs">
+                                    <div className="flex items-center gap-1.5 text-gray-600">
+                                      <span>{sub.platform.includes('iOS') ? '🍎 iOS' : '🤖 Android'}</span>
+                                      <span className="text-gray-300">•</span>
+                                      <span>{sub.method.includes('Apple') ? 'Apple IAP' : sub.method.includes('Cartão') ? '💳 Cartão' : '📱 PIX'}</span>
+                                    </div>
+                                    {sub.nextDueDate && (
+                                      <span className="text-gray-400 text-[10px]">
+                                        {subscriberViewMode === 'cancelled' ? 'Último:' : 'Venc:'} {new Date(sub.nextDueDate).toLocaleDateString('pt-BR')}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* Desktop: Tabela */}
-                      <div className="hidden md:block overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="border-b border-gray-200">
-                              <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Nome</th>
-                              <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Email</th>
-                              <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Plataforma</th>
-                              <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Método</th>
-                              <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Vencimento</th>
-                              <th className="text-right py-2 px-2 text-xs font-medium text-gray-500">Valor</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {platformSubscribers.map((sub) => (
-                              <tr key={sub.id} className="border-b border-gray-100 hover:bg-gray-50">
-                                <td className="py-2 px-2 font-medium text-gray-900 truncate max-w-[120px]">{sub.name}</td>
-                                <td className="py-2 px-2 text-gray-600 truncate max-w-[180px]">{sub.email}</td>
-                                <td className="py-2 px-2">
-                                  <Badge variant={sub.platform.includes('iOS') ? 'outline' : 'secondary'} className="text-xs">
-                                    {sub.platform.includes('iOS') ? '🍎' : '🤖'} {sub.platform}
-                                  </Badge>
-                                </td>
-                                <td className="py-2 px-2">
-                                  <Badge 
-                                    variant="outline" 
-                                    className={`text-xs ${
-                                      sub.method.includes('Apple') ? 'border-gray-400' :
-                                      sub.method.includes('Cartão') ? 'border-blue-400 text-blue-700' :
-                                      sub.method.includes('PIX') ? 'border-green-400 text-green-700' : ''
-                                    }`}
-                                  >
-                                    {sub.method.includes('Apple') ? '🍎' : sub.method.includes('Cartão') ? '💳' : '📱'} {sub.method}
-                                  </Badge>
-                                </td>
-                                <td className="py-2 px-2 text-gray-600 text-xs">
-                                  {sub.nextDueDate ? new Date(sub.nextDueDate).toLocaleDateString('pt-BR') : '-'}
-                                </td>
-                                <td className="py-2 px-2 text-right font-medium text-green-600 whitespace-nowrap">R$ {sub.amount.toFixed(2)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                            
+                            {/* Desktop: Tabela */}
+                            <div className="hidden md:block overflow-x-auto">
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr className="border-b border-gray-200">
+                                    <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Nome</th>
+                                    <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Email</th>
+                                    <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Plataforma</th>
+                                    <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Método</th>
+                                    <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">
+                                      {subscriberViewMode === 'cancelled' ? 'Status' : 'Vencimento'}
+                                    </th>
+                                    <th className="text-right py-2 px-2 text-xs font-medium text-gray-500">Valor</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {filteredSubscribers.map((sub) => (
+                                    <tr key={sub.id} className={`border-b border-gray-100 ${
+                                      subscriberViewMode === 'cancelled' ? 'bg-red-50/50 hover:bg-red-50' : 'hover:bg-gray-50'
+                                    }`}>
+                                      <td className="py-2 px-2 font-medium text-gray-900 truncate max-w-[120px]">{sub.name}</td>
+                                      <td className="py-2 px-2 text-gray-600 truncate max-w-[180px]">{sub.email}</td>
+                                      <td className="py-2 px-2">
+                                        <Badge variant={sub.platform.includes('iOS') ? 'outline' : 'secondary'} className="text-xs">
+                                          {sub.platform.includes('iOS') ? '🍎' : '🤖'} {sub.platform}
+                                        </Badge>
+                                      </td>
+                                      <td className="py-2 px-2">
+                                        <Badge 
+                                          variant="outline" 
+                                          className={`text-xs ${
+                                            sub.method.includes('Apple') ? 'border-gray-400' :
+                                            sub.method.includes('Cartão') ? 'border-blue-400 text-blue-700' :
+                                            sub.method.includes('PIX') ? 'border-green-400 text-green-700' : ''
+                                          }`}
+                                        >
+                                          {sub.method.includes('Apple') ? '🍎' : sub.method.includes('Cartão') ? '💳' : '📱'} {sub.method}
+                                        </Badge>
+                                      </td>
+                                      <td className="py-2 px-2 text-xs">
+                                        {subscriberViewMode === 'cancelled' ? (
+                                          <Badge variant="destructive" className="text-xs">
+                                            {sub.status === 'expired' ? 'Expirado' : 'Cancelado'}
+                                          </Badge>
+                                        ) : (
+                                          <span className="text-gray-600">
+                                            {sub.nextDueDate ? new Date(sub.nextDueDate).toLocaleDateString('pt-BR') : '-'}
+                                          </span>
+                                        )}
+                                      </td>
+                                      <td className={`py-2 px-2 text-right font-medium whitespace-nowrap ${
+                                        subscriberViewMode === 'cancelled' ? 'text-gray-500' : 'text-green-600'
+                                      }`}>
+                                        R$ {sub.amount.toFixed(2)}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 )}
