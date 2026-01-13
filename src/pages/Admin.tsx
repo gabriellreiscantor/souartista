@@ -3210,26 +3210,26 @@ export default function Admin() {
                   {/* iOS (Apple) */}
                   <Card className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-300">
                     <CardHeader className="p-3 md:p-6 pb-2">
-                      <CardTitle className="text-gray-900 text-base md:text-lg flex items-center gap-2">
-                        🍎 iOS (Apple)
-                        <Badge variant="outline" className="ml-auto text-xs">
+                      <CardTitle className="text-gray-900 text-sm md:text-lg flex flex-wrap items-center gap-2">
+                        <span>🍎 iOS (Apple)</span>
+                        <Badge variant="outline" className="text-[10px] md:text-xs">
                           {appleActiveCount} usuários
                         </Badge>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 md:p-6 pt-0">
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center p-2 bg-white rounded-lg">
-                          <span className="text-sm text-gray-600">Receita Bruta</span>
-                          <span className="text-lg font-bold text-green-600">R$ {appleRevenue.toFixed(2)}</span>
+                      <div className="space-y-2">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 p-2 bg-white rounded-lg">
+                          <span className="text-xs sm:text-sm text-gray-600">Receita Bruta</span>
+                          <span className="text-base sm:text-lg font-bold text-green-600">R$ {appleRevenue.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between items-center p-2 bg-white rounded-lg">
-                          <span className="text-sm text-gray-600">Taxa Apple ({appleTax}%)</span>
-                          <span className="text-lg font-bold text-red-600">-R$ {(appleRevenue * appleTax / 100).toFixed(2)}</span>
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 p-2 bg-white rounded-lg">
+                          <span className="text-xs sm:text-sm text-gray-600">Taxa Apple ({appleTax}%)</span>
+                          <span className="text-base sm:text-lg font-bold text-red-600">-R$ {(appleRevenue * appleTax / 100).toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between items-center p-3 bg-purple-100 rounded-lg border-2 border-purple-300">
-                          <span className="text-sm font-medium text-purple-900">Líquido iOS</span>
-                          <span className="text-xl font-bold text-purple-600">R$ {(appleRevenue * (1 - appleTax / 100)).toFixed(2)}</span>
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 p-3 bg-purple-100 rounded-lg border-2 border-purple-300">
+                          <span className="text-xs sm:text-sm font-medium text-purple-900">Líquido iOS</span>
+                          <span className="text-lg sm:text-xl font-bold text-purple-600">R$ {(appleRevenue * (1 - appleTax / 100)).toFixed(2)}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -3238,9 +3238,9 @@ export default function Admin() {
                   {/* Android/Web (Asaas) */}
                   <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-300">
                     <CardHeader className="p-3 md:p-6 pb-2">
-                      <CardTitle className="text-gray-900 text-base md:text-lg flex items-center gap-2">
-                        🤖 Android/Web (Asaas)
-                        <Badge variant="outline" className="ml-auto text-xs">
+                      <CardTitle className="text-gray-900 text-sm md:text-lg flex flex-wrap items-center gap-2">
+                        <span>🤖 Android/Web</span>
+                        <Badge variant="outline" className="text-[10px] md:text-xs">
                           {asaasCreditCardCount + asaasPixCount} usuários
                         </Badge>
                       </CardTitle>
@@ -3248,53 +3248,53 @@ export default function Admin() {
                     <CardContent className="p-3 md:p-6 pt-0">
                       <div className="space-y-3">
                         {/* Cartão de Crédito */}
-                        <div className="p-3 bg-white rounded-lg border border-gray-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm font-medium text-gray-700">💳 Cartão de Crédito</span>
-                            <Badge variant="secondary" className="text-xs">{asaasCreditCardCount} usuários</Badge>
+                        <div className="p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
+                          <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                            <span className="text-xs sm:text-sm font-medium text-gray-700">💳 Cartão</span>
+                            <Badge variant="secondary" className="text-[10px]">{asaasCreditCardCount}</Badge>
                           </div>
-                          <div className="grid grid-cols-3 gap-2 text-center">
-                            <div>
-                              <p className="text-xs text-gray-500">Bruto</p>
-                              <p className="text-sm font-bold text-green-600">R$ {asaasCreditCardRevenue.toFixed(2)}</p>
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span className="text-gray-500">Bruto</span>
+                              <span className="font-bold text-green-600">R$ {asaasCreditCardRevenue.toFixed(2)}</span>
                             </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Taxa ({asaasCreditCardTax}%)</p>
-                              <p className="text-sm font-bold text-red-600">-R$ {(asaasCreditCardRevenue * asaasCreditCardTax / 100).toFixed(2)}</p>
+                            <div className="flex justify-between text-xs">
+                              <span className="text-gray-500">Taxa ({asaasCreditCardTax}%)</span>
+                              <span className="font-bold text-red-600">-R$ {(asaasCreditCardRevenue * asaasCreditCardTax / 100).toFixed(2)}</span>
                             </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Líquido</p>
-                              <p className="text-sm font-bold text-purple-600">R$ {(asaasCreditCardRevenue * (1 - asaasCreditCardTax / 100)).toFixed(2)}</p>
+                            <div className="flex justify-between text-xs pt-1 border-t border-gray-100">
+                              <span className="text-gray-700 font-medium">Líquido</span>
+                              <span className="font-bold text-purple-600">R$ {(asaasCreditCardRevenue * (1 - asaasCreditCardTax / 100)).toFixed(2)}</span>
                             </div>
                           </div>
                         </div>
                         
                         {/* PIX */}
-                        <div className="p-3 bg-white rounded-lg border border-gray-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm font-medium text-gray-700">📱 PIX</span>
-                            <Badge variant="secondary" className="text-xs">{asaasPixCount} usuários</Badge>
+                        <div className="p-2 sm:p-3 bg-white rounded-lg border border-gray-200">
+                          <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                            <span className="text-xs sm:text-sm font-medium text-gray-700">📱 PIX</span>
+                            <Badge variant="secondary" className="text-[10px]">{asaasPixCount}</Badge>
                           </div>
-                          <div className="grid grid-cols-3 gap-2 text-center">
-                            <div>
-                              <p className="text-xs text-gray-500">Bruto</p>
-                              <p className="text-sm font-bold text-green-600">R$ {asaasPixRevenue.toFixed(2)}</p>
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span className="text-gray-500">Bruto</span>
+                              <span className="font-bold text-green-600">R$ {asaasPixRevenue.toFixed(2)}</span>
                             </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Taxa ({asaasPixTax}%)</p>
-                              <p className="text-sm font-bold text-red-600">-R$ {(asaasPixRevenue * asaasPixTax / 100).toFixed(2)}</p>
+                            <div className="flex justify-between text-xs">
+                              <span className="text-gray-500">Taxa ({asaasPixTax}%)</span>
+                              <span className="font-bold text-red-600">-R$ {(asaasPixRevenue * asaasPixTax / 100).toFixed(2)}</span>
                             </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Líquido</p>
-                              <p className="text-sm font-bold text-purple-600">R$ {(asaasPixRevenue * (1 - asaasPixTax / 100)).toFixed(2)}</p>
+                            <div className="flex justify-between text-xs pt-1 border-t border-gray-100">
+                              <span className="text-gray-700 font-medium">Líquido</span>
+                              <span className="font-bold text-purple-600">R$ {(asaasPixRevenue * (1 - asaasPixTax / 100)).toFixed(2)}</span>
                             </div>
                           </div>
                         </div>
 
                         {/* Total Asaas */}
-                        <div className="flex justify-between items-center p-3 bg-green-100 rounded-lg border-2 border-green-300">
-                          <span className="text-sm font-medium text-green-900">Líquido Android/Web</span>
-                          <span className="text-xl font-bold text-green-600">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 p-3 bg-green-100 rounded-lg border-2 border-green-300">
+                          <span className="text-xs sm:text-sm font-medium text-green-900">Líquido Android/Web</span>
+                          <span className="text-lg sm:text-xl font-bold text-green-600">
                             R$ {((asaasCreditCardRevenue * (1 - asaasCreditCardTax / 100)) + (asaasPixRevenue * (1 - asaasPixTax / 100))).toFixed(2)}
                           </span>
                         </div>
@@ -3306,54 +3306,54 @@ export default function Admin() {
                 {/* Resumo Consolidado */}
                 <Card className="bg-gradient-to-br from-purple-100 to-blue-100 border-purple-300">
                   <CardHeader className="p-3 md:p-6">
-                    <CardTitle className="text-gray-900 text-base md:text-lg">📊 Resumo Financeiro Consolidado</CardTitle>
+                    <CardTitle className="text-gray-900 text-sm md:text-lg">📊 Resumo Consolidado</CardTitle>
                   </CardHeader>
                   <CardContent className="p-3 md:p-6 pt-0">
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-4">
-                      <div className="p-3 bg-white rounded-lg border border-gray-200 text-center">
-                        <p className="text-xs text-gray-500 mb-1">Total Ativos</p>
-                        <p className="text-2xl font-bold text-purple-600">{activeUsersCount}</p>
+                    <div className="grid grid-cols-2 gap-2 md:gap-4 md:grid-cols-4 mb-4">
+                      <div className="p-2 md:p-3 bg-white rounded-lg border border-gray-200 text-center">
+                        <p className="text-[10px] md:text-xs text-gray-500 mb-0.5">Ativos</p>
+                        <p className="text-lg md:text-2xl font-bold text-purple-600">{activeUsersCount}</p>
                       </div>
-                      <div className="p-3 bg-white rounded-lg border border-gray-200 text-center">
-                        <p className="text-xs text-gray-500 mb-1">Receita Bruta Total</p>
-                        <p className="text-2xl font-bold text-green-600">
-                          R$ {(appleRevenue + asaasCreditCardRevenue + asaasPixRevenue).toFixed(2)}
+                      <div className="p-2 md:p-3 bg-white rounded-lg border border-gray-200 text-center">
+                        <p className="text-[10px] md:text-xs text-gray-500 mb-0.5">Receita Bruta</p>
+                        <p className="text-base md:text-2xl font-bold text-green-600">
+                          R$ {(appleRevenue + asaasCreditCardRevenue + asaasPixRevenue).toFixed(0)}
                         </p>
                       </div>
-                      <div className="p-3 bg-white rounded-lg border border-gray-200 text-center">
-                        <p className="text-xs text-gray-500 mb-1">Total Taxas</p>
-                        <p className="text-2xl font-bold text-red-600">
+                      <div className="p-2 md:p-3 bg-white rounded-lg border border-gray-200 text-center">
+                        <p className="text-[10px] md:text-xs text-gray-500 mb-0.5">Taxas</p>
+                        <p className="text-base md:text-2xl font-bold text-red-600">
                           -R$ {(
                             (appleRevenue * appleTax / 100) +
                             (asaasCreditCardRevenue * asaasCreditCardTax / 100) +
                             (asaasPixRevenue * asaasPixTax / 100)
-                          ).toFixed(2)}
+                          ).toFixed(0)}
                         </p>
                       </div>
-                      <div className="p-3 bg-white rounded-lg border border-gray-200 text-center">
-                        <p className="text-xs text-gray-500 mb-1">Cancelados</p>
-                        <p className="text-2xl font-bold text-gray-600">{cancelledUsersCount}</p>
+                      <div className="p-2 md:p-3 bg-white rounded-lg border border-gray-200 text-center">
+                        <p className="text-[10px] md:text-xs text-gray-500 mb-0.5">Cancelados</p>
+                        <p className="text-lg md:text-2xl font-bold text-gray-600">{cancelledUsersCount}</p>
                       </div>
                     </div>
 
                     {/* Lucro Líquido Total */}
-                    <div className="p-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-white">
-                      <div className="flex flex-col md:flex-row justify-between items-center gap-2">
-                        <div>
-                          <p className="text-sm opacity-90">💰 Lucro Líquido Mensal</p>
-                          <p className="text-xs opacity-75 mt-1">
-                            iOS: R$ {(appleRevenue * (1 - appleTax / 100)).toFixed(2)} | 
-                            Cartão: R$ {(asaasCreditCardRevenue * (1 - asaasCreditCardTax / 100)).toFixed(2)} | 
-                            PIX: R$ {(asaasPixRevenue * (1 - asaasPixTax / 100)).toFixed(2)}
+                    <div className="p-3 md:p-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-white">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex justify-between items-center">
+                          <p className="text-xs md:text-sm opacity-90">💰 Lucro Líquido Mensal</p>
+                          <p className="text-xl md:text-3xl font-bold">
+                            R$ {(
+                              (appleRevenue * (1 - appleTax / 100)) +
+                              (asaasCreditCardRevenue * (1 - asaasCreditCardTax / 100)) +
+                              (asaasPixRevenue * (1 - asaasPixTax / 100))
+                            ).toFixed(2)}
                           </p>
                         </div>
-                        <p className="text-3xl md:text-4xl font-bold">
-                          R$ {(
-                            (appleRevenue * (1 - appleTax / 100)) +
-                            (asaasCreditCardRevenue * (1 - asaasCreditCardTax / 100)) +
-                            (asaasPixRevenue * (1 - asaasPixTax / 100))
-                          ).toFixed(2)}
-                        </p>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] md:text-xs opacity-75">
+                          <span>🍎 iOS: R$ {(appleRevenue * (1 - appleTax / 100)).toFixed(0)}</span>
+                          <span>💳 Cartão: R$ {(asaasCreditCardRevenue * (1 - asaasCreditCardTax / 100)).toFixed(0)}</span>
+                          <span>📱 PIX: R$ {(asaasPixRevenue * (1 - asaasPixTax / 100)).toFixed(0)}</span>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
