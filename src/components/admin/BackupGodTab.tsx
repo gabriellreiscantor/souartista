@@ -99,12 +99,15 @@ export function BackupGodTab() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
+      case 'success':
       case 'completed':
         return <Badge className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Sucesso</Badge>;
+      case 'partial':
       case 'completed_with_warnings':
-        return <Badge className="bg-yellow-100 text-yellow-800"><AlertTriangle className="w-3 h-3 mr-1" />Com avisos</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800"><AlertTriangle className="w-3 h-3 mr-1" />Parcial</Badge>;
       case 'running':
         return <Badge className="bg-blue-100 text-blue-800"><Loader2 className="w-3 h-3 mr-1 animate-spin" />Em execução</Badge>;
+      case 'error':
       case 'failed':
         return <Badge className="bg-red-100 text-red-800"><XCircle className="w-3 h-3 mr-1" />Falhou</Badge>;
       default:
@@ -113,8 +116,8 @@ export function BackupGodTab() {
   };
 
   const lastBackup = backupLogs[0];
-  const successfulBackups = backupLogs.filter(l => l.status === 'completed' || l.status === 'completed_with_warnings').length;
-  const failedBackups = backupLogs.filter(l => l.status === 'failed').length;
+  const successfulBackups = backupLogs.filter(l => l.status === 'success' || l.status === 'completed' || l.status === 'completed_with_warnings').length;
+  const failedBackups = backupLogs.filter(l => l.status === 'failed' || l.status === 'error').length;
 
   const formatDuration = (seconds: number | null) => {
     if (!seconds) return '-';
