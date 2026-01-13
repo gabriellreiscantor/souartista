@@ -62,3 +62,6 @@ verify_jwt = false
 
 [functions.get-revenuecat-subscriber]
 verify_jwt = false
+
+[functions.get-asaas-subscriber]
+verify_jwt = false

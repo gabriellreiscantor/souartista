@@ -25,6 +25,7 @@ import { EscalatedTicketsTab } from '@/components/EscalatedTicketsTab';
 import { AnnouncementsTab } from '@/components/admin/AnnouncementsTab';
 import { BackupGodTab } from '@/components/admin/BackupGodTab';
 import { RevenueCatTab } from '@/components/admin/RevenueCatTab';
+import { AsaasTab } from '@/components/admin/AsaasTab';
 import * as XLSX from 'xlsx';
 interface UserProfile {
   id: string;
@@ -5079,6 +5080,11 @@ export default function Admin() {
             {/* RevenueCat */}
             {currentTab === 'revenuecat' && (
               <RevenueCatTab />
+            )}
+
+            {/* Asaas */}
+            {currentTab === 'asaas' && (
+              <AsaasTab />
             )}
 
             {/* Tab Funcionários de Suporte */}
