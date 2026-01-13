@@ -82,7 +82,7 @@ const DemoArtistCalendar = () => {
           }}>
             <div className="max-w-6xl mx-auto">
               <Card className="bg-white mb-6">
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                       <Music2 className="w-6 h-6 text-purple-600" />
@@ -161,7 +161,7 @@ const DemoArtistCalendar = () => {
               </Card>
 
               <Card className="bg-white">
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Music2 className="w-5 h-5 text-purple-600" />
                     Lista De Shows De {format(currentMonth, "MMMM", { locale: ptBR })}
