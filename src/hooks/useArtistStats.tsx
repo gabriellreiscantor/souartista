@@ -39,7 +39,7 @@ export function useArtistStats(period: string) {
         showsQuery = showsQuery.gte('date_local', startDate).lte('date_local', endDate);
       }
 
-      const [{ data: shows, error: showsError }, { data: locomotionExpenses, error: expensesError }] = await Promise.all([
+      const [{ data: shows, error: showsError }, { data: locomotionExpenses, error: expensesError }, { data: additionalExpenses, error: additionalError }] = await Promise.all([
         showsQuery,
         period !== 'all'
           ? (() => {
@@ -54,11 +54,26 @@ export function useArtistStats(period: string) {
                 .gte('created_at', startDate)
                 .lte('created_at', endDate);
             })()
-          : supabase.from('locomotion_expenses').select('cost').eq('uid', user.id)
+          : supabase.from('locomotion_expenses').select('cost').eq('uid', user.id),
+        period !== 'all'
+          ? (() => {
+              const [year, month] = period.split('-');
+              const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate();
+              const startDate = `${year}-${month}-01`;
+              const endDate = `${year}-${month}-${lastDay.toString().padStart(2, '0')}`;
+              return supabase
+                .from('additional_expenses')
+                .select('cost')
+                .eq('uid', user.id)
+                .gte('expense_date', startDate)
+                .lte('expense_date', endDate);
+            })()
+          : supabase.from('additional_expenses').select('cost').eq('uid', user.id)
       ]);
 
       if (showsError) throw showsError;
       if (expensesError) throw expensesError;
+      if (additionalError) throw additionalError;
 
       let totalShows = 0;
       let grossRevenue = 0;
@@ -81,6 +96,11 @@ export function useArtistStats(period: string) {
       });
 
       (locomotionExpenses || []).forEach((exp) => {
+        totalCosts += Number(exp.cost || 0);
+      });
+
+      // Add additional expenses (equipment, accessories, etc.)
+      (additionalExpenses || []).forEach((exp) => {
         totalCosts += Number(exp.cost || 0);
       });
 

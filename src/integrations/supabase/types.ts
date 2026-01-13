@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      additional_expenses: {
+        Row: {
+          category: Database["public"]["Enums"]["expense_category"]
+          cost: number
+          created_at: string
+          description: string
+          expense_date: string
+          id: string
+          show_id: string | null
+          uid: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["expense_category"]
+          cost?: number
+          created_at?: string
+          description: string
+          expense_date?: string
+          id?: string
+          show_id?: string | null
+          uid: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["expense_category"]
+          cost?: number
+          created_at?: string
+          description?: string
+          expense_date?: string
+          id?: string
+          show_id?: string | null
+          uid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "additional_expenses_show_id_fkey"
+            columns: ["show_id"]
+            isOneToOne: false
+            referencedRelation: "shows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "additional_expenses_uid_fkey"
+            columns: ["uid"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_users: {
         Row: {
           created_at: string
@@ -1447,6 +1495,15 @@ export type Database = {
     }
     Enums: {
       app_role: "artist" | "musician" | "support"
+      expense_category:
+        | "equipamento"
+        | "acessorio"
+        | "manutencao"
+        | "vestuario"
+        | "marketing"
+        | "formacao"
+        | "software"
+        | "outros"
       expense_type: "uber" | "km" | "van" | "onibus" | "aviao"
       user_role: "artist" | "musician"
     }
@@ -1577,6 +1634,16 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["artist", "musician", "support"],
+      expense_category: [
+        "equipamento",
+        "acessorio",
+        "manutencao",
+        "vestuario",
+        "marketing",
+        "formacao",
+        "software",
+        "outros",
+      ],
       expense_type: ["uber", "km", "van", "onibus", "aviao"],
       user_role: ["artist", "musician"],
     },

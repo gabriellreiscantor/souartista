@@ -27,12 +27,14 @@ import ArtistVenues from "./pages/artist/Venues";
 import ArtistCalendar from "./pages/artist/Calendar";
 import ArtistReports from "./pages/artist/Reports";
 import ArtistTransportation from "./pages/artist/Transportation";
+import ArtistExpenses from "./pages/artist/Expenses";
 import MusicianDashboard from "./pages/musician/Dashboard";
 import MusicianShows from "./pages/musician/Shows";
 import MusicianArtists from "./pages/musician/Artists";
 import MusicianCalendar from "./pages/musician/Calendar";
 import MusicianReports from "./pages/musician/Reports";
 import MusicianTransportation from "./pages/musician/Transportation";
+import MusicianExpenses from "./pages/musician/Expenses";
 import ArtistSupport from "./pages/artist/Support";
 import MusicianSupport from "./pages/musician/Support";
 import ArtistProfile from "./pages/artist/Profile";
@@ -64,6 +66,7 @@ import DemoArtistTransportation from "./pages/demo/artist/Transportation";
 import DemoArtistSupport from "./pages/demo/artist/Support";
 import DemoArtistProfile from "./pages/demo/artist/Profile";
 import DemoArtistSettings from "./pages/demo/artist/Settings";
+import DemoArtistExpenses from "./pages/demo/artist/Expenses";
 import DemoMusicianDashboard from "./pages/demo/musician/Dashboard";
 import DemoMusicianShows from "./pages/demo/musician/Shows";
 import DemoMusicianArtists from "./pages/demo/musician/Artists";
@@ -73,6 +76,7 @@ import DemoMusicianTransportation from "./pages/demo/musician/Transportation";
 import DemoMusicianSupport from "./pages/demo/musician/Support";
 import DemoMusicianProfile from "./pages/demo/musician/Profile";
 import DemoMusicianSettings from "./pages/demo/musician/Settings";
+import DemoMusicianExpenses from "./pages/demo/musician/Expenses";
 
 const queryClient = new QueryClient();
 
@@ -105,6 +109,7 @@ const AppRoutes = () => {
       <Route path="/artist/calendar" element={<ProtectedRoute requiredRole="artist"><ArtistCalendar /></ProtectedRoute>} />
       <Route path="/artist/reports" element={<ProtectedRoute requiredRole="artist"><ArtistReports /></ProtectedRoute>} />
       <Route path="/artist/transportation" element={<ProtectedRoute requiredRole="artist"><ArtistTransportation /></ProtectedRoute>} />
+      <Route path="/artist/expenses" element={<ProtectedRoute requiredRole="artist"><ArtistExpenses /></ProtectedRoute>} />
       <Route path="/artist/support" element={<ProtectedRoute requiredRole="artist"><ArtistSupport /></ProtectedRoute>} />
       <Route path="/artist/profile" element={<ProtectedRoute requiredRole="artist"><ArtistProfile /></ProtectedRoute>} />
       <Route path="/artist/settings" element={<ProtectedRoute requiredRole="artist"><ArtistSettings /></ProtectedRoute>} />
@@ -121,6 +126,7 @@ const AppRoutes = () => {
       <Route path="/musician/calendar" element={<ProtectedRoute requiredRole="musician"><MusicianCalendar /></ProtectedRoute>} />
       <Route path="/musician/reports" element={<ProtectedRoute requiredRole="musician"><MusicianReports /></ProtectedRoute>} />
       <Route path="/musician/transportation" element={<ProtectedRoute requiredRole="musician"><MusicianTransportation /></ProtectedRoute>} />
+      <Route path="/musician/expenses" element={<ProtectedRoute requiredRole="musician"><MusicianExpenses /></ProtectedRoute>} />
       <Route path="/musician/support" element={<ProtectedRoute requiredRole="musician"><MusicianSupport /></ProtectedRoute>} />
       <Route path="/musician/profile" element={<ProtectedRoute requiredRole="musician"><MusicianProfile /></ProtectedRoute>} />
       <Route path="/musician/settings" element={<ProtectedRoute requiredRole="musician"><MusicianSettings /></ProtectedRoute>} />
@@ -144,6 +150,7 @@ const AppRoutes = () => {
       <Route path="/demo/artist/support" element={<DemoArtistSupport />} />
       <Route path="/demo/artist/profile" element={<DemoArtistProfile />} />
       <Route path="/demo/artist/settings" element={<DemoArtistSettings />} />
+      <Route path="/demo/artist/expenses" element={<DemoArtistExpenses />} />
       <Route path="/demo/musician/dashboard" element={<DemoMusicianDashboard />} />
       <Route path="/demo/musician/shows" element={<DemoMusicianShows />} />
       <Route path="/demo/musician/artists" element={<DemoMusicianArtists />} />
@@ -153,6 +160,7 @@ const AppRoutes = () => {
       <Route path="/demo/musician/support" element={<DemoMusicianSupport />} />
       <Route path="/demo/musician/profile" element={<DemoMusicianProfile />} />
       <Route path="/demo/musician/settings" element={<DemoMusicianSettings />} />
+      <Route path="/demo/musician/expenses" element={<DemoMusicianExpenses />} />
       
       {/* Catch-all */}
       <Route path="*" element={<NotFound />} />
