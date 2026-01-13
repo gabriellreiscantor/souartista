@@ -143,7 +143,7 @@ export function useReferrals() {
     const referralLink = `https://souartista.app/r/${referralCode}`;
     const message = encodeURIComponent(
       `🎵 Conhece o Sou Artista? É o app que uso para organizar meus shows e finanças!\n\n` +
-      `Use meu link e comece a usar agora:\n${referralLink}`
+      `🎁 Use meu link e ganhe 14 dias de teste grátis (válido para cartão de crédito)!\n\n${referralLink}`
     );
     
     window.open(`https://wa.me/?text=${message}`, '_blank');
