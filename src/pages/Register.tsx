@@ -708,10 +708,10 @@ const Register = () => {
                   <p className="text-xs text-[#C8BAD4]">
                     {referralFromLink 
                       ? isIOS
-                        ? "✓ Código aplicado! Você terá 14 dias de teste grátis ao invés de 7 🎁"
+                        ? "✓ Código de amigo aplicado! Aproveite os benefícios no SouArtista 🎁"
                         : "✓ Código aplicado! Você terá 14 dias de teste grátis ao invés de 7 🎁 (válido apenas para cartão de crédito. PIX não tem período grátis, a cobrança é imediata)"
                       : isIOS
-                        ? "Recebeu um código de um amigo? Digite aqui e ganhe 14 dias de teste grátis!"
+                        ? "Use um código de indicação e aproveite benefícios no SouArtista 🎁"
                         : "Recebeu um código de um amigo? Digite aqui e ganhe 14 dias de teste grátis! (válido apenas para cartão de crédito. PIX não tem período grátis)"}
                   </p>
                 </div>
