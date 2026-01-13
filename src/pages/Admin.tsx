@@ -102,7 +102,12 @@ export default function Admin() {
     'ester@souartista.com',           // Apple Tester
     'domingossbaf159@gmail.com',      // Domingos - sócio
     'jackal75353@mailshan.com',       // Teste 15
-    'lucaspressisampaio@gmail.com',   // Lucas Pressi - não aparece no RevenueCat (provavelmente cancelou)
+  ];
+
+  // Emails que precisam de verificação manual (não confirmados no RevenueCat)
+  const NEEDS_VERIFICATION_EMAILS = [
+    'lucaspressi@gmail.com',          // Lucas Pressi - não aparece no RevenueCat (provavelmente cancelou ou trial)
+    '2c6d667f29@webxio.pro',          // Teste Android Cartão - precisa verificar
   ];
 
   // Estados para Financeiro Global
@@ -859,18 +864,17 @@ export default function Admin() {
           const amount = Number(sub.amount) || 29.90;
           const profile = sub.profiles;
           const nextDueDate = sub.next_due_date;
-          const isTestAccount = EXCLUDED_TEST_EMAILS.includes(profile.email?.toLowerCase());
+          const emailLower = profile.email?.toLowerCase();
+          const isTestAccount = EXCLUDED_TEST_EMAILS.includes(emailLower);
           const subscriptionStatus = sub.status as 'active' | 'cancelled' | 'expired';
           
-          // Verificar se o next_due_date passou (indica que pode ter cancelado ou precisa verificar)
+          // Verificar se precisa de verificação manual (emails específicos não confirmados)
+          // Lógica: se está na lista NEEDS_VERIFICATION_EMAILS = precisa verificar
+          // Caso contrário, se status é active, é considerado ativo
           let needsVerification = false;
-          if (subscriptionStatus === 'active' && nextDueDate) {
-            const dueDate = new Date(nextDueDate);
-            dueDate.setHours(0, 0, 0, 0);
-            if (dueDate < today) {
-              needsVerification = true;
-              if (!isTestAccount) verifyCount++;
-            }
+          if (subscriptionStatus === 'active' && NEEDS_VERIFICATION_EMAILS.includes(emailLower)) {
+            needsVerification = true;
+            if (!isTestAccount) verifyCount++;
           }
           
           // Contar cancelados (excluindo contas de teste)
@@ -893,7 +897,7 @@ export default function Admin() {
           // Só contabiliza receita se:
           // 1. Status = active
           // 2. Não é conta de teste
-          // 3. NÃO precisa verificar (next_due_date não passou)
+          // 3. NÃO está na lista de verificação manual (NEEDS_VERIFICATION_EMAILS)
           const shouldCountRevenue = subscriptionStatus === 'active' && !isTestAccount && !needsVerification;
           
           if (sub.payment_platform === 'apple') {
