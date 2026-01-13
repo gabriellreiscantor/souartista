@@ -184,9 +184,9 @@ export default function ArtistExpenses() {
             </header>
 
             <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
-              <div className="max-w-4xl mx-auto space-y-6">
+              <div className="w-full max-w-4xl mx-auto space-y-6">
                 {/* Category Selection */}
-                <Card className="bg-white border-gray-200">
+                <Card className="bg-white border-gray-200 overflow-hidden">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg text-gray-900">Categoria</CardTitle>
                   </CardHeader>
@@ -216,7 +216,7 @@ export default function ArtistExpenses() {
                 </Card>
 
                 {/* Add Expense Form */}
-                <Card className="bg-white border-gray-200">
+                <Card className="bg-white border-gray-200 overflow-hidden">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
                       <CategoryIcon className="h-5 w-5" />
@@ -293,7 +293,7 @@ export default function ArtistExpenses() {
                 </Card>
 
                 {/* History */}
-                <Card className="bg-white border-gray-200">
+                <Card className="bg-white border-gray-200 overflow-hidden">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
