@@ -64,7 +64,7 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
           value={displayValue}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          className={cn("pl-10 text-right", className)}
+          className={cn("pl-10 text-right bg-white", className)}
           {...props}
         />
       </div>
