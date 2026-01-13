@@ -97,22 +97,36 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Find user by email if no userId provided
+    // Find user by email/name if no userId provided
     let targetUserId = userId
     let userProfile = null
 
     if (!targetUserId && email) {
-      const { data: profile, error } = await supabase
+      // First try exact email match
+      let { data: profile, error } = await supabase
         .from('profiles')
         .select('id, name, email')
         .ilike('email', email)
         .single()
 
+      // If not found, try searching by name
       if (error || !profile) {
+        const { data: profiles, error: nameError } = await supabase
+          .from('profiles')
+          .select('id, name, email')
+          .ilike('name', `%${email}%`)
+          .limit(1)
+
+        if (!nameError && profiles && profiles.length > 0) {
+          profile = profiles[0]
+        }
+      }
+
+      if (!profile) {
         return new Response(
           JSON.stringify({ 
             success: false, 
-            error: 'Usuário não encontrado com esse email' 
+            error: 'Usuário não encontrado com esse email ou nome' 
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
         )
