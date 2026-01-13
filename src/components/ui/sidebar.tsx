@@ -27,8 +27,6 @@ type SidebarContext = {
   setOpenMobile: (open: boolean) => void;
   isMobile: boolean;
   toggleSidebar: () => void;
-  closeInstantly: () => void;
-  instantClose: boolean;
 };
 
 const SidebarContext = React.createContext<SidebarContext | null>(null);
@@ -45,8 +43,6 @@ function useSidebar() {
       setOpenMobile: () => {},
       isMobile: false,
       toggleSidebar: () => {},
-      closeInstantly: () => {},
-      instantClose: false,
     };
   }
 
@@ -63,7 +59,6 @@ const SidebarProvider = React.forwardRef<
 >(({ defaultOpen = true, open: openProp, onOpenChange: setOpenProp, className, style, children, ...props }, ref) => {
   const isMobile = useIsMobile();
   const [openMobile, setOpenMobile] = React.useState(false);
-  const [instantClose, setInstantClose] = React.useState(false);
 
   // This is the internal state of the sidebar.
   // We use openProp and setOpenProp for control from outside the component.
@@ -88,14 +83,6 @@ const SidebarProvider = React.forwardRef<
   const toggleSidebar = React.useCallback(() => {
     return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
   }, [isMobile, setOpen, setOpenMobile]);
-
-  // Helper to close sidebar instantly (no animation) for navigation
-  const closeInstantly = React.useCallback(() => {
-    setInstantClose(true);
-    setOpenMobile(false);
-    // Reset after closing
-    setTimeout(() => setInstantClose(false), 50);
-  }, []);
 
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
@@ -123,10 +110,8 @@ const SidebarProvider = React.forwardRef<
       openMobile,
       setOpenMobile,
       toggleSidebar,
-      closeInstantly,
-      instantClose,
     }),
-    [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, closeInstantly, instantClose],
+    [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar],
   );
 
   return (
@@ -160,7 +145,7 @@ const Sidebar = React.forwardRef<
     collapsible?: "offcanvas" | "icon" | "none";
   }
 >(({ side = "left", variant = "sidebar", collapsible = "offcanvas", className, children, ...props }, ref) => {
-  const { isMobile, state, openMobile, setOpenMobile, instantClose } = useSidebar();
+  const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
 
   if (collapsible === "none") {
     return (
@@ -189,7 +174,6 @@ const Sidebar = React.forwardRef<
           }
           side={side}
           hideCloseButton
-          instant={instantClose}
         >
           <div className="flex h-full w-full flex-col">{children}</div>
         </SheetContent>

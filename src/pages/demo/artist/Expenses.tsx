@@ -66,7 +66,8 @@ export default function DemoArtistExpenses() {
           <header className="h-16 border-b border-gray-200 bg-white flex items-center px-4 md:px-6 justify-between">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
-              <h1 className="text-xl font-semibold text-gray-900">
+              <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <Receipt className="h-5 w-5" />
                 Despesas Adicionais
               </h1>
             </div>

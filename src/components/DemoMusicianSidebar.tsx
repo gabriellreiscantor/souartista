@@ -34,7 +34,7 @@ const settingsItems = [
 ];
 
 export function DemoMusicianSidebar() {
-  const { state, closeInstantly, isMobile, toggleSidebar } = useSidebar();
+  const { state, setOpenMobile, isMobile, toggleSidebar } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
@@ -48,13 +48,12 @@ export function DemoMusicianSidebar() {
 
   const handleLockedClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (isMobile) closeInstantly();
     setShowLockedModal(true);
   };
 
   const handleSidebarClick = (e: React.MouseEvent) => {
     if (isMobile && e.target === e.currentTarget) {
-      closeInstantly();
+      setOpenMobile(false);
     }
   };
 
@@ -95,7 +94,6 @@ export function DemoMusicianSidebar() {
                     <NavLink
                       to={item.url}
                       end
-                      onClick={() => isMobile && closeInstantly()}
                       className="hover:bg-sidebar-accent"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                     >

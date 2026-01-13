@@ -42,7 +42,7 @@ const mainItems = [
 ];
 
 export function AdminSidebar() {
-  const { state, closeInstantly, isMobile } = useSidebar();
+  const { state, setOpenMobile, isMobile } = useSidebar();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const currentTab = searchParams.get('tab') || 'usuarios';
@@ -138,7 +138,7 @@ export function AdminSidebar() {
   const handleSidebarClick = (e: React.MouseEvent) => {
     // Fecha o sidebar se clicar em área vazia (não em link ou botão) no mobile
     if (isMobile && e.target === e.currentTarget) {
-      closeInstantly();
+      setOpenMobile(false);
     }
   };
 
@@ -174,7 +174,7 @@ export function AdminSidebar() {
                       )}
                       onClick={() => {
                         if (isMobile) {
-                          closeInstantly();
+                          setOpenMobile(false);
                         }
                       }}
                     >

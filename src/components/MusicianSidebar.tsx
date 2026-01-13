@@ -39,7 +39,7 @@ const adminItems = [
 ];
 
 export function MusicianSidebar() {
-  const { state, closeInstantly, isMobile, toggleSidebar } = useSidebar();
+  const { state, setOpenMobile, isMobile, toggleSidebar } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === 'collapsed';
@@ -61,7 +61,7 @@ export function MusicianSidebar() {
   const handleSidebarClick = (e: React.MouseEvent) => {
     // Fecha o sidebar se clicar em área vazia (não em link ou botão) no mobile
     if (isMobile && e.target === e.currentTarget) {
-      closeInstantly();
+      setOpenMobile(false);
     }
   };
 
@@ -98,7 +98,6 @@ export function MusicianSidebar() {
                     <NavLink
                       to={item.url}
                       end
-                      onClick={() => isMobile && closeInstantly()}
                       className="hover:bg-sidebar-accent"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                     >
@@ -123,7 +122,6 @@ export function MusicianSidebar() {
                       <NavLink
                         to={item.url}
                         end
-                        onClick={() => isMobile && closeInstantly()}
                         className="hover:bg-sidebar-accent"
                         activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                       >
@@ -148,7 +146,6 @@ export function MusicianSidebar() {
                     <NavLink
                       to={item.url}
                       end
-                      onClick={() => isMobile && closeInstantly()}
                       className="hover:bg-sidebar-accent"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                     >
