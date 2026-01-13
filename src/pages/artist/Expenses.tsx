@@ -307,7 +307,7 @@ export default function ArtistExpenses() {
                           onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
                           className="bg-white border-gray-300 hover:bg-gray-50"
                         >
-                          <ChevronLeft className="h-4 w-4" />
+                          <ChevronLeft className="h-4 w-4 text-gray-900" />
                         </Button>
                         <span className="min-w-[120px] text-center font-medium text-gray-900">
                           {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
@@ -318,7 +318,7 @@ export default function ArtistExpenses() {
                           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
                           className="bg-white border-gray-300 hover:bg-gray-50"
                         >
-                          <ChevronRight className="h-4 w-4" />
+                          <ChevronRight className="h-4 w-4 text-gray-900" />
                         </Button>
                       </div>
                     </div>
