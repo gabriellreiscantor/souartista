@@ -914,6 +914,7 @@ export type Database = {
       referrals: {
         Row: {
           created_at: string
+          extended_trial_granted: boolean | null
           first_payment_id: string | null
           id: string
           paid_at: string | null
@@ -928,6 +929,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          extended_trial_granted?: boolean | null
           first_payment_id?: string | null
           id?: string
           paid_at?: string | null
@@ -942,6 +944,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          extended_trial_granted?: boolean | null
           first_payment_id?: string | null
           id?: string
           paid_at?: string | null

@@ -705,8 +705,8 @@ const Register = () => {
                   />
                   <p className="text-xs text-[#C8BAD4]">
                     {referralFromLink 
-                      ? "✓ Código aplicado automaticamente pelo link de indicação"
-                      : "Recebeu um código de um amigo? Digite aqui!"}
+                      ? "✓ Código aplicado! Você terá 14 dias de teste grátis ao invés de 7 🎁"
+                      : "Recebeu um código de um amigo? Digite aqui e ganhe 14 dias de teste grátis!"}
                   </p>
                 </div>
 

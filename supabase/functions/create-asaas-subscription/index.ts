@@ -142,14 +142,25 @@ serve(async (req) => {
     const billingType = paymentMethod; // PIX or CREDIT_CARD
     const cycle = planType === 'monthly' ? 'MONTHLY' : 'YEARLY';
     
-    // Calculate next due date - trial de 7 dias para cartão, imediato para PIX
+    // Verificar se usuário foi indicado (para trial estendido)
+    const { data: referralData } = await supabase
+      .from('referrals')
+      .select('id, extended_trial_granted')
+      .eq('referred_id', user.id)
+      .maybeSingle();
+
+    const wasReferred = !!referralData && !referralData.extended_trial_granted;
+    const trialDays = wasReferred ? 14 : 7; // 14 dias para indicados, 7 padrão
+    console.log(`🎁 User trial: ${trialDays} days (was referred: ${wasReferred})`);
+    
+    // Calculate next due date - trial para cartão, imediato para PIX
     const today = new Date();
     let nextDueDate: string;
 
     if (billingType === 'CREDIT_CARD') {
-      // Trial de 7 dias para cartão
+      // Trial dinâmico baseado em indicação
       const trialEndDate = new Date(today);
-      trialEndDate.setDate(trialEndDate.getDate() + 7);
+      trialEndDate.setDate(trialEndDate.getDate() + trialDays);
       nextDueDate = trialEndDate.toISOString().split('T')[0];
     } else {
       // PIX: cobrança imediata (hoje)
@@ -278,9 +289,9 @@ serve(async (req) => {
     // Calculate next_due_date to save in database
     let nextDueDateToSave: string;
     if (billingType === 'CREDIT_CARD') {
-      // Trial de 7 dias - calcular explicitamente
+      // Trial dinâmico baseado em indicação
       const trialEnd = new Date();
-      trialEnd.setDate(trialEnd.getDate() + 7);
+      trialEnd.setDate(trialEnd.getDate() + trialDays);
       // Formato YYYY-MM-DD manual para evitar problemas de timezone
       const year = trialEnd.getFullYear();
       const month = String(trialEnd.getMonth() + 1).padStart(2, '0');
@@ -289,6 +300,20 @@ serve(async (req) => {
     } else {
       // PIX: usar a data retornada pelo Asaas
       nextDueDateToSave = subscriptionData.nextDueDate;
+    }
+
+    // Marcar trial estendido como concedido para o indicado
+    if (wasReferred && referralData && billingType === 'CREDIT_CARD') {
+      const { error: updateRefError } = await supabase
+        .from('referrals')
+        .update({ extended_trial_granted: true })
+        .eq('id', referralData.id);
+
+      if (updateRefError) {
+        console.error('⚠️ Error marking extended trial as granted:', updateRefError);
+      } else {
+        console.log('✅ Extended trial (14 days) granted to referred user');
+      }
     }
 
     // Use upsert to handle existing subscriptions (user may be renewing)
