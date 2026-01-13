@@ -3420,10 +3420,27 @@ export default function Admin() {
 
                     {/* Lucro Líquido Total */}
                     <div className="p-3 md:p-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-white">
-                      <div className="flex flex-col gap-2">
+                      {/* Mobile: Layout vertical empilhado */}
+                      <div className="md:hidden flex flex-col items-center gap-2 text-center">
+                        <p className="text-xs opacity-90">💰 Lucro Líquido Mensal</p>
+                        <p className="text-2xl font-bold whitespace-nowrap">
+                          R$ {(
+                            (appleRevenue * (1 - appleTax / 100)) +
+                            (asaasCreditCardRevenue * (1 - asaasCreditCardTax / 100)) +
+                            (asaasPixRevenue * (1 - asaasPixTax / 100))
+                          ).toFixed(2)}
+                        </p>
+                        <div className="flex flex-wrap justify-center gap-2 text-[10px] opacity-75">
+                          <span className="whitespace-nowrap">🍎 R$ {(appleRevenue * (1 - appleTax / 100)).toFixed(0)}</span>
+                          <span className="whitespace-nowrap">💳 R$ {(asaasCreditCardRevenue * (1 - asaasCreditCardTax / 100)).toFixed(0)}</span>
+                          <span className="whitespace-nowrap">📱 R$ {(asaasPixRevenue * (1 - asaasPixTax / 100)).toFixed(0)}</span>
+                        </div>
+                      </div>
+                      {/* Desktop: Layout horizontal */}
+                      <div className="hidden md:flex flex-col gap-2">
                         <div className="flex justify-between items-center">
-                          <p className="text-xs md:text-sm opacity-90">💰 Lucro Líquido Mensal</p>
-                          <p className="text-xl md:text-3xl font-bold">
+                          <p className="text-sm opacity-90">💰 Lucro Líquido Mensal</p>
+                          <p className="text-3xl font-bold whitespace-nowrap">
                             R$ {(
                               (appleRevenue * (1 - appleTax / 100)) +
                               (asaasCreditCardRevenue * (1 - asaasCreditCardTax / 100)) +
@@ -3431,7 +3448,7 @@ export default function Admin() {
                             ).toFixed(2)}
                           </p>
                         </div>
-                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] md:text-xs opacity-75">
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs opacity-75">
                           <span>🍎 iOS: R$ {(appleRevenue * (1 - appleTax / 100)).toFixed(0)}</span>
                           <span>💳 Cartão: R$ {(asaasCreditCardRevenue * (1 - asaasCreditCardTax / 100)).toFixed(0)}</span>
                           <span>📱 PIX: R$ {(asaasPixRevenue * (1 - asaasPixTax / 100)).toFixed(0)}</span>
@@ -3445,15 +3462,38 @@ export default function Admin() {
                 {platformSubscribers.length > 0 && (
                   <Card className="bg-white border-gray-200">
                     <CardHeader className="p-3 md:p-6">
-                      <CardTitle className="text-gray-900 text-base md:text-lg">👥 Assinantes Ativos por Plataforma</CardTitle>
+                      <CardTitle className="text-gray-900 text-sm md:text-lg">👥 Assinantes Ativos</CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 md:p-6 pt-0">
-                      <div className="overflow-x-auto">
+                      {/* Mobile: Cards empilhados */}
+                      <div className="md:hidden space-y-2">
+                        {platformSubscribers.map((sub) => (
+                          <div key={sub.id} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <div className="flex justify-between items-start gap-2 mb-1.5">
+                              <span className="font-medium text-sm text-gray-900 truncate flex-1">
+                                {sub.name}
+                              </span>
+                              <span className="font-bold text-green-600 text-sm whitespace-nowrap">
+                                R$ {sub.amount.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                              <span>{sub.platform.includes('iOS') ? '🍎' : '🤖'}</span>
+                              <span>{sub.platform.includes('iOS') ? 'iOS' : 'Android'}</span>
+                              <span className="text-gray-300">•</span>
+                              <span>{sub.method.includes('Apple') ? '🍎 IAP' : sub.method.includes('Cartão') ? '💳 Cartão' : '📱 PIX'}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Desktop: Tabela */}
+                      <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b border-gray-200">
                               <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Nome</th>
-                              <th className="text-left py-2 px-2 text-xs font-medium text-gray-500 hidden md:table-cell">Email</th>
+                              <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Email</th>
                               <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Plataforma</th>
                               <th className="text-left py-2 px-2 text-xs font-medium text-gray-500">Método</th>
                               <th className="text-right py-2 px-2 text-xs font-medium text-gray-500">Valor</th>
@@ -3463,7 +3503,7 @@ export default function Admin() {
                             {platformSubscribers.map((sub) => (
                               <tr key={sub.id} className="border-b border-gray-100 hover:bg-gray-50">
                                 <td className="py-2 px-2 font-medium text-gray-900 truncate max-w-[120px]">{sub.name}</td>
-                                <td className="py-2 px-2 text-gray-600 truncate max-w-[180px] hidden md:table-cell">{sub.email}</td>
+                                <td className="py-2 px-2 text-gray-600 truncate max-w-[180px]">{sub.email}</td>
                                 <td className="py-2 px-2">
                                   <Badge variant={sub.platform.includes('iOS') ? 'outline' : 'secondary'} className="text-xs">
                                     {sub.platform.includes('iOS') ? '🍎' : '🤖'} {sub.platform}
@@ -3481,7 +3521,7 @@ export default function Admin() {
                                     {sub.method.includes('Apple') ? '🍎' : sub.method.includes('Cartão') ? '💳' : '📱'} {sub.method}
                                   </Badge>
                                 </td>
-                                <td className="py-2 px-2 text-right font-medium text-green-600">R$ {sub.amount.toFixed(2)}</td>
+                                <td className="py-2 px-2 text-right font-medium text-green-600 whitespace-nowrap">R$ {sub.amount.toFixed(2)}</td>
                               </tr>
                             ))}
                           </tbody>
