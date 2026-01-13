@@ -1,4 +1,4 @@
-import { Music, Calendar, BarChart3, Car, LogOut, LayoutDashboard, Mic2, HelpCircle, User, Settings } from 'lucide-react';
+import { Music, Calendar, BarChart3, Car, Receipt, LogOut, LayoutDashboard, Mic2, HelpCircle, User, Settings } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import logoIcon from '@/assets/logo_icon.png';
 import { NavLink } from '@/components/NavLink';
@@ -24,6 +24,7 @@ const mainItems = [
   { title: 'Calendário', url: '/demo/musician/calendar', icon: Calendar },
   { title: 'Relatórios', url: '/demo/musician/reports', icon: BarChart3 },
   { title: 'Locomoção', url: '/demo/musician/transportation', icon: Car },
+  { title: 'Despesas', url: '/demo/musician/expenses', icon: Receipt },
 ];
 
 const settingsItems = [
