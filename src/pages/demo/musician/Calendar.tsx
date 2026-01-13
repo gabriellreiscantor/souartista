@@ -13,7 +13,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { DemoBanner } from '@/components/DemoBanner';
 
 const DemoMusicianCalendar = () => {
-  const [currentMonth] = useState(new Date()); // Always current month
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showAgenda, setShowAgenda] = useState(false);
 
@@ -82,11 +82,29 @@ const DemoMusicianCalendar = () => {
             <div className="max-w-6xl mx-auto">
               <Card className="bg-white mb-6">
                 <CardContent className="p-6">
-                  <div className="mb-4">
+                  <div className="flex items-center justify-between mb-4">
                     <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                       <Music2 className="w-6 h-6 text-purple-600" />
                       {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
                     </h2>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                        className="bg-primary text-white hover:bg-primary/90 border-primary"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                        className="bg-primary text-white hover:bg-primary/90 border-primary"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-7 gap-2">
