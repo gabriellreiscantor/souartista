@@ -143,7 +143,9 @@ export function useReferrals() {
     const referralLink = `https://souartista.app/r/${referralCode}`;
     const message = encodeURIComponent(
       `🎵 Conhece o Sou Artista? É o app que uso para organizar meus shows e finanças!\n\n` +
-      `🎁 Use meu link e ganhe 14 dias de teste grátis (válido para cartão de crédito)!\n\n${referralLink}`
+      `🎁 Use meu link de indicação!\n` +
+      `📱 Android/Web: 14 dias de teste grátis (cartão de crédito)\n` +
+      `🍎 iPhone: 7 dias de teste grátis\n\n${referralLink}`
     );
     
     window.open(`https://wa.me/?text=${message}`, '_blank');
@@ -155,7 +157,7 @@ export function useReferrals() {
     const referralLink = `https://souartista.app/r/${referralCode}`;
     const shareData = {
       title: 'Sou Artista - Organize seus shows!',
-      text: '🎵 Use meu link de indicação e comece a usar o Sou Artista!',
+      text: '🎵 Use meu link! Android/Web: 14 dias grátis (cartão). iPhone: 7 dias grátis.',
       url: referralLink,
     };
 

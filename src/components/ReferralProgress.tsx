@@ -53,7 +53,7 @@ export function ReferralProgress() {
           )}
         </div>
         <CardDescription className="text-gray-600">
-          Indique 5 amigos que assinem e ganhe 1 mês grátis! Seu amigo ganha 14 dias de teste grátis (só vale para cartão de crédito).
+          Indique 5 amigos que assinem e ganhe 1 mês grátis! Seu amigo ganha 14 dias de teste (Android/Web com cartão de crédito) ou 7 dias (iPhone).
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -149,7 +149,7 @@ export function ReferralProgress() {
           <p className="flex items-start gap-2">
             <Gift className="h-4 w-4 mt-0.5 flex-shrink-0 text-purple-600" />
             <span>
-              <strong>Benefício para quem você indica:</strong> 14 dias de teste grátis ao invés de 7 (válido apenas para pagamento com cartão de crédito, não funciona com PIX).
+              <strong>Benefício para quem você indica:</strong> Android/Web com cartão de crédito ganha 14 dias de teste. iPhone ganha 7 dias. PIX não tem período grátis.
             </span>
           </p>
           <p className="flex items-start gap-2">
