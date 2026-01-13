@@ -23,7 +23,7 @@ const sendEmailViaBrevo = async (
       body: JSON.stringify({
         sender: {
           name: "Seu Artista",
-          email: "noreply@souartista.app"
+          email: "noreply@souartista.com"
         },
         to: [{ email }],
         subject: "Seu código de verificação - Seu Artista",
