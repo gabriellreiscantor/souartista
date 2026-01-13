@@ -80,6 +80,9 @@ const Register = () => {
   const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
+  // Estado para indicação via link
+  const [referralFromLink, setReferralFromLink] = useState(false);
+
   // NÃO redireciona automaticamente - deixa o fluxo do formulário seguir
   // O redirecionamento acontece apenas após verificar o OTP no step 4
 
@@ -107,6 +110,16 @@ const Register = () => {
       return () => clearTimeout(timer);
     }
   }, [resendTimer]);
+
+  // Carregar código de indicação do localStorage (se veio pelo link)
+  useEffect(() => {
+    const savedReferralCode = localStorage.getItem('referral_code');
+    if (savedReferralCode) {
+      setFormData(prev => ({ ...prev, referralCode: savedReferralCode }));
+      setReferralFromLink(true);
+      console.log('📨 Referral code loaded from link:', savedReferralCode);
+    }
+  }, []);
 
   // Handlers para foto
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -670,7 +683,7 @@ const Register = () => {
                 {/* Campo opcional de código de indicação */}
                 <div className="space-y-2">
                   <Label htmlFor="referralCode" className="text-white">
-                    Código de indicação <span className="text-[#C8BAD4] text-xs">(opcional)</span>
+                    Código de indicação <span className="text-[#C8BAD4] text-xs">{referralFromLink ? '' : '(opcional)'}</span>
                   </Label>
                   <Input
                     id="referralCode"
@@ -678,13 +691,22 @@ const Register = () => {
                     placeholder="Ex: ABC12345"
                     value={formData.referralCode}
                     onChange={(e) => {
-                      setFormData({ ...formData, referralCode: e.target.value.toUpperCase() });
+                      if (!referralFromLink) {
+                        setFormData({ ...formData, referralCode: e.target.value.toUpperCase() });
+                      }
                     }}
+                    disabled={referralFromLink}
+                    readOnly={referralFromLink}
                     maxLength={10}
-                    className="h-11 bg-[#1B0D29] text-white placeholder:text-[#C8BAD4] border-[#B96FFF] uppercase"
+                    className={cn(
+                      "h-11 bg-[#1B0D29] text-white placeholder:text-[#C8BAD4] border-[#B96FFF] uppercase",
+                      referralFromLink && "bg-[#2D1B3D] cursor-not-allowed opacity-80"
+                    )}
                   />
                   <p className="text-xs text-[#C8BAD4]">
-                    Recebeu um código de um amigo? Digite aqui!
+                    {referralFromLink 
+                      ? "✓ Código aplicado automaticamente pelo link de indicação"
+                      : "Recebeu um código de um amigo? Digite aqui!"}
                   </p>
                 </div>
 
