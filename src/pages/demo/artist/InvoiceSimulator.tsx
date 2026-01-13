@@ -102,35 +102,35 @@ const DemoInvoiceSimulator = () => {
   }, [valorBrutoNum, tipoRecebimento, issPercentualNum]);
 
   const content = (
-    <div className="flex-1 overflow-auto bg-background">
+    <div className="flex-1 flex flex-col bg-[#fafafa]">
       <DemoBanner />
-      <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6">
+      <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6 flex-1 overflow-auto">
         {/* Header */}
         <div className="flex items-center gap-3">
-          <Calculator className="w-8 h-8 text-primary" />
+          <Calculator className="w-8 h-8 text-purple-600" />
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Simular Nota Fiscal</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-2xl font-bold text-gray-900">Simular Nota Fiscal</h1>
+            <p className="text-sm text-gray-500">
               Calcule quanto você vai receber líquido do cachê
             </p>
           </div>
         </div>
 
         {/* Aviso */}
-        <Alert className="bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800">
-          <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-500" />
-          <AlertDescription className="text-yellow-800 dark:text-yellow-200 text-sm">
+        <Alert className="bg-yellow-50 border-yellow-200">
+          <AlertTriangle className="h-4 w-4 text-yellow-600" />
+          <AlertDescription className="text-yellow-800 text-sm">
             Este é um <strong>simulador de estimativa</strong> baseado nas regras gerais do Brasil (2026). 
             Não é consultoria contábil. Para emissão oficial, confirme com seu contador ou com a prefeitura.
           </AlertDescription>
         </Alert>
 
         {/* Tipo de Recebimento */}
-        <Card>
+        <Card className="bg-white border-gray-200">
           <CardContent className="p-4 md:p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Receipt className="w-5 h-5 text-primary" />
-              <h2 className="font-semibold text-foreground">Tipo de Recebimento</h2>
+              <Receipt className="w-5 h-5 text-purple-600" />
+              <h2 className="font-semibold text-gray-900">Tipo de Recebimento</h2>
             </div>
             
             <RadioGroup 
@@ -138,31 +138,31 @@ const DemoInvoiceSimulator = () => {
               onValueChange={(v) => setTipoRecebimento(v as TipoRecebimento)}
               className="grid gap-3"
             >
-              <div className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer">
+              <div className="flex items-start space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer">
                 <RadioGroupItem value="pf" id="pf" className="mt-1" />
                 <Label htmlFor="pf" className="flex-1 cursor-pointer">
-                  <span className="font-medium">Pessoa Física (RPA/Recibo)</span>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <span className="font-medium text-gray-900">Pessoa Física (RPA/Recibo)</span>
+                  <p className="text-sm text-gray-500 mt-1">
                     Sem CNPJ. O contratante emite RPA e retém INSS + IRRF na fonte.
                   </p>
                 </Label>
               </div>
               
-              <div className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer">
+              <div className="flex items-start space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer">
                 <RadioGroupItem value="mei" id="mei" className="mt-1" />
                 <Label htmlFor="mei" className="flex-1 cursor-pointer">
-                  <span className="font-medium">MEI (Microempreendedor Individual)</span>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <span className="font-medium text-gray-900">MEI (Microempreendedor Individual)</span>
+                  <p className="text-sm text-gray-500 mt-1">
                     Você emite NFS-e. Paga DAS mensal fixo (~R$ 75-80). Sem retenção por show.
                   </p>
                 </Label>
               </div>
               
-              <div className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer">
+              <div className="flex items-start space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer">
                 <RadioGroupItem value="cnpj" id="cnpj" className="mt-1" />
                 <Label htmlFor="cnpj" className="flex-1 cursor-pointer">
-                  <span className="font-medium">CNPJ (ME/EPP/Simples Nacional)</span>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <span className="font-medium text-gray-900">CNPJ (ME/EPP/Simples Nacional)</span>
+                  <p className="text-sm text-gray-500 mt-1">
                     Empresa no Simples. Impostos federais via DAS. Aqui calculamos só ISS.
                   </p>
                 </Label>
@@ -172,15 +172,15 @@ const DemoInvoiceSimulator = () => {
         </Card>
 
         {/* Dados do Cachê */}
-        <Card>
+        <Card className="bg-white border-gray-200">
           <CardContent className="p-4 md:p-6 space-y-4">
             <div className="flex items-center gap-2 mb-2">
-              <Calculator className="w-5 h-5 text-primary" />
-              <h2 className="font-semibold text-foreground">Dados do Cachê</h2>
+              <Calculator className="w-5 h-5 text-purple-600" />
+              <h2 className="font-semibold text-gray-900">Dados do Cachê</h2>
             </div>
 
             <div>
-              <Label htmlFor="valorBruto" className="text-sm font-medium">
+              <Label htmlFor="valorBruto" className="text-sm font-medium text-gray-900">
                 Valor Bruto do Cachê
               </Label>
               <div className="mt-1.5">
@@ -201,17 +201,17 @@ const DemoInvoiceSimulator = () => {
                   checked={retencaoFonte}
                   onCheckedChange={(checked) => setRetencaoFonte(checked === true)}
                 />
-                <Label htmlFor="retencao" className="text-sm cursor-pointer">
+                <Label htmlFor="retencao" className="text-sm cursor-pointer text-gray-700">
                   O contratante retém impostos na fonte
                 </Label>
               </div>
             )}
 
             <div>
-              <Label htmlFor="iss" className="text-sm font-medium">
+              <Label htmlFor="iss" className="text-sm font-medium text-gray-900">
                 ISS (%)
               </Label>
-              <p className="text-xs text-muted-foreground mb-1.5">
+              <p className="text-xs text-gray-500 mb-1.5">
                 Varia de 2% a 5% conforme o município. Padrão: 2%
               </p>
               <Input
@@ -230,46 +230,46 @@ const DemoInvoiceSimulator = () => {
 
         {/* Resultado */}
         {valorBrutoNum > 0 && (
-          <Card className="bg-gradient-to-br from-primary/5 to-background border-primary/20">
+          <Card className="bg-gradient-to-br from-purple-50 to-white border-purple-200">
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Info className="w-5 h-5 text-primary" />
-                <h2 className="font-semibold text-foreground">Resultado da Simulação</h2>
+                <Info className="w-5 h-5 text-purple-600" />
+                <h2 className="font-semibold text-gray-900">Resultado da Simulação</h2>
               </div>
 
               <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b">
-                  <span className="text-muted-foreground">Valor Bruto</span>
-                  <span className="font-semibold text-foreground">R$ {formatCurrency(valorBrutoNum)}</span>
+                <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                  <span className="text-gray-500">Valor Bruto</span>
+                  <span className="font-semibold text-gray-900">R$ {formatCurrency(valorBrutoNum)}</span>
                 </div>
 
                 {calculos.temINSS && (
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">(-) INSS (11%)</span>
-                    <span className="text-red-600 dark:text-red-400">- R$ {formatCurrency(calculos.inss)}</span>
+                    <span className="text-gray-500">(-) INSS (11%)</span>
+                    <span className="text-red-600">- R$ {formatCurrency(calculos.inss)}</span>
                   </div>
                 )}
 
                 {calculos.temIRRF && (
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">(-) IRRF</span>
-                    <span className="text-red-600 dark:text-red-400">- R$ {formatCurrency(calculos.irrf)}</span>
+                    <span className="text-gray-500">(-) IRRF</span>
+                    <span className="text-red-600">- R$ {formatCurrency(calculos.irrf)}</span>
                   </div>
                 )}
 
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">(-) ISS ({issPercentualNum}%)</span>
-                  <span className="text-red-600 dark:text-red-400">- R$ {formatCurrency(calculos.iss)}</span>
+                  <span className="text-gray-500">(-) ISS ({issPercentualNum}%)</span>
+                  <span className="text-red-600">- R$ {formatCurrency(calculos.iss)}</span>
                 </div>
 
-                <div className="flex justify-between items-center py-2 border-t border-dashed">
-                  <span className="text-muted-foreground">Total Descontos</span>
-                  <span className="font-medium text-red-600 dark:text-red-400">- R$ {formatCurrency(calculos.totalDescontos)}</span>
+                <div className="flex justify-between items-center py-2 border-t border-dashed border-gray-300">
+                  <span className="text-gray-500">Total Descontos</span>
+                  <span className="font-medium text-red-600">- R$ {formatCurrency(calculos.totalDescontos)}</span>
                 </div>
 
-                <div className="flex justify-between items-center py-3 bg-primary/10 rounded-lg px-3 mt-2">
-                  <span className="font-semibold text-foreground">💵 VALOR LÍQUIDO</span>
-                  <span className="text-xl font-bold text-primary">R$ {formatCurrency(calculos.valorLiquido)}</span>
+                <div className="flex justify-between items-center py-3 bg-purple-100 rounded-lg px-3 mt-2">
+                  <span className="font-semibold text-gray-900">💵 VALOR LÍQUIDO</span>
+                  <span className="text-xl font-bold text-purple-600">R$ {formatCurrency(calculos.valorLiquido)}</span>
                 </div>
               </div>
             </CardContent>
@@ -277,26 +277,26 @@ const DemoInvoiceSimulator = () => {
         )}
 
         {/* Explicações */}
-        <Accordion type="single" collapsible className="bg-card rounded-lg border">
+        <Accordion type="single" collapsible className="bg-white rounded-lg border border-gray-200">
           <AccordionItem value="explicacao" className="border-none">
             <AccordionTrigger className="px-4 hover:no-underline">
               <div className="flex items-center gap-2">
-                <HelpCircle className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Como foi calculado?</span>
+                <HelpCircle className="w-4 h-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-900">Como foi calculado?</span>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-4 pb-4 text-sm text-muted-foreground space-y-4">
+            <AccordionContent className="px-4 pb-4 text-sm text-gray-600 space-y-4">
               {tipoRecebimento === 'pf' && (
                 <>
                   <div>
-                    <p className="font-medium text-foreground mb-1">INSS (11%)</p>
+                    <p className="font-medium text-gray-900 mb-1">INSS (11%)</p>
                     <p>
                       Quando você recebe como pessoa física, o contratante retém 11% de INSS na fonte, 
                       limitado ao teto de R$ {formatCurrency(TETO_INSS_2026)} em 2026.
                     </p>
                   </div>
                   <div>
-                    <p className="font-medium text-foreground mb-1">IRRF (Tabela 2026)</p>
+                    <p className="font-medium text-gray-900 mb-1">IRRF (Tabela 2026)</p>
                     <p>
                       A base de cálculo é o valor bruto menos o INSS. Em 2026, há isenção para 
                       valores até R$ 5.000. Acima disso, aplica-se a tabela progressiva:
@@ -314,7 +314,7 @@ const DemoInvoiceSimulator = () => {
               
               {tipoRecebimento === 'mei' && (
                 <div>
-                  <p className="font-medium text-foreground mb-1">MEI - Microempreendedor Individual</p>
+                  <p className="font-medium text-gray-900 mb-1">MEI - Microempreendedor Individual</p>
                   <p>
                     Como MEI, você não tem retenção de INSS ou IRRF por show. Você paga apenas o DAS mensal 
                     (valor fixo em torno de R$ 75-80 em 2026, que já inclui INSS + ISS + contribuições).
@@ -328,7 +328,7 @@ const DemoInvoiceSimulator = () => {
               
               {tipoRecebimento === 'cnpj' && (
                 <div>
-                  <p className="font-medium text-foreground mb-1">CNPJ (Simples Nacional)</p>
+                  <p className="font-medium text-gray-900 mb-1">CNPJ (Simples Nacional)</p>
                   <p>
                     Empresas no Simples Nacional têm tributação simplificada via DAS. Aqui calculamos 
                     apenas o ISS, que pode ser retido na fonte pelo tomador.
@@ -341,7 +341,7 @@ const DemoInvoiceSimulator = () => {
               )}
 
               <div>
-                <p className="font-medium text-foreground mb-1">ISS</p>
+                <p className="font-medium text-gray-900 mb-1">ISS</p>
                 <p>
                   O Imposto Sobre Serviços varia de 2% a 5% conforme o município. O padrão é 2%, 
                   mas você pode ajustar conforme a alíquota da sua cidade ou do local do show.
@@ -352,7 +352,7 @@ const DemoInvoiceSimulator = () => {
         </Accordion>
 
         {/* Aviso final */}
-        <p className="text-xs text-center text-muted-foreground px-4">
+        <p className="text-xs text-center text-gray-500 px-4">
           Os valores são estimativas. Pode haver regras locais específicas. 
           Confirme sempre com seu contador ou com a prefeitura.
         </p>
