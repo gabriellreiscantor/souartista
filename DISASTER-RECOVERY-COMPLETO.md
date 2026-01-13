@@ -935,6 +935,674 @@ Após importar o projeto em nova conta Lovable:
 
 ---
 
+## 18. 🔄 IMPORTAR PARA NOVA CONTA LOVABLE (Válvula de Escape)
+
+> ⚠️ **IMPORTANTE**: O Lovable **NÃO** importa repositórios GitHub automaticamente. Este guia detalha como reconstruir o projeto do zero em uma nova conta.
+
+### 18.1 Pré-requisitos
+
+Antes de iniciar, certifique-se de ter:
+
+- [ ] Acesso ao repositório GitHub (https://github.com/SEU_USUARIO/souartista)
+- [ ] Backup do Supabase funcionando (verificar backup-schema.sql)
+- [ ] Todas as secrets salvas (ver seção 5)
+- [ ] Nova conta Lovable criada (https://lovable.dev)
+- [ ] Acesso ao Supabase de backup
+
+### 18.2 Estratégia de Importação (3 Opções)
+
+---
+
+#### **OPÇÃO A - PROMPT MEGA (⭐ RECOMENDADA)**
+
+**Tempo estimado: 30-45 minutos**
+
+Esta é a forma mais rápida. Você envia um mega-prompt com toda a estrutura e a IA reconstrói.
+
+**Passo 1: Baixar código do GitHub**
+```bash
+# Clone o repositório
+git clone https://github.com/SEU_USUARIO/souartista.git
+cd souartista
+
+# Ou baixe como ZIP pelo GitHub:
+# Vá em: Repositório > Code > Download ZIP
+```
+
+**Passo 2: Criar novo projeto no Lovable**
+1. Acesse https://lovable.dev
+2. Clique em "Create new project"
+3. Escolha "Start from scratch" (projeto vazio)
+4. Dê o nome "SouArtista"
+
+**Passo 3: Enviar o Mega-Prompt inicial**
+
+Cole exatamente este prompt no chat do Lovable:
+
+```
+Vou reconstruir um app completo chamado "Sou Artista" - gerenciador de shows para músicos brasileiros.
+
+ARQUITETURA DO PROJETO:
+- React 18 + TypeScript + Vite
+- Tailwind CSS + shadcn/ui
+- Supabase (auth, database, storage, edge functions)
+- Capacitor para iOS/Android
+- React Query para gerenciamento de estado
+
+ESTRUTURA DE PASTAS NECESSÁRIA:
+src/
+├── components/
+│   └── ui/ (componentes shadcn)
+├── hooks/
+├── pages/
+│   ├── artist/
+│   ├── musician/
+│   └── demo/
+├── integrations/supabase/
+├── providers/
+├── data/
+├── lib/
+└── assets/
+
+supabase/
+└── functions/ (32 edge functions)
+
+FUNCIONALIDADES PRINCIPAIS:
+1. Auth com email/OTP
+2. Dois tipos de usuário: Artista e Músico
+3. CRUD de shows com cachê, local, data, hora
+4. Relatórios financeiros mensais
+5. Sistema de assinaturas (Asaas + Apple IAP)
+6. Push notifications via Firebase
+7. Sistema de indicações com recompensas
+8. Área admin para gerenciamento
+
+Por favor:
+1. Crie a estrutura de pastas base
+2. Configure o tailwind.config.ts com o tema escuro
+3. Configure o App.tsx com React Router
+4. Aguarde que eu vou enviar os arquivos um por um
+
+Confirme que entendeu e está pronto para receber os arquivos.
+```
+
+**Passo 4: Enviar arquivos na ordem correta (ver seção 18.3)**
+
+**Passo 5: Conectar Lovable Cloud**
+1. Após estrutura base criada, vá em Settings > Cloud
+2. Enable Lovable Cloud
+3. Isso criará um novo Supabase automaticamente
+
+**Passo 6: Importar banco de dados (ver seção 18.5)**
+
+---
+
+#### **OPÇÃO B - ARQUIVO POR ARQUIVO**
+
+**Tempo estimado: 2-3 horas**
+
+Mais lento, mas mais controlado. Ideal se o mega-prompt não funcionar.
+
+1. Crie projeto vazio no Lovable
+2. Copie e cole cada arquivo individualmente
+3. Siga a ordem da seção 18.3
+4. Verifique se não há erros a cada 5-10 arquivos
+
+**Dica**: Use o formato:
+```
+Crie o arquivo [caminho/arquivo.tsx] com este conteúdo:
+
+[cole o conteúdo aqui]
+```
+
+---
+
+#### **OPÇÃO C - DESENVOLVIMENTO LOCAL + GITHUB SYNC**
+
+**Tempo estimado: 1 hora (se funcionar)**
+
+⚠️ **Experimental** - Pode não sincronizar 100%
+
+1. Crie projeto vazio no Lovable
+2. Conecte ao GitHub (Settings > GitHub)
+3. Crie um repositório novo pelo Lovable
+4. Clone esse repositório localmente:
+```bash
+git clone https://github.com/SEU_USUARIO/novo-repo.git
+cd novo-repo
+```
+5. Copie todos os arquivos do backup para este repo:
+```bash
+cp -r ../souartista-backup/* .
+```
+6. Faça commit e push:
+```bash
+git add .
+git commit -m "Importação completa do backup"
+git push origin main
+```
+7. O Lovable deve sincronizar automaticamente
+8. Verifique se todos os arquivos apareceram
+
+---
+
+### 18.3 Ordem de Importação (Arquivos Críticos)
+
+Siga esta ordem exata para evitar erros de dependência:
+
+---
+
+#### **FASE 1 - Configuração Base (5-10 min)**
+
+```
+1. package.json (dependências - APENAS LEITURA, Lovable gerencia)
+2. tailwind.config.ts
+3. index.html
+4. vite.config.ts
+5. capacitor.config.ts
+```
+
+**Prompt para Fase 1:**
+```
+Configure o projeto com:
+- Tailwind CSS com tema escuro (cores: zinc, purple)
+- Vite com alias @ para src/
+- As seguintes dependências principais:
+  - @supabase/supabase-js
+  - @tanstack/react-query
+  - react-router-dom
+  - lucide-react
+  - framer-motion
+  - date-fns
+  - recharts
+  - react-hook-form + zod
+```
+
+---
+
+#### **FASE 2 - Núcleo do App (5-10 min)**
+
+```
+1. src/main.tsx
+2. src/App.tsx (com todas as rotas)
+3. src/index.css (variáveis CSS do tema)
+4. src/lib/utils.ts
+5. src/vite-env.d.ts
+```
+
+**Prompt para Fase 2:**
+```
+Crie o núcleo do app com:
+1. main.tsx com QueryProvider e BrowserRouter
+2. App.tsx com TODAS estas rotas:
+   - / (Landing)
+   - /login, /register, /reset-password
+   - /complete-profile, /select-role, /verify-email
+   - /subscribe, /app (AppHub)
+   - /artist/* (Dashboard, Shows, Calendar, Reports, etc)
+   - /musician/* (Dashboard, Shows, Artists, etc)
+   - /demo/* (versões demo)
+   - /admin (área admin)
+   - /support
+3. index.css com variáveis HSL para tema escuro
+```
+
+---
+
+#### **FASE 3 - Componentes UI shadcn (15-20 min)**
+
+```
+src/components/ui/
+├── button.tsx
+├── input.tsx
+├── card.tsx
+├── dialog.tsx
+├── form.tsx
+├── select.tsx
+├── tabs.tsx
+├── toast.tsx
+├── toaster.tsx
+├── use-toast.ts
+├── table.tsx
+├── badge.tsx
+├── avatar.tsx
+├── dropdown-menu.tsx
+├── sheet.tsx
+├── skeleton.tsx
+├── switch.tsx
+├── checkbox.tsx
+├── label.tsx
+├── popover.tsx
+├── calendar.tsx
+├── scroll-area.tsx
+├── separator.tsx
+├── progress.tsx
+├── alert.tsx
+├── accordion.tsx
+├── textarea.tsx
+└── (demais 15+ componentes)
+```
+
+**Prompt para Fase 3:**
+```
+Instale e configure todos os componentes shadcn/ui necessários:
+- button, input, card, dialog, form, select, tabs
+- toast, table, badge, avatar, dropdown-menu
+- sheet, skeleton, switch, checkbox, label
+- popover, calendar, scroll-area, separator
+- progress, alert, accordion, textarea
+- Todos com suporte a tema escuro
+```
+
+---
+
+#### **FASE 4 - Hooks Essenciais (20-30 min)**
+
+```
+src/hooks/
+├── useAuth.tsx (CRÍTICO - autenticação)
+├── useAdmin.tsx
+├── use-toast.ts
+├── use-mobile.tsx
+├── useShows.tsx
+├── useArtistStats.tsx
+├── useMusicianStats.tsx
+├── useMonthlyData.tsx
+├── useLocomotionData.tsx
+├── usePushNotifications.tsx
+├── useNativePlatform.tsx
+├── usePlanType.tsx
+├── useSupport.tsx
+├── useReferrals.tsx
+├── useAppleIAP.tsx
+├── useCamera.tsx
+├── useAppUpdate.tsx
+├── useInAppReview.tsx
+├── useUpcomingShows.tsx
+├── useTimezoneSync.tsx
+├── useLastSeen.tsx
+├── useReportVisibility.tsx
+└── usePixNotificationChecker.tsx
+```
+
+**IMPORTANTE**: O `useAuth.tsx` é o mais crítico. Ele gerencia:
+- Login/logout
+- Dados do usuário
+- Role (artist/musician)
+- Status do plano
+- Refresh de dados
+
+**Prompt para Fase 4:**
+```
+Preciso criar os hooks do sistema. O mais importante é useAuth.tsx que gerencia:
+- Estado de autenticação com Supabase
+- Dados do perfil do usuário
+- Role do usuário (artist/musician)
+- Status do plano (active/inactive/trial)
+- Funções: signIn, signUp, signOut, updateUserData, setUserRole
+
+Também preciso de: useShows, useMonthlyData, usePushNotifications, usePlanType
+```
+
+---
+
+#### **FASE 5 - Componentes do App (30-45 min)**
+
+```
+src/components/
+├── LoadingScreen.tsx
+├── ProtectedRoute.tsx
+├── SafeAreaWrapper.tsx
+├── UserMenu.tsx
+├── NotificationBell.tsx
+├── NotificationItem.tsx
+├── ArtistSidebar.tsx
+├── MusicianSidebar.tsx
+├── AdminSidebar.tsx
+├── MobileBottomNav.tsx
+├── WeeklySchedule.tsx
+├── PaymentHistory.tsx
+├── CreditCardForm.tsx
+├── FeedbackForm.tsx
+├── FeedbackHistory.tsx
+├── Onboarding.tsx
+├── PeriodFilter.tsx
+├── ReferralProgress.tsx
+├── ImageEditor.tsx
+├── OfflineBanner.tsx
+├── UpdateBanner.tsx
+├── GlobalAnnouncementModal.tsx
+├── LgpdRequestModal.tsx
+├── ReturningUserModal.tsx
+├── DemoBanner.tsx
+├── DemoLockedModal.tsx
+└── (componentes demo/*)
+```
+
+---
+
+#### **FASE 6 - Páginas (45-60 min)**
+
+**Páginas Raiz:**
+```
+src/pages/
+├── Landing.tsx
+├── Login.tsx
+├── Register.tsx
+├── ResetPassword.tsx
+├── CompleteProfile.tsx
+├── SelectRole.tsx
+├── VerifyEmail.tsx
+├── Subscribe.tsx
+├── AppHub.tsx
+├── Admin.tsx
+├── Support.tsx
+├── Terms.tsx
+├── Privacy.tsx
+├── NotFound.tsx
+└── ReferralRedirect.tsx
+```
+
+**Páginas Artist:**
+```
+src/pages/artist/
+├── Dashboard.tsx
+├── Shows.tsx
+├── Calendar.tsx
+├── Reports.tsx
+├── Musicians.tsx
+├── Venues.tsx
+├── Transportation.tsx
+├── Profile.tsx
+├── Settings.tsx
+├── Subscription.tsx
+├── Support.tsx
+├── Tutorial.tsx
+├── Updates.tsx
+├── Terms.tsx
+└── Privacy.tsx
+```
+
+**Páginas Musician:**
+```
+src/pages/musician/
+├── Dashboard.tsx
+├── Shows.tsx
+├── Calendar.tsx
+├── Reports.tsx
+├── Artists.tsx
+├── Transportation.tsx
+├── Profile.tsx
+├── Settings.tsx
+├── Subscription.tsx
+├── Support.tsx
+├── Tutorial.tsx
+├── Updates.tsx
+├── Terms.tsx
+└── Privacy.tsx
+```
+
+**Páginas Demo (opcional, pode fazer depois):**
+```
+src/pages/demo/artist/*
+src/pages/demo/musician/*
+```
+
+---
+
+#### **FASE 7 - Edge Functions (30-45 min)**
+
+```
+supabase/functions/
+├── _shared/
+│   ├── fcm-sender.ts
+│   └── timezone-utils.ts
+├── send-push-notification/
+├── check-show-reminders/
+├── create-asaas-subscription/
+├── asaas-webhook/
+├── check-payment-status/
+├── cancel-subscription/
+├── verify-apple-receipt/
+├── apple-subscription-webhook/
+├── sync-revenuecat-subscriptions/
+├── send-otp-email/
+├── verify-otp/
+├── delete-account/
+├── database-backup/
+├── backup-auth-users/
+├── send-report-email/
+├── improve-text/
+├── create-notification/
+├── send-subscription-reminders/
+├── send-engagement-tips/
+├── send-marketing-notifications/
+├── validate-referrals/
+├── send-referral-notification/
+├── check-expired-subscriptions/
+├── get-pending-payment/
+├── check-pix-notifications/
+├── sync-asaas-payments/
+├── cleanup-deleted-users/
+├── create-support-user/
+├── support-manage-user/
+├── test-push-notification/
+├── seed-test-account/
+└── import-firebase-shows/
+```
+
+**Prompt para Edge Functions:**
+```
+Preciso criar as Edge Functions do Supabase. As mais críticas são:
+1. send-push-notification - Envia push via Firebase FCM
+2. check-show-reminders - Lembra sobre shows próximos
+3. asaas-webhook - Recebe webhooks de pagamento
+4. create-asaas-subscription - Cria assinaturas no Asaas
+5. verify-apple-receipt - Valida compras da App Store
+
+Todas precisam dos secrets configurados (ver seção 5 do disaster recovery)
+```
+
+---
+
+#### **FASE 8 - Arquivos Mobile (5-10 min)**
+
+```
+android/app/src/main/AndroidManifest.xml
+ios/App/App/Info.plist
+resources/icon.png
+resources/splash.png
+resources/GoogleService-Info.plist
+```
+
+---
+
+### 18.4 Mega-Prompt de Reconstrução Completo
+
+Se a Opção A falhar parcialmente, use este mega-prompt mais detalhado:
+
+```
+# RECONSTRUÇÃO COMPLETA - SOU ARTISTA
+
+## CONTEXTO
+Estou reconstruindo um app de gerenciamento de shows para músicos brasileiros.
+O app estava em produção e preciso recriar do zero com base no código do GitHub.
+
+## STACK TECNOLÓGICO
+- Frontend: React 18.3.1 + TypeScript + Vite
+- Estilização: Tailwind CSS + shadcn/ui
+- Backend: Supabase (Lovable Cloud)
+- Mobile: Capacitor 7.x (iOS + Android)
+- Estado: TanStack Query v5
+- Forms: react-hook-form + zod
+- Gráficos: recharts
+- Ícones: lucide-react
+- Datas: date-fns
+
+## BANCO DE DADOS (TABELAS PRINCIPAIS)
+1. profiles - dados do usuário (cpf, phone, plan_type, status_plano)
+2. user_roles - role do usuário (artist/musician/support)
+3. shows - shows cadastrados (date_local, time_local, venue_name, fee)
+4. musicians - músicos do artista
+5. venues - locais de show
+6. subscriptions - assinaturas (status, next_due_date, payment_method)
+7. referral_codes - códigos de indicação
+8. referrals - indicações feitas
+9. notifications - notificações do sistema
+10. support_tickets - tickets de suporte
+11. admin_users - administradores
+
+## FLUXO DE AUTENTICAÇÃO
+1. Landing → Login/Register
+2. CompleteProfile (CPF, telefone, data nascimento)
+3. VerifyEmail (OTP por email)
+4. SelectRole (artist ou musician)
+5. Subscribe (pagamento obrigatório)
+6. Dashboard específico do role
+
+## O QUE PRECISO AGORA
+1. Criar estrutura completa de pastas
+2. Configurar tema escuro com cores: zinc-900/950 fundo, purple accent
+3. Configurar React Router com todas as rotas
+4. Criar componentes base do shadcn
+5. Aguardar envio dos arquivos específicos
+
+Confirme que entendeu e vamos começar.
+```
+
+---
+
+### 18.5 Conectar e Importar Banco de Dados
+
+Após a estrutura do app estar pronta:
+
+#### Passo 1: Habilitar Lovable Cloud
+1. No Lovable, vá em **Settings > Cloud**
+2. Clique em **"Enable Lovable Cloud"**
+3. Aguarde a criação do projeto Supabase
+
+#### Passo 2: Importar Schema
+1. Pegue o arquivo `backup-schema.sql` do repositório
+2. No chat do Lovable, peça:
+```
+Execute esta migração SQL para criar todas as tabelas do sistema:
+
+[Cole o conteúdo do backup-schema.sql]
+```
+
+#### Passo 3: Restaurar Dados (via Supabase de Backup)
+1. Acesse o Supabase de Backup
+2. Exporte cada tabela como CSV:
+   - profiles
+   - user_roles
+   - shows
+   - musicians
+   - venues
+   - subscriptions
+   - referral_codes
+   - referrals
+3. No novo Supabase, importe os CSVs
+
+#### Passo 4: Restaurar Usuários Auth
+1. No Supabase de Backup, vá em **Auth > Users**
+2. Exporte a lista de usuários
+3. Use a Edge Function `backup-auth-users` para recriar
+
+#### Passo 5: Configurar Secrets
+Adicione todos os secrets (ver seção 5):
+- ASAAS_API_KEY
+- FIREBASE_SERVICE_ACCOUNT
+- RESEND_API_KEY
+- etc.
+
+---
+
+### 18.6 Checklist Final de Validação
+
+Após importação completa, teste tudo:
+
+#### Infraestrutura
+- [ ] Projeto Lovable criado e funcionando
+- [ ] Lovable Cloud habilitado
+- [ ] GitHub conectado (opcional)
+- [ ] Deploy público funcionando
+
+#### Banco de Dados
+- [ ] Todas as 25+ tabelas criadas
+- [ ] RLS policies configuradas
+- [ ] Triggers funcionando
+- [ ] Dados restaurados
+
+#### Autenticação
+- [ ] Login com email/senha funciona
+- [ ] OTP por email funciona
+- [ ] Logout funciona
+- [ ] Perfil carrega corretamente
+
+#### Funcionalidades Artist
+- [ ] Dashboard carrega estatísticas
+- [ ] CRUD de shows funciona
+- [ ] CRUD de músicos funciona
+- [ ] CRUD de locais funciona
+- [ ] Relatórios geram corretamente
+- [ ] Calendário mostra shows
+
+#### Funcionalidades Musician
+- [ ] Dashboard carrega
+- [ ] Lista de artistas aparece
+- [ ] Shows do artista aparecem
+
+#### Pagamentos
+- [ ] Asaas webhook configurado
+- [ ] PIX funciona
+- [ ] Cartão funciona
+- [ ] Apple IAP funciona (iOS)
+
+#### Notificações
+- [ ] Push notifications funcionam
+- [ ] Firebase configurado
+- [ ] Lembretes de show funcionam
+
+#### Edge Functions
+- [ ] Todas as 32 functions deployadas
+- [ ] Logs sem erros
+- [ ] Webhooks respondendo
+
+#### Mobile
+- [ ] Build Android funciona
+- [ ] Build iOS funciona
+- [ ] App Store/Play Store atualizadas
+
+---
+
+### 18.7 Troubleshooting Comum
+
+| Problema | Solução |
+|----------|---------|
+| "Cannot find module" | Verificar se dependência foi instalada |
+| "RLS policy violation" | Verificar se policies foram criadas |
+| "Edge function error" | Verificar se secrets estão configurados |
+| "Auth error" | Verificar se usuários foram restaurados |
+| "Tipo não encontrado" | Aguardar regeneração do types.ts |
+| "CORS error" | Verificar URL do Supabase nas functions |
+
+---
+
+### 18.8 Tempo Total Estimado
+
+| Fase | Tempo |
+|------|-------|
+| Criar projeto + mega-prompt | 15 min |
+| Importar arquivos (Fases 1-6) | 2-3 horas |
+| Edge Functions (Fase 7) | 45 min |
+| Configurar banco de dados | 30 min |
+| Restaurar dados | 30 min |
+| Configurar secrets | 15 min |
+| Testes e validação | 30 min |
+| **TOTAL** | **4-5 horas** |
+
+---
+
 ## 📝 NOTAS IMPORTANTES
 
 1. **TESTE ESTE GUIA ANTES** de precisar usá-lo de verdade
