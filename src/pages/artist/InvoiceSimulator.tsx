@@ -111,8 +111,8 @@ const InvoiceSimulator = () => {
   return (
     <SafeAreaWrapper>
       <SidebarProvider>
-        <div className="flex min-h-screen w-full bg-[#fafafa]">
-          {!isMobile && <ArtistSidebar />}
+        <div className="min-h-screen flex w-full bg-[#fafafa]">
+          <ArtistSidebar />
           
           <div className="flex-1 flex flex-col">
             {/* Header */}

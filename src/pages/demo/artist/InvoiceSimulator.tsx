@@ -106,8 +106,8 @@ const DemoInvoiceSimulator = () => {
   return (
     <SafeAreaWrapper>
       <SidebarProvider>
-        <div className="flex min-h-screen w-full bg-[#fafafa]">
-          {!isMobile && <DemoArtistSidebar />}
+        <div className="min-h-screen flex w-full bg-[#fafafa]">
+          <DemoArtistSidebar />
           
           <div className="flex-1 flex flex-col">
             <DemoBanner />
