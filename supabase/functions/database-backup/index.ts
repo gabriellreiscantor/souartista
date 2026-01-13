@@ -457,6 +457,15 @@ const TABLES_TO_BACKUP = Object.keys(TABLE_SCHEMAS)
 // Buckets de Storage para backup
 const STORAGE_BUCKETS = ['profile-photos', 'support-attachments']
 
+// Migrations de schema para executar antes do backup (para atualizar tabelas existentes)
+const SCHEMA_MIGRATIONS: { table: string; column: string; sql: string }[] = [
+  {
+    table: 'referrals',
+    column: 'extended_trial_granted',
+    sql: `ALTER TABLE public.referrals ADD COLUMN IF NOT EXISTS extended_trial_granted BOOLEAN DEFAULT false;`
+  }
+]
+
 // Função para executar SQL raw via REST API do Supabase
 async function executeSQL(supabaseUrl: string, serviceRoleKey: string, sql: string): Promise<{ success: boolean; error?: string }> {
   try {
@@ -591,6 +600,59 @@ Deno.serve(async (req) => {
       // Continuar com as tabelas que existem
     }
 
+    // ===== FASE 0.5: EXECUTAR MIGRATIONS DE SCHEMA =====
+    console.log('\n🔄 FASE 0.5: Executando migrations de schema...')
+    
+    const migrationResults: { table: string; column: string; status: 'success' | 'error' | 'skipped'; error?: string }[] = []
+    
+    for (const migration of SCHEMA_MIGRATIONS) {
+      try {
+        // Verificar se a tabela existe antes de tentar a migration
+        if (missingTables.includes(migration.table)) {
+          console.log(`  ⏭️ Pulando migration para ${migration.table}.${migration.column} (tabela não existe)`)
+          migrationResults.push({ table: migration.table, column: migration.column, status: 'skipped', error: 'Tabela não existe' })
+          continue
+        }
+
+        console.log(`  🔧 Executando migration: ${migration.table}.${migration.column}...`)
+        
+        // Usar PostgrestQueryBuilder para executar SQL via RPC se disponível
+        // Como não temos RPC, vamos usar uma abordagem diferente:
+        // Tentar fazer um upsert de teste com a nova coluna para forçar o schema
+        
+        // Método alternativo: usar a REST API diretamente com o header Prefer
+        const response = await fetch(`${backupUrl}/rest/v1/rpc/exec_sql`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${backupKey}`,
+            'apikey': backupKey,
+          },
+          body: JSON.stringify({ sql_query: migration.sql }),
+        })
+
+        if (response.ok) {
+          console.log(`  ✅ Migration executada: ${migration.table}.${migration.column}`)
+          migrationResults.push({ table: migration.table, column: migration.column, status: 'success' })
+        } else {
+          // Se RPC não funcionar, tentar via query direta ao PostgREST (pode não funcionar)
+          const errorText = await response.text()
+          console.log(`  ⚠️ RPC não disponível, tentando método alternativo...`)
+          
+          // Alternativa: Fazer um select na tabela e verificar se a coluna existe
+          // Se não existir, o upsert vai falhar de qualquer forma
+          // Mas podemos pelo menos logar o erro
+          console.log(`  ⚠️ Migration para ${migration.table}.${migration.column}: RPC não disponível`)
+          console.log(`     SQL a executar manualmente: ${migration.sql}`)
+          migrationResults.push({ table: migration.table, column: migration.column, status: 'error', error: `RPC não disponível: ${errorText.substring(0, 100)}` })
+        }
+      } catch (migrationError) {
+        const errorMessage = migrationError instanceof Error ? migrationError.message : 'Erro desconhecido'
+        console.error(`  ❌ Erro na migration ${migration.table}.${migration.column}:`, errorMessage)
+        migrationResults.push({ table: migration.table, column: migration.column, status: 'error', error: errorMessage })
+      }
+    }
+
     // ===== FASE 1: BACKUP DE TABELAS =====
     console.log('\n📦 FASE 1: Backup de tabelas...')
 
@@ -625,12 +687,51 @@ Deno.serve(async (req) => {
         }
 
         // Inserir/Atualizar no backup usando upsert
-        const { error: upsertError } = await backupClient
+        let upsertRecords = records
+        let { error: upsertError } = await backupClient
           .from(table)
-          .upsert(records, { 
+          .upsert(upsertRecords, { 
             onConflict: 'id',
             ignoreDuplicates: false 
           })
+
+        // Se houver erro de coluna inexistente, tentar remover as colunas problemáticas
+        if (upsertError && upsertError.message.includes('column')) {
+          console.log(`  ⚠️ Tentando upsert sem colunas problemáticas para ${table}...`)
+          
+          // Encontrar colunas que podem estar faltando no backup
+          const missingColumns = SCHEMA_MIGRATIONS
+            .filter(m => m.table === table)
+            .map(m => m.column)
+          
+          if (missingColumns.length > 0) {
+            // Remover colunas problemáticas dos registros
+            upsertRecords = records.map(record => {
+              const cleanRecord = { ...record }
+              for (const col of missingColumns) {
+                delete cleanRecord[col]
+              }
+              return cleanRecord
+            })
+            
+            // Tentar upsert novamente sem as colunas problemáticas
+            const retryResult = await backupClient
+              .from(table)
+              .upsert(upsertRecords, { 
+                onConflict: 'id',
+                ignoreDuplicates: false 
+              })
+            
+            upsertError = retryResult.error
+            
+            if (!upsertError) {
+              console.log(`  ✅ ${table}: ${records.length} registros copiados (sem colunas: ${missingColumns.join(', ')})`)
+              tableResults.push({ table, count: records.length, status: 'success' })
+              totalRecords += records.length
+              continue
+            }
+          }
+        }
 
         if (upsertError) {
           console.error(`  ❌ Erro ao salvar ${table}:`, upsertError.message)
@@ -826,9 +927,12 @@ Deno.serve(async (req) => {
     const tableSkippedCount = tableResults.filter(r => r.status === 'skipped').length
     const fileSuccessCount = fileResults.filter(r => r.status === 'success').length
     const fileErrorCount = fileResults.filter(r => r.status === 'error').length
+    const migrationSuccessCount = migrationResults.filter(r => r.status === 'success').length
+    const migrationErrorCount = migrationResults.filter(r => r.status === 'error').length
 
     const hasErrors = tableErrorCount > 0 || fileErrorCount > 0 || authBackupStatus === 'error'
     const hasMissingTables = missingTables.length > 0
+    const hasMigrationErrors = migrationErrorCount > 0
     const finalStatus = hasErrors || hasMissingTables ? 'partial' : 'success'
 
     const summary = {
@@ -851,6 +955,12 @@ Deno.serve(async (req) => {
         status: authBackupStatus,
         error: authBackupError,
       },
+      migrations: {
+        total: SCHEMA_MIGRATIONS.length,
+        success: migrationSuccessCount,
+        errors: migrationErrorCount,
+        details: migrationResults,
+      },
       missing_tables: missingTables,
       missing_tables_sql: missingTables.length > 0 
         ? missingTables.map(t => TABLE_SCHEMAS[t]).join('\n')
@@ -867,8 +977,14 @@ Deno.serve(async (req) => {
     console.log(`   - Registros copiados: ${totalRecords}`)
     console.log(`   - Arquivos copiados: ${totalFiles}`)
     console.log(`   - Usuários auth: ${authUsersCount} (${authBackupStatus})`)
+    console.log(`   - Migrations: ${migrationSuccessCount}/${SCHEMA_MIGRATIONS.length} executadas`)
     console.log(`   - Duração: ${durationSeconds.toFixed(2)}s`)
     console.log(`   - Status: ${finalStatus}`)
+
+    if (hasMigrationErrors) {
+      console.log(`\n⚠️ Algumas migrations falharam (RPC não disponível no backup)`)
+      console.log('   O backup pode falhar em tabelas com colunas faltantes.')
+    }
 
     if (missingTables.length > 0) {
       console.log(`\n⚠️ AÇÃO NECESSÁRIA: ${missingTables.length} tabelas precisam ser criadas no backup!`)
