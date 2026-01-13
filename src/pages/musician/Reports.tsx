@@ -6,7 +6,7 @@ import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Music2, DollarSign, TrendingDown, TrendingUp, TrendingUpIcon, FileText, Building2, Car, Download } from 'lucide-react';
+import { Music2, DollarSign, TrendingDown, TrendingUp, TrendingUpIcon, FileText, Building2, Car, Download, Receipt } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -38,6 +38,7 @@ const MusicianReports = () => {
   const [loading, setLoading] = useState(true);
   
   const [locomotionExpenses, setLocomotionExpenses] = useState<any[]>([]);
+  const [additionalExpenses, setAdditionalExpenses] = useState<any[]>([]);
   const [artistProfiles, setArtistProfiles] = useState<{[key: string]: string}>({});
 
   useEffect(() => {
@@ -111,8 +112,19 @@ const MusicianReports = () => {
         }
       }
 
+      // Fetch additional expenses for the musician
+      const { data: additionalExpensesData, error: additionalError } = await supabase
+        .from('additional_expenses')
+        .select('*')
+        .eq('uid', user?.id)
+        .gte('expense_date', format(start, 'yyyy-MM-dd'))
+        .lte('expense_date', format(end, 'yyyy-MM-dd'));
+
+      if (additionalError) throw additionalError;
+
       setShows(showsData || []);
       setLocomotionExpenses(expensesData || []);
+      setAdditionalExpenses(additionalExpensesData || []);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -199,6 +211,36 @@ const MusicianReports = () => {
       type: exp.type,
       date: exp.shows?.date_local
     }));
+
+  // Top 5 Additional Expenses by category
+  const categoryLabels: Record<string, string> = {
+    equipamento: 'Equipamento',
+    acessorio: 'Acessório',
+    manutencao: 'Manutenção',
+    vestuario: 'Vestuário',
+    marketing: 'Marketing',
+    formacao: 'Formação',
+    software: 'Software',
+    outros: 'Outros'
+  };
+
+  const additionalExpensesByCategory = additionalExpenses
+    .reduce((acc: any[], exp) => {
+      const label = categoryLabels[exp.category] || exp.category;
+      const existing = acc.find(e => e.name === label);
+      if (existing) {
+        existing.cost += Number(exp.cost) || 0;
+      } else {
+        acc.push({ name: label, cost: Number(exp.cost) || 0 });
+      }
+      return acc;
+    }, [])
+    .sort((a, b) => b.cost - a.cost)
+    .slice(0, 5);
+
+  const totalAdditionalExpenses = additionalExpenses.reduce((sum, exp) => sum + Number(exp.cost), 0);
+  const totalLocomotionExpenses = locomotionExpenses.reduce((sum, exp) => sum + Number(exp.cost), 0);
+  const totalAllExpenses = totalExpenses + totalLocomotionExpenses + totalAdditionalExpenses;
 
   const formatCurrency = (value: number) => {
     return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -402,7 +444,34 @@ const MusicianReports = () => {
                 </CardContent>
               </Card>
 
-
+              {/* Resumo de Despesas */}
+              <Card className="bg-white border-gray-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Receipt className="w-5 h-5 text-gray-900" />
+                    <h3 className="font-bold text-gray-900">Resumo de Despesas (Período)</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-500">Shows</p>
+                      <p className="font-semibold text-gray-900">{settings.showShowCosts ? `R$ ${formatCurrency(totalExpenses)}` : 'R$ *.***,**'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Locomoção</p>
+                      <p className="font-semibold text-gray-900">{settings.showShowCosts ? `R$ ${formatCurrency(totalLocomotionExpenses)}` : 'R$ *.***,**'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Adicionais</p>
+                      <p className="font-semibold text-gray-900">{settings.showShowCosts ? `R$ ${formatCurrency(totalAdditionalExpenses)}` : 'R$ *.***,**'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Total Geral</p>
+                      <p className="font-bold text-purple-600">{settings.showShowCosts ? `R$ ${formatCurrency(totalAllExpenses)}` : 'R$ *.***,**'}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
               {/* Top 5 Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Top 5 Artists by Profit */}
@@ -472,6 +541,30 @@ const MusicianReports = () => {
                       ))}
                       {topLocomotionCosts.length === 0 && (
                         <p className="text-sm text-gray-500">Dados insuficientes para análise.</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Top 5 Additional Expenses */}
+                <Card className="bg-white border-gray-200">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Receipt className="w-5 h-5 text-gray-900" />
+                      <h3 className="font-bold text-gray-900">Top 5 Despesas Adicionais</h3>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {additionalExpensesByCategory.map((exp, index) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <span className="text-sm text-gray-900">{index + 1}. {exp.name}</span>
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-purple-600 text-white text-xs font-semibold">
+                            {settings.showShowCosts ? `R$ ${formatCurrency(exp.cost)}` : 'R$ *.***,**'}
+                          </span>
+                        </div>
+                      ))}
+                      {additionalExpensesByCategory.length === 0 && (
+                        <p className="text-sm text-gray-500">Nenhuma despesa adicional registrada.</p>
                       )}
                     </div>
                   </CardContent>
