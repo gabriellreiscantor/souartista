@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, X, Send, Download, Filter, Link as LinkIcon, MessageCircle, UserCog, Eye, EyeOff, RefreshCw, Trash2, UserMinus, Monitor } from 'lucide-react';
+import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, X, Send, Download, Filter, Link as LinkIcon, MessageCircle, UserCog, Eye, EyeOff, RefreshCw, Trash2, UserMinus, Monitor, Wand2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { RouteSelector } from '@/components/RouteSelector';
 import { PushNotificationLogs } from '@/components/PushNotificationLogs';
@@ -248,6 +248,9 @@ export default function Admin() {
   // Estados para Reenvio de OTP
   const [sendingOtp, setSendingOtp] = useState(false);
   const [otpTargetUser, setOtpTargetUser] = useState<UserProfile | null>(null);
+
+  // Estados para Revisão de Texto com IA
+  const [improvingText, setImprovingText] = useState<string | null>(null);
   
   const usersPerPage = 50;
   useEffect(() => {
@@ -1430,6 +1433,36 @@ export default function Admin() {
       toast.error('Erro ao carregar funcionários');
     } finally {
       setLoadingSupportStaff(false);
+    }
+  };
+
+  // Função para melhorar texto com IA
+  const handleImproveText = async (
+    currentText: string,
+    fieldName: string,
+    setter: (text: string) => void
+  ) => {
+    if (!currentText.trim()) {
+      toast.error('Digite algo para revisar');
+      return;
+    }
+
+    setImprovingText(fieldName);
+    try {
+      const { data, error } = await supabase.functions.invoke('improve-text', {
+        body: { text: currentText }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setter(data.improvedText);
+      toast.success('Texto revisado pela IA!');
+    } catch (error: any) {
+      console.error('Erro ao revisar texto:', error);
+      toast.error(error.message || 'Erro ao revisar texto');
+    } finally {
+      setImprovingText(null);
     }
   };
 
@@ -2953,7 +2986,24 @@ export default function Admin() {
                       </div>
 
                       <div className="space-y-1 md:space-y-2">
-                        <Label htmlFor="notif-message" className="text-gray-900 text-xs md:text-sm">Mensagem</Label>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="notif-message" className="text-gray-900 text-xs md:text-sm">Mensagem</Label>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleImproveText(notificationMessage, 'notificationMessage', setNotificationMessage)}
+                            disabled={improvingText !== null || !notificationMessage.trim()}
+                            className="h-6 text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                          >
+                            {improvingText === 'notificationMessage' ? (
+                              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                            ) : (
+                              <Wand2 className="h-3 w-3 mr-1" />
+                            )}
+                            Revisar com IA
+                          </Button>
+                        </div>
                         <Textarea id="notif-message" placeholder="Escreva sua mensagem..." value={notificationMessage} onChange={e => setNotificationMessage(e.target.value)} className="bg-white text-gray-900 border-gray-200 min-h-[80px] md:min-h-[100px] text-sm" />
                       </div>
 
@@ -3151,7 +3201,24 @@ export default function Admin() {
 
                       {/* Mensagem */}
                       <div className="space-y-1">
-                        <Label htmlFor="push-message" className="text-gray-900 text-xs md:text-sm">Mensagem</Label>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="push-message" className="text-gray-900 text-xs md:text-sm">Mensagem</Label>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleImproveText(pushMessage, 'pushMessage', setPushMessage)}
+                            disabled={improvingText !== null || !pushMessage.trim()}
+                            className="h-6 text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                          >
+                            {improvingText === 'pushMessage' ? (
+                              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                            ) : (
+                              <Wand2 className="h-3 w-3 mr-1" />
+                            )}
+                            Revisar com IA
+                          </Button>
+                        </div>
                         <Textarea
                           id="push-message"
                           placeholder="Escreva sua mensagem..."
@@ -4719,7 +4786,24 @@ export default function Admin() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="response" className="text-gray-900">Mensagem</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="response" className="text-gray-900">Mensagem</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleImproveText(responseMessage, 'responseMessage', setResponseMessage)}
+                  disabled={improvingText !== null || !responseMessage.trim()}
+                  className="h-6 text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                >
+                  {improvingText === 'responseMessage' ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  ) : (
+                    <Wand2 className="h-3 w-3 mr-1" />
+                  )}
+                  Revisar com IA
+                </Button>
+              </div>
               <Textarea 
                 id="response" 
                 value={responseMessage} 
@@ -4792,7 +4876,24 @@ export default function Admin() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="update-description" className="text-gray-900">Descrição *</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="update-description" className="text-gray-900">Descrição *</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleImproveText(updateDescription, 'updateDescription', setUpdateDescription)}
+                  disabled={improvingText !== null || !updateDescription.trim()}
+                  className="h-6 text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                >
+                  {improvingText === 'updateDescription' ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  ) : (
+                    <Wand2 className="h-3 w-3 mr-1" />
+                  )}
+                  Revisar com IA
+                </Button>
+              </div>
               <Textarea id="update-description" placeholder="Digite cada atualização em uma linha..." value={updateDescription} onChange={e => setUpdateDescription(e.target.value)} className="bg-white text-gray-900 border-gray-200 min-h-[150px]" />
             </div>
             <div className="flex items-center space-x-2">
@@ -4828,7 +4929,24 @@ export default function Admin() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="lgpd-notes" className="text-gray-900">Notas do Admin</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="lgpd-notes" className="text-gray-900">Notas do Admin</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleImproveText(lgpdNotes, 'lgpdNotes', setLgpdNotes)}
+                  disabled={improvingText !== null || !lgpdNotes.trim()}
+                  className="h-6 text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                >
+                  {improvingText === 'lgpdNotes' ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  ) : (
+                    <Wand2 className="h-3 w-3 mr-1" />
+                  )}
+                  Revisar com IA
+                </Button>
+              </div>
               <Textarea
                 id="lgpd-notes"
                 value={lgpdNotes}
@@ -5142,7 +5260,24 @@ export default function Admin() {
               <p className="text-sm bg-gray-50 p-3 rounded whitespace-pre-line">{respondingFeedback?.message}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="feedback-response" className="text-gray-900">Sua resposta</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="feedback-response" className="text-gray-900">Sua resposta</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleImproveText(feedbackResponse, 'feedbackResponse', setFeedbackResponse)}
+                  disabled={improvingText !== null || !feedbackResponse.trim()}
+                  className="h-6 text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                >
+                  {improvingText === 'feedbackResponse' ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  ) : (
+                    <Wand2 className="h-3 w-3 mr-1" />
+                  )}
+                  Revisar com IA
+                </Button>
+              </div>
               <Textarea
                 id="feedback-response"
                 placeholder="Digite sua resposta..."
