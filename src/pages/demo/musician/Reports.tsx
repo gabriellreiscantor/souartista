@@ -242,31 +242,30 @@ const DemoMusicianReports = () => {
                 </div>
               </Card>
 
-              {/* Resumo de Despesas */}
+              {/* Resumo de Despesas Adicionais */}
               <Card className="bg-white border border-gray-200 p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Receipt className="w-5 h-5 text-gray-900" />
-                  <h3 className="font-bold text-gray-900">Resumo de Despesas (Período)</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Receipt className="w-5 h-5 text-gray-900" />
+                    <h3 className="font-bold text-gray-900">Resumo de Despesas Adicionais</h3>
+                  </div>
+                  <span className="text-sm font-semibold text-purple-600">
+                    Total: {formatCurrency(totalAdditionalExpenses)}
+                  </span>
                 </div>
                 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <p className="text-gray-500">Shows</p>
-                    <p className="font-semibold text-gray-900">{formatCurrency(totalExpenses)}</p>
+                {additionalExpensesByCategory.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    {additionalExpensesByCategory.map((exp, index) => (
+                      <div key={index}>
+                        <p className="text-gray-500">{exp.name}</p>
+                        <p className="font-semibold text-gray-900">{formatCurrency(exp.cost)}</p>
+                      </div>
+                    ))}
                   </div>
-                  <div>
-                    <p className="text-gray-500">Locomoção</p>
-                    <p className="font-semibold text-gray-900">{formatCurrency(totalLocomotionExpenses)}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Adicionais</p>
-                    <p className="font-semibold text-gray-900">{formatCurrency(totalAdditionalExpenses)}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Total Geral</p>
-                    <p className="font-bold text-purple-600">{formatCurrency(totalAllExpenses)}</p>
-                  </div>
-                </div>
+                ) : (
+                  <p className="text-sm text-gray-500">Nenhuma despesa adicional registrada no período.</p>
+                )}
               </Card>
               {/* Top 5 Artistas por Lucro */}
               <Card className="bg-white border border-gray-200 p-4">
