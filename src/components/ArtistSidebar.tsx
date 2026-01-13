@@ -1,4 +1,4 @@
-import { LayoutDashboard, Music, Calendar, BarChart3, Truck, HelpCircle, User, Settings, LogOut, MapPin, Shield, CreditCard, Receipt } from 'lucide-react';
+import { LayoutDashboard, Music, Calendar, BarChart3, Truck, HelpCircle, User, Settings, LogOut, MapPin, Shield, CreditCard, Receipt, Calculator } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import logoIcon from '@/assets/logo_icon.png';
 import { NavLink } from '@/components/NavLink';
@@ -25,6 +25,7 @@ const mainItems = [
   { title: 'Relatórios', url: '/artist/reports', icon: BarChart3 },
   { title: 'Locomoção', url: '/artist/transportation', icon: Truck },
   { title: 'Despesas', url: '/artist/expenses', icon: Receipt },
+  { title: 'Simular NF', url: '/artist/invoice-simulator', icon: Calculator },
 ];
 
 const settingsItems = [
