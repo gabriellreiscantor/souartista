@@ -1,4 +1,4 @@
-import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones, Download, Smartphone, Sparkles, MessageSquare, Scale, UserCog, AlertTriangle, Megaphone } from 'lucide-react';
+import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones, Download, Smartphone, Sparkles, MessageSquare, Scale, UserCog, AlertTriangle, Megaphone, Trash2 } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -20,6 +20,7 @@ import {
 
 const mainItems = [
   { title: 'Usuários', url: '/admin?tab=usuarios', icon: Users },
+  { title: 'Usuários Deletados', url: '/admin?tab=deletados', icon: Trash2, showDeletedBadge: true },
   { title: 'Buscar por ID', url: '/admin?tab=buscar', icon: Search },
   { title: 'Gerenciar Permissões', url: '/admin?tab=administradores', icon: Shield },
   { title: 'Funcionários Suporte', url: '/admin?tab=funcionarios', icon: UserCog },
@@ -44,9 +45,11 @@ export function AdminSidebar() {
   const currentTab = searchParams.get('tab') || 'usuarios';
   const collapsed = state === 'collapsed';
   const [escalatedCount, setEscalatedCount] = useState(0);
+  const [deletedUsersCount, setDeletedUsersCount] = useState(0);
 
   useEffect(() => {
     fetchEscalatedCount();
+    fetchDeletedUsersCount();
     
     // Subscribe to realtime changes
     const channel = supabase
@@ -65,8 +68,24 @@ export function AdminSidebar() {
       )
       .subscribe();
 
+    const deletedChannel = supabase
+      .channel('deleted-users-count')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'deleted_users'
+        },
+        () => {
+          fetchDeletedUsersCount();
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(deletedChannel);
     };
   }, []);
 
@@ -82,6 +101,20 @@ export function AdminSidebar() {
       setEscalatedCount(count || 0);
     } catch (error) {
       console.error('Error fetching escalated count:', error);
+    }
+  };
+
+  const fetchDeletedUsersCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('deleted_users')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending_deletion');
+
+      if (error) throw error;
+      setDeletedUsersCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching deleted users count:', error);
     }
   };
 
@@ -148,6 +181,16 @@ export function AdminSidebar() {
                       {item.showBadge && escalatedCount > 0 && collapsed && (
                         <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                           {escalatedCount > 9 ? '9+' : escalatedCount}
+                        </span>
+                      )}
+                      {item.showDeletedBadge && deletedUsersCount > 0 && !collapsed && (
+                        <Badge className="ml-auto bg-red-500 text-white text-xs px-1.5 py-0.5 h-5 min-w-5 flex items-center justify-center">
+                          {deletedUsersCount}
+                        </Badge>
+                      )}
+                      {item.showDeletedBadge && deletedUsersCount > 0 && collapsed && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                          {deletedUsersCount > 9 ? '9+' : deletedUsersCount}
                         </span>
                       )}
                     </NavLink>
