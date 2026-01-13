@@ -48,6 +48,7 @@ export function DemoMusicianSidebar() {
 
   const handleLockedClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    if (isMobile) setOpenMobile(false);
     setShowLockedModal(true);
   };
 
