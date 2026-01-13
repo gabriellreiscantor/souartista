@@ -99,6 +99,12 @@ export default function Admin() {
   const [activeUsersCount, setActiveUsersCount] = useState(0);
   const [cancelledUsersCount, setCancelledUsersCount] = useState(0);
   const [savingTax, setSavingTax] = useState(false);
+
+  // Estados para deletar usuário
+  const [showDeleteUserDialog, setShowDeleteUserDialog] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deletingUser, setDeletingUser] = useState(false);
   
 
   // Estados para Notificações
@@ -563,6 +569,37 @@ export default function Admin() {
     setUserShows([]);
     setUserExpenses([]);
     toast.info('Busca limpa');
+  };
+
+  // Função para deletar conta de usuário
+  const handleDeleteUserAccount = async () => {
+    if (!userToDelete || deleteConfirmText !== 'deletar') return;
+
+    try {
+      setDeletingUser(true);
+
+      const { data, error } = await supabase.functions.invoke('create-support-user', {
+        body: {
+          action: 'delete',
+          userId: userToDelete.id
+        }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success(`Conta de ${userToDelete.name} excluída com sucesso`);
+      setShowDeleteUserDialog(false);
+      setUserToDelete(null);
+      setDeleteConfirmText('');
+      fetchUsers();
+      fetchStats();
+    } catch (error: any) {
+      console.error('Erro ao excluir conta:', error);
+      toast.error(error.message || 'Erro ao excluir conta');
+    } finally {
+      setDeletingUser(false);
+    }
   };
 
   // Funções para Financeiro Global
@@ -1906,6 +1943,16 @@ export default function Admin() {
                                   <DropdownMenuItem className="hover:bg-gray-100" onClick={() => copyToClipboard(user.id)}>
                                     Copiar ID
                                   </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    className="text-red-600 hover:bg-red-50"
+                                    onClick={() => {
+                                      setUserToDelete(user);
+                                      setShowDeleteUserDialog(true);
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Deletar Conta
+                                  </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </div>
@@ -2001,6 +2048,16 @@ export default function Admin() {
                                       </DropdownMenuItem>
                                       <DropdownMenuItem className="hover:bg-gray-100" onClick={() => copyToClipboard(user.id)}>
                                         Copiar ID
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem 
+                                        className="text-red-600 hover:bg-red-50"
+                                        onClick={() => {
+                                          setUserToDelete(user);
+                                          setShowDeleteUserDialog(true);
+                                        }}
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Deletar Conta
                                       </DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
@@ -4863,6 +4920,94 @@ export default function Admin() {
                 Fechar
               </Button>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Confirmation Dialog */}
+      <Dialog open={showDeleteUserDialog} onOpenChange={(open) => {
+        if (!open && !deletingUser) {
+          setShowDeleteUserDialog(false);
+          setUserToDelete(null);
+          setDeleteConfirmText('');
+        }
+      }}>
+        <DialogContent className="bg-white text-gray-900 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600 flex items-center gap-2">
+              <Trash2 className="h-5 w-5" />
+              Excluir Conta Permanentemente
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mt-4">
+                <p className="text-red-800 font-medium">Esta ação é IRREVERSÍVEL!</p>
+                <p className="text-red-700 text-sm mt-2">
+                  Todos os dados do usuário serão excluídos permanentemente:
+                </p>
+                <ul className="text-red-700 text-sm mt-2 list-disc list-inside">
+                  <li>Perfil e informações pessoais</li>
+                  <li>Shows e eventos</li>
+                  <li>Músicos e artistas cadastrados</li>
+                  <li>Despesas de locomoção</li>
+                  <li>Tickets de suporte</li>
+                  <li>Roles e permissões</li>
+                </ul>
+              </div>
+
+              {userToDelete && (
+                <div className="bg-gray-100 rounded-lg p-4 mt-4">
+                  <p className="text-gray-700 text-sm">Usuário a ser excluído:</p>
+                  <p className="font-bold text-gray-900">{userToDelete.name}</p>
+                  <p className="text-gray-600 text-sm">{userToDelete.email}</p>
+                </div>
+              )}
+
+              <div className="space-y-2 mt-4">
+                <Label htmlFor="confirmDelete" className="text-gray-900">
+                  Digite <span className="font-bold text-red-600">deletar</span> para confirmar:
+                </Label>
+                <Input
+                  id="confirmDelete"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value.toLowerCase())}
+                  placeholder="deletar"
+                  className="bg-white border-gray-300 text-gray-900"
+                  disabled={deletingUser}
+                />
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 mt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowDeleteUserDialog(false);
+                setUserToDelete(null);
+                setDeleteConfirmText('');
+              }}
+              disabled={deletingUser}
+              className="flex-1"
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={handleDeleteUserAccount}
+              disabled={deleteConfirmText !== 'deletar' || deletingUser}
+              className="flex-1"
+            >
+              {deletingUser ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Excluindo...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Excluir
+                </>
+              )}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
