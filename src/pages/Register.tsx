@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
+import { useNativePlatform } from '@/hooks/useNativePlatform';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
@@ -50,6 +51,7 @@ const Register = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const { signUp, user, session, loading: authLoading, verifyOtp, resendOtp } = useAuth();
+  const { isIOS } = useNativePlatform();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -705,8 +707,12 @@ const Register = () => {
                   />
                   <p className="text-xs text-[#C8BAD4]">
                     {referralFromLink 
-                      ? "✓ Código aplicado! Você terá 14 dias de teste grátis ao invés de 7 🎁 (válido apenas para pagamento com cartão de crédito)"
-                      : "Recebeu um código de um amigo? Digite aqui e ganhe 14 dias de teste grátis! (válido apenas para cartão de crédito)"}
+                      ? isIOS
+                        ? "✓ Código aplicado! Você terá 14 dias de teste grátis ao invés de 7 🎁"
+                        : "✓ Código aplicado! Você terá 14 dias de teste grátis ao invés de 7 🎁 (válido apenas para cartão de crédito. PIX não tem período grátis, a cobrança é imediata)"
+                      : isIOS
+                        ? "Recebeu um código de um amigo? Digite aqui e ganhe 14 dias de teste grátis!"
+                        : "Recebeu um código de um amigo? Digite aqui e ganhe 14 dias de teste grátis! (válido apenas para cartão de crédito. PIX não tem período grátis)"}
                   </p>
                 </div>
 
