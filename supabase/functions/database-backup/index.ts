@@ -182,9 +182,12 @@ const TABLE_SCHEMAS: Record<string, string> = {
       paid_at TIMESTAMPTZ,
       validation_deadline TIMESTAMPTZ,
       validated_at TIMESTAMPTZ,
+      extended_trial_granted BOOLEAN DEFAULT false,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
+    -- Adicionar coluna se não existir (para bancos já criados)
+    ALTER TABLE public.referrals ADD COLUMN IF NOT EXISTS extended_trial_granted BOOLEAN DEFAULT false;
   `,
   referral_rewards: `
     CREATE TABLE IF NOT EXISTS public.referral_rewards (
