@@ -122,6 +122,7 @@ export default function Admin() {
   const [subscriberViewMode, setSubscriberViewMode] = useState<'active' | 'cancelled' | 'verify'>('active');
   const [loadingFinancial, setLoadingFinancial] = useState(false);
   const [syncingRevenueCat, setSyncingRevenueCat] = useState(false);
+  const [syncingAsaas, setSyncingAsaas] = useState(false);
   
   // Estados para Financeiro por Plataforma
   const [appleActiveCount, setAppleActiveCount] = useState(0);
@@ -1025,6 +1026,37 @@ export default function Admin() {
   const handleRefreshFinancial = async () => {
     await fetchFinancialData();
     toast.success('Dados atualizados!');
+  };
+
+  // Sincronizar assinaturas Asaas (Android/Web)
+  const handleSyncAsaas = async () => {
+    try {
+      setSyncingAsaas(true);
+      toast.info('🔄 Sincronizando com Asaas...', { duration: 2000 });
+
+      const { data, error } = await supabase.functions.invoke('sync-asaas-payments');
+
+      if (error) throw error;
+
+      console.log('Asaas sync result:', data);
+      
+      if (data?.synced > 0) {
+        toast.success(`✅ ${data.synced} assinatura(s) sincronizada(s)!`);
+      } else if (data?.errors > 0) {
+        toast.warning(`⚠️ ${data.errors} erro(s) durante sincronização`);
+      } else {
+        toast.info('Nenhuma assinatura para sincronizar');
+      }
+
+      // Recarregar dados financeiros
+      await fetchFinancialData();
+
+    } catch (error: any) {
+      console.error('Erro ao sincronizar Asaas:', error);
+      toast.error(error.message || 'Erro ao sincronizar com Asaas');
+    } finally {
+      setSyncingAsaas(false);
+    }
   };
 
   const handleSaveTax = () => {
@@ -3292,6 +3324,15 @@ export default function Admin() {
                     >
                       {syncingRevenueCat ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <span className="mr-1">🍎</span>}
                       Sincronizar RevenueCat
+                    </Button>
+                    <Button 
+                      size="sm"
+                      onClick={handleSyncAsaas}
+                      disabled={syncingAsaas}
+                      className="h-8 text-xs bg-green-600 hover:bg-green-700"
+                    >
+                      {syncingAsaas ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <span className="mr-1">💳</span>}
+                      Sincronizar Asaas
                     </Button>
                   </div>
                 </div>

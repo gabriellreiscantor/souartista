@@ -72,11 +72,26 @@ serve(async (req) => {
         if (confirmedPayment) {
           console.log(`Pagamento confirmado encontrado para subscription ${subscription.id}`);
 
-          // Atualizar subscription para ativo
+          // Calcular próxima data de vencimento baseada no último pagamento confirmado
+          const paymentDate = confirmedPayment.paymentDate 
+            ? new Date(confirmedPayment.paymentDate) 
+            : new Date();
+          
+          const nextDueDate = new Date(paymentDate);
+          if (subscription.plan_type === 'annual') {
+            nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+          } else {
+            nextDueDate.setDate(nextDueDate.getDate() + 30); // Mensal
+          }
+
+          console.log(`📅 Calculando next_due_date: paymentDate=${paymentDate.toISOString()}, planType=${subscription.plan_type}, nextDueDate=${nextDueDate.toISOString().split('T')[0]}`);
+
+          // Atualizar subscription para ativo com next_due_date correto
           const { error: updateSubError } = await supabase
             .from('subscriptions')
             .update({ 
               status: 'active',
+              next_due_date: nextDueDate.toISOString().split('T')[0],
               updated_at: new Date().toISOString()
             })
             .eq('id', subscription.id);
