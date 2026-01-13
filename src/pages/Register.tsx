@@ -11,7 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import { Music, Loader2, ArrowLeft, CalendarIcon, Camera, Mail, X } from 'lucide-react';
+import { Music, Loader2, ArrowLeft, CalendarIcon, Camera, Mail, X, Gift } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { ImageEditor } from '@/components/ImageEditor';
@@ -84,6 +84,7 @@ const Register = () => {
 
   // Estado para indicação via link
   const [referralFromLink, setReferralFromLink] = useState(false);
+  const [showReferralInput, setShowReferralInput] = useState(false);
 
   // NÃO redireciona automaticamente - deixa o fluxo do formulário seguir
   // O redirecionamento acontece apenas após verificar o OTP no step 4
@@ -119,6 +120,7 @@ const Register = () => {
     if (savedReferralCode) {
       setFormData(prev => ({ ...prev, referralCode: savedReferralCode }));
       setReferralFromLink(true);
+      setShowReferralInput(true); // Já mostra o campo se veio pelo link
       console.log('📨 Referral code loaded from link:', savedReferralCode);
     }
   }, []);
@@ -682,39 +684,65 @@ const Register = () => {
                   )}
                 </div>
 
-                {/* Campo opcional de código de indicação */}
-                <div className="space-y-2">
-                  <Label htmlFor="referralCode" className="text-white">
-                    Código de indicação <span className="text-[#C8BAD4] text-xs">{referralFromLink ? '' : '(opcional)'}</span>
-                  </Label>
-                  <Input
-                    id="referralCode"
-                    type="text"
-                    placeholder="Ex: ABC12345"
-                    value={formData.referralCode}
-                    onChange={(e) => {
-                      if (!referralFromLink) {
-                        setFormData({ ...formData, referralCode: e.target.value.toUpperCase() });
-                      }
-                    }}
-                    disabled={referralFromLink}
-                    readOnly={referralFromLink}
-                    maxLength={10}
-                    className={cn(
-                      "h-11 bg-[#1B0D29] text-white placeholder:text-[#C8BAD4] border-[#B96FFF] uppercase",
-                      referralFromLink && "bg-[#2D1B3D] cursor-not-allowed opacity-80"
-                    )}
-                  />
-                  <p className="text-xs text-[#C8BAD4]">
-                    {referralFromLink 
-                      ? isIOS
-                        ? "✓ Código de amigo aplicado! Aproveite os benefícios no SouArtista 🎁"
-                        : "✓ Código aplicado! Você terá 14 dias de teste grátis ao invés de 7 🎁 (válido apenas para cartão de crédito. PIX não tem período grátis, a cobrança é imediata)"
-                      : isIOS
-                        ? "Use um código de indicação e aproveite benefícios no SouArtista 🎁"
-                        : "Recebeu um código de um amigo? Digite aqui e ganhe 14 dias de teste grátis! (válido apenas para cartão de crédito. PIX não tem período grátis)"}
-                  </p>
-                </div>
+                {/* Campo opcional de código de indicação - Toggle */}
+                {!showReferralInput ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowReferralInput(true)}
+                    className="flex items-center gap-2 text-sm text-[#B96FFF] hover:text-[#C8BAD4] transition-colors py-2"
+                  >
+                    <Gift className="w-4 h-4" />
+                    Tem código de indicação? Clique aqui
+                  </button>
+                ) : (
+                  <div className="space-y-2 animate-fade-in">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="referralCode" className="text-white flex items-center gap-2">
+                        <Gift className="w-4 h-4 text-[#B96FFF]" />
+                        Código de indicação
+                      </Label>
+                      {!referralFromLink && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowReferralInput(false);
+                            setFormData(prev => ({ ...prev, referralCode: '' }));
+                          }}
+                          className="text-xs text-[#C8BAD4] hover:text-white transition-colors"
+                        >
+                          Fechar
+                        </button>
+                      )}
+                    </div>
+                    <Input
+                      id="referralCode"
+                      type="text"
+                      placeholder="Ex: ABC12345"
+                      value={formData.referralCode}
+                      onChange={(e) => {
+                        if (!referralFromLink) {
+                          setFormData({ ...formData, referralCode: e.target.value.toUpperCase() });
+                        }
+                      }}
+                      disabled={referralFromLink}
+                      readOnly={referralFromLink}
+                      maxLength={10}
+                      className={cn(
+                        "h-11 bg-[#1B0D29] text-white placeholder:text-[#C8BAD4] border-[#B96FFF] uppercase",
+                        referralFromLink && "bg-[#2D1B3D] cursor-not-allowed opacity-80"
+                      )}
+                    />
+                    <p className="text-xs text-[#C8BAD4]">
+                      {referralFromLink 
+                        ? isIOS
+                          ? "✓ Código de amigo aplicado! Aproveite os benefícios no SouArtista 🎁"
+                          : "✓ Código aplicado! Você terá 14 dias de teste grátis ao invés de 7 🎁 (válido apenas para cartão de crédito. PIX não tem período grátis, a cobrança é imediata)"
+                        : isIOS
+                          ? "Use um código de indicação e aproveite benefícios no SouArtista 🎁"
+                          : "Recebeu um código de um amigo? Digite aqui e ganhe 14 dias de teste grátis! (válido apenas para cartão de crédito. PIX não tem período grátis)"}
+                    </p>
+                  </div>
+                )}
 
                 <Button type="button" onClick={handleNext} className="w-full h-11">
                   Continuar
