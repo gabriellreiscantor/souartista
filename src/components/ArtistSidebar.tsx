@@ -40,7 +40,7 @@ const adminItems = [
 ];
 
 export function ArtistSidebar() {
-  const { state, setOpenMobile, isMobile, toggleSidebar } = useSidebar();
+  const { state, closeInstantly, isMobile, toggleSidebar } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
@@ -63,7 +63,7 @@ export function ArtistSidebar() {
   const handleSidebarClick = (e: React.MouseEvent) => {
     // Fecha o sidebar se clicar em área vazia (não em link ou botão) no mobile
     if (isMobile && e.target === e.currentTarget) {
-      setOpenMobile(false);
+      closeInstantly();
     }
   };
 
@@ -79,12 +79,12 @@ export function ArtistSidebar() {
           className="p-4 border-b border-sidebar-border cursor-pointer hover:bg-sidebar-accent/50 transition-colors"
           onClick={() => {
             navigate('/artist/dashboard');
-            if (isMobile) setOpenMobile(false);
+            if (isMobile) closeInstantly();
           }}
           onTouchEnd={(e) => {
             e.preventDefault();
             navigate('/artist/dashboard');
-            if (isMobile) setOpenMobile(false);
+            if (isMobile) closeInstantly();
           }}
         >
           {!collapsed ? (
@@ -104,7 +104,7 @@ export function ArtistSidebar() {
                     <NavLink
                       to={item.url}
                       end
-                      onClick={() => isMobile && setOpenMobile(false)}
+                      onClick={() => isMobile && closeInstantly()}
                       className="hover:bg-sidebar-accent"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                     >
@@ -129,7 +129,7 @@ export function ArtistSidebar() {
                       <NavLink
                         to={item.url}
                         end
-                        onClick={() => isMobile && setOpenMobile(false)}
+                        onClick={() => isMobile && closeInstantly()}
                         className="hover:bg-sidebar-accent"
                         activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                       >
@@ -154,7 +154,7 @@ export function ArtistSidebar() {
                     <NavLink
                       to={item.url}
                       end
-                      onClick={() => isMobile && setOpenMobile(false)}
+                      onClick={() => isMobile && closeInstantly()}
                       className="hover:bg-sidebar-accent"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                     >
