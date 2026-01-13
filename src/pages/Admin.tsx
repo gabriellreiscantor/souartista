@@ -23,6 +23,7 @@ import { RouteSelector } from '@/components/RouteSelector';
 import { PushNotificationLogs } from '@/components/PushNotificationLogs';
 import { EscalatedTicketsTab } from '@/components/EscalatedTicketsTab';
 import { AnnouncementsTab } from '@/components/admin/AnnouncementsTab';
+import { BackupGodTab } from '@/components/admin/BackupGodTab';
 import * as XLSX from 'xlsx';
 interface UserProfile {
   id: string;
@@ -4380,6 +4381,11 @@ export default function Admin() {
                 </CardContent>
               </Card>
             </div>}
+
+            {/* Backup God */}
+            {currentTab === 'backup' && (
+              <BackupGodTab />
+            )}
 
             {/* Tab Funcionários de Suporte */}
             {currentTab === 'funcionarios' && (
