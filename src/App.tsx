@@ -28,6 +28,7 @@ import ArtistCalendar from "./pages/artist/Calendar";
 import ArtistReports from "./pages/artist/Reports";
 import ArtistTransportation from "./pages/artist/Transportation";
 import ArtistExpenses from "./pages/artist/Expenses";
+import ArtistInvoiceSimulator from "./pages/artist/InvoiceSimulator";
 import MusicianDashboard from "./pages/musician/Dashboard";
 import MusicianShows from "./pages/musician/Shows";
 import MusicianArtists from "./pages/musician/Artists";
@@ -67,6 +68,7 @@ import DemoArtistSupport from "./pages/demo/artist/Support";
 import DemoArtistProfile from "./pages/demo/artist/Profile";
 import DemoArtistSettings from "./pages/demo/artist/Settings";
 import DemoArtistExpenses from "./pages/demo/artist/Expenses";
+import DemoArtistInvoiceSimulator from "./pages/demo/artist/InvoiceSimulator";
 import DemoMusicianDashboard from "./pages/demo/musician/Dashboard";
 import DemoMusicianShows from "./pages/demo/musician/Shows";
 import DemoMusicianArtists from "./pages/demo/musician/Artists";
@@ -110,6 +112,7 @@ const AppRoutes = () => {
       <Route path="/artist/reports" element={<ProtectedRoute requiredRole="artist"><ArtistReports /></ProtectedRoute>} />
       <Route path="/artist/transportation" element={<ProtectedRoute requiredRole="artist"><ArtistTransportation /></ProtectedRoute>} />
       <Route path="/artist/expenses" element={<ProtectedRoute requiredRole="artist"><ArtistExpenses /></ProtectedRoute>} />
+      <Route path="/artist/invoice-simulator" element={<ProtectedRoute requiredRole="artist"><ArtistInvoiceSimulator /></ProtectedRoute>} />
       <Route path="/artist/support" element={<ProtectedRoute requiredRole="artist"><ArtistSupport /></ProtectedRoute>} />
       <Route path="/artist/profile" element={<ProtectedRoute requiredRole="artist"><ArtistProfile /></ProtectedRoute>} />
       <Route path="/artist/settings" element={<ProtectedRoute requiredRole="artist"><ArtistSettings /></ProtectedRoute>} />
@@ -151,6 +154,7 @@ const AppRoutes = () => {
       <Route path="/demo/artist/profile" element={<DemoArtistProfile />} />
       <Route path="/demo/artist/settings" element={<DemoArtistSettings />} />
       <Route path="/demo/artist/expenses" element={<DemoArtistExpenses />} />
+      <Route path="/demo/artist/invoice-simulator" element={<DemoArtistInvoiceSimulator />} />
       <Route path="/demo/musician/dashboard" element={<DemoMusicianDashboard />} />
       <Route path="/demo/musician/shows" element={<DemoMusicianShows />} />
       <Route path="/demo/musician/artists" element={<DemoMusicianArtists />} />
