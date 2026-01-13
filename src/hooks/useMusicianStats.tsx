@@ -44,15 +44,30 @@ export function useMusicianStats(period: string) {
         locomotionQuery = locomotionQuery.gte('created_at', startDate).lte('created_at', endDate);
       }
 
-      const [{ data: shows, error: showsError }, { data: artists, error: artistsError }, { data: locomotionExpenses, error: expensesError }] = await Promise.all([
+      let additionalQuery = supabase
+        .from('additional_expenses')
+        .select('cost, expense_date')
+        .eq('uid', user.id);
+
+      if (period !== 'all') {
+        const [year, month] = period.split('-');
+        const startDate = `${year}-${month}-01`;
+        const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate();
+        const endDate = `${year}-${month}-${lastDay.toString().padStart(2, '0')}`;
+        additionalQuery = additionalQuery.gte('expense_date', startDate).lte('expense_date', endDate);
+      }
+
+      const [{ data: shows, error: showsError }, { data: artists, error: artistsError }, { data: locomotionExpenses, error: expensesError }, { data: additionalExpenses, error: additionalError }] = await Promise.all([
         showsQuery,
         supabase.from('artists').select('id').eq('owner_uid', user.id),
-        locomotionQuery
+        locomotionQuery,
+        additionalQuery
       ]);
 
       if (showsError) throw showsError;
       if (artistsError) throw artistsError;
       if (expensesError) throw expensesError;
+      if (additionalError) throw additionalError;
 
       let totalShows = 0;
       let totalEarnings = 0;
@@ -77,6 +92,11 @@ export function useMusicianStats(period: string) {
 
       let totalExpenses = 0;
       (locomotionExpenses || []).forEach((exp) => {
+        totalExpenses += Number(exp.cost || 0);
+      });
+
+      // Add additional expenses (equipment, accessories, etc.)
+      (additionalExpenses || []).forEach((exp) => {
         totalExpenses += Number(exp.cost || 0);
       });
 

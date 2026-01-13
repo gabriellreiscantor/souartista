@@ -38,18 +38,25 @@ export function useMonthlyData(year: string, userRole: 'artist' | 'musician' | n
         showsQuery = showsQuery.contains('team_musician_ids', [user.id]);
       }
 
-      const [{ data: shows, error: showsError }, { data: locomotionExpenses, error: expensesError }] = await Promise.all([
+      const [{ data: shows, error: showsError }, { data: locomotionExpenses, error: expensesError }, { data: additionalExpenses, error: additionalError }] = await Promise.all([
         showsQuery,
         supabase
           .from('locomotion_expenses')
           .select('cost, created_at')
           .eq('uid', user.id)
           .gte('created_at', `${year}-01-01`)
-          .lte('created_at', `${year}-12-31`)
+          .lte('created_at', `${year}-12-31`),
+        supabase
+          .from('additional_expenses')
+          .select('cost, expense_date')
+          .eq('uid', user.id)
+          .gte('expense_date', `${year}-01-01`)
+          .lte('expense_date', `${year}-12-31`)
       ]);
 
       if (showsError) throw showsError;
       if (expensesError) throw expensesError;
+      if (additionalError) throw additionalError;
 
       (shows || []).forEach((show) => {
         const date = parseISO(show.date_local);
@@ -95,6 +102,20 @@ export function useMonthlyData(year: string, userRole: 'artist' | 'musician' | n
           const cost = Number(exp.cost || 0);
           monthlyMap[month].expenses += cost;
           console.log(`[Locomoção] ${month}: R$${cost}`);
+        }
+      });
+
+      // Add additional expenses (equipment, accessories, etc.)
+      (additionalExpenses || []).forEach((exp) => {
+        const date = parseISO(exp.expense_date);
+        const monthKey = format(date, 'MMM', { locale: ptBR }).toLowerCase();
+        const monthIndex = months.findIndex(m => m.startsWith(monthKey.substring(0, 3)));
+        const month = months[monthIndex];
+
+        if (month) {
+          const cost = Number(exp.cost || 0);
+          monthlyMap[month].expenses += cost;
+          console.log(`[Despesas Adicionais] ${month}: R$${cost}`);
         }
       });
 
