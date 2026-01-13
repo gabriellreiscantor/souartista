@@ -51,15 +51,16 @@ interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
     VariantProps<typeof sheetVariants> {
   hideCloseButton?: boolean;
+  instant?: boolean;
 }
 
 const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Content>, SheetContentProps & { style?: React.CSSProperties }>(
-  ({ side = "right", className, children, hideCloseButton = false, style, ...props }, ref) => (
+  ({ side = "right", className, children, hideCloseButton = false, instant = false, style, ...props }, ref) => (
     <SheetPortal>
-      <SheetOverlay />
+      <SheetOverlay className={instant ? "!duration-0 !animate-none" : ""} />
       <SheetPrimitive.Content 
         ref={ref} 
-        className={cn(sheetVariants({ side }), "touch-manipulation overflow-x-hidden", className)} 
+        className={cn(sheetVariants({ side }), instant && "!duration-0 !animate-none", "touch-manipulation overflow-x-hidden", className)} 
         style={{ touchAction: 'pan-y', overscrollBehaviorX: 'none', paddingTop: 'env(safe-area-inset-top, 0px)', ...style }}
         {...props}
       >

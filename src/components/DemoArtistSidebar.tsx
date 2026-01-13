@@ -35,7 +35,7 @@ const settingsItems = [
 ];
 
 export function DemoArtistSidebar() {
-  const { state, setOpenMobile, isMobile, toggleSidebar } = useSidebar();
+  const { state, closeInstantly, isMobile, toggleSidebar } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
@@ -49,13 +49,13 @@ export function DemoArtistSidebar() {
 
   const handleLockedClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (isMobile) setOpenMobile(false);
+    if (isMobile) closeInstantly();
     setShowLockedModal(true);
   };
 
   const handleSidebarClick = (e: React.MouseEvent) => {
     if (isMobile && e.target === e.currentTarget) {
-      setOpenMobile(false);
+      closeInstantly();
     }
   };
 
@@ -96,7 +96,7 @@ export function DemoArtistSidebar() {
                     <NavLink
                       to={item.url}
                       end
-                      onClick={() => isMobile && setOpenMobile(false)}
+                      onClick={() => isMobile && closeInstantly()}
                       className="hover:bg-sidebar-accent"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                     >
