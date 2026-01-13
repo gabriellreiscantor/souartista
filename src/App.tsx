@@ -10,6 +10,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { usePixNotificationChecker } from "./hooks/usePixNotificationChecker";
 import { usePushNotifications } from "./hooks/usePushNotifications";
+import { useTimezoneSync } from "./hooks/useTimezoneSync";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -78,6 +79,7 @@ const queryClient = new QueryClient();
 const AppRoutes = () => {
   usePixNotificationChecker();
   usePushNotifications();
+  useTimezoneSync();
   
   return (
     <Routes>
