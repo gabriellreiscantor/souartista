@@ -3172,32 +3172,114 @@ export default function Admin() {
             )}
 
             {currentTab === 'financeiro' && <div className="space-y-4 md:space-y-6">
-                {/* Configuração de Taxas */}
+                {/* Configuração de Taxas - Mobile Friendly */}
                 <Card className="bg-white border-gray-200">
-                  <CardHeader className="p-3 md:p-6">
-                    <CardTitle className="text-gray-900 text-base md:text-lg">⚙️ Configuração de Taxas</CardTitle>
+                  <CardHeader className="p-4 pb-2 md:p-6 md:pb-4">
+                    <CardTitle className="text-gray-900 text-sm md:text-lg flex items-center gap-2">
+                      ⚙️ Configuração de Taxas
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-3 md:p-6 pt-0">
-                    <div className="space-y-3 md:space-y-4">
-                      <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4">
-                        <div className="space-y-1 md:space-y-2">
-                          <Label htmlFor="apple-tax" className="text-gray-900 text-xs md:text-sm">🍎 Taxa Apple (%)</Label>
-                          <Input id="apple-tax" type="number" step="0.01" value={appleTax} onChange={e => setAppleTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200 h-9 text-sm" min="0" max="100" />
+                  <CardContent className="p-4 pt-0 md:p-6 md:pt-0">
+                    <div className="space-y-4">
+                      {/* Mobile: Lista vertical compacta | Desktop: Grid */}
+                      <div className="hidden md:grid md:gap-4 md:grid-cols-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="apple-tax-desktop" className="text-gray-900 text-sm">🍎 Taxa Apple (%)</Label>
+                          <Input id="apple-tax-desktop" type="number" step="0.01" value={appleTax} onChange={e => setAppleTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200 h-10" min="0" max="100" />
                         </div>
-                        <div className="space-y-1 md:space-y-2">
-                          <Label htmlFor="google-tax" className="text-gray-900 text-xs md:text-sm">🤖 Taxa Google (%)</Label>
-                          <Input id="google-tax" type="number" step="0.01" value={googleTax} onChange={e => setGoogleTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200 h-9 text-sm" min="0" max="100" />
+                        <div className="space-y-2">
+                          <Label htmlFor="google-tax-desktop" className="text-gray-900 text-sm">🤖 Taxa Google (%)</Label>
+                          <Input id="google-tax-desktop" type="number" step="0.01" value={googleTax} onChange={e => setGoogleTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200 h-10" min="0" max="100" />
                         </div>
-                        <div className="space-y-1 md:space-y-2">
-                          <Label htmlFor="asaas-cc-tax" className="text-gray-900 text-xs md:text-sm">💳 Asaas Cartão (%)</Label>
-                          <Input id="asaas-cc-tax" type="number" step="0.01" value={asaasCreditCardTax} onChange={e => setAsaasCreditCardTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200 h-9 text-sm" min="0" max="100" />
+                        <div className="space-y-2">
+                          <Label htmlFor="asaas-cc-tax-desktop" className="text-gray-900 text-sm">💳 Asaas Cartão (%)</Label>
+                          <Input id="asaas-cc-tax-desktop" type="number" step="0.01" value={asaasCreditCardTax} onChange={e => setAsaasCreditCardTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200 h-10" min="0" max="100" />
                         </div>
-                        <div className="space-y-1 md:space-y-2">
-                          <Label htmlFor="asaas-pix-tax" className="text-gray-900 text-xs md:text-sm">📱 Asaas PIX (%)</Label>
-                          <Input id="asaas-pix-tax" type="number" step="0.01" value={asaasPixTax} onChange={e => setAsaasPixTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200 h-9 text-sm" min="0" max="100" />
+                        <div className="space-y-2">
+                          <Label htmlFor="asaas-pix-tax-desktop" className="text-gray-900 text-sm">📱 Asaas PIX (%)</Label>
+                          <Input id="asaas-pix-tax-desktop" type="number" step="0.01" value={asaasPixTax} onChange={e => setAsaasPixTax(Number(e.target.value))} className="bg-white text-gray-900 border-gray-200 h-10" min="0" max="100" />
                         </div>
                       </div>
-                      <Button onClick={handleSaveTax} disabled={savingTax} className="w-full h-9 text-sm">
+                      
+                      {/* Mobile Layout - Compacto */}
+                      <div className="md:hidden space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <span className="text-lg">🍎</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] text-gray-500 leading-tight">Apple</p>
+                              <div className="flex items-center gap-1">
+                                <Input 
+                                  type="number" 
+                                  step="0.01" 
+                                  value={appleTax} 
+                                  onChange={e => setAppleTax(Number(e.target.value))} 
+                                  className="bg-white text-gray-900 border-gray-300 h-7 text-sm w-16 px-2" 
+                                  min="0" 
+                                  max="100" 
+                                />
+                                <span className="text-xs text-gray-600">%</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <span className="text-lg">🤖</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] text-gray-500 leading-tight">Google</p>
+                              <div className="flex items-center gap-1">
+                                <Input 
+                                  type="number" 
+                                  step="0.01" 
+                                  value={googleTax} 
+                                  onChange={e => setGoogleTax(Number(e.target.value))} 
+                                  className="bg-white text-gray-900 border-gray-300 h-7 text-sm w-16 px-2" 
+                                  min="0" 
+                                  max="100" 
+                                />
+                                <span className="text-xs text-gray-600">%</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <span className="text-lg">💳</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] text-gray-500 leading-tight">Cartão</p>
+                              <div className="flex items-center gap-1">
+                                <Input 
+                                  type="number" 
+                                  step="0.01" 
+                                  value={asaasCreditCardTax} 
+                                  onChange={e => setAsaasCreditCardTax(Number(e.target.value))} 
+                                  className="bg-white text-gray-900 border-gray-300 h-7 text-sm w-16 px-2" 
+                                  min="0" 
+                                  max="100" 
+                                />
+                                <span className="text-xs text-gray-600">%</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <span className="text-lg">📱</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] text-gray-500 leading-tight">PIX</p>
+                              <div className="flex items-center gap-1">
+                                <Input 
+                                  type="number" 
+                                  step="0.01" 
+                                  value={asaasPixTax} 
+                                  onChange={e => setAsaasPixTax(Number(e.target.value))} 
+                                  className="bg-white text-gray-900 border-gray-300 h-7 text-sm w-16 px-2" 
+                                  min="0" 
+                                  max="100" 
+                                />
+                                <span className="text-xs text-gray-600">%</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <Button onClick={handleSaveTax} disabled={savingTax} className="w-full h-10 text-sm font-medium">
                         {savingTax ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                         Salvar Taxas
                       </Button>
