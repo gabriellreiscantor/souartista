@@ -3294,7 +3294,7 @@ export default function Admin() {
                     <CardHeader className="p-3 md:p-6 pb-2">
                       <CardTitle className="text-gray-900 text-sm md:text-lg flex flex-wrap items-center gap-2">
                         <span>🍎 iOS (Apple)</span>
-                        <Badge variant="outline" className="text-[10px] md:text-xs">
+                        <Badge variant="outline" className="text-[10px] md:text-xs text-gray-900">
                           {appleActiveCount} usuários
                         </Badge>
                       </CardTitle>
@@ -3322,7 +3322,7 @@ export default function Admin() {
                     <CardHeader className="p-3 md:p-6 pb-2">
                       <CardTitle className="text-gray-900 text-sm md:text-lg flex flex-wrap items-center gap-2">
                         <span>🤖 Android/Web</span>
-                        <Badge variant="outline" className="text-[10px] md:text-xs">
+                        <Badge variant="outline" className="text-[10px] md:text-xs text-gray-900">
                           {asaasCreditCardCount + asaasPixCount} usuários
                         </Badge>
                       </CardTitle>
