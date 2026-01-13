@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { NotificationBell } from '@/components/NotificationBell';
-import { Music2, DollarSign, TrendingDown, TrendingUp, FileText, File, Building, Users, Car } from 'lucide-react';
+import { Music2, DollarSign, TrendingDown, TrendingUp, FileText, File, Building, Users, Car, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -86,6 +86,36 @@ const DemoArtistReports = () => {
     { name: 'Ônibus', cost: 150 },
     { name: 'Uber', cost: 95 }
   ];
+
+  // Demo additional expenses data
+  const demoAdditionalExpenses = [
+    { category: 'equipamento', cost: 2500 },
+    { category: 'acessorio', cost: 450 },
+    { category: 'manutencao', cost: 380 },
+    { category: 'vestuario', cost: 320 },
+    { category: 'marketing', cost: 850 }
+  ];
+
+  const categoryLabels: Record<string, string> = {
+    equipamento: 'Equipamento',
+    acessorio: 'Acessório',
+    manutencao: 'Manutenção',
+    vestuario: 'Vestuário',
+    marketing: 'Marketing',
+    formacao: 'Formação',
+    software: 'Software',
+    outros: 'Outros'
+  };
+
+  const additionalExpensesByCategory = demoAdditionalExpenses
+    .map(exp => ({ name: categoryLabels[exp.category] || exp.category, cost: exp.cost }))
+    .sort((a, b) => b.cost - a.cost)
+    .slice(0, 5);
+
+  const totalAdditionalExpenses = demoAdditionalExpenses.reduce((sum, exp) => sum + exp.cost, 0);
+  const totalTeamExpenses = teamCosts.reduce((sum, member) => sum + member.cost, 0);
+  const totalLocomotionExpenses = locomotionCosts.reduce((sum, item) => sum + item.cost, 0);
+  const totalAllExpenses = totalTeamExpenses + totalLocomotionExpenses + totalAdditionalExpenses;
 
   // Top 5 locais por número de shows (baseado nos shows demo)
   const venueCounts = demoShows.reduce((acc, show) => {
@@ -286,6 +316,34 @@ const DemoArtistReports = () => {
                 </CardContent>
               </Card>
 
+              {/* Resumo de Despesas */}
+              <Card className="bg-white border-gray-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Receipt className="w-5 h-5 text-gray-900" />
+                    <h3 className="font-bold text-gray-900">Resumo de Despesas (Período)</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-500">Equipe</p>
+                      <p className="font-semibold text-gray-900">R$ {formatCurrency(totalTeamExpenses)}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Locomoção</p>
+                      <p className="font-semibold text-gray-900">R$ {formatCurrency(totalLocomotionExpenses)}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Adicionais</p>
+                      <p className="font-semibold text-gray-900">R$ {formatCurrency(totalAdditionalExpenses)}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Total Geral</p>
+                      <p className="font-bold text-purple-600">R$ {formatCurrency(totalAllExpenses)}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Top 5 Locais por Lucro */}
               <Card className="bg-white border-gray-200">
@@ -373,6 +431,31 @@ const DemoArtistReports = () => {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Top 5 Despesas Adicionais */}
+              <Card className="bg-white border-gray-200">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <Receipt className="w-5 h-5" />
+                    Top 5 Despesas Adicionais
+                  </h3>
+                  <div className="space-y-2">
+                    {additionalExpensesByCategory.map((exp, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <span className="text-sm text-gray-900">
+                          {index + 1}. {exp.name}
+                        </span>
+                        <div className="bg-primary text-white px-3 py-1 rounded-full">
+                          <span className="text-xs font-bold">R$ {formatCurrency(exp.cost)}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {additionalExpensesByCategory.length === 0 && (
+                      <p className="text-sm text-gray-500">Nenhuma despesa adicional registrada.</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
