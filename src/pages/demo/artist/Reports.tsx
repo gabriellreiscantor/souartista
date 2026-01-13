@@ -16,7 +16,7 @@ import { ptBR } from 'date-fns/locale';
 
 const DemoArtistReports = () => {
   const [period, setPeriod] = useState('this-month');
-  const [visibleShows, setVisibleShows] = useState(3);
+  
   const [showLockedModal, setShowLockedModal] = useState(false);
 
   const currentDate = new Date();
@@ -121,11 +121,6 @@ const DemoArtistReports = () => {
     }
   };
 
-  const handleShowMore = () => {
-    setShowLockedModal(true);
-  };
-
-  const remainingShows = demoShows.length - visibleShows;
 
   return (
     <SidebarProvider>
@@ -291,59 +286,6 @@ const DemoArtistReports = () => {
                 </CardContent>
               </Card>
 
-              {/* Detalhes dos Shows */}
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Detalhes dos Shows</h2>
-                <div className="space-y-3">
-                  {demoShows.slice(0, visibleShows).map((show) => {
-                    const showProfit = show.fee - show.teamExpenses - show.locomotionExpenses;
-                    return (
-                      <Card key={show.id} className="bg-white border-gray-200">
-                        <CardContent className="p-4">
-                          <h3 className="text-lg font-bold text-gray-900 mb-1">{show.venue_name}</h3>
-                          <p className="text-sm text-gray-600 mb-3">
-                            {format(new Date(show.date_local), "dd 'de' MMMM, yyyy", { locale: ptBR })}
-                          </p>
-                          <div className="grid grid-cols-3 gap-2 mb-3">
-                            <div>
-                              <p className="text-xs text-gray-500">Cachê</p>
-                              <p className="text-sm font-bold text-green-600">R$ {formatCurrency(show.fee)}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Despesas</p>
-                              <p className="text-sm font-bold text-red-600">
-                                R$ {formatCurrency(show.teamExpenses + show.locomotionExpenses)}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Locomoção</p>
-                              <p className="text-sm font-bold text-gray-600">
-                                R$ {formatCurrency(show.locomotionExpenses)}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium text-gray-700">Lucro</p>
-                            <div className="bg-primary text-white px-4 py-1 rounded-full">
-                              <p className="text-sm font-bold">R$ {formatCurrency(showProfit)}</p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-                
-                {remainingShows > 0 && (
-                  <Button
-                    onClick={handleShowMore}
-                    variant="ghost"
-                    className="w-full mt-3 bg-purple-50 hover:bg-purple-100 text-primary"
-                  >
-                    Mostrar mais {remainingShows} {remainingShows === 1 ? 'show' : 'shows'}
-                  </Button>
-                )}
-              </div>
 
               {/* Top 5 Locais por Lucro */}
               <Card className="bg-white border-gray-200">
