@@ -120,6 +120,8 @@ export default function Admin() {
   const [needsVerificationCount, setNeedsVerificationCount] = useState(0);
   const [savingTax, setSavingTax] = useState(false);
   const [subscriberViewMode, setSubscriberViewMode] = useState<'active' | 'cancelled' | 'verify'>('active');
+  const [loadingFinancial, setLoadingFinancial] = useState(false);
+  const [syncingRevenueCat, setSyncingRevenueCat] = useState(false);
   
   // Estados para Financeiro por Plataforma
   const [appleActiveCount, setAppleActiveCount] = useState(0);
@@ -831,6 +833,7 @@ export default function Admin() {
 
   const fetchFinancialData = async () => {
     try {
+      setLoadingFinancial(true);
       // Buscar TODAS as assinaturas (ativas e canceladas)
       const { data: allSubscriptionsData, error: subsError } = await supabase
         .from('subscriptions')
@@ -982,7 +985,46 @@ export default function Admin() {
       setAsaasPixTax(savedAsaasPixTax ? Number(savedAsaasPixTax) : 1.99); // Asaas PIX: 1.99%
     } catch (error) {
       console.error('Erro ao buscar dados financeiros:', error);
+    } finally {
+      setLoadingFinancial(false);
     }
+  };
+
+  // Sincronizar assinaturas Apple com RevenueCat
+  const handleSyncRevenueCat = async () => {
+    try {
+      setSyncingRevenueCat(true);
+      toast.info('🔄 Sincronizando com RevenueCat...', { duration: 2000 });
+
+      const { data, error } = await supabase.functions.invoke('sync-revenuecat-subscriptions');
+
+      if (error) throw error;
+
+      console.log('RevenueCat sync result:', data);
+      
+      if (data?.synced > 0) {
+        toast.success(`✅ ${data.synced} assinatura(s) sincronizada(s)!`);
+      } else if (data?.skipped > 0) {
+        toast.info(`ℹ️ ${data.skipped} assinatura(s) sem dados no RevenueCat`);
+      } else {
+        toast.info('Nenhuma assinatura para sincronizar');
+      }
+
+      // Recarregar dados financeiros
+      await fetchFinancialData();
+
+    } catch (error: any) {
+      console.error('Erro ao sincronizar RevenueCat:', error);
+      toast.error(error.message || 'Erro ao sincronizar com RevenueCat');
+    } finally {
+      setSyncingRevenueCat(false);
+    }
+  };
+
+  // Handler para recarregar dados financeiros
+  const handleRefreshFinancial = async () => {
+    await fetchFinancialData();
+    toast.success('Dados atualizados!');
   };
 
   const handleSaveTax = () => {
@@ -3227,6 +3269,33 @@ export default function Admin() {
             )}
 
             {currentTab === 'financeiro' && <div className="space-y-4 md:space-y-6">
+                {/* Header com botões de ação */}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h2 className="text-lg font-semibold text-gray-900">💰 Financeiro</h2>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRefreshFinancial}
+                      disabled={loadingFinancial}
+                      className="h-8 text-xs"
+                    >
+                      {loadingFinancial ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+                      Atualizar
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={handleSyncRevenueCat}
+                      disabled={syncingRevenueCat}
+                      className="h-8 text-xs bg-purple-600 hover:bg-purple-700"
+                    >
+                      {syncingRevenueCat ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <span className="mr-1">🍎</span>}
+                      Sincronizar RevenueCat
+                    </Button>
+                  </div>
+                </div>
+
                 {/* Configuração de Taxas - Mobile Friendly */}
                 <Card className="bg-white border-gray-200">
                   <CardHeader className="p-4 pb-2 md:p-6 md:pb-4">
