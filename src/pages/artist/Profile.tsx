@@ -5,6 +5,7 @@ import { UserMenu } from '@/components/UserMenu';
 import { NotificationBell } from '@/components/NotificationBell';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
 import { FeedbackForm } from '@/components/FeedbackForm';
+import { FeedbackHistory } from '@/components/FeedbackHistory';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -409,8 +410,9 @@ const ArtistProfile = () => {
               </div>
 
               {/* Feedback Section */}
-              <div className="mt-6">
+              <div className="mt-6 space-y-4">
                 <FeedbackForm />
+                <FeedbackHistory />
               </div>
 
               {/* Rate App Section - Only on native */}
