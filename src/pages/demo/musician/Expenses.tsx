@@ -68,7 +68,7 @@ export default function DemoMusicianExpenses() {
             <DemoUserMenu />
           </header>
           <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
-            <div className="w-full max-w-4xl mx-auto space-y-6">
+            <div className="max-w-7xl mx-auto space-y-6">
               <Card className="bg-white border-gray-200 overflow-hidden">
                 <CardHeader className="pb-3"><CardTitle className="text-lg text-gray-900">Categoria</CardTitle></CardHeader>
                 <CardContent>
