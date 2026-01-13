@@ -11,11 +11,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 import { 
   Guitar, Music, Wrench, Shirt, Megaphone, GraduationCap, 
   Monitor, Package, Trash2, ChevronLeft, ChevronRight, Calendar,
@@ -57,6 +60,7 @@ export default function ArtistExpenses() {
   const [cost, setCost] = useState('');
   const [expenseDate, setExpenseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [selectedShowId, setSelectedShowId] = useState<string | null>(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const startDate = format(startOfMonth(currentMonth), 'yyyy-MM-dd');
   const endDate = format(endOfMonth(currentMonth), 'yyyy-MM-dd');
@@ -246,13 +250,36 @@ export default function ArtistExpenses() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="date" className="text-gray-900 font-medium">Data</Label>
-                        <Input
-                          id="date"
-                          type="date"
-                          value={expenseDate}
-                          onChange={(e) => setExpenseDate(e.target.value)}
-                          className="bg-white border-gray-300 text-gray-900"
-                        />
+                        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal bg-white border-gray-300 text-gray-900 hover:bg-gray-50",
+                                !expenseDate && "text-muted-foreground"
+                              )}
+                            >
+                              <Calendar className="mr-2 h-4 w-4" />
+                              {expenseDate
+                                ? format(new Date(expenseDate + 'T12:00:00'), "dd/MM/yyyy", { locale: ptBR })
+                                : "Selecione a data"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0 z-[200] pointer-events-auto" align="start">
+                            <CalendarComponent
+                              mode="single"
+                              selected={expenseDate ? new Date(expenseDate + 'T12:00:00') : undefined}
+                              onSelect={(date) => {
+                                if (date) {
+                                  setExpenseDate(format(date, 'yyyy-MM-dd'));
+                                  setCalendarOpen(false);
+                                }
+                              }}
+                              variant="light"
+                              className="pointer-events-auto"
+                            />
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       <div className="space-y-2">
                         <Label className="text-gray-900 font-medium">Associar ao Show (Opcional)</Label>
