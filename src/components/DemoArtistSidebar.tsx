@@ -95,6 +95,7 @@ export function DemoArtistSidebar() {
                     <NavLink
                       to={item.url}
                       end
+                      onClick={() => isMobile && setOpenMobile(false)}
                       className="hover:bg-sidebar-accent"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                     >
