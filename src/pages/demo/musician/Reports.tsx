@@ -213,37 +213,6 @@ const DemoMusicianReports = () => {
                 </div>
               </Card>
 
-              {/* Detalhes dos Shows */}
-              <div className="space-y-3">
-                <h2 className="text-xl font-bold text-gray-900">Detalhes dos Shows</h2>
-                
-                {demoShows.map((show) => {
-                  const profit = show.fee - show.expenses;
-                  return (
-                    <Card key={show.id} className="bg-white border border-gray-200 p-4">
-                      <h3 className="font-bold text-gray-900 mb-1">{show.venue_name}</h3>
-                      <p className="text-sm text-gray-600 mb-3">{formatDate(show.date_local)}</p>
-                      
-                      <div className="grid grid-cols-2 gap-4 mb-3">
-                        <div>
-                          <p className="text-xs text-gray-600">Seu Cachê</p>
-                          <p className="font-bold text-green-600">{formatCurrency(show.fee)}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-600">Despesas</p>
-                          <p className="font-bold text-red-600">{formatCurrency(show.expenses)}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-end">
-                        <div className="px-4 py-2 rounded-full bg-primary text-white font-bold">
-                          {formatCurrency(profit)}
-                        </div>
-                      </div>
-                    </Card>
-                  );
-                })}
-              </div>
 
               {/* Top 5 Artistas por Lucro */}
               <Card className="bg-white border border-gray-200 p-4">

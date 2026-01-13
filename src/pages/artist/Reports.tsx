@@ -36,7 +36,7 @@ const ArtistReports = () => {
   const [shows, setShows] = useState<Show[]>([]);
   const [locomotionExpenses, setLocomotionExpenses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [visibleShows, setVisibleShows] = useState(5);
+  
 
   useEffect(() => {
     if (user) {
@@ -482,72 +482,6 @@ const ArtistReports = () => {
                 </CardContent>
               </Card>
 
-              {/* Shows Details Cards */}
-              <Card className="bg-white border-gray-200">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-6">Detalhes dos Shows</h3>
-                  
-                  <div className="space-y-4">
-                    {showsWithExpenses.slice(0, visibleShows).map((show) => (
-                      <Card key={show.id} className="border-2 border-gray-200 bg-white">
-                        <CardContent className="p-4 bg-white">
-                          <h4 className="font-bold text-lg text-gray-900 mb-1">{show.venue_name}</h4>
-                          <p className="text-sm text-gray-600 mb-3">
-                            {format(new Date(show.date_local), "dd 'de' MMMM, yyyy", { locale: ptBR })}
-                          </p>
-                          
-                          <div className={`grid ${settings.showLocomotion ? 'grid-cols-3' : 'grid-cols-2'} gap-4 mb-3`}>
-                            <div>
-                              <p className="text-xs text-gray-600 mb-1">Cachê</p>
-                              <p className="text-sm font-semibold text-green-600">
-                                R$ {formatCurrency(Number(show.fee))}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-600 mb-1">Despesas</p>
-                              <p className="text-sm font-semibold text-red-600">
-                                R$ {formatCurrency(show.expenses - show.locomotion)}
-                              </p>
-                            </div>
-                            {settings.showLocomotion && (
-                              <div>
-                                <p className="text-xs text-gray-600 mb-1">Locomoção</p>
-                                <p className="text-sm font-semibold text-gray-900">
-                                  R$ {formatCurrency(show.locomotion)}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                          
-                          <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                            <span className="text-sm font-medium text-gray-900">Lucro</span>
-                            <span className="inline-flex items-center justify-center px-3 py-1.5 rounded-full bg-purple-600 text-white font-semibold">
-                              R$ {formatCurrency(show.profit)}
-                            </span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-
-                  {showsWithExpenses.length > visibleShows && (
-                    <div className="flex justify-center mt-6">
-                      <Button
-                        onClick={() => setVisibleShows(prev => prev + 4)}
-                        className="bg-purple-100 border-purple-300 text-purple-700 hover:bg-purple-200"
-                      >
-                        Mostrar mais 4 shows
-                      </Button>
-                    </div>
-                  )}
-
-                  {showsWithExpenses.length === 0 && (
-                    <p className="text-center text-gray-500 py-8">
-                      Nenhum show encontrado para o período selecionado
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
 
               {/* Top 5 Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
