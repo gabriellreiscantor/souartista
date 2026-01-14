@@ -495,9 +495,9 @@ const ArtistShows = () => {
     setTimeout(() => {
       teamSectionRef.current?.scrollIntoView({
         behavior: 'smooth',
-        block: 'nearest'
+        block: 'end'
       });
-    }, 100);
+    }, 150);
   };
   const removeTeamMember = (index: number) => {
     setTeamMembers(teamMembers.filter((_, i) => i !== index));
@@ -899,7 +899,7 @@ const ArtistShows = () => {
                                 </div>
                               </div>
 
-                              <div className="space-y-3 pt-2" ref={teamSectionRef}>
+                              <div className="space-y-3 pt-2">
                                 <div className="flex items-center justify-between">
                                   <div>
                                     <h3 className="font-semibold text-gray-900 text-sm">Equipe/Músicos</h3>
@@ -911,7 +911,7 @@ const ArtistShows = () => {
                                   </Button>
                                 </div>
 
-                                {teamMembers.map((member, index) => <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
+                                {teamMembers.map((member, index) => <div key={index} ref={index === teamMembers.length - 1 ? teamSectionRef : null} className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
                                     <div className="flex items-center justify-between">
                                       <Label className="text-gray-900 text-xs">Membro</Label>
                                       <Button type="button" variant="ghost" size="sm" onClick={() => removeTeamMember(index)} className="text-destructive hover:text-destructive h-7 w-7 p-0">
