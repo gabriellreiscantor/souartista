@@ -62,6 +62,30 @@ export type Database = {
           },
         ]
       }
+      admin_totp_secrets: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_verified: boolean | null
+          totp_secret: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          totp_secret: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          totp_secret?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_users: {
         Row: {
           created_at: string
