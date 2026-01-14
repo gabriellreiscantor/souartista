@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import logo from '@/assets/logo.png';
+import { Maximize2, Minimize2 } from 'lucide-react';
 
 interface AnimatedDigitProps {
   digit: string;
@@ -65,6 +66,26 @@ export function UserCounterTab() {
   const [artistsCount, setArtistsCount] = useState(0);
   const [musiciansCount, setMusiciansCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = async () => {
+    if (!document.fullscreenElement) {
+      await document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      await document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   const fetchCounts = async () => {
     try {
@@ -141,14 +162,23 @@ export function UserCounterTab() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[hsl(278,69%,10%)] via-[hsl(278,69%,12%)] to-[hsl(278,69%,8%)] flex items-center justify-center">
         <div className="animate-pulse text-white text-2xl">Carregando...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 flex flex-col items-center justify-center p-4 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-[hsl(278,69%,10%)] via-[hsl(278,69%,12%)] to-[hsl(278,69%,8%)] flex flex-col items-center justify-center p-4 animate-fade-in relative">
+      {/* Fullscreen toggle button */}
+      <button
+        onClick={toggleFullscreen}
+        className="absolute top-6 right-6 bg-white/10 hover:bg-white/20 p-3 rounded-xl border border-white/20 transition-all z-10"
+        title={isFullscreen ? 'Sair da tela cheia' : 'Tela cheia'}
+      >
+        {isFullscreen ? <Minimize2 className="h-6 w-6 text-white" /> : <Maximize2 className="h-6 w-6 text-white" />}
+      </button>
+
       {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-32 h-32 bg-white/5 rounded-full blur-3xl" />
