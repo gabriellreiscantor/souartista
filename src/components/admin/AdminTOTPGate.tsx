@@ -12,7 +12,7 @@ interface AdminTOTPGateProps {
 
 type TOTPState = 'loading' | 'needs_setup' | 'needs_verification' | 'verified';
 
-const INACTIVITY_TIMEOUT = 60000; // 1 minuto em milissegundos
+const INACTIVITY_TIMEOUT = 300000; // 5 minutos em milissegundos
 
 export function AdminTOTPGate({ children }: AdminTOTPGateProps) {
   const [state, setState] = useState<TOTPState>('loading');
