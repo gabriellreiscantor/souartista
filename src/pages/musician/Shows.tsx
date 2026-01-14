@@ -939,7 +939,12 @@ const MusicianShows = () => {
                       
                       <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
                         <DialogTrigger asChild>
-                          <Button onClick={resetShowForm} className="bg-primary hover:bg-primary/90 text-slate-50">
+                          <Button onClick={() => {
+                            resetShowForm();
+                            setTimeout(() => {
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }, 100);
+                          }} className="bg-primary hover:bg-primary/90 text-slate-50">
                             <Plus className="w-4 h-4 mr-2" />
                             Adicionar
                           </Button>
