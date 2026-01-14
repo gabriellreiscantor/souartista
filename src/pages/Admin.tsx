@@ -26,6 +26,7 @@ import { AnnouncementsTab } from '@/components/admin/AnnouncementsTab';
 import { BackupGodTab } from '@/components/admin/BackupGodTab';
 import { RevenueCatTab } from '@/components/admin/RevenueCatTab';
 import { AsaasTab } from '@/components/admin/AsaasTab';
+import { UserCounterTab } from '@/components/admin/UserCounterTab';
 import * as XLSX from 'xlsx';
 interface UserProfile {
   id: string;
@@ -5085,6 +5086,11 @@ export default function Admin() {
             {/* Asaas */}
             {currentTab === 'asaas' && (
               <AsaasTab />
+            )}
+
+            {/* Contador de Usuários */}
+            {currentTab === 'contador' && (
+              <UserCounterTab />
             )}
 
             {/* Tab Funcionários de Suporte */}
