@@ -112,6 +112,9 @@ const MusicianShows = () => {
   });
   const [personalExpenses, setPersonalExpenses] = useState<AdditionalExpense[]>([]);
 
+  // Calendar popover state
+  const [showCalendarOpen, setShowCalendarOpen] = useState(false);
+
   // Artists dialog
   const [artistDialogOpen, setArtistDialogOpen] = useState(false);
   const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
@@ -1024,7 +1027,7 @@ const MusicianShows = () => {
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                  <Label htmlFor="date_local" className="text-gray-900 font-medium">Data *</Label>
-                                <Popover>
+                                <Popover open={showCalendarOpen} onOpenChange={setShowCalendarOpen}>
                                   <PopoverTrigger asChild>
                                     <Button variant="outline" className={cn("w-full justify-start text-left font-normal bg-white border-gray-300 text-gray-900 h-10", !showFormData.date_local && "text-muted-foreground")}>
                                       <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
@@ -1054,6 +1057,7 @@ const MusicianShows = () => {
                                             ...showFormData,
                                             date_local: `${year}-${month}-${day}`
                                           });
+                                          setShowCalendarOpen(false);
                                         }
                                       }} initialFocus className="pointer-events-auto" />
                                   </PopoverContent>
