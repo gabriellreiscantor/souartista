@@ -11,6 +11,7 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useReportVisibility, maskCurrency } from '@/hooks/useReportVisibility';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subDays, startOfYear, endOfYear, subMonths, differenceInMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { jsPDF } from 'jspdf';
@@ -33,6 +34,7 @@ interface Show {
 const MusicianReports = () => {
   const { user, userData, userRole } = useAuth();
   const { settings } = useReportVisibility();
+  const { requireOnline } = useOnlineStatus();
   const [period, setPeriod] = useState('this-month');
   const [shows, setShows] = useState<Show[]>([]);
   const [loading, setLoading] = useState(true);
@@ -260,6 +262,8 @@ const MusicianReports = () => {
   };
 
   const exportToPDF = async () => {
+    if (!requireOnline('Enviar relatório por e-mail')) return;
+    
     try {
       toast.info('Enviando relatório para seu e-mail...');
       
@@ -283,6 +287,8 @@ const MusicianReports = () => {
   };
 
   const exportToXLSX = async () => {
+    if (!requireOnline('Enviar relatório por e-mail')) return;
+    
     try {
       toast.info('Enviando relatório para seu e-mail...');
       

@@ -1,21 +1,11 @@
 import { useEffect, useState } from 'react';
-import { WifiOff, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { WifiOff } from 'lucide-react';
 
 export const OfflineBanner = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
-  const [isReconnecting, setIsReconnecting] = useState(false);
-
   useEffect(() => {
-    const handleOnline = () => {
-      setIsReconnecting(true);
-      // Aguardar 1.5 segundos antes de recarregar para garantir conexão estável
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-    };
-    
+    const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
     window.addEventListener('online', handleOnline);
@@ -27,70 +17,22 @@ export const OfflineBanner = () => {
     };
   }, []);
 
-  const handleRefresh = () => {
-    window.location.reload();
-  };
+  // Define a variável CSS para ajustar o layout
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      '--offline-banner-height',
+      isOnline ? '0px' : '36px'
+    );
+  }, [isOnline]);
 
+  // Não mostra nada se está online
   if (isOnline) return null;
 
+  // Banner sutil no topo (não bloqueia a tela)
   return (
-    <div 
-      className="fixed inset-0 z-[9999] flex items-center justify-center"
-      style={{ background: '#1E082B' }}
-    >
-      {/* Glow central suave */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-[600px] h-[600px] bg-[#B96FFF] opacity-[0.08] blur-[120px] rounded-full animate-float" />
-      </div>
-
-      {/* Vignette nas bordas */}
-      <div 
-        className="absolute inset-0 pointer-events-none" 
-        style={{
-          background: 'radial-gradient(circle at center, transparent 0%, rgba(30, 8, 43, 0.6) 100%)'
-        }} 
-      />
-
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center px-6 text-center max-w-md animate-fade-in">
-        {/* Animated Icon */}
-        <div className="mb-8 animate-scale-in">
-          <div className="relative">
-            <WifiOff className="w-24 h-24 text-primary drop-shadow-[0_0_20px_rgba(168,85,247,0.6)]" />
-            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
-          </div>
-        </div>
-
-        {/* Title */}
-        <h1 className="text-3xl md:text-4xl font-heading font-bold text-white mb-4 animate-fade-in">
-          {isReconnecting ? 'Reconectando...' : 'Sem conexão'}
-        </h1>
-
-        {/* Message */}
-        <p className="text-lg text-gray-300 mb-8 animate-fade-in">
-          {isReconnecting 
-            ? 'Sua conexão foi restabelecida. Recarregando...'
-            : 'Você está offline. Verifique sua conexão com a internet e tente novamente.'
-          }
-        </p>
-
-        {/* Action Button */}
-        {!isReconnecting && (
-          <Button 
-            size="lg" 
-            onClick={handleRefresh}
-            className="rounded-full text-lg font-medium shadow-primary hover:scale-105 transition-transform animate-fade-in"
-          >
-            <RefreshCw className="mr-2 w-5 h-5" />
-            Tentar novamente
-          </Button>
-        )}
-
-        {/* Additional info */}
-        <p className="text-sm text-gray-400 mt-6 animate-fade-in">
-          Esta página será atualizada automaticamente quando a conexão for restabelecida
-        </p>
-      </div>
+    <div className="fixed top-0 left-0 right-0 z-[9998] bg-amber-500 text-white py-2 px-4 flex items-center justify-center gap-2 text-sm font-medium shadow-md animate-fade-in h-9">
+      <WifiOff className="w-4 h-4 flex-shrink-0" />
+      <span className="truncate">Você está offline • Visualizando dados em cache</span>
     </div>
   );
 };
