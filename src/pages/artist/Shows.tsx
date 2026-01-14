@@ -732,7 +732,12 @@ const ArtistShows = () => {
                       {/* Mobile/Desktop Modal - Only one renders based on screen size */}
                       {isMobile ? <Sheet open={showDialogOpen} onOpenChange={setShowDialogOpen}>
                           <SheetTrigger asChild>
-                            <Button onClick={resetShowForm} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
+                            <Button onClick={() => {
+                              resetShowForm();
+                              setTimeout(() => {
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }, 100);
+                            }} className="w-full bg-primary hover:bg-primary/90 text-white h-11">
                               <Plus className="w-5 h-5 mr-2" />
                               Adicionar
                             </Button>
@@ -1046,12 +1051,20 @@ const ArtistShows = () => {
                         {isMobile ? <Button onClick={() => {
                         resetShowForm();
                         setShowDialogOpen(true);
+                        setTimeout(() => {
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }, 100);
                       }} className="bg-primary hover:bg-primary/90 text-white">
                             <Plus className="w-4 h-4 mr-2" />
                             Adicionar
                           </Button> : <Dialog open={showDialogOpen} onOpenChange={setShowDialogOpen}>
                             <DialogTrigger asChild>
-                              <Button onClick={resetShowForm} className="bg-primary hover:bg-primary/90 text-white">
+                              <Button onClick={() => {
+                                resetShowForm();
+                                setTimeout(() => {
+                                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }, 100);
+                              }} className="bg-primary hover:bg-primary/90 text-white">
                                 <Plus className="w-4 h-4 mr-2" />
                                 Adicionar
                               </Button>
