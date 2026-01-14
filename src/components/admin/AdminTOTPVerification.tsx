@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Loader2, ShieldCheck, AlertCircle, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
@@ -12,6 +13,7 @@ interface AdminTOTPVerificationProps {
 }
 
 export function AdminTOTPVerification({ onVerified, onNeedsSetup }: AdminTOTPVerificationProps) {
+  const navigate = useNavigate();
   const [code, setCode] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [attempts, setAttempts] = useState(0);
@@ -51,7 +53,6 @@ export function AdminTOTPVerification({ onVerified, onNeedsSetup }: AdminTOTPVer
       }
 
       if (response.data.verified) {
-        sessionStorage.setItem('admin_totp_verified', 'true');
         toast.success('🔓 Acesso autorizado!');
         onVerified();
       } else {
@@ -77,7 +78,15 @@ export function AdminTOTPVerification({ onVerified, onNeedsSetup }: AdminTOTPVer
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative">
+      <Button
+        variant="ghost"
+        onClick={() => navigate(-1)}
+        className="absolute top-4 left-4"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Voltar para o App
+      </Button>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">

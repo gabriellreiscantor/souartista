@@ -18,12 +18,6 @@ export function AdminTOTPGate({ children }: AdminTOTPGateProps) {
   }, []);
 
   const checkTOTPStatus = async () => {
-    // First check if already verified in this session
-    if (sessionStorage.getItem('admin_totp_verified') === 'true') {
-      setState('verified');
-      return;
-    }
-
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
