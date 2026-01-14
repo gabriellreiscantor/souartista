@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { UpdateBanner } from "@/components/UpdateBanner";
 import { GlobalAnnouncementModal } from "@/components/GlobalAnnouncementModal";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -79,8 +78,6 @@ import DemoMusicianSupport from "./pages/demo/musician/Support";
 import DemoMusicianProfile from "./pages/demo/musician/Profile";
 import DemoMusicianSettings from "./pages/demo/musician/Settings";
 import DemoMusicianExpenses from "./pages/demo/musician/Expenses";
-
-const queryClient = new QueryClient();
 
 const AppRoutes = () => {
   usePixNotificationChecker();
@@ -173,23 +170,21 @@ const AppRoutes = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <OfflineBanner />
-      <UpdateBanner />
-      <div className="safe-area-status-bar fixed top-0 left-0 right-0 z-[9999]" />
-      <div className="safe-area-top pt-[var(--offline-banner-height,0px)]">
-        <BrowserRouter>
-          <AuthProvider>
-            <GlobalAnnouncementModal />
-            <AppRoutes />
-          </AuthProvider>
-        </BrowserRouter>
-      </div>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <TooltipProvider>
+    <Toaster />
+    <Sonner />
+    <OfflineBanner />
+    <UpdateBanner />
+    <div className="safe-area-status-bar fixed top-0 left-0 right-0 z-[9999]" />
+    <div className="safe-area-top pt-[var(--offline-banner-height,0px)]">
+      <BrowserRouter>
+        <AuthProvider>
+          <GlobalAnnouncementModal />
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
+    </div>
+  </TooltipProvider>
 );
 
 export default App;

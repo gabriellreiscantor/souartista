@@ -25,6 +25,7 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useInAppReview } from '@/hooks/useInAppReview';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -71,6 +72,7 @@ const ArtistShows = () => {
   } = useAuth();
   const isMobile = useIsMobile();
   const { requestReview } = useInAppReview();
+  const { requireOnline } = useOnlineStatus();
   const [shows, setShows] = useState<Show[]>([]);
   const [musicians, setMusicians] = useState<Musician[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
@@ -198,12 +200,7 @@ const ArtistShows = () => {
   const handleShowSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || isSavingShow) return;
-    
-    // Check for internet connection
-    if (!navigator.onLine) {
-      toast.error('Você está offline. Conecte-se à internet para salvar.');
-      return;
-    }
+    if (!requireOnline('Salvar show')) return;
     
     setIsSavingShow(true);
     try {
@@ -266,6 +263,7 @@ const ArtistShows = () => {
   
   const confirmDelete = async () => {
     if (!itemToDelete) return;
+    if (!requireOnline('Excluir item')) return;
     
     try {
       if (itemToDelete.type === 'show') {

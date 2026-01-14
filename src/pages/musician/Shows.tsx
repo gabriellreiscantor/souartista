@@ -20,6 +20,7 @@ import { Plus, Calendar, Clock, MapPin, DollarSign, Edit, Trash2, X, Music2, Mic
 import { NotificationBell } from '@/components/NotificationBell';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useInAppReview } from '@/hooks/useInAppReview';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -66,6 +67,7 @@ interface Show {
 const MusicianShows = () => {
   const isMobile = useIsMobile();
   const { requestReview } = useInAppReview();
+  const { requireOnline } = useOnlineStatus();
   const {
     user,
     userData,
@@ -262,12 +264,7 @@ const MusicianShows = () => {
   const handleShowSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !userData || isSavingShow) return;
-    
-    // Check for internet connection
-    if (!navigator.onLine) {
-      toast.error('Você está offline. Conecte-se à internet para salvar.');
-      return;
-    }
+    if (!requireOnline('Salvar show')) return;
     
     setIsSavingShow(true);
     try {
@@ -345,6 +342,7 @@ const MusicianShows = () => {
   
   const confirmDelete = async () => {
     if (!itemToDelete) return;
+    if (!requireOnline('Excluir item')) return;
     
     try {
       if (itemToDelete.type === 'show') {
