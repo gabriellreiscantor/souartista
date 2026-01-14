@@ -11,6 +11,7 @@ import { Bell, Music2, DollarSign, TrendingDown, TrendingUp, TrendingUpIcon, Fil
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useReportVisibility, maskCurrency } from '@/hooks/useReportVisibility';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subDays, startOfYear, endOfYear, subMonths, differenceInMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { jsPDF } from 'jspdf';
@@ -32,6 +33,7 @@ interface Show {
 const ArtistReports = () => {
   const { user, userData, userRole } = useAuth();
   const { settings } = useReportVisibility();
+  const { requireOnline } = useOnlineStatus();
   const [period, setPeriod] = useState('this-month');
   const [shows, setShows] = useState<Show[]>([]);
   const [locomotionExpenses, setLocomotionExpenses] = useState<any[]>([]);
@@ -320,6 +322,8 @@ const ArtistReports = () => {
   };
 
   const exportToPDF = async () => {
+    if (!requireOnline('Enviar relatório por e-mail')) return;
+    
     try {
       toast.info('Enviando relatório para seu e-mail...');
       
@@ -343,6 +347,8 @@ const ArtistReports = () => {
   };
 
   const exportToXLSX = async () => {
+    if (!requireOnline('Enviar relatório por e-mail')) return;
+    
     try {
       toast.info('Enviando relatório para seu e-mail...');
       

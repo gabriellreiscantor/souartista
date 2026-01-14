@@ -1,15 +1,25 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { ReactNode } from 'react';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60, // 1 minuto (reduzido de 5)
-      gcTime: 1000 * 60 * 30, // 30 minutos
-      refetchOnWindowFocus: true, // Atualiza ao focar na janela
+      staleTime: 1000 * 60, // 1 minuto
+      gcTime: 1000 * 60 * 60 * 24, // 24 horas (para persistência)
+      refetchOnWindowFocus: true,
       retry: 1,
+      networkMode: 'offlineFirst', // Tenta usar cache primeiro quando offline
     },
   },
+});
+
+// Persister usando localStorage
+const persister = createSyncStoragePersister({
+  storage: window.localStorage,
+  key: 'souartista-cache',
+  throttleTime: 1000, // Throttle saves para performance
 });
 
 export { queryClient };
@@ -20,8 +30,32 @@ interface QueryProviderProps {
 
 export function QueryProvider({ children }: QueryProviderProps) {
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister,
+        maxAge: 1000 * 60 * 60 * 24, // Cache válido por 24 horas
+        dehydrateOptions: {
+          shouldDehydrateQuery: (query) => {
+            // Persistir apenas queries de dados importantes
+            const queryKey = query.queryKey[0];
+            const persistableQueries = [
+              'shows',
+              'artistStats',
+              'musicianStats',
+              'monthlyData',
+              'upcomingShows',
+              'locomotionData',
+              'venues',
+              'musicians',
+              'artists',
+            ];
+            return persistableQueries.includes(queryKey as string);
+          },
+        },
+      }}
+    >
       {children}
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }
