@@ -9,7 +9,7 @@ import { useReportVisibility, maskCurrency } from '@/hooks/useReportVisibility';
 import { WeeklySchedule } from '@/components/WeeklySchedule';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Music, Loader2, Car, DollarSign, TrendingDown, Users } from 'lucide-react';
+import { Music, Loader2, Car, DollarSign, TrendingDown, Users, Eye, EyeOff } from 'lucide-react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { MusicianSidebar } from '@/components/MusicianSidebar';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
@@ -35,7 +35,7 @@ const MusicianDashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>(defaultPeriod);
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
 
-  const { settings } = useReportVisibility();
+  const { settings, toggleAllVisibility, allVisible } = useReportVisibility();
   const stats = useMusicianStats(selectedPeriod);
   const { data: monthlyData } = useMonthlyData(selectedYear, userRole);
   const { shows: upcomingShows } = useUpcomingShows(userRole, 5);
@@ -96,11 +96,21 @@ const MusicianDashboard = () => {
                   Gerencie seus freelas e cachês em um só lugar
                 </p>
               
-                <PeriodFilter 
-                  value={selectedPeriod} 
-                  onChange={setSelectedPeriod}
-                  className="mx-auto"
-                />
+                <div className="flex items-center justify-center gap-2">
+                  <PeriodFilter 
+                    value={selectedPeriod} 
+                    onChange={setSelectedPeriod}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleAllVisibility}
+                    className="h-10 w-10 text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                    title={allVisible ? "Ocultar valores" : "Mostrar valores"}
+                  >
+                    {allVisible ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+                  </Button>
+                </div>
               </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">

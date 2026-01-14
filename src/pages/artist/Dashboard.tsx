@@ -9,7 +9,7 @@ import { useReportVisibility, maskCurrency } from '@/hooks/useReportVisibility';
 import { WeeklySchedule } from '@/components/WeeklySchedule';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Music, Loader2, Car, DollarSign, TrendingDown, TrendingUp } from 'lucide-react';
+import { Music, Loader2, Car, DollarSign, TrendingDown, TrendingUp, Eye, EyeOff } from 'lucide-react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ArtistSidebar } from '@/components/ArtistSidebar';
 import { MobileBottomNav } from '@/components/MobileBottomNav';
@@ -36,9 +36,7 @@ const ArtistDashboard = () => {
   const defaultPeriod = `${currentYear}-${currentMonth}`;
   const [selectedPeriod, setSelectedPeriod] = useState<string>(defaultPeriod);
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
-  const {
-    settings
-  } = useReportVisibility();
+  const { settings, toggleAllVisibility, allVisible } = useReportVisibility();
   const stats = useArtistStats(selectedPeriod);
   const {
     data: monthlyData
@@ -101,7 +99,18 @@ const ArtistDashboard = () => {
                   Aqui está um resumo rápido do seu progresso
                 </p>
               
-                <PeriodFilter value={selectedPeriod} onChange={setSelectedPeriod} className="mx-auto" />
+                <div className="flex items-center justify-center gap-2">
+                  <PeriodFilter value={selectedPeriod} onChange={setSelectedPeriod} />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleAllVisibility}
+                    className="h-10 w-10 text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                    title={allVisible ? "Ocultar valores" : "Mostrar valores"}
+                  >
+                    {allVisible ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+                  </Button>
+                </div>
               </div>
 
             {/* Stats Cards */}
