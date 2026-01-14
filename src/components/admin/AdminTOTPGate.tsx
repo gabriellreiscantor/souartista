@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminTOTPSetup } from './AdminTOTPSetup';
 import { AdminTOTPVerification } from './AdminTOTPVerification';
+import { useInactivityTimer } from '@/hooks/useInactivityTimer';
+import { toast } from 'sonner';
 
 interface AdminTOTPGateProps {
   children: React.ReactNode;
@@ -10,8 +12,23 @@ interface AdminTOTPGateProps {
 
 type TOTPState = 'loading' | 'needs_setup' | 'needs_verification' | 'verified';
 
+const INACTIVITY_TIMEOUT = 60000; // 1 minuto em milissegundos
+
 export function AdminTOTPGate({ children }: AdminTOTPGateProps) {
   const [state, setState] = useState<TOTPState>('loading');
+
+  // Callback para quando o timer de inatividade expirar
+  const handleInactivityTimeout = useCallback(() => {
+    toast.info('⏰ Sessão admin expirada por inatividade');
+    setState('needs_verification');
+  }, []);
+
+  // Timer de inatividade - só ativo quando verificado
+  useInactivityTimer({
+    timeout: INACTIVITY_TIMEOUT,
+    onTimeout: handleInactivityTimeout,
+    enabled: state === 'verified'
+  });
 
   useEffect(() => {
     checkTOTPStatus();
