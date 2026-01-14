@@ -129,6 +129,8 @@ const ArtistShows = () => {
     customCity: ''
   });
   const [availableCities, setAvailableCities] = useState<string[]>([]);
+  const sheetContentRef = useRef<HTMLDivElement>(null);
+  
   useEffect(() => {
     if (user) {
       fetchAll();
@@ -493,10 +495,15 @@ const ArtistShows = () => {
     
     // Auto-scroll para mostrar o novo membro adicionado
     setTimeout(() => {
-      teamSectionRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'end'
-      });
+      if (sheetContentRef.current) {
+        const container = sheetContentRef.current.parentElement;
+        if (container) {
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+      }
     }, 150);
   };
   const removeTeamMember = (index: number) => {
@@ -756,7 +763,7 @@ const ArtistShows = () => {
                         msOverflowStyle: 'none',
                         WebkitOverflowScrolling: 'touch'
                       }}>
-                          <div className="p-4 pb-6">
+                          <div className="p-4 pb-6" ref={sheetContentRef}>
                             <SheetHeader className="mb-4">
                               <SheetTitle className="text-gray-900 text-left">
                                 {editingShow ? 'Editar Show' : 'Adicionar Novo Show'}
