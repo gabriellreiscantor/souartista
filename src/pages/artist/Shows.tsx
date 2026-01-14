@@ -490,6 +490,14 @@ const ArtistShows = () => {
         cost: 0
       }]);
     }
+    
+    // Auto-scroll para mostrar o novo membro adicionado
+    setTimeout(() => {
+      teamSectionRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest'
+      });
+    }, 100);
   };
   const removeTeamMember = (index: number) => {
     setTeamMembers(teamMembers.filter((_, i) => i !== index));
@@ -522,6 +530,7 @@ const ArtistShows = () => {
     setTeamMembers(updated);
   };
   const expensesSectionRef = useRef<HTMLDivElement>(null);
+  const teamSectionRef = useRef<HTMLDivElement>(null);
   const addExpense = () => {
     setAdditionalExpenses([...additionalExpenses, {
       type: '',
@@ -890,7 +899,7 @@ const ArtistShows = () => {
                                 </div>
                               </div>
 
-                              <div className="space-y-3 pt-2">
+                              <div className="space-y-3 pt-2" ref={teamSectionRef}>
                                 <div className="flex items-center justify-between">
                                   <div>
                                     <h3 className="font-semibold text-gray-900 text-sm">Equipe/Músicos</h3>
