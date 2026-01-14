@@ -1,4 +1,4 @@
-import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones, Download, Smartphone, Sparkles, MessageSquare, Scale, UserCog, AlertTriangle, Megaphone, Trash2, Database, Apple, CreditCard } from 'lucide-react';
+import { Shield, Users, Search, DollarSign, Bell, MessageCircle, LogOut, FileText, Headphones, Download, Smartphone, Sparkles, MessageSquare, Scale, UserCog, AlertTriangle, Megaphone, Trash2, Database, Apple, CreditCard, Hash } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -39,6 +39,7 @@ const mainItems = [
   { title: 'Feedback', url: '/admin?tab=feedback', icon: MessageSquare },
   { title: 'Logs do Sistema', url: '/admin?tab=logs', icon: FileText },
   { title: 'Backup God', url: '/admin?tab=backup', icon: Database },
+  { title: 'Contador de Usuários', url: '/admin?tab=contador', icon: Hash },
 ];
 
 export function AdminSidebar() {
