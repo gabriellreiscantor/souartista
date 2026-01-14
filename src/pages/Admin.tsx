@@ -2260,16 +2260,16 @@ export default function Admin() {
   }
   if (!isAdmin) return null;
   return <AdminTOTPGate><SidebarProvider>
-      <div className="flex min-h-screen w-full bg-white">
+      <div className="flex min-h-screen w-full bg-white overflow-hidden">
         <AdminSidebar />
-        <SidebarInset className="flex-1 bg-white">
-          <header className="sticky top-0 z-10 flex h-14 md:h-16 items-center gap-2 md:gap-4 border-b bg-white border-gray-200 px-3 md:px-6">
-            <SidebarTrigger className="h-8 w-8 md:h-9 md:w-9" />
-            <h1 className="text-base md:text-2xl font-bold text-gray-900">🛡️ Admin</h1>
+        <SidebarInset className="flex-1 bg-white min-w-0 overflow-hidden">
+          <header className="sticky top-0 z-10 flex h-14 md:h-16 items-center gap-2 md:gap-4 border-b bg-white border-gray-200 px-3 md:px-6 w-full">
+            <SidebarTrigger className="h-8 w-8 md:h-9 md:w-9 shrink-0" />
+            <h1 className="text-base md:text-2xl font-bold text-gray-900 truncate">🛡️ Admin</h1>
             <Button variant="outline" size="sm" onClick={() => {
             const userRole = localStorage.getItem('userRole');
             navigate(userRole === 'artist' ? '/artist/dashboard' : '/musician/dashboard');
-          }} className="ml-auto text-xs md:text-sm px-2 md:px-3 h-8 md:h-9">
+          }} className="ml-auto shrink-0 text-xs md:text-sm px-2 md:px-3 h-8 md:h-9">
               <ArrowLeft className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
               <span className="hidden sm:inline">Voltar para app</span>
               <span className="sm:hidden">Voltar</span>
