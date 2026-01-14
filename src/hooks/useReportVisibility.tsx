@@ -48,5 +48,20 @@ export const useReportVisibility = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
 
-  return { settings, updateSettings, maskCurrency };
+  const allVisible = settings.showGrossRevenue && settings.showShowCosts && 
+                     settings.showNetProfit && settings.showLocomotion;
+
+  const toggleAllVisibility = () => {
+    const newValue = !allVisible;
+    const updated = {
+      showGrossRevenue: newValue,
+      showShowCosts: newValue,
+      showNetProfit: newValue,
+      showLocomotion: newValue,
+    };
+    setSettings(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  };
+
+  return { settings, updateSettings, maskCurrency, toggleAllVisibility, allVisible };
 };
