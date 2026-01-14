@@ -55,6 +55,7 @@ import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import Admin from "./pages/Admin";
 import Support from "./pages/Support";
+import Contador from "./pages/Contador";
 import NotFound from "./pages/NotFound";
 import ReferralRedirect from "./pages/ReferralRedirect";
 import DemoSelectRole from "./pages/DemoSelectRole";
@@ -95,6 +96,7 @@ const AppRoutes = () => {
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/r/:code" element={<ReferralRedirect />} />
+      <Route path="/contador" element={<Contador />} />
       <Route path="/complete-profile" element={<CompleteProfile />} />
       <Route path="/select-role" element={<SelectRole />} />
       <Route path="/subscribe" element={<Subscribe />} />
