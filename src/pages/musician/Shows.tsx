@@ -650,19 +650,23 @@ const MusicianShows = () => {
     setEditingVenue(null);
   };
   const expensesSectionRef = useRef<HTMLDivElement>(null);
+  const dialogContentRef = useRef<HTMLDivElement>(null);
+  
   const addExpense = () => {
     setPersonalExpenses([...personalExpenses, {
       description: '',
       cost: 0
     }]);
 
-    // Auto-scroll para a seção de despesas
+    // Auto-scroll para mostrar a nova despesa adicionada
     setTimeout(() => {
-      expensesSectionRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest'
-      });
-    }, 100);
+      if (dialogContentRef.current) {
+        dialogContentRef.current.scrollTo({
+          top: dialogContentRef.current.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    }, 150);
   };
   const removeExpense = (index: number) => {
     setPersonalExpenses(personalExpenses.filter((_, i) => i !== index));
@@ -956,7 +960,7 @@ const MusicianShows = () => {
                           </DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleShowSubmit} className="space-y-4">
-                          <div className="max-h-[65vh] overflow-y-auto px-1 space-y-6 scrollbar-hide" style={{
+                          <div ref={dialogContentRef} className="max-h-[65vh] overflow-y-auto px-1 space-y-6 scrollbar-hide" style={{
                             scrollbarWidth: 'none',
                             msOverflowStyle: 'none',
                             WebkitOverflowScrolling: 'touch'
