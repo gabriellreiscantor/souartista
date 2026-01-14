@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import logo from '@/assets/logo.png';
-import { Maximize2, Minimize2 } from 'lucide-react';
+import { Maximize2, Minimize2, Copy, Check } from 'lucide-react';
+import { toast } from 'sonner';
+
+interface UserCounterTabProps {
+  isStandalone?: boolean;
+}
 
 interface AnimatedDigitProps {
   digit: string;
@@ -47,26 +52,43 @@ const AnimatedNumber = ({ value }: AnimatedNumberProps) => {
   );
 };
 
-const getNextMilestoneMessage = (count: number): string => {
-  if (count < 50) return `Rumo aos 50! 🚀`;
-  if (count < 100) return `Quase 100! 🎉`;
-  if (count < 500) return `Rumo aos 500! 🔥`;
-  if (count < 1000) return `Mil usuários chegando! 💪`;
-  if (count < 5000) return `5K na mira! 🎯`;
-  if (count < 10000) return `Rumo aos 10K! 🚀`;
-  if (count < 50000) return `50K vindo aí! 💥`;
-  if (count < 100000) return `100 MIL! 🤯`;
-  if (count < 500000) return `Meio milhão chegando! 🌟`;
-  if (count < 1000000) return `UM MILHÃO NA MIRA! 🏆`;
-  return `MAIS DE 1 MILHÃO! 👑`;
-};
+// Keeping this function for potential future use
+// const getNextMilestoneMessage = (count: number): string => {
+//   if (count < 50) return `Rumo aos 50! 🚀`;
+//   if (count < 100) return `Quase 100! 🎉`;
+//   if (count < 500) return `Rumo aos 500! 🔥`;
+//   if (count < 1000) return `Mil usuários chegando! 💪`;
+//   if (count < 5000) return `5K na mira! 🎯`;
+//   if (count < 10000) return `Rumo aos 10K! 🚀`;
+//   if (count < 50000) return `50K vindo aí! 💥`;
+//   if (count < 100000) return `100 MIL! 🤯`;
+//   if (count < 500000) return `Meio milhão chegando! 🌟`;
+//   if (count < 1000000) return `UM MILHÃO NA MIRA! 🏆`;
+//   return `MAIS DE 1 MILHÃO! 👑`;
+// };
 
-export function UserCounterTab() {
+export function UserCounterTab({ isStandalone = false }: UserCounterTabProps) {
   const [totalUsers, setTotalUsers] = useState(0);
   const [artistsCount, setArtistsCount] = useState(0);
   const [musiciansCount, setMusiciansCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const shareableUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}/contador` 
+    : '/contador';
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareableUrl);
+      setCopied(true);
+      toast.success('Link copiado!');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Erro ao copiar link');
+    }
+  };
 
   const toggleFullscreen = async () => {
     if (!document.fullscreenElement) {
@@ -198,19 +220,14 @@ export function UserCounterTab() {
 
       {/* Title */}
       <h1 className="text-xl md:text-3xl font-bold text-white/90 mb-6 md:mb-10 tracking-wider uppercase text-center">
-        Usuários Sou Artista
+        Usuários em tempo real
       </h1>
 
       {/* Counter */}
-      <div className="relative mb-6 md:mb-8">
+      <div className="relative mb-8 md:mb-12">
         <AnimatedNumber value={totalUsers} />
         <div className="absolute -inset-6 bg-white/5 rounded-3xl blur-xl -z-10" />
       </div>
-
-      {/* Milestone message */}
-      <p className="text-lg md:text-2xl text-white/80 font-medium mb-8 md:mb-12 animate-fade-in">
-        {getNextMilestoneMessage(totalUsers)}
-      </p>
 
       {/* Breakdown */}
       <div className="flex flex-col md:flex-row gap-4 md:gap-12 text-white/70 text-sm md:text-lg">
@@ -225,6 +242,22 @@ export function UserCounterTab() {
           <span className="font-bold text-white">{musiciansCount}</span>
         </div>
       </div>
+
+      {/* Shareable link - only show in admin (not standalone) */}
+      {!isStandalone && (
+        <div className="mt-8 flex items-center gap-3">
+          <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20 text-white/60 text-sm max-w-[250px] truncate">
+            {shareableUrl}
+          </div>
+          <button
+            onClick={copyLink}
+            className="bg-white/10 hover:bg-white/20 p-2 rounded-lg border border-white/20 transition-all"
+            title="Copiar link"
+          >
+            {copied ? <Check className="h-5 w-5 text-green-400" /> : <Copy className="h-5 w-5 text-white" />}
+          </button>
+        </div>
+      )}
 
       {/* Footer text */}
       <p className="absolute bottom-8 text-white/40 text-sm">
