@@ -27,6 +27,7 @@ import { BackupGodTab } from '@/components/admin/BackupGodTab';
 import { RevenueCatTab } from '@/components/admin/RevenueCatTab';
 import { AsaasTab } from '@/components/admin/AsaasTab';
 import { UserCounterTab } from '@/components/admin/UserCounterTab';
+import { AdminTOTPGate } from '@/components/admin/AdminTOTPGate';
 import * as XLSX from 'xlsx';
 interface UserProfile {
   id: string;
@@ -2258,7 +2259,7 @@ export default function Admin() {
       </div>;
   }
   if (!isAdmin) return null;
-  return <SidebarProvider>
+  return <AdminTOTPGate><SidebarProvider>
       <div className="flex min-h-screen w-full bg-white">
         <AdminSidebar />
         <SidebarInset className="flex-1 bg-white">
@@ -6295,5 +6296,5 @@ export default function Admin() {
       </Dialog>
 
       <RouteSelector open={showRouteSelector} onOpenChange={setShowRouteSelector} onSelectRoute={path => setNotificationLink(path)} />
-    </SidebarProvider>;
+    </SidebarProvider></AdminTOTPGate>;
 }
