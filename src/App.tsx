@@ -177,15 +177,12 @@ const App = () => (
     <Sonner />
     <OfflineBanner />
     <UpdateBanner />
-    <div className="safe-area-status-bar fixed top-0 left-0 right-0 z-[9999]" />
-    <div className="safe-area-top">
-      <BrowserRouter>
-        <AuthProvider>
-          <GlobalAnnouncementModal />
-          <AppRoutes />
-        </AuthProvider>
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      <AuthProvider>
+        <GlobalAnnouncementModal />
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
   </TooltipProvider>
 );
 

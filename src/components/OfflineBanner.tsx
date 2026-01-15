@@ -17,16 +17,21 @@ export const OfflineBanner = () => {
     };
   }, []);
 
-  // Define a variável CSS para ajustar o layout (inclui safe-area)
+  // Define a variável CSS para ajustar o layout
+  // Quando offline: banner aparece ABAIXO da safe-area, então o offset total = safe-area + banner
+  // Quando online: offset = 0, as páginas usam apenas seu próprio safe-area-top
   useEffect(() => {
-    const bannerHeight = isOnline ? '0px' : '36px';
-    document.documentElement.style.setProperty('--offline-banner-height', bannerHeight);
+    if (isOnline) {
+      document.documentElement.style.setProperty('--offline-banner-height', '0px');
+    } else {
+      document.documentElement.style.setProperty('--offline-banner-height', '36px');
+    }
   }, [isOnline]);
 
-  // Não mostra nada se está online
+  // Não mostra nada se está online - nenhum offset extra
   if (isOnline) return null;
 
-  // Banner que respeita safe-area-inset-top
+  // Banner fixo que aparece ABAIXO da safe-area do dispositivo
   return (
     <div 
       className="fixed left-0 right-0 z-[9998] bg-amber-500 text-white px-4 flex items-center justify-center gap-2 text-sm font-medium shadow-md animate-fade-in"
@@ -36,7 +41,7 @@ export const OfflineBanner = () => {
       }}
     >
       <WifiOff className="w-4 h-4 flex-shrink-0" />
-      <span className="truncate">Você está offline • Visualizando dados em cache</span>
+      <span className="truncate">Você está offline</span>
     </div>
   );
 };
