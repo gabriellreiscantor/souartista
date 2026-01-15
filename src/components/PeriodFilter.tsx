@@ -77,11 +77,17 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
         <Button
           variant="outline"
           className={cn(
-            "w-[280px] justify-start text-left font-normal bg-white text-gray-900 border-gray-300",
+            "w-[280px] justify-start text-left font-normal border-gray-300",
+            value !== "all" 
+              ? "bg-primary text-white border-primary" 
+              : "bg-white text-gray-900",
             className
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4 text-gray-900" />
+          <CalendarIcon className={cn(
+            "mr-2 h-4 w-4",
+            value !== "all" ? "text-white" : "text-gray-900"
+          )} />
           {getDisplayLabel()}
         </Button>
       </PopoverTrigger>
