@@ -31,10 +31,10 @@ export const OfflineBanner = () => {
   // Não mostra nada se está online - nenhum offset extra
   if (isOnline) return null;
 
-  // Banner fixo que aparece ABAIXO da safe-area do dispositivo
+  // Banner fixo que aparece ABAIXO da safe-area do dispositivo (status bar roxa)
   return (
     <div 
-      className="fixed left-0 right-0 z-[9998] bg-amber-500 text-white px-4 flex items-center justify-center gap-2 text-sm font-medium shadow-md animate-fade-in"
+      className="fixed left-0 right-0 z-[9997] bg-amber-500 text-white px-4 flex items-center justify-center gap-2 text-sm font-medium shadow-md animate-fade-in"
       style={{ 
         top: 'env(safe-area-inset-top, 0px)',
         height: '36px'
