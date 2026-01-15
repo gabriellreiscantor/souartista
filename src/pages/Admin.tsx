@@ -2357,6 +2357,15 @@ export default function Admin() {
                     <Badge className="bg-gray-100 text-gray-800 text-xs">○ Inativo</Badge>
                     <Badge className="bg-red-100 text-red-800 text-xs">✕ Cancelado</Badge>
                   </div>
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <p className="text-xs text-gray-600 font-medium mb-2">Legenda dos status:</p>
+                    <ul className="text-xs text-gray-500 space-y-1">
+                      <li><span className="text-yellow-700 font-medium">⏳ Pendente:</span> Criou a conta mas ainda não fez nenhuma assinatura</li>
+                      <li><span className="text-green-700 font-medium">✓ Ativo:</span> Possui assinatura ativa e pagamento em dia</li>
+                      <li><span className="text-gray-700 font-medium">○ Inativo:</span> Assinatura expirou ou pagamento não foi realizado</li>
+                      <li><span className="text-red-700 font-medium">✕ Cancelado:</span> Cancelou a assinatura manualmente</li>
+                    </ul>
+                  </div>
                 </CardHeader>
                 <CardContent className="p-3 sm:p-6 pt-0">
                   {loading ? <div className="flex justify-center py-8">
