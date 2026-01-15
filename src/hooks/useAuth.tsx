@@ -232,7 +232,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             phone: userData.phone,
             birth_date: userData.birth_date,
             photo_url: userData.photo_url,
-            status_plano: userData.status_plano || 'inactive',
+            status_plano: userData.status_plano || 'pending',
             is_verified: false,
             gender: userData.gender,
           },
