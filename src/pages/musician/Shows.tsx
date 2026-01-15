@@ -24,6 +24,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { queryClient } from '@/providers/QueryProvider';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -181,6 +182,18 @@ const MusicianShows = () => {
   };
   const fetchShows = async () => {
     if (!user) return;
+    
+    // Se estiver offline, tenta usar dados do cache do React Query
+    if (!navigator.onLine) {
+      const cachedData = queryClient.getQueryData(['shows', user.id, userRole]);
+      if (cachedData && Array.isArray(cachedData)) {
+        console.log('[Shows] Offline - usando dados em cache:', cachedData.length, 'shows');
+        setShows(cachedData as Show[]);
+        setLoading(false);
+        return;
+      }
+    }
+    
     try {
       const {
         data,
@@ -188,16 +201,33 @@ const MusicianShows = () => {
       } = await supabase.from('shows').select('*').contains('team_musician_ids', [user.id]).order('date_local', {
         ascending: true
       });
-      if (error) throw error;
+      if (error) {
+        // Se estiver offline e houver erro, tenta cache
+        if (!navigator.onLine) {
+          const cachedData = queryClient.getQueryData(['shows', user.id, userRole]);
+          if (cachedData && Array.isArray(cachedData)) {
+            console.log('[Shows] Offline com erro - usando cache');
+            setShows(cachedData as Show[]);
+            setLoading(false);
+            return;
+          }
+        }
+        throw error;
+      }
       const typedShows = (data || []).map(show => ({
         ...show,
         expenses_team: show.expenses_team as any || [],
         expenses_other: show.expenses_other as any || []
       })) as Show[];
       setShows(typedShows);
+      // Atualiza o cache do React Query
+      queryClient.setQueryData(['shows', user.id, userRole], typedShows);
     } catch (error: any) {
       console.error('Error fetching shows:', error);
-      toast.error('Erro ao carregar shows');
+      // Só mostra erro se estiver online
+      if (navigator.onLine) {
+        toast.error('Erro ao carregar shows');
+      }
     } finally {
       setLoading(false);
     }

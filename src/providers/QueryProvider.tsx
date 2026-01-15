@@ -49,6 +49,9 @@ export function QueryProvider({ children }: QueryProviderProps) {
               'venues',
               'musicians',
               'artists',
+              'artist-stats',
+              'musician-stats',
+              'additional-expenses',
             ];
             return persistableQueries.includes(queryKey as string);
           },

@@ -178,7 +178,7 @@ const App = () => (
     <OfflineBanner />
     <UpdateBanner />
     <div className="safe-area-status-bar fixed top-0 left-0 right-0 z-[9999]" />
-    <div className="safe-area-top pt-[var(--offline-banner-height,0px)]">
+    <div className="safe-area-top">
       <BrowserRouter>
         <AuthProvider>
           <GlobalAnnouncementModal />
