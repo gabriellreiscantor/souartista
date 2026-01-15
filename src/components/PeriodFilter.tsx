@@ -78,7 +78,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
           variant="outline"
           className={cn(
             "w-[280px] justify-start text-left font-normal border-gray-300",
-            value !== "all" 
+            open 
               ? "bg-primary text-white border-primary" 
               : "bg-white text-gray-900",
             className
@@ -86,7 +86,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
         >
           <CalendarIcon className={cn(
             "mr-2 h-4 w-4",
-            value !== "all" ? "text-white" : "text-gray-900"
+            open ? "text-white" : "text-gray-900"
           )} />
           {getDisplayLabel()}
         </Button>
