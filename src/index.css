@@ -181,7 +181,6 @@ All colors MUST be HSL.
   /* Safe area padding for iOS native app */
   .safe-area-top {
     padding-top: var(--safe-area-top);
-    background-color: hsl(273, 85%, 65%);
   }
 
   .safe-area-bottom {
