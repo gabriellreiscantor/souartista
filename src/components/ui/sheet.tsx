@@ -33,12 +33,12 @@ const sheetVariants = cva(
   {
     variants: {
       side: {
-        top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
+        top: "inset-x-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
         bottom:
           "inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-        left: "inset-y-0 left-0 h-full w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
+        left: "left-0 w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
         right:
-          "inset-y-0 right-0 h-full w-3/4  border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
+          "right-0 w-3/4 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
       },
     },
     defaultVariants: {
@@ -54,25 +54,42 @@ interface SheetContentProps
 }
 
 const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Content>, SheetContentProps & { style?: React.CSSProperties }>(
-  ({ side = "right", className, children, hideCloseButton = false, style, ...props }, ref) => (
-    <SheetPortal>
-      <SheetOverlay />
-      <SheetPrimitive.Content 
-        ref={ref} 
-        className={cn(sheetVariants({ side }), "touch-manipulation overflow-x-hidden", className)} 
-        style={{ touchAction: 'pan-y', overscrollBehaviorX: 'none', paddingTop: 'env(safe-area-inset-top, 0px)', ...style }}
-        {...props}
-      >
-        {children}
-        {!hideCloseButton && (
-          <SheetPrimitive.Close className="absolute right-4 bg-primary rounded-full p-1.5 ring-offset-background transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
-            <X className="h-5 w-5 text-primary-foreground" />
-            <span className="sr-only">Close</span>
-          </SheetPrimitive.Close>
-        )}
-      </SheetPrimitive.Content>
-    </SheetPortal>
-  ),
+  ({ side = "right", className, children, hideCloseButton = false, style, ...props }, ref) => {
+    // Calcula top e height considerando safe-area E offline banner
+    const topOffset = side === "left" || side === "right" 
+      ? 'calc(env(safe-area-inset-top, 0px) + var(--offline-banner-height, 0px))'
+      : (side === "top" ? '0' : undefined);
+    
+    const heightStyle = side === "left" || side === "right"
+      ? 'calc(100% - env(safe-area-inset-top, 0px) - var(--offline-banner-height, 0px))'
+      : undefined;
+
+    return (
+      <SheetPortal>
+        <SheetOverlay />
+        <SheetPrimitive.Content 
+          ref={ref} 
+          className={cn(sheetVariants({ side }), "touch-manipulation overflow-x-hidden", className)} 
+          style={{ 
+            touchAction: 'pan-y', 
+            overscrollBehaviorX: 'none', 
+            top: topOffset,
+            height: heightStyle,
+            ...style 
+          }}
+          {...props}
+        >
+          {children}
+          {!hideCloseButton && (
+            <SheetPrimitive.Close className="absolute right-4 top-3 bg-primary rounded-full p-1.5 ring-offset-background transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+              <X className="h-5 w-5 text-primary-foreground" />
+              <span className="sr-only">Close</span>
+            </SheetPrimitive.Close>
+          )}
+        </SheetPrimitive.Content>
+      </SheetPortal>
+    );
+  },
 );
 SheetContent.displayName = SheetPrimitive.Content.displayName;
 

@@ -28,7 +28,7 @@ export interface Show {
 export function useShows() {
   const { user, userRole } = useAuth();
 
-  const { data: shows = [], isLoading, error, refetch } = useQuery({
+  const { data: shows = [], isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ['shows', user?.id, userRole],
     queryFn: async () => {
       if (!user || !userRole) return [];
@@ -58,11 +58,21 @@ export function useShows() {
       })) as Show[];
     },
     enabled: !!user && !!userRole,
+    staleTime: 1000 * 60 * 5, // 5 minutos - dados são considerados frescos
+    gcTime: 1000 * 60 * 60 * 24, // 24 horas - mantém em cache
+    networkMode: 'offlineFirst', // Usa cache primeiro quando offline
+    refetchOnWindowFocus: true,
+    retry: (failureCount, error) => {
+      // Não tenta novamente se estiver offline
+      if (!navigator.onLine) return false;
+      return failureCount < 2;
+    },
   });
 
   return {
     shows,
     loading: isLoading,
+    isFetching,
     error: error?.message || null,
     refetch,
   };
