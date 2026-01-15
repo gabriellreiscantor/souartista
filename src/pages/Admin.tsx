@@ -2048,6 +2048,11 @@ export default function Admin() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
+      pending: {
+        label: 'Pendente',
+        icon: '⏳',
+        className: 'bg-yellow-100 text-yellow-800'
+      },
       pendente: {
         label: 'Pendente',
         icon: '⏳',
@@ -2057,6 +2062,11 @@ export default function Admin() {
         label: 'Ativo',
         icon: '✓',
         className: 'bg-green-100 text-green-800'
+      },
+      inactive: {
+        label: 'Inativo',
+        icon: '○',
+        className: 'bg-gray-100 text-gray-800'
       },
       inativo: {
         label: 'Inativo',
