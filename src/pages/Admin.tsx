@@ -404,7 +404,9 @@ export default function Admin() {
         console.log('📡 Realtime status:', status);
         if (status === 'CHANNEL_ERROR') {
           console.error('❌ Falha no realtime, usando polling como fallback');
-          toast.error('Realtime indisponível, atualize manualmente se necessário');
+          toast.error('Realtime indisponível, atualize manualmente se necessário', {
+            duration: 3000
+          });
         }
       });
 
