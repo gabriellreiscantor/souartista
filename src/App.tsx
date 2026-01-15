@@ -180,7 +180,7 @@ const App = () => (
       className="fixed top-0 left-0 right-0 z-[9999]"
       style={{ 
         height: 'env(safe-area-inset-top, 0px)',
-        backgroundColor: 'hsl(273, 50%, 18%)'
+        backgroundColor: '#1e082b'
       }}
     />
     <OfflineBanner />
