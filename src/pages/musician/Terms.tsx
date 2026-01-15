@@ -22,7 +22,7 @@ const MusicianTerms = () => {
       <div className="flex min-h-screen w-full bg-white">
         <MusicianSidebar />
         
-        <div className="flex flex-col flex-1 w-full">
+        <div className="flex flex-col flex-1 w-full safe-area-top">
           <header className="h-16 border-b border-border bg-white flex items-center px-4 md:px-6 gap-4 sticky top-0 z-10 w-full">
             <div className="flex items-center gap-4 flex-1">
               <SidebarTrigger />
