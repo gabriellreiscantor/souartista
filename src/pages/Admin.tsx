@@ -2262,7 +2262,7 @@ export default function Admin() {
   return <AdminTOTPGate><SidebarProvider>
       <div className="flex min-h-screen w-full bg-white overflow-hidden">
         <AdminSidebar />
-        <SidebarInset className="flex-1 bg-white min-w-0 overflow-hidden">
+        <SidebarInset className="flex-1 bg-white min-w-0 overflow-hidden safe-area-top">
           <header className="sticky top-0 z-10 flex h-14 md:h-16 items-center gap-2 md:gap-4 border-b bg-white border-gray-200 px-3 md:px-6 w-full">
             <SidebarTrigger className="h-8 w-8 md:h-9 md:w-9 shrink-0" />
             <h1 className="text-base md:text-2xl font-bold text-gray-900 truncate">🛡️ Admin</h1>

@@ -25,7 +25,7 @@ import {
   Monitor, Package, Trash2, ChevronLeft, ChevronRight, Calendar,
   Receipt, Plus
 } from 'lucide-react';
-import SafeAreaWrapper from '@/components/SafeAreaWrapper';
+
 
 type ExpenseCategory = 'equipamento' | 'acessorio' | 'manutencao' | 'vestuario' | 'marketing' | 'formacao' | 'software' | 'outros';
 
@@ -168,8 +168,7 @@ export default function MusicianExpenses() {
   const CategoryIcon = categoryConfig[selectedCategory].icon;
 
   return (
-    <SafeAreaWrapper>
-      <SidebarProvider>
+    <SidebarProvider>
         <div className="min-h-screen flex w-full bg-[#fafafa]">
           <MusicianSidebar />
           
@@ -396,6 +395,5 @@ export default function MusicianExpenses() {
           </div>
         </div>
       </SidebarProvider>
-    </SafeAreaWrapper>
   );
 }
