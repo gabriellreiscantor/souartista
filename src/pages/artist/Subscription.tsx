@@ -267,7 +267,7 @@ const ArtistSubscription = () => {
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-[#fafafa]">
         <ArtistSidebar />
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col safe-area-top">
           <header className="h-16 border-b border-gray-200 bg-white flex items-center px-6 justify-between">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
