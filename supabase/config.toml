@@ -74,3 +74,9 @@ verify_jwt = false
 
 [functions.admin-totp-status]
 verify_jwt = false
+
+[functions.send-pending-user-reminders]
+verify_jwt = false
+
+[functions.send-subscription-reminders]
+verify_jwt = false

@@ -805,6 +805,38 @@ export type Database = {
           },
         ]
       }
+      pending_user_reminder_logs: {
+        Row: {
+          created_at: string
+          id: string
+          reminder_type: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reminder_type: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reminder_type?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_user_reminder_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           birth_date: string | null
