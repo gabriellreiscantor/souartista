@@ -17,7 +17,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, X, Send, Download, Filter, Link as LinkIcon, MessageCircle, UserCog, Eye, EyeOff, RefreshCw, Trash2, UserMinus, Monitor, Wand2, CheckSquare, Square, MinusSquare } from 'lucide-react';
+import { Users, Music, Mic2, Copy, MoreVertical, Loader2, ArrowLeft, Clipboard, X, Send, Download, Filter, Link as LinkIcon, MessageCircle, UserCog, Eye, EyeOff, RefreshCw, Trash2, UserMinus, Monitor, Wand2, CheckSquare, Square, MinusSquare, Megaphone } from 'lucide-react';
+import { ReturningUserModal } from '@/components/ReturningUserModal';
+import { DemoLockedModal } from '@/components/DemoLockedModal';
+import Onboarding from '@/components/Onboarding';
+import { LoadingScreen } from '@/components/LoadingScreen';
+import { DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { RouteSelector } from '@/components/RouteSelector';
 import { PushNotificationLogs } from '@/components/PushNotificationLogs';
@@ -305,6 +310,14 @@ export default function Admin() {
 
   // Estados para Revisão de Texto com IA
   const [improvingText, setImprovingText] = useState<string | null>(null);
+
+  // Estados para Debug Simulations
+  const [showDebugUpdateModal, setShowDebugUpdateModal] = useState(false);
+  const [showDebugAnnouncementModal, setShowDebugAnnouncementModal] = useState(false);
+  const [showDebugReturningUserModal, setShowDebugReturningUserModal] = useState(false);
+  const [showDebugDemoLockedModal, setShowDebugDemoLockedModal] = useState(false);
+  const [showDebugOnboarding, setShowDebugOnboarding] = useState(false);
+  const [showDebugLoadingScreen, setShowDebugLoadingScreen] = useState(false);
   
   const usersPerPage = 50;
   useEffect(() => {
@@ -5133,7 +5146,7 @@ export default function Admin() {
                           variant="outline"
                           size="sm"
                           className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
-                          onClick={() => toast.info('Modal de Atualização: Funcionalidade de teste')}
+                          onClick={() => setShowDebugUpdateModal(true)}
                         >
                           📱 Modal Atualização
                         </Button>
@@ -5141,7 +5154,7 @@ export default function Admin() {
                           variant="outline"
                           size="sm"
                           className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
-                          onClick={() => toast.info('Modal de Avisos: Funcionalidade de teste')}
+                          onClick={() => setShowDebugAnnouncementModal(true)}
                         >
                           📢 Modal Avisos
                         </Button>
@@ -5149,7 +5162,7 @@ export default function Admin() {
                           variant="outline"
                           size="sm"
                           className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
-                          onClick={() => toast.info('Modal Usuário Retornando: Funcionalidade de teste')}
+                          onClick={() => setShowDebugReturningUserModal(true)}
                         >
                           👋 Modal Usuário Retornando
                         </Button>
@@ -5157,7 +5170,7 @@ export default function Admin() {
                           variant="outline"
                           size="sm"
                           className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
-                          onClick={() => toast.info('Modal Demo Locked: Funcionalidade de teste')}
+                          onClick={() => setShowDebugDemoLockedModal(true)}
                         >
                           🔒 Modal Demo Locked
                         </Button>
@@ -5172,7 +5185,7 @@ export default function Admin() {
                           variant="outline"
                           size="sm"
                           className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
-                          onClick={() => toast.info('Onboarding: Funcionalidade de teste')}
+                          onClick={() => setShowDebugOnboarding(true)}
                         >
                           🎯 Onboarding
                         </Button>
@@ -5180,7 +5193,10 @@ export default function Admin() {
                           variant="outline"
                           size="sm"
                           className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
-                          onClick={() => toast.info('Loading Screen: Funcionalidade de teste')}
+                          onClick={() => {
+                            setShowDebugLoadingScreen(true);
+                            setTimeout(() => setShowDebugLoadingScreen(false), 3000);
+                          }}
                         >
                           ⏳ Loading Screen
                         </Button>
@@ -6458,5 +6474,88 @@ export default function Admin() {
       </Dialog>
 
       <RouteSelector open={showRouteSelector} onOpenChange={setShowRouteSelector} onSelectRoute={path => setNotificationLink(path)} />
+
+      {/* Debug Simulation Modals */}
+      {/* Modal de Atualização Simulado */}
+      <Dialog open={showDebugUpdateModal} onOpenChange={setShowDebugUpdateModal}>
+        <DialogContent className="sm:max-w-md bg-white">
+          <DialogHeader>
+            <div className="flex justify-center mb-5">
+              <div className="p-4 rounded-full bg-primary shadow-lg">
+                <Download className="h-8 w-8 text-white" />
+              </div>
+            </div>
+            <DialogTitle className="text-2xl font-bold text-center text-gray-900">
+              Nova versão disponível!
+            </DialogTitle>
+            <DialogDescription className="text-center pt-3 text-base text-gray-600">
+              Versão 2.5.0 disponível na App Store
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 pt-4 sm:justify-center">
+            <Button variant="outline" onClick={() => setShowDebugUpdateModal(false)}>
+              Depois
+            </Button>
+            <Button onClick={() => setShowDebugUpdateModal(false)}>
+              Atualizar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Avisos Simulado */}
+      <Dialog open={showDebugAnnouncementModal} onOpenChange={setShowDebugAnnouncementModal}>
+        <DialogContent className="sm:max-w-md bg-white">
+          <DialogHeader>
+            <div className="flex justify-center mb-5">
+              <div className="p-4 rounded-full bg-primary shadow-lg">
+                <Megaphone className="h-8 w-8 text-white" />
+              </div>
+            </div>
+            <DialogTitle className="text-2xl font-bold text-center text-gray-900">
+              Novidade no SouArtista!
+            </DialogTitle>
+            <DialogDescription className="text-center pt-3 text-base text-gray-600">
+              Esta é uma simulação de aviso global para todos os usuários.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-4 sm:justify-center">
+            <Button className="w-full" onClick={() => setShowDebugAnnouncementModal(false)}>
+              Entendi
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ReturningUserModal Simulado */}
+      <ReturningUserModal
+        open={showDebugReturningUserModal}
+        onClose={() => setShowDebugReturningUserModal(false)}
+        stats={{
+          totalShows: 42,
+          totalRevenue: 15750.00,
+          totalMusicians: 8,
+          expirationDate: '2025-01-01'
+        }}
+        userRole="artist"
+      />
+
+      {/* DemoLockedModal Simulado */}
+      <DemoLockedModal
+        open={showDebugDemoLockedModal}
+        onOpenChange={setShowDebugDemoLockedModal}
+      />
+
+      {/* Onboarding Simulado - overlay fullscreen */}
+      {showDebugOnboarding && (
+        <div className="fixed inset-0 z-[100]">
+          <Onboarding onComplete={() => setShowDebugOnboarding(false)} />
+        </div>
+      )}
+
+      {/* Loading Screen Simulado */}
+      {showDebugLoadingScreen && (
+        <LoadingScreen />
+      )}
     </SidebarProvider></AdminTOTPGate>;
 }
