@@ -54,7 +54,7 @@ import MusicianTutorial from "./pages/musician/Tutorial";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import Admin from "./pages/Admin";
-import AdminDebug from "./pages/admin/Debug";
+
 import Support from "./pages/Support";
 import Contador from "./pages/Contador";
 import NotFound from "./pages/NotFound";
@@ -141,7 +141,6 @@ const AppRoutes = () => {
       
       {/* Protected Admin/Support Routes */}
       <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Admin /></ProtectedRoute>} />
-      <Route path="/admin/debug" element={<ProtectedRoute allowedRoles={['admin']}><AdminDebug /></ProtectedRoute>} />
       <Route path="/support-tickets" element={<ProtectedRoute allowedRoles={['admin', 'support']}><Support /></ProtectedRoute>} />
       <Route path="/support-tickets" element={<ProtectedRoute allowedRoles={['admin', 'support']}><Support /></ProtectedRoute>} />
       

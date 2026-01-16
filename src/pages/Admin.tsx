@@ -5115,6 +5115,147 @@ export default function Admin() {
               <UserCounterTab />
             )}
 
+            {/* Tab Debug */}
+            {currentTab === 'debug' && (
+              <div className="space-y-4 md:space-y-6">
+                <Card className="bg-white border-gray-200">
+                  <CardHeader className="p-3 md:p-6">
+                    <CardTitle className="text-gray-900 text-base md:text-lg flex items-center gap-2">
+                      🐛 Ferramentas de Debug
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3 md:p-6 space-y-6">
+                    {/* Seção Modais */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-medium text-gray-700">Testar Modais</h3>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                          onClick={() => toast.info('Modal de Atualização: Funcionalidade de teste')}
+                        >
+                          📱 Modal Atualização
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                          onClick={() => toast.info('Modal de Avisos: Funcionalidade de teste')}
+                        >
+                          📢 Modal Avisos
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                          onClick={() => toast.info('Modal Usuário Retornando: Funcionalidade de teste')}
+                        >
+                          👋 Modal Usuário Retornando
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                          onClick={() => toast.info('Modal Demo Locked: Funcionalidade de teste')}
+                        >
+                          🔒 Modal Demo Locked
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Seção Telas */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-medium text-gray-700">Testar Telas</h3>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                          onClick={() => toast.info('Onboarding: Funcionalidade de teste')}
+                        >
+                          🎯 Onboarding
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                          onClick={() => toast.info('Loading Screen: Funcionalidade de teste')}
+                        >
+                          ⏳ Loading Screen
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Seção Banners */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-medium text-gray-700">Testar Banners</h3>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                          onClick={() => toast.info('Você está offline. Reconectando...', { duration: 3000 })}
+                        >
+                          📴 Offline Banner
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Seção Toasts */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-medium text-gray-700">Testar Toasts</h3>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                          onClick={() => toast.success('✅ Toast de sucesso!')}
+                        >
+                          ✅ Success
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                          onClick={() => toast.error('❌ Toast de erro!')}
+                        >
+                          ❌ Error
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                          onClick={() => toast.warning('⚠️ Toast de warning!')}
+                        >
+                          ⚠️ Warning
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                          onClick={() => toast.info('ℹ️ Toast informativo!')}
+                        >
+                          ℹ️ Info
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Seção Info Sistema */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-medium text-gray-700">Info do Sistema</h3>
+                      <div className="bg-gray-50 rounded-lg p-4 text-xs font-mono space-y-1 text-gray-700">
+                        <p>📅 Data atual: {new Date().toLocaleString('pt-BR')}</p>
+                        <p>🌐 User Agent: {navigator.userAgent.substring(0, 80)}...</p>
+                        <p>📱 Viewport: {window.innerWidth}x{window.innerHeight}</p>
+                        <p>🔗 URL atual: {window.location.href}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
             {/* Tab Funcionários de Suporte */}
             {currentTab === 'funcionarios' && (
               <div className="space-y-4 md:space-y-6">
