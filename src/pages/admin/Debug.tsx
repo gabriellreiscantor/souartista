@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Smartphone, Bell, Layout, RefreshCw, Info, AlertTriangle, CheckCircle, Sparkles, Lock, WifiOff, Loader2, UserCheck } from "lucide-react";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { AdminSidebar } from "@/components/AdminSidebar";
+import { Smartphone, Bell, Layout, RefreshCw, Info, AlertTriangle, CheckCircle, Sparkles, Lock, WifiOff, Loader2, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { DemoLockedModal } from "@/components/DemoLockedModal";
 import Onboarding from "@/components/Onboarding";
@@ -160,8 +161,6 @@ const DebugOfflineBanner = ({ show, onClose }: { show: boolean; onClose: () => v
 };
 
 export default function Debug() {
-  const navigate = useNavigate();
-  
   // Modal states
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
@@ -201,174 +200,172 @@ export default function Debug() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DebugOfflineBanner show={showOfflineBanner} onClose={() => setShowOfflineBanner(false)} />
-      
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => navigate("/admin")}
-            className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-xl font-semibold text-gray-900">Debug Mode</h1>
-        </div>
-      </header>
-
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        {/* Modais Section */}
-        <Card className="bg-white border-gray-200 shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-gray-900 text-lg">
-              <Layout className="h-5 w-5 text-gray-600" />
-              Modais
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button 
-              variant="outline" 
-              className="w-full justify-start border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              onClick={() => setShowUpdateModal(true)}
-            >
-              <RefreshCw className="h-4 w-4 mr-2 text-gray-500" />
-              Atualização Disponível
-            </Button>
-            
-            <div className="flex gap-2">
-              <Select value={announcementType} onValueChange={(v) => setAnnouncementType(v as typeof announcementType)}>
-                <SelectTrigger className="flex-1 border-gray-300 text-gray-700">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="info">Info</SelectItem>
-                  <SelectItem value="warning">Warning</SelectItem>
-                  <SelectItem value="success">Success</SelectItem>
-                  <SelectItem value="update">Update</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button 
-                variant="outline" 
-                className="border-gray-300 text-gray-700 hover:bg-gray-100"
-                onClick={() => setShowAnnouncementModal(true)}
-              >
-                Abrir Aviso
-              </Button>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-gray-50">
+        <AdminSidebar />
+        <SidebarInset className="flex-1">
+          <DebugOfflineBanner show={showOfflineBanner} onClose={() => setShowOfflineBanner(false)} />
+          
+          {/* Header */}
+          <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+            <div className="px-4 py-4 flex items-center gap-4">
+              <SidebarTrigger className="text-gray-600 hover:text-gray-900" />
+              <h1 className="text-xl font-semibold text-gray-900">Debug Mode</h1>
             </div>
-            
-            <Button 
-              variant="outline" 
-              className="w-full justify-start border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              onClick={() => setShowReturningUserModal(true)}
-            >
-              <UserCheck className="h-4 w-4 mr-2 text-gray-500" />
-              Usuário Retornando
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              className="w-full justify-start border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              onClick={() => setShowDemoLockedModal(true)}
-            >
-              <Lock className="h-4 w-4 mr-2 text-gray-500" />
-              Recurso Bloqueado (Demo)
-            </Button>
-          </CardContent>
-        </Card>
+          </header>
 
-        {/* Telas Section */}
-        <Card className="bg-white border-gray-200 shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-gray-900 text-lg">
-              <Smartphone className="h-5 w-5 text-gray-600" />
-              Telas
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button 
-              variant="outline" 
-              className="w-full justify-start border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              onClick={() => setShowOnboarding(true)}
-            >
-              <Sparkles className="h-4 w-4 mr-2 text-gray-500" />
-              Ver Onboarding
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              className="w-full justify-start border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              onClick={handleShowLoading}
-            >
-              <Loader2 className="h-4 w-4 mr-2 text-gray-500" />
-              Ver Loading Screen (3s)
-            </Button>
-          </CardContent>
-        </Card>
+          <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+            {/* Modais Section */}
+            <Card className="bg-white border-gray-200 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-gray-900 text-lg">
+                  <Layout className="h-5 w-5 text-gray-600" />
+                  Modais
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                  onClick={() => setShowUpdateModal(true)}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2 text-gray-500" />
+                  Atualização Disponível
+                </Button>
+                
+                <div className="flex gap-2">
+                  <Select value={announcementType} onValueChange={(v) => setAnnouncementType(v as typeof announcementType)}>
+                    <SelectTrigger className="flex-1 bg-white text-gray-900 border-gray-300">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="info">Info</SelectItem>
+                      <SelectItem value="warning">Warning</SelectItem>
+                      <SelectItem value="success">Success</SelectItem>
+                      <SelectItem value="update">Update</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button 
+                    variant="outline" 
+                    className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                    onClick={() => setShowAnnouncementModal(true)}
+                  >
+                    Abrir Aviso
+                  </Button>
+                </div>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                  onClick={() => setShowReturningUserModal(true)}
+                >
+                  <UserCheck className="h-4 w-4 mr-2 text-gray-500" />
+                  Usuário Retornando
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                  onClick={() => setShowDemoLockedModal(true)}
+                >
+                  <Lock className="h-4 w-4 mr-2 text-gray-500" />
+                  Recurso Bloqueado (Demo)
+                </Button>
+              </CardContent>
+            </Card>
 
-        {/* Banners e Toasts Section */}
-        <Card className="bg-white border-gray-200 shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-gray-900 text-lg">
-              <Bell className="h-5 w-5 text-gray-600" />
-              Banners e Toasts
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button 
-              variant="outline" 
-              className="w-full justify-start border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              onClick={() => setShowOfflineBanner(true)}
-            >
-              <WifiOff className="h-4 w-4 mr-2 text-gray-500" />
-              Simular Offline
-            </Button>
-            
-            <div className="grid grid-cols-2 gap-2">
-              <Button 
-                variant="outline" 
-                className="border-gray-300 text-gray-700 hover:bg-gray-100"
-                onClick={() => triggerToast("success")}
-              >
-                <CheckCircle className="h-4 w-4 mr-2 text-emerald-500" />
-                Sucesso
-              </Button>
-              <Button 
-                variant="outline" 
-                className="border-gray-300 text-gray-700 hover:bg-gray-100"
-                onClick={() => triggerToast("error")}
-              >
-                <AlertTriangle className="h-4 w-4 mr-2 text-red-500" />
-                Erro
-              </Button>
-              <Button 
-                variant="outline" 
-                className="border-gray-300 text-gray-700 hover:bg-gray-100"
-                onClick={() => triggerToast("warning")}
-              >
-                <AlertTriangle className="h-4 w-4 mr-2 text-orange-500" />
-                Aviso
-              </Button>
-              <Button 
-                variant="outline" 
-                className="border-gray-300 text-gray-700 hover:bg-gray-100"
-                onClick={() => triggerToast("info")}
-              >
-                <Info className="h-4 w-4 mr-2 text-blue-500" />
-                Info
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </main>
+            {/* Telas Section */}
+            <Card className="bg-white border-gray-200 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-gray-900 text-lg">
+                  <Smartphone className="h-5 w-5 text-gray-600" />
+                  Telas
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                  onClick={() => setShowOnboarding(true)}
+                >
+                  <Sparkles className="h-4 w-4 mr-2 text-gray-500" />
+                  Ver Onboarding
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                  onClick={handleShowLoading}
+                >
+                  <Loader2 className="h-4 w-4 mr-2 text-gray-500" />
+                  Ver Loading Screen (3s)
+                </Button>
+              </CardContent>
+            </Card>
 
-      {/* Modals */}
-      <DebugUpdateModal open={showUpdateModal} onOpenChange={setShowUpdateModal} />
-      <DebugAnnouncementModal open={showAnnouncementModal} onOpenChange={setShowAnnouncementModal} type={announcementType} />
-      <DebugReturningUserModal open={showReturningUserModal} onOpenChange={setShowReturningUserModal} />
-      <DemoLockedModal open={showDemoLockedModal} onOpenChange={setShowDemoLockedModal} />
-    </div>
+            {/* Banners e Toasts Section */}
+            <Card className="bg-white border-gray-200 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-gray-900 text-lg">
+                  <Bell className="h-5 w-5 text-gray-600" />
+                  Banners e Toasts
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                  onClick={() => setShowOfflineBanner(true)}
+                >
+                  <WifiOff className="h-4 w-4 mr-2 text-gray-500" />
+                  Simular Offline
+                </Button>
+                
+                <div className="grid grid-cols-2 gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                    onClick={() => triggerToast("success")}
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2 text-emerald-500" />
+                    Sucesso
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                    onClick={() => triggerToast("error")}
+                  >
+                    <AlertTriangle className="h-4 w-4 mr-2 text-red-500" />
+                    Erro
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                    onClick={() => triggerToast("warning")}
+                  >
+                    <AlertTriangle className="h-4 w-4 mr-2 text-orange-500" />
+                    Aviso
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50"
+                    onClick={() => triggerToast("info")}
+                  >
+                    <Info className="h-4 w-4 mr-2 text-blue-500" />
+                    Info
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </main>
+
+          {/* Modals */}
+          <DebugUpdateModal open={showUpdateModal} onOpenChange={setShowUpdateModal} />
+          <DebugAnnouncementModal open={showAnnouncementModal} onOpenChange={setShowAnnouncementModal} type={announcementType} />
+          <DebugReturningUserModal open={showReturningUserModal} onOpenChange={setShowReturningUserModal} />
+          <DemoLockedModal open={showDemoLockedModal} onOpenChange={setShowDemoLockedModal} />
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 }
