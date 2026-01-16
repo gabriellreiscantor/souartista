@@ -6493,10 +6493,31 @@ export default function Admin() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 pt-4 sm:justify-center">
-            <Button variant="outline" onClick={() => setShowDebugUpdateModal(false)}>
+            <Button 
+              className="bg-primary/70 hover:bg-primary/80 text-white"
+              onClick={() => setShowDebugUpdateModal(false)}
+            >
               Depois
             </Button>
-            <Button onClick={() => setShowDebugUpdateModal(false)}>
+            <Button 
+              className="bg-primary hover:bg-primary/90 text-white"
+              onClick={() => {
+                // Detectar plataforma
+                const userAgent = navigator.userAgent || navigator.vendor;
+                const isIOS = /iPad|iPhone|iPod/.test(userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                const isAndroid = /android/i.test(userAgent);
+                
+                if (isIOS) {
+                  window.open('https://apps.apple.com/br/app/souartista-cach%C3%AAs-e-agenda/id6756150476', '_blank');
+                } else if (isAndroid) {
+                  toast.info('Link da Play Store ainda não configurado');
+                } else {
+                  // Desktop ou outro - mostrar link iOS como fallback
+                  window.open('https://apps.apple.com/br/app/souartista-cach%C3%AAs-e-agenda/id6756150476', '_blank');
+                }
+                setShowDebugUpdateModal(false);
+              }}
+            >
               Atualizar
             </Button>
           </DialogFooter>
