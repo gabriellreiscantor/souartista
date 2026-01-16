@@ -62,6 +62,27 @@ export type Database = {
           },
         ]
       }
+      admin_totp_attempts: {
+        Row: {
+          attempted_at: string
+          id: string
+          success: boolean | null
+          user_id: string
+        }
+        Insert: {
+          attempted_at?: string
+          id?: string
+          success?: boolean | null
+          user_id: string
+        }
+        Update: {
+          attempted_at?: string
+          id?: string
+          success?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_totp_secrets: {
         Row: {
           created_at: string | null
@@ -1535,6 +1556,7 @@ export type Database = {
     }
     Functions: {
       check_and_notify_payments: { Args: never; Returns: undefined }
+      cleanup_old_totp_attempts: { Args: never; Returns: undefined }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
