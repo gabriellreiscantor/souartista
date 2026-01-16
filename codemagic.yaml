@@ -206,7 +206,7 @@ workflows:
         script: |
           cd ios/App
           agvtool new-version -all $PROJECT_BUILD_NUMBER
-          agvtool new-marketing-version 1.64
+          agvtool new-marketing-version 1.85
       
       - name: Generate App Icons and Splash Screens
         script: npx capacitor-assets generate --ios
