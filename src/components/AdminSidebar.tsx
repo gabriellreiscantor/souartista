@@ -40,7 +40,7 @@ const mainItems = [
   { title: 'Logs do Sistema', url: '/admin?tab=logs', icon: FileText },
   { title: 'Backup God', url: '/admin?tab=backup', icon: Database },
   { title: 'Contador de Usuários', url: '/admin?tab=contador', icon: Hash },
-  { title: 'Debug', url: '/admin?tab=debug', icon: Bug },
+  { title: 'Debug', url: '/admin/debug', icon: Bug },
 ];
 
 export function AdminSidebar() {
