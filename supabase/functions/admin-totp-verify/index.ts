@@ -7,6 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_MINUTES = 15;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -46,6 +49,42 @@ serve(async (req) => {
       );
     }
 
+    // Check for lockout - count failed attempts in last 15 minutes
+    const lockoutTime = new Date(Date.now() - LOCKOUT_MINUTES * 60 * 1000).toISOString();
+    
+    const { data: recentAttempts, error: attemptsError } = await supabase
+      .from('admin_totp_attempts')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('success', false)
+      .gte('attempted_at', lockoutTime)
+      .order('attempted_at', { ascending: false });
+
+    if (attemptsError) {
+      console.error('Error checking attempts:', attemptsError);
+    }
+
+    const failedAttempts = recentAttempts?.length || 0;
+
+    // If locked out, return time remaining
+    if (failedAttempts >= MAX_ATTEMPTS) {
+      const oldestAttempt = recentAttempts?.[recentAttempts.length - 1];
+      if (oldestAttempt) {
+        const unlockTime = new Date(new Date(oldestAttempt.attempted_at).getTime() + LOCKOUT_MINUTES * 60 * 1000);
+        const minutesRemaining = Math.ceil((unlockTime.getTime() - Date.now()) / 60000);
+        
+        return new Response(
+          JSON.stringify({ 
+            error: `Muitas tentativas. Aguarde ${minutesRemaining} minuto${minutesRemaining > 1 ? 's' : ''}.`,
+            locked: true,
+            minutesRemaining,
+            verified: false
+          }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     // Get the code from request body
     const { code } = await req.json();
 
@@ -83,11 +122,45 @@ serve(async (req) => {
     const delta = totp.validate({ token: code, window: 1 });
 
     if (delta === null) {
+      // Record failed attempt
+      await supabase
+        .from('admin_totp_attempts')
+        .insert({
+          user_id: user.id,
+          success: false
+        });
+
+      const attemptsRemaining = MAX_ATTEMPTS - failedAttempts - 1;
+      
+      if (attemptsRemaining <= 0) {
+        return new Response(
+          JSON.stringify({ 
+            error: `Código errado. Bloqueado por ${LOCKOUT_MINUTES} minutos.`,
+            locked: true,
+            minutesRemaining: LOCKOUT_MINUTES,
+            verified: false
+          }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       return new Response(
-        JSON.stringify({ error: 'Código incorreto. Tente novamente.', verified: false }),
+        JSON.stringify({ 
+          error: `Código errado. ${attemptsRemaining} tentativa${attemptsRemaining > 1 ? 's' : ''} restante${attemptsRemaining > 1 ? 's' : ''}.`,
+          attemptsRemaining,
+          verified: false
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Record successful attempt and clear old failed attempts
+    await supabase
+      .from('admin_totp_attempts')
+      .insert({
+        user_id: user.id,
+        success: true
+      });
 
     // If this is the first verification, mark as verified
     if (!totpData.is_verified) {
@@ -100,7 +173,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         verified: true,
-        message: 'Código verificado com sucesso!'
+        message: 'Acesso autorizado!'
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
