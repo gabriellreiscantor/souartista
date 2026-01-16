@@ -45,13 +45,19 @@ export const useAppUpdate = () => {
     if (!isNative) return;
     
     try {
+      // Salvar que o usuário aceitou atualizar esta versão
+      if (availableVersion) {
+        localStorage.setItem('app_update_accepted_version', availableVersion);
+      }
+      setUpdateAvailable(false);
+      
       const { AppUpdate } = await import('@capawesome/capacitor-app-update');
       console.log('[useAppUpdate] Opening app store...');
       await AppUpdate.openAppStore();
     } catch (error) {
       console.error('[useAppUpdate] Error opening app store:', error);
     }
-  }, [isNative]);
+  }, [isNative, availableVersion]);
 
   const dismissUpdate = useCallback(() => {
     // Store dismissal time in localStorage to not show again for a while
@@ -63,16 +69,22 @@ export const useAppUpdate = () => {
   const shouldShowBanner = useCallback(() => {
     if (!updateAvailable) return false;
     
+    // Verificar se já aceitou atualizar esta versão específica
+    const acceptedVersion = localStorage.getItem('app_update_accepted_version');
+    if (acceptedVersion && acceptedVersion === availableVersion) {
+      return false;
+    }
+    
     const dismissedAt = localStorage.getItem('app_update_dismissed');
     if (!dismissedAt) return true;
     
-    // Show again after 1 week (168 hours)
+    // Show again after 3 days (72 hours)
     const dismissedDate = new Date(dismissedAt);
     const now = new Date();
     const hoursSinceDismissed = (now.getTime() - dismissedDate.getTime()) / (1000 * 60 * 60);
     
     return hoursSinceDismissed >= 72;
-  }, [updateAvailable]);
+  }, [updateAvailable, availableVersion]);
 
   useEffect(() => {
     checkForUpdate();
