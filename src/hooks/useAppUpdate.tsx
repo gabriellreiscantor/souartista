@@ -71,7 +71,7 @@ export const useAppUpdate = () => {
     const now = new Date();
     const hoursSinceDismissed = (now.getTime() - dismissedDate.getTime()) / (1000 * 60 * 60);
     
-    return hoursSinceDismissed >= 168;
+    return hoursSinceDismissed >= 72;
   }, [updateAvailable]);
 
   useEffect(() => {
