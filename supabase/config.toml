@@ -80,3 +80,6 @@ verify_jwt = false
 
 [functions.send-subscription-reminders]
 verify_jwt = false
+
+[functions.verify-backup-secrets]
+verify_jwt = false

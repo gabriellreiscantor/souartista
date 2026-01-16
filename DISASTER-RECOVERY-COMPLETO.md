@@ -688,7 +688,94 @@ Não obrigatoriamente. Com este guia você pode:
 
 ---
 
-## 17. CONTEXTO PARA NOVA IA LOVABLE
+## 17. ESPELHAMENTO DE SECRETS NO BACKUP
+
+### Por que espelhar secrets?
+
+As secrets (chaves de API) são armazenadas no **Vault criptografado** do Supabase e **NÃO são incluídas** no backup automático diário. Isso significa que se você precisar usar o Supabase de backup, terá que reconfigurar todas as secrets manualmente - a menos que já tenha espelhado elas antecipadamente.
+
+### Benefícios do Espelhamento
+
+| Situação | Sem Espelhamento | Com Espelhamento |
+|----------|------------------|------------------|
+| Supabase principal cai | 🔴 Parar tudo, configurar 10 secrets | 🟢 Trocar URL e funciona |
+| Migrar para nova conta Lovable | 🔴 Reconfigurar manualmente | 🟢 Conectar e funciona |
+| Usar Cursor/VSCode | 🔴 Buscar todas as chaves | 🟢 Backup já tem tudo |
+
+### Como Espelhar
+
+#### Passo 1: Acessar Supabase de Backup
+```
+1. Vá para: https://supabase.com/dashboard
+2. Selecione o projeto de backup
+3. Navegue para: Settings → Edge Functions → Secrets
+```
+
+#### Passo 2: Adicionar cada Secret
+Adicione **exatamente** os mesmos nomes e valores do principal:
+
+| Secret | Formato Esperado |
+|--------|------------------|
+| `ASAAS_API_KEY` | `$aact_...` |
+| `ASAAS_WEBHOOK_TOKEN` | String que você definiu |
+| `FIREBASE_SERVER_KEY` | String longa |
+| `FIREBASE_SERVICE_ACCOUNT` | JSON stringificado |
+| `RESEND_API_KEY` | `re_...` |
+| `BREVO_API_KEY` | `xkeysib-...` |
+| `REVENUECAT_API_KEY` | `sk_...` |
+| `REVENUECAT_WEBHOOK_AUTH_KEY` | String que você definiu |
+| `BACKUP_SUPABASE_URL` | URL do backup |
+| `BACKUP_SUPABASE_SERVICE_ROLE_KEY` | JWT do backup |
+
+> 📄 Veja o arquivo `SECRETS-TEMPLATE.md` para instruções detalhadas de onde obter cada valor.
+
+#### Passo 3: Verificar Configuração
+
+Use a edge function `verify-backup-secrets` para confirmar que todas estão configuradas:
+
+```bash
+# Via curl (substitua TOKEN pelo seu auth token)
+curl -X POST \
+  'https://wjutvzmnvemrplpwbkyf.supabase.co/functions/v1/verify-backup-secrets' \
+  -H 'Authorization: Bearer TOKEN' \
+  -H 'Content-Type: application/json'
+```
+
+Resposta esperada:
+```json
+{
+  "summary": {
+    "total": 10,
+    "configured": 10,
+    "valid_format": 10,
+    "missing": 0,
+    "status": "OK",
+    "message": "✅ Todas as secrets estão configuradas!"
+  }
+}
+```
+
+### Manutenção do Espelhamento
+
+- **Quando atualizar**: Sempre que regenerar qualquer chave de API em qualquer serviço
+- **Frequência de verificação**: Mensalmente
+- **Rotação de chaves**: Ao trocar uma chave, atualize em **AMBOS** os Supabase (principal e backup)
+
+### Em Caso de Emergência com Secrets Espelhadas
+
+Se precisar usar o backup e as secrets já estão espelhadas:
+
+1. ✅ Dados sincronizados (backup diário)
+2. ✅ Auth users sincronizados (backup diário)
+3. ✅ Storage files copiados (backup diário)
+4. ✅ **Secrets já configuradas** (espelhamento manual)
+5. 📝 Apenas atualizar webhooks externos para nova URL
+
+**Tempo de recuperação**: ~30 minutos (vs 90+ min sem espelhamento)
+
+---
+
+## 18. CONTEXTO PARA NOVA IA LOVABLE
 
 Esta seção permite que uma nova instância da IA do Lovable (em outra conta) entenda completamente o projeto e continue o desenvolvimento.
 
