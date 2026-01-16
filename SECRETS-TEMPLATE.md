@@ -8,7 +8,7 @@
 
 ## 🚨 AÇÃO NECESSÁRIA AGORA
 
-**Para estar preparado para emergências, você DEVE copiar as 8 secrets externas para o Supabase de backup ANTES de uma emergência acontecer.**
+**Para estar preparado para emergências, você DEVE copiar as 7 secrets externas para o Supabase de backup ANTES de uma emergência acontecer.**
 
 ### Onde adicionar:
 1. Acesse: https://supabase.com/dashboard
@@ -22,16 +22,16 @@
 
 | Tipo | Quantidade | Ação |
 |------|------------|------|
-| API Keys (mesmo valor) | 6 | Copiar do serviço original |
+| API Keys (mesmo valor) | 5 | Copiar do serviço original |
 | Webhook Tokens (você define) | 2 | Usar o mesmo valor que definiu |
 | Backup Connection | 2 | NÃO copiar para backup (são auto-referência) |
-| **Total a copiar** | **8** | |
+| **Total a copiar** | **7** | |
 
 ---
 
-## 📋 SECRETS PARA COPIAR (8 total)
+## 📋 SECRETS PARA COPIAR (7 total)
 
-### 🔑 TIPO 1: API Keys (usar MESMO valor - 6 secrets)
+### 🔑 TIPO 1: API Keys (usar MESMO valor - 5 secrets)
 
 Essas chaves são obtidas dos serviços externos. Use os mesmos valores que já estão no Lovable Cloud.
 
@@ -41,32 +41,26 @@ Essas chaves são obtidas dos serviços externos. Use os mesmos valores que já 
 - **Formato**: `$aact_...` (começa com $aact_)
 - **Usado em**: `create-asaas-subscription`, `cancel-subscription`, `check-payment-status`, `sync-asaas-payments`
 
-#### 2. FIREBASE_SERVER_KEY
-- **Descrição**: Chave do servidor Firebase Cloud Messaging (FCM) para push notifications
-- **Onde obter**: Firebase Console → Configurações do Projeto → Cloud Messaging → Chave do servidor
-- **Formato**: String longa começando com caracteres alfanuméricos
-- **Usado em**: `send-push-notification`, `_shared/fcm-sender.ts`
-- **Nota**: Esta é a chave legada. Para novos projetos, use FIREBASE_SERVICE_ACCOUNT
-
-#### 3. FIREBASE_SERVICE_ACCOUNT
-- **Descrição**: JSON completo da conta de serviço do Firebase
+#### 2. FIREBASE_SERVICE_ACCOUNT
+- **Descrição**: JSON completo da conta de serviço do Firebase para push notifications (FCM v1 API)
 - **Onde obter**: Firebase Console → Configurações do Projeto → Contas de Serviço → Gerar nova chave privada
-- **Formato**: JSON completo (stringificado)
-- **Usado em**: `send-push-notification` (FCM v1 API)
+- **Formato**: JSON completo (o conteúdo inteiro do arquivo .json baixado)
+- **Usado em**: `send-push-notification` (via `_shared/fcm-sender.ts`)
+- **⚠️ IMPORTANTE**: A antiga `FIREBASE_SERVER_KEY` foi descontinuada. Use apenas `FIREBASE_SERVICE_ACCOUNT`
 
-#### 4. RESEND_API_KEY
+#### 3. RESEND_API_KEY
 - **Descrição**: Chave de API do Resend para envio de emails
 - **Onde obter**: https://resend.com/api-keys → Create API Key
 - **Formato**: `re_...` (começa com re_)
 - **Usado em**: `send-report-email`
 
-#### 5. BREVO_API_KEY
+#### 4. BREVO_API_KEY
 - **Descrição**: Chave de API do Brevo (ex-Sendinblue) para emails transacionais
 - **Onde obter**: https://app.brevo.com → SMTP & API → API Keys
 - **Formato**: `xkeysib-...` (começa com xkeysib-)
 - **Usado em**: `send-otp-email`
 
-#### 6. REVENUECAT_API_KEY
+#### 5. REVENUECAT_API_KEY
 - **Descrição**: Chave de API do RevenueCat para gerenciamento de assinaturas iOS
 - **Onde obter**: RevenueCat Dashboard → Project Settings → API Keys → Secret API Key
 - **Formato**: `sk_...` (começa com sk_)
@@ -78,14 +72,14 @@ Essas chaves são obtidas dos serviços externos. Use os mesmos valores que já 
 
 Esses tokens são **definidos por você**. Use os mesmos valores que você configurou no Lovable Cloud.
 
-#### 7. ASAAS_WEBHOOK_TOKEN
+#### 6. ASAAS_WEBHOOK_TOKEN
 - **Descrição**: Token de autenticação para webhooks do Asaas
 - **Onde obter**: Token que VOCÊ definiu ao configurar o webhook no Asaas
 - **Formato**: String alfanumérica (você escolhe)
 - **Usado em**: `asaas-webhook`
 - **⚠️ IMPORTANTE**: Este é um valor que você criou, não vem do Asaas
 
-#### 8. REVENUECAT_WEBHOOK_AUTH_KEY
+#### 7. REVENUECAT_WEBHOOK_AUTH_KEY
 - **Descrição**: Token de autenticação para webhooks do RevenueCat
 - **Onde obter**: Token que VOCÊ definiu ao configurar o webhook no RevenueCat
 - **Formato**: String alfanumérica (você escolhe)
@@ -131,7 +125,7 @@ Estas são gerenciadas automaticamente pelo Lovable/Supabase:
 3. Role até **Secrets**
 
 ### Passo 3: Adicionar cada Secret
-Para cada uma das **8 secrets** listadas acima:
+Para cada uma das **7 secrets** listadas acima:
 1. Clique em **Add new secret**
 2. Digite o nome EXATAMENTE como listado
 3. Cole o valor (obtido do seu gerenciador de senhas)
