@@ -74,13 +74,14 @@ ASAAS_WEBHOOK_TOKEN=seu_token_webhook
 BACKUP_SUPABASE_URL=https://seu-projeto-backup.supabase.co
 BACKUP_SUPABASE_SERVICE_ROLE_KEY=sua_service_role_key_backup
 BREVO_API_KEY=sua_chave_brevo
-FIREBASE_SERVER_KEY=sua_chave_firebase (legado)
-FIREBASE_SERVICE_ACCOUNT={"type":"service_account",...}
+FIREBASE_SERVICE_ACCOUNT={"type":"service_account",...} (JSON completo)
 RESEND_API_KEY=re_xxxxx
 REVENUECAT_API_KEY=sua_chave_revenuecat
 REVENUECAT_WEBHOOK_AUTH_KEY=seu_token_webhook
 LOVABLE_API_KEY=chave_para_ia (se aplicável)
 ```
+
+> ⚠️ **NOTA**: A `FIREBASE_SERVER_KEY` foi descontinuada. Use apenas `FIREBASE_SERVICE_ACCOUNT`.
 
 ---
 
@@ -718,14 +719,15 @@ Adicione **exatamente** os mesmos nomes e valores do principal:
 |--------|------------------|
 | `ASAAS_API_KEY` | `$aact_...` |
 | `ASAAS_WEBHOOK_TOKEN` | String que você definiu |
-| `FIREBASE_SERVER_KEY` | String longa |
-| `FIREBASE_SERVICE_ACCOUNT` | JSON stringificado |
+| `FIREBASE_SERVICE_ACCOUNT` | JSON completo do service account |
 | `RESEND_API_KEY` | `re_...` |
 | `BREVO_API_KEY` | `xkeysib-...` |
 | `REVENUECAT_API_KEY` | `sk_...` |
 | `REVENUECAT_WEBHOOK_AUTH_KEY` | String que você definiu |
 | `BACKUP_SUPABASE_URL` | URL do backup |
 | `BACKUP_SUPABASE_SERVICE_ROLE_KEY` | JWT do backup |
+
+> ⚠️ **NOTA**: A antiga `FIREBASE_SERVER_KEY` foi descontinuada e não é mais necessária.
 
 > 📄 Veja o arquivo `SECRETS-TEMPLATE.md` para instruções detalhadas de onde obter cada valor.
 
@@ -882,10 +884,10 @@ Principais:
 === SECRETS NECESSÁRIOS (Edge Functions) ===
 - ASAAS_API_KEY: API do Asaas
 - ASAAS_WEBHOOK_TOKEN: Validação webhooks
-- FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY: Push notifications
+- FIREBASE_SERVICE_ACCOUNT: JSON completo para push notifications (FCM v1 API)
 - RESEND_API_KEY: Envio de emails
-- OPENAI_API_KEY: Melhoria de textos
-- APPLE_SHARED_SECRET: Validação IAP
+- BREVO_API_KEY: Emails transacionais (OTP)
+- REVENUECAT_API_KEY: Assinaturas iOS
 - SUPABASE_BACKUP_URL, SUPABASE_BACKUP_SERVICE_KEY: Backup secundário
 
 === ESTADO ATUAL (Janeiro 2026) ===
