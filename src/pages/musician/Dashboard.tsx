@@ -7,6 +7,7 @@ import { useUpcomingShows } from '@/hooks/useUpcomingShows';
 import { useLocomotionData } from '@/hooks/useLocomotionData';
 import { useReportVisibility, maskCurrency } from '@/hooks/useReportVisibility';
 import { WeeklySchedule } from '@/components/WeeklySchedule';
+import { UpdateBanner } from '@/components/UpdateBanner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Music, Loader2, Car, DollarSign, TrendingDown, Users, Eye, EyeOff } from 'lucide-react';
@@ -66,6 +67,7 @@ const MusicianDashboard = () => {
 
   return (
     <SidebarProvider>
+      <UpdateBanner />
       <div className="min-h-screen flex w-full bg-[#fafafa]">
         <MusicianSidebar />
         
