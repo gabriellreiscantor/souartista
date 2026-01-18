@@ -6541,7 +6541,7 @@ export default function Admin() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="pt-4 sm:justify-center">
-            <Button className="w-full" onClick={() => setShowDebugAnnouncementModal(false)}>
+            <Button className="w-full text-white" onClick={() => setShowDebugAnnouncementModal(false)}>
               Entendi
             </Button>
           </DialogFooter>
