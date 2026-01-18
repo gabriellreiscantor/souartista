@@ -19,6 +19,7 @@
 8. [Sistema de Pagamentos](#8-sistema-de-pagamentos)
 9. [Sistema de Indicações (Referral)](#9-sistema-de-indicações-referral)
 10. [Push Notifications](#10-push-notifications)
+    - 10.6 [Sistema de Timezone e Janela de Silêncio](#106-sistema-de-timezone-e-janela-de-silêncio)
 11. [Sistema de Suporte](#11-sistema-de-suporte)
 12. [Painel Administrativo](#12-painel-administrativo)
 13. [Modo Demo](#13-modo-demo)
@@ -30,6 +31,7 @@
 19. [Deploy e CI/CD](#19-deploy-e-cicd)
 20. [Segurança](#20-segurança)
 21. [Dados Brasileiros](#21-dados-brasileiros)
+    - 21.4 [Sistema Completo de Timezone](#214-sistema-completo-de-timezone)
 22. [Performance](#22-performance)
 23. [Componentes UI](#23-componentes-ui)
 24. [Fluxos de Usuário](#24-fluxos-de-usuário)
@@ -2232,6 +2234,71 @@ async function sendPush(userId, title, body, data) {
 | send-pending-user-reminders | 11h diário | Lembrar usuários inativos |
 | check-pix-notifications | Cada 30min | Verificar PIX pendente |
 
+## 10.6 Sistema de Timezone e Janela de Silêncio
+
+O SouArtista implementa um sistema completo de timezone para garantir que:
+- Push notifications chegam no **horário local correto** do usuário
+- Usuários **NÃO recebem notificações de madrugada**
+- Lembretes de show são calculados pelo **relógio do usuário**, não do servidor
+
+### 10.6.1 Janela de Silêncio (Do Not Disturb)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    JANELA DE PUSH NOTIFICATIONS                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+    00:00                    08:00                    21:00           23:59
+      │                        │                        │               │
+      │◄──── SILÊNCIO ────────►│◄──── PERMITIDO ───────►│◄── SILÊNCIO ─►│
+      │      (8 horas)         │      (13 horas)        │   (3 horas)   │
+      │                        │                        │               │
+      │  ❌ NÃO envia push     │  ✅ Envia push         │  ❌ NÃO envia │
+      └────────────────────────┴────────────────────────┴───────────────┘
+```
+
+**Regra:** Push notifications são enviadas **APENAS** entre 08:00 e 21:00 no **horário local do usuário**.
+
+### 10.6.2 Exemplos por Fuso Horário
+
+| Usuário em | Timezone | Push Permitido |
+|------------|----------|----------------|
+| São Paulo | America/Sao_Paulo (UTC-3) | 08:00-21:00 BRT |
+| Manaus | America/Manaus (UTC-4) | 08:00-21:00 AMT |
+| Fernando de Noronha | America/Noronha (UTC-2) | 08:00-21:00 FNT |
+| Lisboa | Europe/Lisbon (UTC+0) | 08:00-21:00 WET |
+| Tokyo | Asia/Tokyo (UTC+9) | 08:00-21:00 JST |
+
+### 10.6.3 Verificação no Backend
+
+```typescript
+// supabase/functions/_shared/timezone-utils.ts
+
+/**
+ * Verifica se é horário permitido para push (8h-21h local)
+ */
+export function isWithinPushWindow(timezone: string): boolean {
+  const currentHour = getCurrentHourInTimezone(timezone);
+  return currentHour >= 8 && currentHour < 21;
+}
+
+// Uso nas Edge Functions:
+if (!isWithinPushWindow(userTimezone)) {
+  console.log('Fora da janela de push, pulando notificação');
+  return; // Não envia
+}
+```
+
+### 10.6.4 Prioridade de Timezone
+
+```
+1. user_devices.timezone  ← Mais recente (dispositivo atual)
+2. profiles.timezone      ← Fallback (perfil)
+3. 'America/Sao_Paulo'    ← Fallback padrão
+```
+
+> **Veja seção [21.4 Sistema Completo de Timezone](#214-sistema-completo-de-timezone)** para detalhes técnicos completos.
+
 ---
 
 # 11. SISTEMA DE SUPORTE
@@ -3737,12 +3804,363 @@ const formatDate = (date: Date) => {
 };
 ```
 
-## 21.4 Timezone
+## 21.4 Sistema Completo de Timezone
+
+O SouArtista possui um sistema robusto de timezone para garantir que todas as funcionalidades baseadas em horário funcionem corretamente, independente de onde o usuário esteja.
+
+### 21.4.1 Visão Geral
 
 ```
-Padrão: America/Sao_Paulo
-Sincronização automática via useTimezoneSync
-Armazenado em profiles.timezone
+┌─────────────────────────────────────────────────────────────────────┐
+│                    SISTEMA DE TIMEZONE                              │
+└─────────────────────────────────────────────────────────────────────┘
+
+    ┌─────────────┐        ┌─────────────┐        ┌─────────────┐
+    │   App iOS   │        │ App Android │        │   App Web   │
+    │             │        │             │        │             │
+    │ Detecta TZ  │        │ Detecta TZ  │        │ Detecta TZ  │
+    └──────┬──────┘        └──────┬──────┘        └──────┬──────┘
+           │                      │                      │
+           └──────────────────────┼──────────────────────┘
+                                  │
+                                  ▼
+                         ┌─────────────────┐
+                         │ useTimezoneSync │
+                         │                 │
+                         │ Intl.DateTimeFormat()
+                         │ .resolvedOptions()
+                         │ .timeZone        │
+                         └────────┬────────┘
+                                  │
+                    ┌─────────────┴─────────────┐
+                    ▼                           ▼
+           ┌─────────────────┐         ┌─────────────────┐
+           │    profiles     │         │  user_devices   │
+           │                 │         │                 │
+           │ timezone: TEXT  │         │ timezone: TEXT  │
+           └─────────────────┘         └─────────────────┘
+                    │                           │
+                    └─────────────┬─────────────┘
+                                  │
+                                  ▼
+                         ┌─────────────────┐
+                         │ EDGE FUNCTIONS  │
+                         │                 │
+                         │ timezone-utils  │
+                         │ (7 funções)     │
+                         └────────┬────────┘
+                                  │
+                    ┌─────────────┴─────────────┐
+                    ▼                           ▼
+           ┌─────────────────┐         ┌─────────────────┐
+           │ Lembretes Show  │         │ Push Window     │
+           │                 │         │                 │
+           │ "3h antes" no   │         │ 8h-21h no       │
+           │ horário LOCAL   │         │ horário LOCAL   │
+           └─────────────────┘         └─────────────────┘
+```
+
+### 21.4.2 Hook de Sincronização (Frontend)
+
+```typescript
+// src/hooks/useTimezoneSync.tsx
+
+export function useTimezoneSync() {
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) return;
+
+    const syncTimezone = async () => {
+      // 1. Detectar timezone do dispositivo
+      const currentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      // Exemplo: "America/Sao_Paulo", "Europe/Lisbon", "Asia/Tokyo"
+
+      // 2. Atualizar profiles.timezone
+      await supabase
+        .from('profiles')
+        .update({ timezone: currentTimezone })
+        .eq('id', user.id);
+
+      // 3. Atualizar user_devices.timezone
+      await supabase
+        .from('user_devices')
+        .update({ timezone: currentTimezone })
+        .eq('user_id', user.id);
+    };
+
+    // Sincroniza ao abrir app
+    syncTimezone();
+
+    // Sincroniza quando app volta do background
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        syncTimezone();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [user]);
+}
+```
+
+**Eventos que disparam sincronização:**
+| Evento | Ação |
+|--------|------|
+| App abre | Detecta e atualiza timezone |
+| App volta do background | Re-sincroniza timezone |
+| Usuário viaja | Próxima abertura do app atualiza |
+
+### 21.4.3 Utilitários de Timezone (Backend)
+
+**Arquivo:** `supabase/functions/_shared/timezone-utils.ts`
+
+```typescript
+const DEFAULT_TIMEZONE = 'America/Sao_Paulo';
+```
+
+#### Funções Disponíveis
+
+| Função | Entrada | Saída | Uso |
+|--------|---------|-------|-----|
+| `getCurrentTimeInTimezone` | timezone: string | Date | Hora atual no TZ do usuário |
+| `getCurrentHourInTimezone` | timezone: string | number (0-23) | Verificar janela de push |
+| `getCurrentDateInTimezone` | timezone: string | string (YYYY-MM-DD) | Comparar datas de shows |
+| `isWithinTimeWindow` | timezone, startHour, endHour | boolean | Verificar janelas customizadas |
+| `isWithinPushWindow` | timezone | boolean | Verificar janela 8h-21h |
+| `getMinutesUntilShowTime` | showTime, timezone | number | Calcular "X minutos antes" |
+| `getRelativeDatesInTimezone` | timezone | {today, tomorrow, in7Days} | Datas relativas |
+| `getTodayStartInTimezone` | timezone | Date | Início do dia em UTC |
+
+#### Exemplos de Uso
+
+```typescript
+// 1. Verificar se pode enviar push
+const userTimezone = 'America/Sao_Paulo';
+if (isWithinPushWindow(userTimezone)) {
+  // Está entre 8h e 21h no horário do usuário
+  await sendPushNotification(userId, title, body);
+}
+
+// 2. Calcular "3 horas antes do show"
+const showTime = '21:00';
+const minutesUntil = getMinutesUntilShowTime(showTime, userTimezone);
+// Se são 18:00 no TZ do usuário → minutesUntil = 180
+
+// 3. Verificar se show é hoje
+const { today, tomorrow, in7Days } = getRelativeDatesInTimezone(userTimezone);
+if (show.date_local === today) {
+  // Show é hoje no horário local do usuário
+}
+
+// 4. Obter hora atual no TZ do usuário
+const currentHour = getCurrentHourInTimezone('Europe/Lisbon');
+// Retorna 0-23 baseado no relógio de Lisboa
+```
+
+### 21.4.4 Janela de Push Notifications
+
+```typescript
+/**
+ * REGRA: Push notifications são enviadas APENAS
+ * entre 08:00 e 21:00 no horário LOCAL do usuário.
+ */
+export function isWithinPushWindow(timezone: string): boolean {
+  return isWithinTimeWindow(timezone, 8, 21);
+}
+
+function isWithinTimeWindow(timezone: string, startHour: number, endHour: number): boolean {
+  const currentHour = getCurrentHourInTimezone(timezone);
+  
+  // Lida com janelas que cruzam meia-noite (ex: 22h-06h)
+  if (startHour > endHour) {
+    return currentHour >= startHour || currentHour < endHour;
+  }
+  
+  return currentHour >= startHour && currentHour < endHour;
+}
+```
+
+**Diagrama Visual:**
+
+```
+    00:00          08:00                    21:00          23:59
+      │              │                        │              │
+      │◄─ SILÊNCIO ─►│◄───── PERMITIDO ──────►│◄─ SILÊNCIO ─►│
+      │              │                        │              │
+      │  ❌ NÃO      │  ✅ ENVIA PUSH         │  ❌ NÃO      │
+      │   envia      │                        │   envia      │
+```
+
+### 21.4.5 Timeline de Lembretes de Show
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│               LEMBRETES DE SHOW (check-show-reminders)              │
+└─────────────────────────────────────────────────────────────────────┘
+
+  SHOW: 25/01/2025 às 21:00 (horário local do usuário)
+
+  ─────────────────────────────────────────────────────────────────►
+  
+  18/01      19/01      24/01        25/01      25/01      25/01
+    │          │          │            │          │          │
+    │          │          │            │          │          │
+    ▼          ▼          ▼            ▼          ▼          ▼
+  ┌────┐     ┌────┐     ┌────┐      ┌────┐    ┌────┐    ┌────┐
+  │ 7d │     │ 7d │     │ 1d │      │Hoje│    │ 3h │    │30m │
+  │    │     │ OK │     │    │      │    │    │    │    │    │
+  │ ❌ │     │ ✅ │     │ ✅ │      │ ✅ │    │ ✅ │    │ ✅ │
+  └────┘     └────┘     └────┘      └────┘    └────┘    └────┘
+    │          │          │            │          │          │
+    │          │          │            │          │          │
+  Fora       Envia     Envia        Envia     Envia     Envia
+  da         "Show     "Show        "Show     "Show     "Show
+  janela     em 7      amanhã!"     hoje!"    em 3h!"   em 30m!"
+  (noite)    dias!"
+```
+
+| Lembrete | Condição | Cálculo |
+|----------|----------|---------|
+| **7 dias antes** | `show.date_local === in7Days` | Data do show = hoje + 7 dias |
+| **1 dia antes** | `show.date_local === tomorrow` | Data do show = amanhã |
+| **Hoje** | `show.date_local === today` | Data do show = hoje |
+| **3 horas antes** | `minutesUntil entre 165-195` | ~3h antes do horário do show |
+| **30 minutos antes** | `minutesUntil entre 25-35` | ~30min antes do horário do show |
+
+### 21.4.6 Armazenamento de Timezone
+
+| Tabela | Coluna | Tipo | Quando Atualiza |
+|--------|--------|------|-----------------|
+| `profiles` | `timezone` | VARCHAR | Ao abrir app / voltar do background |
+| `user_devices` | `timezone` | VARCHAR | Ao abrir app / voltar do background |
+
+**Prioridade de Leitura:**
+```
+1. user_devices.timezone  ← Preferência (mais recente)
+2. profiles.timezone      ← Fallback 1
+3. 'America/Sao_Paulo'    ← Fallback padrão
+```
+
+### 21.4.7 Tratamento de Erros e Fallback
+
+```typescript
+export function getCurrentTimeInTimezone(timezone: string): Date {
+  try {
+    // Tenta usar o timezone fornecido
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone || DEFAULT_TIMEZONE,
+      // ...opções
+    });
+    // ...processamento
+  } catch (error) {
+    // Timezone inválido → usa padrão
+    console.warn(`[timezone-utils] Invalid timezone "${timezone}", falling back to ${DEFAULT_TIMEZONE}`);
+    return getCurrentTimeInTimezone(DEFAULT_TIMEZONE);
+  }
+}
+```
+
+**Cenários de Fallback:**
+| Situação | Ação |
+|----------|------|
+| Timezone `null` ou `undefined` | Usa `America/Sao_Paulo` |
+| Timezone inválido (`"XYZ/Invalid"`) | Usa `America/Sao_Paulo` |
+| Erro de conversão | Usa BRT (UTC-3) |
+
+### 21.4.8 Fluxo Completo: Lembrete de Show
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│           FLUXO: LEMBRETE "SHOW EM 3 HORAS"                         │
+└─────────────────────────────────────────────────────────────────────┘
+
+1. CRON JOB (a cada hora)
+   │
+   ▼
+2. Edge Function: check-show-reminders
+   │
+   ├── Busca shows dos próximos 7 dias
+   │
+   ├── Para cada show:
+   │   │
+   │   ├── Busca timezone do user_devices
+   │   │   (fallback: profiles.timezone → 'America/Sao_Paulo')
+   │   │
+   │   ├── Calcula datas relativas no TZ do usuário:
+   │   │   { today, tomorrow, in7Days }
+   │   │
+   │   ├── Verifica se show é HOJE:
+   │   │   show.date_local === today
+   │   │
+   │   ├── Calcula minutos até o show:
+   │   │   minutesUntil = getMinutesUntilShowTime('21:00', timezone)
+   │   │
+   │   ├── Se minutesUntil entre 165-195 (≈3h):
+   │   │   │
+   │   │   ├── Verifica janela de push:
+   │   │   │   isWithinPushWindow(timezone) === true?
+   │   │   │
+   │   │   ├── Se SIM (8h-21h local):
+   │   │   │   │
+   │   │   │   ├── Verifica se já enviou este lembrete:
+   │   │   │   │   SELECT FROM show_notification_logs
+   │   │   │   │   WHERE notification_type = '3_hours'
+   │   │   │   │
+   │   │   │   ├── Se NÃO enviou:
+   │   │   │   │   │
+   │   │   │   │   ├── Registra no log:
+   │   │   │   │   │   INSERT INTO show_notification_logs
+   │   │   │   │   │
+   │   │   │   │   ├── Cria notificação in-app:
+   │   │   │   │   │   INSERT INTO notifications
+   │   │   │   │   │
+   │   │   │   │   └── Envia push via FCM:
+   │   │   │   │       sendPushToUser(userId, "🎤 Show em 3 horas!", ...)
+   │   │   │   │
+   │   │   │   └── Se JÁ enviou:
+   │   │   │       (pula, não duplica)
+   │   │   │
+   │   │   └── Se NÃO (fora da janela):
+   │   │       (pula, tenta na próxima execução)
+   │   │
+   │   └── Próximo show...
+   │
+   └── Retorna { success: true, notificationsSent: X }
+```
+
+### 21.4.9 Configuração dos Cron Jobs
+
+| Cron Job | Frequência | Considera Timezone? |
+|----------|------------|---------------------|
+| `check-show-reminders` | Cada hora | ✅ Sim |
+| `send-subscription-reminders` | 10h (servidor) | ✅ Sim |
+| `send-engagement-tips` | 14h (servidor) | ✅ Sim |
+| `send-pending-user-reminders` | 11h (servidor) | ✅ Sim |
+
+### 21.4.10 Depuração de Timezone
+
+**Logs disponíveis:**
+```
+[timezone-utils] Invalid timezone "XYZ", falling back to America/Sao_Paulo
+[check-show-reminders] User abc123 timezone: Europe/Lisbon
+[check-show-reminders] Current hour in user timezone: 14
+[check-show-reminders] isWithinPushWindow: true
+[check-show-reminders] Sending 3_hours reminder for show xyz789
+```
+
+**Query para verificar timezones dos usuários:**
+```sql
+SELECT 
+  p.id,
+  p.name,
+  p.timezone AS profile_tz,
+  ud.timezone AS device_tz,
+  COALESCE(ud.timezone, p.timezone, 'America/Sao_Paulo') AS effective_tz
+FROM profiles p
+LEFT JOIN user_devices ud ON ud.user_id = p.id
+WHERE p.timezone IS NOT NULL OR ud.timezone IS NOT NULL;
 ```
 
 ---
