@@ -7,17 +7,25 @@ import {
 } from '../_shared/timezone-utils.ts';
 
 // ===== NOTIFICATION OFFSET SYSTEM =====
-// All notifications are based on time offset from show start time
-// No notifications should be based on "day change" logic
+// Notifications are based on:
+// - FIXED TIME (12:33): 7 days, 3 days, 1 day before
+// - TIME OFFSET: 3 hours, 30 minutes before
+// - FIXED HOUR: "HOJE tem show" at 9 AM
+
+// Offset-based notifications (relative to show start time)
 const NOTIFICATION_WINDOWS = {
-  '7_days': { min: 10050, max: 10110 },     // 7 days ± 30min (10080 min = 7 days)
-  '3_days': { min: 4290, max: 4350 },       // 3 days ± 30min (4320 min = 3 days)
-  '1_day': { min: 1410, max: 1470 },        // 1 day ± 30min (1440 min = 24h)
   '3_hours': { min: 165, max: 195 },        // 3 hours ± 15min (180 min = 3h)
   '30_minutes': { min: 25, max: 35 },       // 30 min ± 5min
 };
 
-// Special: "HOJE tem show" fires at 9 AM on show day (fixed time, not offset)
+// Fixed time notifications - fire at 12:33 on the specific day
+const FIXED_TIME_NOTIFICATIONS = {
+  hour: 12,
+  minute: 33,
+  window: { minMinute: 30, maxMinute: 40 }, // 12:30 - 12:40 to ensure capture with cron
+};
+
+// Special: "HOJE tem show" fires at 9 AM on show day
 const TODAY_MORNING_HOUR = 9;
 const TODAY_MORNING_WINDOW = { minMinute: 0, maxMinute: 10 };
 
@@ -27,6 +35,15 @@ const corsHeaders = {
 };
 
 const DEFAULT_TIMEZONE = 'America/Sao_Paulo';
+
+// Helper: Calculate days until show in user's timezone
+function getDaysUntilShow(showDateLocal: string, timezone: string): number {
+  const { today } = getRelativeDatesInTimezone(timezone);
+  const showDate = new Date(showDateLocal + 'T00:00:00');
+  const todayDate = new Date(today + 'T00:00:00');
+  const diffTime = showDate.getTime() - todayDate.getTime();
+  return Math.round(diffTime / (1000 * 60 * 60 * 24));
+}
 
 interface Show {
   id: string;
@@ -126,40 +143,52 @@ Deno.serve(async (req) => {
 
         console.log(`[check-show-reminders] Show ${show.id} for user ${userId}: minutesUntilShow=${minutesUntilShow}, tz=${userTimezone}`);
 
-        // Determine notification types based on TIME OFFSET (not date comparison)
+        // Determine notification types
         const notificationTypes: string[] = [];
 
-        // 7 days before (10080 min ± 30min)
-        if (minutesUntilShow >= NOTIFICATION_WINDOWS['7_days'].min && 
-            minutesUntilShow <= NOTIFICATION_WINDOWS['7_days'].max) {
-          notificationTypes.push('7_days');
-        }
-
-        // 3 days before (4320 min ± 30min) - NEW!
-        if (minutesUntilShow >= NOTIFICATION_WINDOWS['3_days'].min && 
-            minutesUntilShow <= NOTIFICATION_WINDOWS['3_days'].max) {
-          notificationTypes.push('3_days');
-        }
-
-        // 1 day before (1440 min ± 30min)
-        if (minutesUntilShow >= NOTIFICATION_WINDOWS['1_day'].min && 
-            minutesUntilShow <= NOTIFICATION_WINDOWS['1_day'].max) {
-          notificationTypes.push('1_day');
-        }
-
-        // "HOJE tem show" - Fires at 9:00 AM on show day (NOT at midnight!)
-        // Only if show is TODAY and current time is between 9:00 and 9:10
+        // Get current time info in user's timezone
         const { today } = getRelativeDatesInTimezone(userTimezone);
         const localTime = getCurrentTimeInTimezone(userTimezone);
         const currentHour = localTime.getHours();
         const currentMinute = localTime.getMinutes();
+
+        // Calculate days until show
+        const daysUntilShow = getDaysUntilShow(show.date_local, userTimezone);
+
+        // Check if current time is in the fixed time window (12:30 - 12:40)
+        const isFixedTimeWindow = 
+          currentHour === FIXED_TIME_NOTIFICATIONS.hour && 
+          currentMinute >= FIXED_TIME_NOTIFICATIONS.window.minMinute && 
+          currentMinute <= FIXED_TIME_NOTIFICATIONS.window.maxMinute;
+
+        // ===== FIXED TIME NOTIFICATIONS (12:33) =====
         
+        // 7 days before - fires at 12:33 on the correct day
+        if (daysUntilShow === 7 && isFixedTimeWindow) {
+          notificationTypes.push('7_days');
+        }
+
+        // 3 days before - fires at 12:33 on the correct day
+        if (daysUntilShow === 3 && isFixedTimeWindow) {
+          notificationTypes.push('3_days');
+        }
+
+        // 1 day before - fires at 12:33 on the correct day
+        if (daysUntilShow === 1 && isFixedTimeWindow) {
+          notificationTypes.push('1_day');
+        }
+
+        // ===== FIXED HOUR NOTIFICATION =====
+        
+        // "HOJE tem show" - Fires at 9:00 AM on show day
         if (show.date_local === today && 
             currentHour === TODAY_MORNING_HOUR && 
             currentMinute >= TODAY_MORNING_WINDOW.minMinute && 
             currentMinute <= TODAY_MORNING_WINDOW.maxMinute) {
           notificationTypes.push('today');
         }
+
+        // ===== OFFSET-BASED NOTIFICATIONS =====
 
         // 3 hours before (180 min ± 15min)
         if (minutesUntilShow >= NOTIFICATION_WINDOWS['3_hours'].min && 
