@@ -6488,9 +6488,12 @@ export default function Admin() {
             <DialogTitle className="text-2xl font-bold text-center text-gray-900">
               Nova versão disponível!
             </DialogTitle>
-            <DialogDescription className="text-center pt-3 text-base text-gray-600">
-              Versão 2.5.0 disponível na App Store
+            <DialogDescription className="text-center pt-3 text-base text-gray-600 leading-relaxed">
+              Atualize agora para aproveitar as últimas melhorias e novidades do aplicativo.
             </DialogDescription>
+            <p className="text-center text-sm text-gray-500 mt-2">
+              Disponível na App Store
+            </p>
           </DialogHeader>
           <DialogFooter className="flex gap-2 pt-4 sm:justify-center">
             <Button 
