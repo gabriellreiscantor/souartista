@@ -12,7 +12,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group"
       position="bottom-center"
       offset={16}
-      duration={2500}
+      duration={3000}
       toastOptions={{
         classNames: {
           toast:
