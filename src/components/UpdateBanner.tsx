@@ -41,15 +41,11 @@ export const UpdateBanner = () => {
           </DialogTitle>
           
           <DialogDescription className="text-center pt-3 text-base text-gray-600 leading-relaxed">
-            {availableVersion ? (
-              <>Versão <span className="font-semibold">{availableVersion}</span> disponível na {storeName}</>
-            ) : (
-              <>Uma nova versão está disponível na {storeName}</>
-            )}
+            Atualize agora para aproveitar as últimas melhorias e novidades do aplicativo.
           </DialogDescription>
           
           <p className="text-center text-sm text-gray-500 mt-2">
-            Atualize para ter a melhor experiência
+            Disponível na {storeName}
           </p>
         </DialogHeader>
 
