@@ -174,3 +174,38 @@ export function getTodayStartInTimezone(timezone: string): Date {
     return new Date(todayStartBRT.getTime() + 3 * 60 * 60 * 1000);
   }
 }
+
+/**
+ * Calculate minutes until a show (considering date + time)
+ * Returns negative number if the show has already passed
+ * @param showDateLocal Show date in format "YYYY-MM-DD"
+ * @param showTimeLocal Show time in format "HH:MM"
+ * @param timezone User's timezone
+ */
+export function getMinutesUntilShow(
+  showDateLocal: string,
+  showTimeLocal: string,
+  timezone: string
+): number {
+  try {
+    // Parse show date and time
+    const [year, month, day] = showDateLocal.split('-').map(Number);
+    const [hours, minutes] = (showTimeLocal || '20:00').split(':').map(Number);
+    
+    // Create show datetime (treating as local time in the show's context)
+    // We use Date.UTC and adjust, because the show date_local/time_local are already in local time
+    const showDateTime = new Date(year, month - 1, day, hours, minutes, 0);
+    
+    // Get current time in user's timezone
+    const localTime = getCurrentTimeInTimezone(timezone);
+    
+    // Calculate difference in milliseconds and convert to minutes
+    const diffMs = showDateTime.getTime() - localTime.getTime();
+    const diffMinutes = Math.round(diffMs / (1000 * 60));
+    
+    return diffMinutes;
+  } catch (error) {
+    console.warn(`[timezone-utils] Error calculating minutes until show:`, error);
+    return -1; // Return negative to indicate error/past
+  }
+}
