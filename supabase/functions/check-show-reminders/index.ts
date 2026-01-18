@@ -3,8 +3,23 @@ import { sendPushToUser } from '../_shared/fcm-sender.ts';
 import { 
   getCurrentTimeInTimezone, 
   getRelativeDatesInTimezone,
-  getMinutesUntilShowTime
+  getMinutesUntilShow
 } from '../_shared/timezone-utils.ts';
+
+// ===== NOTIFICATION OFFSET SYSTEM =====
+// All notifications are based on time offset from show start time
+// No notifications should be based on "day change" logic
+const NOTIFICATION_WINDOWS = {
+  '7_days': { min: 10050, max: 10110 },     // 7 days ± 30min (10080 min = 7 days)
+  '3_days': { min: 4290, max: 4350 },       // 3 days ± 30min (4320 min = 3 days)
+  '1_day': { min: 1410, max: 1470 },        // 1 day ± 30min (1440 min = 24h)
+  '3_hours': { min: 165, max: 195 },        // 3 hours ± 15min (180 min = 3h)
+  '30_minutes': { min: 25, max: 35 },       // 30 min ± 5min
+};
+
+// Special: "HOJE tem show" fires at 9 AM on show day (fixed time, not offset)
+const TODAY_MORNING_HOUR = 9;
+const TODAY_MORNING_WINDOW = { minMinute: 0, maxMinute: 10 };
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -102,35 +117,60 @@ Deno.serve(async (req) => {
                             show.profiles?.[0]?.timezone || 
                             DEFAULT_TIMEZONE;
 
-        // Calculate dates relative to user's timezone
-        const { today, tomorrow, in7Days } = getRelativeDatesInTimezone(userTimezone);
+        // ===== NEW: Calculate minutes until show (date + time based) =====
+        const minutesUntilShow = getMinutesUntilShow(
+          show.date_local,
+          show.time_local || '20:00', // fallback to 20:00 if no time
+          userTimezone
+        );
 
-        // Determine notification types for this user/show combination
+        console.log(`[check-show-reminders] Show ${show.id} for user ${userId}: minutesUntilShow=${minutesUntilShow}, tz=${userTimezone}`);
+
+        // Determine notification types based on TIME OFFSET (not date comparison)
         const notificationTypes: string[] = [];
 
-        if (show.date_local === in7Days) {
+        // 7 days before (10080 min ± 30min)
+        if (minutesUntilShow >= NOTIFICATION_WINDOWS['7_days'].min && 
+            minutesUntilShow <= NOTIFICATION_WINDOWS['7_days'].max) {
           notificationTypes.push('7_days');
         }
-        if (show.date_local === tomorrow) {
+
+        // 3 days before (4320 min ± 30min) - NEW!
+        if (minutesUntilShow >= NOTIFICATION_WINDOWS['3_days'].min && 
+            minutesUntilShow <= NOTIFICATION_WINDOWS['3_days'].max) {
+          notificationTypes.push('3_days');
+        }
+
+        // 1 day before (1440 min ± 30min)
+        if (minutesUntilShow >= NOTIFICATION_WINDOWS['1_day'].min && 
+            minutesUntilShow <= NOTIFICATION_WINDOWS['1_day'].max) {
           notificationTypes.push('1_day');
         }
-        if (show.date_local === today) {
+
+        // "HOJE tem show" - Fires at 9:00 AM on show day (NOT at midnight!)
+        // Only if show is TODAY and current time is between 9:00 and 9:10
+        const { today } = getRelativeDatesInTimezone(userTimezone);
+        const localTime = getCurrentTimeInTimezone(userTimezone);
+        const currentHour = localTime.getHours();
+        const currentMinute = localTime.getMinutes();
+        
+        if (show.date_local === today && 
+            currentHour === TODAY_MORNING_HOUR && 
+            currentMinute >= TODAY_MORNING_WINDOW.minMinute && 
+            currentMinute <= TODAY_MORNING_WINDOW.maxMinute) {
           notificationTypes.push('today');
-          
-          // Check time-based notifications (3 hours and 30 minutes before)
-          if (show.time_local) {
-            const minutesUntilShow = getMinutesUntilShowTime(show.time_local, userTimezone);
-            
-            // Between 2h45 and 3h15 before the show (~3 hours)
-            if (minutesUntilShow >= 165 && minutesUntilShow <= 195) {
-              notificationTypes.push('3_hours');
-            }
-            
-            // Between 25 and 35 minutes before the show (~30 minutes)
-            if (minutesUntilShow >= 25 && minutesUntilShow <= 35) {
-              notificationTypes.push('30_minutes');
-            }
-          }
+        }
+
+        // 3 hours before (180 min ± 15min)
+        if (minutesUntilShow >= NOTIFICATION_WINDOWS['3_hours'].min && 
+            minutesUntilShow <= NOTIFICATION_WINDOWS['3_hours'].max) {
+          notificationTypes.push('3_hours');
+        }
+
+        // 30 minutes before (30 min ± 5min)
+        if (minutesUntilShow >= NOTIFICATION_WINDOWS['30_minutes'].min && 
+            minutesUntilShow <= NOTIFICATION_WINDOWS['30_minutes'].max) {
+          notificationTypes.push('30_minutes');
         }
 
         // Process each notification type
@@ -175,6 +215,12 @@ Deno.serve(async (req) => {
               message = isOwner
                 ? `Seu show no ${show.venue_name} em 7 dias! Já se preparou?`
                 : `Show com ${artistName} no ${show.venue_name} em 7 dias! Já se preparou?`;
+              break;
+            case '3_days':
+              title = '📆 Show em 3 dias!';
+              message = isOwner
+                ? `Seu show no ${show.venue_name} em 3 dias! Já verificou tudo?`
+                : `Show com ${artistName} no ${show.venue_name} em 3 dias! Já verificou tudo?`;
               break;
             case '1_day':
               title = '⏰ Amanhã é dia de show!';
