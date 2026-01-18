@@ -53,7 +53,7 @@ export function AdminTOTPVerification({ onVerified, onNeedsSetup }: AdminTOTPVer
       }
 
       if (response.data.verified) {
-        toast.success('🔓 Acesso autorizado!');
+        toast.success('🔓 Acesso autorizado!', { duration: 3000 });
         onVerified();
       } else {
         setAttempts(prev => prev + 1);
