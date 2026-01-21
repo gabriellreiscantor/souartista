@@ -52,8 +52,10 @@ export function useTimezoneSync() {
       }
     };
 
-    // Sync immediately on mount
-    syncTimezone();
+    // Delay inicial de 3 segundos para não bloquear o carregamento do app
+    const initialDelay = setTimeout(() => {
+      syncTimezone();
+    }, 3000);
 
     // Also sync when the page becomes visible again (user returns to app)
     const handleVisibilityChange = () => {
@@ -65,6 +67,7 @@ export function useTimezoneSync() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
+      clearTimeout(initialDelay);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [user?.id]);
