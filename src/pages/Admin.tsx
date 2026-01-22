@@ -6478,32 +6478,36 @@ export default function Admin() {
       {/* Debug Simulation Modals */}
       {/* Modal de Atualização Simulado */}
       <Dialog open={showDebugUpdateModal} onOpenChange={setShowDebugUpdateModal}>
-        <DialogContent className="sm:max-w-md bg-white">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-md bg-white border border-gray-200 shadow-xl">
+          <DialogHeader className="text-center sm:text-center pt-2">
             <div className="flex justify-center mb-5">
               <div className="p-4 rounded-full bg-primary shadow-lg">
                 <Download className="h-8 w-8 text-white" />
               </div>
             </div>
+            
             <DialogTitle className="text-2xl font-bold text-center text-gray-900">
               Nova versão disponível!
             </DialogTitle>
+            
             <DialogDescription className="text-center pt-3 text-base text-gray-600 leading-relaxed">
               Atualize agora para aproveitar as últimas melhorias e novidades do aplicativo.
             </DialogDescription>
+            
             <p className="text-center text-sm text-gray-500 mt-2">
               Disponível na App Store
             </p>
           </DialogHeader>
-          <DialogFooter className="flex gap-2 pt-4 sm:justify-center">
-            <Button 
-              className="bg-primary/70 hover:bg-primary/80 text-white"
+
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-4">
+            <Button
+              variant="outline"
               onClick={() => setShowDebugUpdateModal(false)}
+              className="w-full sm:w-auto text-gray-600 border-gray-300 hover:bg-gray-50"
             >
               Depois
             </Button>
             <Button 
-              className="bg-primary hover:bg-primary/90 text-white"
               onClick={() => {
                 // Detectar plataforma
                 const userAgent = navigator.userAgent || navigator.vendor;
@@ -6520,6 +6524,7 @@ export default function Admin() {
                 }
                 setShowDebugUpdateModal(false);
               }}
+              className="w-full sm:w-auto min-w-[140px] h-12 text-base font-semibold bg-primary hover:bg-primary/90 text-white shadow-md hover:shadow-lg transition-all duration-200"
             >
               Atualizar
             </Button>
