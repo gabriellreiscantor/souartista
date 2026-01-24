@@ -15,7 +15,7 @@ import {
 // Offset-based notifications (relative to show start time)
 const NOTIFICATION_WINDOWS = {
   '3_hours': { min: 165, max: 195 },        // 3 hours ± 15min (180 min = 3h)
-  '30_minutes': { min: 25, max: 35 },       // 30 min ± 5min
+  '30_minutes': { min: 15, max: 45 },       // 30 min ± 15min (wider window to ensure cron capture)
 };
 
 // Fixed time notifications - fire at 12:33 on the specific day

@@ -188,22 +188,35 @@ export function getMinutesUntilShow(
   timezone: string
 ): number {
   try {
-    // Parse show date and time
-    const [year, month, day] = showDateLocal.split('-').map(Number);
-    const [hours, minutes] = (showTimeLocal || '20:00').split(':').map(Number);
-    
-    // Create show datetime (treating as local time in the show's context)
-    // We use Date.UTC and adjust, because the show date_local/time_local are already in local time
-    const showDateTime = new Date(year, month - 1, day, hours, minutes, 0);
-    
-    // Get current time in user's timezone
+    // Get current date and time in user's timezone
+    const { today } = getRelativeDatesInTimezone(timezone);
     const localTime = getCurrentTimeInTimezone(timezone);
     
-    // Calculate difference in milliseconds and convert to minutes
-    const diffMs = showDateTime.getTime() - localTime.getTime();
-    const diffMinutes = Math.round(diffMs / (1000 * 60));
+    // Current time in minutes since midnight
+    const currentMinutes = localTime.getHours() * 60 + localTime.getMinutes();
     
-    return diffMinutes;
+    // Show time in minutes since midnight
+    const [hours, minutes] = (showTimeLocal || '20:00').split(':').map(Number);
+    const showMinutes = hours * 60 + minutes;
+    
+    // Calculate difference in days (using date strings to avoid timezone issues)
+    // Both dates are in YYYY-MM-DD format, so we can compare directly
+    const showDateParts = showDateLocal.split('-').map(Number);
+    const todayParts = today.split('-').map(Number);
+    
+    // Create dates at noon UTC to avoid DST edge cases (we only care about the day difference)
+    const showDate = Date.UTC(showDateParts[0], showDateParts[1] - 1, showDateParts[2], 12, 0, 0);
+    const todayDate = Date.UTC(todayParts[0], todayParts[1] - 1, todayParts[2], 12, 0, 0);
+    
+    const daysDiff = Math.round((showDate - todayDate) / (1000 * 60 * 60 * 24));
+    
+    // Calculate total minutes until show
+    // = (days difference * minutes per day) + (show time - current time)
+    const totalMinutes = (daysDiff * 24 * 60) + (showMinutes - currentMinutes);
+    
+    console.log(`[timezone-utils] getMinutesUntilShow: showDate=${showDateLocal}, today=${today}, daysDiff=${daysDiff}, showMin=${showMinutes}, currentMin=${currentMinutes}, total=${totalMinutes}`);
+    
+    return totalMinutes;
   } catch (error) {
     console.warn(`[timezone-utils] Error calculating minutes until show:`, error);
     return -1; // Return negative to indicate error/past
