@@ -1,172 +1,102 @@
 
-# Plano: Corrigir Notificação de 30 Minutos
 
-## Diagnóstico do Problema
+# Plano: Mais Notificações de Conversão + Corrigir Nome
 
-Após análise detalhada dos logs e do código, identifiquei que **ZERO notificações de 30 minutos foram enviadas** (confirmado pela query no banco).
+## O que muda
 
-### Causa Raiz: Bug no Cálculo de Timezone
+### 1. Corrigir o nome em TODAS as mensagens
+- "Sou Artista" → "SouArtista" (junto)
+- Remover "Sou Artista Pro" / "SouArtista Pro" → usar "Faça sua assinatura" ou similar
+- Aplicar em **todos os arquivos** de notificação
 
-A função `getMinutesUntilShow` em `supabase/functions/_shared/timezone-utils.ts` tem um bug crítico na comparação de datas:
+### 2. Expandir mensagens de CONVERSÃO (de 20 para 40)
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                    SITUAÇÃO ATUAL                           │
-├─────────────────────────────────────────────────────────────┤
-│ Show: 23:00 BRT (2026-01-23)                               │
-│ Cron roda às: 22:30 BRT (01:30 UTC)                        │
-│                                                             │
-│ Problema:                                                   │
-│ - showDateTime = new Date(2026, 0, 23, 23, 0)              │
-│   → Interpretado como 23:00 UTC (02:00 do dia 24 em BRT)   │
-│                                                             │
-│ - localTime = getCurrentTimeInTimezone('America/Sao_Paulo')│
-│   → Retorna 22:30 (mas Date sem timezone = UTC)            │
-│                                                             │
-│ Cálculo: 23:00 - 22:30 = 30 min (PARECE CORRETO)          │
-│ Realidade: Os objetos Date usam getTime() que opera em UTC │
-│                                                             │
-│ O bug aparece quando o servidor não está em UTC-3          │
-└─────────────────────────────────────────────────────────────┘
-```
+As 20 mensagens atuais serão corrigidas + 20 novas serão adicionadas, com temas variados:
 
-Na verdade, após revisar mais profundamente, o problema é ainda mais sutil: **a janela de captura do cron é muito pequena**.
+**Mensagens existentes (corrigidas):**
+- conv_1 a conv_20: Corrigir nome e remover "Pro"
 
-### Análise Detalhada do Timing
+**20 novas mensagens (conv_21 a conv_40):**
+- Foco em dor do músico (cachês perdidos, agenda bagunçada, não saber lucro real)
+- Urgência e escassez ("seus colegas já usam", "enquanto você anota em papel...")
+- Benefícios concretos (relatórios, controle financeiro, agenda visual)
+- Gatilhos emocionais (profissionalismo, crescimento, independência)
+- Perguntas provocativas ("Sabe quanto gastou de Uber esse mês?")
 
-```text
-Janela atual para 30 minutos:
-  - min: 25 minutos
-  - max: 35 minutos
-  - Duração da janela: 10 minutos
+### 3. Expandir mensagens de ONBOARDING/Pending (de 3 para 10)
 
-Cron roda a cada: 30 minutos (00, 30)
+As 3 mensagens atuais do `send-pending-user-reminders` serão corrigidas + 7 novas serão adicionadas, com gatilhos em mais dias:
 
-CENÁRIO REAL (Show às 23:00):
-┌────────────────────────────────────────────────────┐
-│ Horário UTC  │ Horário BRT │ Minutos até show      │
-├──────────────┼─────────────┼───────────────────────┤
-│ 01:00 UTC    │ 22:00 BRT   │ 60 min (FORA: 25-35)  │
-│ 01:30 UTC    │ 22:30 BRT   │ 30 min (DENTRO: 25-35)│
-│ 02:00 UTC    │ 23:00 BRT   │ 0 min (show começou)  │
-└────────────────────────────────────────────────────┘
+**Cronograma expandido:**
+- Dia 1: Boas-vindas + trial
+- Dia 2: Destaque de funcionalidade
+- Dia 3: Prova social
+- Dia 4: Dor do músico
+- Dia 5: Benefício concreto
+- Dia 7: Urgência de expiração
+- Dia 10: Última chance
+- Dia 14: Re-engajamento
+- Dia 21: Saudade
+- Dia 30: Oferta final
 
-PROBLEMA: O cron às 01:30 DEVERIA ter capturado!
-```
+### 4. Expandir mensagens para NOVOS sem shows (de 5 para 10)
 
-Vou verificar se o problema está na execução ou na lógica. Analisando o código mais atentamente:
+Mais incentivos para cadastrar o primeiro show.
 
-```javascript
-// Na função getMinutesUntilShow:
-const showDateTime = new Date(year, month - 1, day, hours, minutes, 0);
-// Isso cria um Date no TIMEZONE LOCAL DO SERVIDOR (UTC em edge functions)
-// Então 23:00 vira 23:00 UTC = 20:00 BRT
-
-const localTime = getCurrentTimeInTimezone(timezone);
-// Isso retorna a hora atual no timezone do usuário
-// Mas também como Date local (sem offset real)
-```
-
-**O verdadeiro bug:** Ambas as datas são criadas sem timezone real, então quando comparadas via `getTime()`, uma representa UTC e a outra representa o horário local do usuário - mas ambas são tratadas como se estivessem no mesmo timezone.
-
-## Solução Proposta
-
-Corrigir a função `getMinutesUntilShow` para garantir que ambos os horários (show e atual) sejam calculados consistentemente no mesmo timezone.
-
-### Mudanças no Arquivo
-
-**Arquivo:** `supabase/functions/_shared/timezone-utils.ts`
-
-**Função a modificar:** `getMinutesUntilShow` (linhas 185-211)
-
-### Nova Lógica
-
-Em vez de criar objetos `Date` que perdem informação de timezone, vou:
-
-1. Calcular a hora atual do usuário em minutos desde meia-noite
-2. Calcular a hora do show em minutos desde meia-noite  
-3. Ajustar para diferença de dias se necessário
-4. Comparar diretamente os valores em minutos
-
-```javascript
-export function getMinutesUntilShow(
-  showDateLocal: string,
-  showTimeLocal: string,
-  timezone: string
-): number {
-  try {
-    // Obter data/hora atual no timezone do usuário
-    const { today } = getRelativeDatesInTimezone(timezone);
-    const localTime = getCurrentTimeInTimezone(timezone);
-    
-    // Hora atual em minutos desde meia-noite
-    const currentMinutes = localTime.getHours() * 60 + localTime.getMinutes();
-    
-    // Hora do show em minutos desde meia-noite
-    const [hours, minutes] = (showTimeLocal || '20:00').split(':').map(Number);
-    const showMinutes = hours * 60 + minutes;
-    
-    // Calcular diferença de dias
-    const showDate = new Date(showDateLocal + 'T00:00:00');
-    const todayDate = new Date(today + 'T00:00:00');
-    const daysDiff = Math.round(
-      (showDate.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    
-    // Calcular minutos totais até o show
-    const totalMinutes = (daysDiff * 24 * 60) + (showMinutes - currentMinutes);
-    
-    return totalMinutes;
-  } catch (error) {
-    console.warn(`[timezone-utils] Error calculating minutes until show:`, error);
-    return -1;
-  }
-}
-```
-
-### Também Aumentar a Janela de Captura
-
-Para garantir que o cron capture mesmo com pequenas variações, vou aumentar a janela:
-
-**Arquivo:** `supabase/functions/check-show-reminders/index.ts`
-
-```javascript
-// De:
-'30_minutes': { min: 25, max: 35 }   // janela de 10 min
-
-// Para:
-'30_minutes': { min: 15, max: 45 }   // janela de 30 min
-```
-
-Isso garante que o cron que roda a cada 30 minutos capture a notificação de 30 minutos independentemente de quando exatamente ela deveria cair.
-
-## Resumo das Mudanças
+## Arquivos modificados
 
 | Arquivo | Mudança |
 |---------|---------|
-| `supabase/functions/_shared/timezone-utils.ts` | Reescrever `getMinutesUntilShow` para calcular minutos usando operações de timezone consistentes |
-| `supabase/functions/check-show-reminders/index.ts` | Aumentar janela de `30_minutes` de {25-35} para {15-45} |
-
-## Resultado Esperado
-
-Após as correções:
-- Notificação de 30 minutos será enviada corretamente
-- Usuários em qualquer timezone receberão a notificação
-- A janela maior garante captura pelo cron mesmo com variações de timing
+| `supabase/functions/send-marketing-notifications/index.ts` | Corrigir nome, remover "Pro", adicionar conv_21 a conv_40, expandir NEW_USER_MESSAGES |
+| `supabase/functions/send-pending-user-reminders/index.ts` | Corrigir nome, expandir de 3 para 10 lembretes com mais dias |
 
 ## Seção Técnica
 
-### Por que o bug acontecia
+### send-marketing-notifications - CONVERSION_MESSAGES (40 total)
 
-Edge Functions do Supabase rodam em UTC. Quando criamos `new Date(2026, 0, 23, 23, 0, 0)`, isso é interpretado como 23:00 UTC. Mas o show é às 23:00 no timezone local do usuário (ex: BRT = UTC-3), que seria 02:00 UTC.
+**Existentes corrigidas (exemplos):**
+- conv_1: "Artistas profissionais usam o SouArtista para gerenciar a agenda. Faça sua assinatura!"
+- conv_7: "Impressione contratantes com relatórios detalhados. Faça sua assinatura no SouArtista!"
 
-A função `getCurrentTimeInTimezone` retornava corretamente a hora local, mas como um objeto `Date` sem offset real. Quando comparado com o `showDateTime` (também sem offset), a diferença de 3 horas se perdia.
+**Novas (conv_21 a conv_40):**
+- conv_21: "Você sabe quanto lucrou no último show? Com o SouArtista você descobre na hora."
+- conv_22: "Enquanto você anota em papel, outros músicos já organizam tudo pelo SouArtista."
+- conv_23: "Quantos shows você fez esse ano? Com o SouArtista você tem essa resposta em 1 toque."
+- conv_24: "Chega de mandar mensagem perguntando cachê. No SouArtista tá tudo registrado."
+- conv_25: "Sabe quanto gastou de transporte nos últimos shows? O SouArtista calcula pra você."
+- conv_26: "Músico profissional tem controle financeiro. Faça sua assinatura no SouArtista!"
+- conv_27: "Sua agenda de shows merece mais que um caderninho. Experimente o SouArtista!"
+- conv_28: "Relatório mensal pronto em segundos. É isso que o SouArtista faz por você."
+- conv_29: "Quanto você quer ganhar esse mês? No SouArtista você acompanha sua meta em tempo real."
+- conv_30: "Pare de depender da memória. Registre seus shows e tenha tudo documentado."
+- conv_31: "Cada show não registrado é dinheiro que você esquece. Use o SouArtista!"
+- conv_32: "Músicos que usam o SouArtista sabem exatamente quanto ganham. E você?"
+- conv_33: "Organize seus músicos, locais e cachês. Tudo no SouArtista. Faça sua assinatura!"
+- conv_34: "Imposto, transporte, alimentação... Você sabe seu lucro real? Descubra no SouArtista."
+- conv_35: "Não deixe pra depois. Organize sua carreira musical hoje. Assine o SouArtista!"
+- conv_36: "Seu contador vai agradecer. Relatórios organizados direto do SouArtista."
+- conv_37: "Quanto tempo você perde organizando shows? Com o SouArtista são 2 minutos."
+- conv_38: "Shows confirmados, cachês registrados, gastos controlados. Isso é SouArtista."
+- conv_39: "A diferença entre amador e profissional? Organização. Faça sua assinatura!"
+- conv_40: "Você toca bem, mas organiza bem? O SouArtista cuida da parte chata pra você."
 
-### Nova abordagem
+### send-pending-user-reminders - REMINDERS (10 total)
 
-A nova lógica evita criar objetos `Date` com horários específicos. Em vez disso:
-1. Usa apenas comparação de datas (YYYY-MM-DD)
-2. Calcula minutos desde meia-noite para ambos (show e atual)
-3. Combina diferença de dias + diferença de minutos
+```text
+Dia 1:  "Bem-vindo ao SouArtista! Faça sua assinatura e organize seus shows."
+Dia 2:  "Sabia que você pode cadastrar shows, músicos e locais? Faça sua assinatura!"
+Dia 3:  "Músicos organizados ganham mais. Comece a usar o SouArtista hoje!"
+Dia 4:  "Cansado de anotar shows no papel? O SouArtista resolve isso. Assine agora!"
+Dia 5:  "Relatórios de cachê, gastos e lucro. Tudo automático no SouArtista."
+Dia 7:  "Já faz uma semana! Ainda dá tempo de organizar sua carreira. Assine!"
+Dia 10: "Sentimos sua falta! O SouArtista está pronto pra te ajudar. Faça sua assinatura."
+Dia 14: "Sua carreira musical merece organização. Volte pro SouArtista!"
+Dia 21: "Ainda pensando? Músicos já estão usando o SouArtista. Não fique pra trás!"
+Dia 30: "Última chamada! Faça sua assinatura e transforme sua carreira."
+```
 
-Isso elimina completamente problemas de timezone na comparação.
+### NEW_USER_MESSAGES (10 total)
+Expandir de 5 para 10 mensagens para quem assinou mas nunca cadastrou show, também com nome corrigido.
+
+### Nenhum build necessário
+Todas as mudanças são em Edge Functions (backend), sem necessidade de atualizar o app nas lojas.
