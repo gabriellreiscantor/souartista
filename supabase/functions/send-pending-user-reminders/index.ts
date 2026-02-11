@@ -9,20 +9,62 @@ const corsHeaders = {
 
 const DEFAULT_TIMEZONE = "America/Sao_Paulo";
 
-// Reminder messages for pending users
-const REMINDERS = {
+// 10 reminder messages for pending users (expanded schedule)
+const REMINDERS: Record<string, { title: string; body: string }> = {
   "1_day": {
-    title: "🎸 Seu trial grátis está esperando!",
-    body: "Você tem 7 dias para testar o Sou Artista sem pagar nada. Comece agora e organize seus shows!",
+    title: "🎸 Bem-vindo ao SouArtista!",
+    body: "Bem-vindo ao SouArtista! Faça sua assinatura e organize seus shows.",
+  },
+  "2_days": {
+    title: "🎵 Você sabia?",
+    body: "Sabia que você pode cadastrar shows, músicos e locais? Faça sua assinatura!",
   },
   "3_days": {
-    title: "⭐ Não perca a oportunidade!",
-    body: "Teste grátis por 7 dias! Gerencie suas apresentações, músicos e finanças em um só lugar.",
+    title: "⭐ Músicos organizados ganham mais!",
+    body: "Músicos organizados ganham mais. Comece a usar o SouArtista hoje!",
+  },
+  "4_days": {
+    title: "📝 Chega de papel!",
+    body: "Cansado de anotar shows no papel? O SouArtista resolve isso. Assine agora!",
+  },
+  "5_days": {
+    title: "📊 Relatórios automáticos",
+    body: "Relatórios de cachê, gastos e lucro. Tudo automático no SouArtista.",
   },
   "7_days": {
-    title: "🚀 Última chance de testar grátis!",
-    body: "Ainda dá tempo! Ative seu trial de 7 dias e descubra como organizar melhor sua carreira musical.",
+    title: "🚀 Já faz uma semana!",
+    body: "Já faz uma semana! Ainda dá tempo de organizar sua carreira. Assine!",
   },
+  "10_days": {
+    title: "💜 Sentimos sua falta!",
+    body: "Sentimos sua falta! O SouArtista está pronto pra te ajudar. Faça sua assinatura.",
+  },
+  "14_days": {
+    title: "🎤 Sua carreira merece!",
+    body: "Sua carreira musical merece organização. Volte pro SouArtista!",
+  },
+  "21_days": {
+    title: "🔥 Não fique pra trás!",
+    body: "Ainda pensando? Músicos já estão usando o SouArtista. Não fique pra trás!",
+  },
+  "30_days": {
+    title: "🎯 Última chamada!",
+    body: "Última chamada! Faça sua assinatura e transforme sua carreira.",
+  },
+};
+
+// Map days to reminder types
+const DAY_TO_REMINDER: Record<number, string> = {
+  1: "1_day",
+  2: "2_days",
+  3: "3_days",
+  4: "4_days",
+  5: "5_days",
+  7: "7_days",
+  10: "10_days",
+  14: "14_days",
+  21: "21_days",
+  30: "30_days",
 };
 
 Deno.serve(async (req) => {
@@ -37,17 +79,9 @@ Deno.serve(async (req) => {
 
     console.log("🔔 Starting pending user reminders check...");
 
-    // Get all pending users with their timezone from user_devices
     const { data: pendingUsers, error: usersError } = await supabase
       .from("profiles")
-      .select(`
-        id,
-        name,
-        email,
-        created_at,
-        timezone,
-        status_plano
-      `)
+      .select("id, name, email, created_at, timezone, status_plano")
       .eq("status_plano", "pending");
 
     if (usersError) {
@@ -64,15 +98,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get device timezones for users
     const userIds = pendingUsers.map((u) => u.id);
+
     const { data: devices } = await supabase
       .from("user_devices")
       .select("user_id, timezone")
       .in("user_id", userIds)
       .not("timezone", "is", null);
 
-    // Create a map of user_id -> timezone
     const userTimezones: Record<string, string> = {};
     devices?.forEach((d) => {
       if (d.timezone) {
@@ -80,13 +113,11 @@ Deno.serve(async (req) => {
       }
     });
 
-    // Get already sent reminders
     const { data: sentReminders } = await supabase
       .from("pending_user_reminder_logs")
       .select("user_id, reminder_type")
       .in("user_id", userIds);
 
-    // Create a set of "user_id:reminder_type" for quick lookup
     const sentSet = new Set(
       sentReminders?.map((r) => `${r.user_id}:${r.reminder_type}`) || []
     );
@@ -95,47 +126,45 @@ Deno.serve(async (req) => {
     let remindersSent = 0;
     let errors = 0;
 
+    // Sorted day thresholds descending so we pick the highest applicable
+    const sortedDays = Object.keys(DAY_TO_REMINDER)
+      .map(Number)
+      .sort((a, b) => b - a);
+
     for (const user of pendingUsers) {
       try {
         const userTimezone = userTimezones[user.id] || user.timezone || DEFAULT_TIMEZONE;
 
-        // Check if within push window (8h-21h)
         if (!isWithinPushWindow(userTimezone)) {
           console.log(`⏰ Outside push window for user ${user.id} (${userTimezone})`);
           continue;
         }
 
-        // Calculate days since account creation
         const createdAt = new Date(user.created_at);
         const daysSinceCreation = Math.floor(
           (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24)
         );
 
-        // Determine which reminder to send
+        // Find the highest day threshold the user qualifies for
         let reminderType: string | null = null;
-
-        if (daysSinceCreation >= 7) {
-          reminderType = "7_days";
-        } else if (daysSinceCreation >= 3) {
-          reminderType = "3_days";
-        } else if (daysSinceCreation >= 1) {
-          reminderType = "1_day";
+        for (const day of sortedDays) {
+          if (daysSinceCreation >= day) {
+            const type = DAY_TO_REMINDER[day];
+            if (!sentSet.has(`${user.id}:${type}`)) {
+              reminderType = type;
+            }
+            break;
+          }
         }
 
         if (!reminderType) {
-          continue; // User created account less than 1 day ago
+          continue;
         }
 
-        // Check if already sent this reminder
-        if (sentSet.has(`${user.id}:${reminderType}`)) {
-          continue; // Already sent this reminder
-        }
-
-        const reminder = REMINDERS[reminderType as keyof typeof REMINDERS];
+        const reminder = REMINDERS[reminderType];
 
         console.log(`📨 Sending ${reminderType} reminder to user ${user.id} (${user.email})`);
 
-        // Create in-app notification
         const { error: notifError } = await supabase.from("notifications").insert({
           title: reminder.title,
           message: reminder.body,
@@ -148,7 +177,6 @@ Deno.serve(async (req) => {
           console.error(`Error creating notification for user ${user.id}:`, notifError);
         }
 
-        // Send push notification
         try {
           await sendPushToUser({
             supabaseAdmin: supabase,
@@ -162,7 +190,6 @@ Deno.serve(async (req) => {
           console.error(`Error sending push to user ${user.id}:`, pushError);
         }
 
-        // Log the reminder as sent
         const { error: logError } = await supabase
           .from("pending_user_reminder_logs")
           .insert({

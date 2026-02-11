@@ -9,28 +9,48 @@ const corsHeaders = {
 
 const DEFAULT_TIMEZONE = 'America/Sao_Paulo';
 
-// Mensagens de CONVERSÃO - para quem NÃO assinou (20 mensagens)
+// Mensagens de CONVERSÃO - para quem NÃO assinou (40 mensagens)
 const CONVERSION_MESSAGES = [
-  { id: 'conv_1', title: '🎸 Organize seus shows!', message: 'Artistas profissionais usam o Sou Artista para gerenciar a agenda. Assine o Pro!' },
-  { id: 'conv_2', title: '💰 Quanto você ganhou esse mês?', message: 'Com o Sou Artista Pro você sabe exatamente seus ganhos. Comece agora!' },
-  { id: 'conv_3', title: '📅 Não perca mais shows!', message: 'Cadastre sua agenda no Sou Artista e nunca mais esqueça um compromisso.' },
-  { id: 'conv_4', title: '🎤 Sua carreira merece organização', message: 'Relatórios, agenda, gastos... Tudo em um só lugar. Assine o Pro!' },
-  { id: 'conv_5', title: '⏰ Tempo é dinheiro!', message: 'Pare de usar planilhas. O Sou Artista organiza tudo pra você automaticamente.' },
+  { id: 'conv_1', title: '🎸 Organize seus shows!', message: 'Artistas profissionais usam o SouArtista para gerenciar a agenda. Faça sua assinatura!' },
+  { id: 'conv_2', title: '💰 Quanto você ganhou esse mês?', message: 'Com o SouArtista você sabe exatamente seus ganhos. Faça sua assinatura!' },
+  { id: 'conv_3', title: '📅 Não perca mais shows!', message: 'Cadastre sua agenda no SouArtista e nunca mais esqueça um compromisso.' },
+  { id: 'conv_4', title: '🎤 Sua carreira merece organização', message: 'Relatórios, agenda, gastos... Tudo em um só lugar. Faça sua assinatura!' },
+  { id: 'conv_5', title: '⏰ Tempo é dinheiro!', message: 'Pare de usar planilhas. O SouArtista organiza tudo pra você automaticamente.' },
   { id: 'conv_6', title: '🚗 Controle seus gastos', message: 'Transporte, alimentação, equipe... Saiba exatamente quanto você gasta por show.' },
-  { id: 'conv_7', title: '📊 Relatórios profissionais', message: 'Impressione contratantes com relatórios detalhados. Assine o Sou Artista Pro!' },
-  { id: 'conv_8', title: '🎵 Músicos de sucesso usam', message: 'Junte-se a centenas de artistas que já organizam seus shows com o Sou Artista.' },
-  { id: 'conv_9', title: '💼 Leve sua carreira a sério', message: 'Gerenciar shows nunca foi tão fácil. Experimente o Sou Artista Pro!' },
-  { id: 'conv_10', title: '📱 Tudo na palma da mão', message: 'Cadastre shows, veja relatórios e controle gastos direto do celular. Assine!' },
-  { id: 'conv_11', title: '🎹 Seu talento, nossa organização', message: 'Foque na música, a gente cuida da burocracia. Sou Artista Pro!' },
-  { id: 'conv_12', title: '💵 Saiba seu lucro real', message: 'Cachê menos despesas = seu lucro real. Descubra com o Sou Artista Pro.' },
+  { id: 'conv_7', title: '📊 Relatórios profissionais', message: 'Impressione contratantes com relatórios detalhados. Faça sua assinatura no SouArtista!' },
+  { id: 'conv_8', title: '🎵 Músicos de sucesso usam', message: 'Junte-se a centenas de artistas que já organizam seus shows com o SouArtista.' },
+  { id: 'conv_9', title: '💼 Leve sua carreira a sério', message: 'Gerenciar shows nunca foi tão fácil. Faça sua assinatura no SouArtista!' },
+  { id: 'conv_10', title: '📱 Tudo na palma da mão', message: 'Cadastre shows, veja relatórios e controle gastos direto do celular. Faça sua assinatura!' },
+  { id: 'conv_11', title: '🎹 Seu talento, nossa organização', message: 'Foque na música, a gente cuida da burocracia. Faça sua assinatura no SouArtista!' },
+  { id: 'conv_12', title: '💵 Saiba seu lucro real', message: 'Cachê menos despesas = seu lucro real. Descubra com o SouArtista.' },
   { id: 'conv_13', title: '📆 Agenda inteligente', message: 'Lembretes automáticos, organização visual. Sua agenda como deveria ser.' },
   { id: 'conv_14', title: '🏆 Artistas organizados ganham mais', message: 'Estatísticas mostram: organização = mais shows. Comece hoje!' },
-  { id: 'conv_15', title: '🎯 Metas claras, resultados reais', message: 'Acompanhe sua evolução mês a mês com o Sou Artista Pro.' },
-  { id: 'conv_16', title: '⭐ Você merece o melhor', message: 'O app feito por músicos, para músicos. Assine o Sou Artista Pro!' },
+  { id: 'conv_15', title: '🎯 Metas claras, resultados reais', message: 'Acompanhe sua evolução mês a mês com o SouArtista.' },
+  { id: 'conv_16', title: '⭐ Você merece o melhor', message: 'O app feito por músicos, para músicos. Faça sua assinatura no SouArtista!' },
   { id: 'conv_17', title: '🔥 Oferta especial esperando', message: 'Comece a organizar seus shows hoje mesmo. É mais barato que você imagina!' },
-  { id: 'conv_18', title: '📈 Cresça na carreira', message: 'Dados organizados = decisões melhores. O Sou Artista Pro te ajuda a crescer.' },
-  { id: 'conv_19', title: '🎸 Chega de bagunça!', message: 'Anotações perdidas, cachês esquecidos... Isso acaba com o Sou Artista Pro.' },
-  { id: 'conv_20', title: '💡 Trabalhe de forma inteligente', message: 'Menos tempo organizando, mais tempo tocando. Assine agora!' },
+  { id: 'conv_18', title: '📈 Cresça na carreira', message: 'Dados organizados = decisões melhores. O SouArtista te ajuda a crescer.' },
+  { id: 'conv_19', title: '🎸 Chega de bagunça!', message: 'Anotações perdidas, cachês esquecidos... Isso acaba com o SouArtista. Faça sua assinatura!' },
+  { id: 'conv_20', title: '💡 Trabalhe de forma inteligente', message: 'Menos tempo organizando, mais tempo tocando. Faça sua assinatura!' },
+  { id: 'conv_21', title: '💰 Sabe seu lucro?', message: 'Você sabe quanto lucrou no último show? Com o SouArtista você descobre na hora.' },
+  { id: 'conv_22', title: '📝 Ainda no papel?', message: 'Enquanto você anota em papel, outros músicos já organizam tudo pelo SouArtista.' },
+  { id: 'conv_23', title: '🎵 Quantos shows esse ano?', message: 'Quantos shows você fez esse ano? Com o SouArtista você tem essa resposta em 1 toque.' },
+  { id: 'conv_24', title: '💬 Chega de perguntar cachê', message: 'Chega de mandar mensagem perguntando cachê. No SouArtista tá tudo registrado.' },
+  { id: 'conv_25', title: '🚗 Gastos de transporte', message: 'Sabe quanto gastou de transporte nos últimos shows? O SouArtista calcula pra você.' },
+  { id: 'conv_26', title: '💼 Controle financeiro', message: 'Músico profissional tem controle financeiro. Faça sua assinatura no SouArtista!' },
+  { id: 'conv_27', title: '📅 Mais que um caderninho', message: 'Sua agenda de shows merece mais que um caderninho. Experimente o SouArtista!' },
+  { id: 'conv_28', title: '📊 Relatório em segundos', message: 'Relatório mensal pronto em segundos. É isso que o SouArtista faz por você.' },
+  { id: 'conv_29', title: '🎯 Meta do mês', message: 'Quanto você quer ganhar esse mês? No SouArtista você acompanha sua meta em tempo real.' },
+  { id: 'conv_30', title: '🧠 Pare de depender da memória', message: 'Pare de depender da memória. Registre seus shows e tenha tudo documentado.' },
+  { id: 'conv_31', title: '💸 Dinheiro esquecido', message: 'Cada show não registrado é dinheiro que você esquece. Use o SouArtista!' },
+  { id: 'conv_32', title: '📈 Quanto você ganha?', message: 'Músicos que usam o SouArtista sabem exatamente quanto ganham. E você?' },
+  { id: 'conv_33', title: '🎤 Tudo organizado', message: 'Organize seus músicos, locais e cachês. Tudo no SouArtista. Faça sua assinatura!' },
+  { id: 'conv_34', title: '💵 Lucro real', message: 'Imposto, transporte, alimentação... Você sabe seu lucro real? Descubra no SouArtista.' },
+  { id: 'conv_35', title: '🚀 Não deixe pra depois', message: 'Não deixe pra depois. Organize sua carreira musical hoje. Assine o SouArtista!' },
+  { id: 'conv_36', title: '🧾 Seu contador agradece', message: 'Seu contador vai agradecer. Relatórios organizados direto do SouArtista.' },
+  { id: 'conv_37', title: '⏱️ Economize tempo', message: 'Quanto tempo você perde organizando shows? Com o SouArtista são 2 minutos.' },
+  { id: 'conv_38', title: '✅ Isso é SouArtista', message: 'Shows confirmados, cachês registrados, gastos controlados. Isso é SouArtista.' },
+  { id: 'conv_39', title: '🏆 Amador vs Profissional', message: 'A diferença entre amador e profissional? Organização. Faça sua assinatura!' },
+  { id: 'conv_40', title: '🎸 A parte chata resolvida', message: 'Você toca bem, mas organiza bem? O SouArtista cuida da parte chata pra você.' },
 ];
 
 // Mensagens de ENGAJAMENTO - para quem JÁ assinou (30 mensagens)
@@ -64,25 +84,30 @@ const ENGAGEMENT_MESSAGES = [
   { id: 'eng_27', title: '🎹 Novo mês, novas metas!', message: 'Comece o mês com a agenda em dia. Cadastre seus shows!' },
   { id: 'eng_28', title: '💼 Profissionalismo', message: 'Uma agenda organizada passa credibilidade. Continue assim!' },
   { id: 'eng_29', title: '🚗 Quilometragem', message: 'Registre os km rodados para ter controle preciso das despesas.' },
-  { id: 'eng_30', title: '⭐ Você faz a diferença!', message: 'Obrigado por usar o Sou Artista. Sua organização inspira!' },
+  { id: 'eng_30', title: '⭐ Você faz a diferença!', message: 'Obrigado por usar o SouArtista. Sua organização inspira!' },
 ];
 
 // Mensagens especiais para usuários inativos (não abriram o app há 7+ dias)
 const INACTIVE_USER_MESSAGES = [
   { id: 'inactive_1', title: '👋 Sentimos sua falta!', message: 'Faz tempo que você não aparece. Sua agenda está te esperando!' },
-  { id: 'inactive_2', title: '🎵 Voltou a tocar?', message: 'Não esqueça de registrar seus shows no Sou Artista!' },
+  { id: 'inactive_2', title: '🎵 Voltou a tocar?', message: 'Não esqueça de registrar seus shows no SouArtista!' },
   { id: 'inactive_3', title: '📅 Sua agenda quer atenção', message: 'Atualize seus shows e mantenha tudo organizado.' },
-  { id: 'inactive_4', title: '💭 Lembrou de nós?', message: 'O Sou Artista está aqui para te ajudar. Volte quando quiser!' },
+  { id: 'inactive_4', title: '💭 Lembrou de nós?', message: 'O SouArtista está aqui para te ajudar. Volte quando quiser!' },
   { id: 'inactive_5', title: '🎤 Bora organizar?', message: 'Alguns minutos no app = meses de organização. Vale a pena!' },
 ];
 
-// Mensagens para novos usuários que nunca cadastraram shows
+// Mensagens para novos usuários que nunca cadastraram shows (10 mensagens)
 const NEW_USER_MESSAGES = [
   { id: 'new_1', title: '🎯 Primeiro passo!', message: 'Cadastre seu primeiro show e comece a organizar sua carreira.' },
   { id: 'new_2', title: '📅 Comece agora', message: 'É super fácil! Adicione seu primeiro show em menos de 1 minuto.' },
   { id: 'new_3', title: '💡 Dica de iniciante', message: 'Comece cadastrando os shows que você já tem confirmados.' },
   { id: 'new_4', title: '🎸 Pronto para começar?', message: 'Seu app está configurado. Só falta adicionar seus shows!' },
   { id: 'new_5', title: '⭐ Bem-vindo!', message: 'Cadastre seu primeiro show e descubra o poder da organização.' },
+  { id: 'new_6', title: '📊 Comece pelo básico', message: 'Um show cadastrado já gera seu primeiro relatório. Experimente!' },
+  { id: 'new_7', title: '🎤 Seu histórico começa aqui', message: 'Registre shows passados e futuros. Tenha tudo em um só lugar!' },
+  { id: 'new_8', title: '💰 Saiba quanto você ganha', message: 'Cadastre seu primeiro show e veja seu controle financeiro funcionando.' },
+  { id: 'new_9', title: '🚀 1 minuto é tudo que precisa', message: 'Adicione seu primeiro show agora. É rápido e faz toda diferença!' },
+  { id: 'new_10', title: '🎵 Não deixe pra depois', message: 'Quanto antes cadastrar, mais completo fica seu histórico. Comece agora!' },
 ];
 
 Deno.serve(async (req) => {
@@ -98,7 +123,6 @@ Deno.serve(async (req) => {
 
     console.log('[send-marketing-notifications] 🚀 Starting timezone-aware marketing notification job');
 
-    // Get all users with their timezone
     const { data: users, error: usersError } = await supabaseAdmin
       .from('profiles')
       .select('id, name, email, status_plano, last_seen_at, created_at, timezone')
@@ -111,7 +135,6 @@ Deno.serve(async (req) => {
 
     console.log(`[send-marketing-notifications] 📊 Found ${users?.length || 0} users`);
 
-    // Get users who have devices registered with their timezones
     const { data: devicesData, error: devicesError } = await supabaseAdmin
       .from('user_devices')
       .select('user_id, timezone')
@@ -122,7 +145,6 @@ Deno.serve(async (req) => {
       throw devicesError;
     }
 
-    // Create timezone lookup from devices (more accurate than profile)
     const deviceTimezones: Record<string, string> = {};
     const usersWithDevices = new Set<string>();
     for (const device of devicesData || []) {
@@ -134,7 +156,6 @@ Deno.serve(async (req) => {
     
     console.log(`[send-marketing-notifications] 📱 Users with devices: ${usersWithDevices.size}`);
 
-    // Get show counts per user
     const { data: showCounts } = await supabaseAdmin
       .from('shows')
       .select('uid');
@@ -153,26 +174,21 @@ Deno.serve(async (req) => {
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     for (const user of users || []) {
-      // Skip users without devices
       if (!usersWithDevices.has(user.id)) {
         skippedCount++;
         continue;
       }
 
-      // Get user's timezone (prefer device, fallback to profile, then default)
       const userTimezone = deviceTimezones[user.id] || user.timezone || DEFAULT_TIMEZONE;
 
-      // Check if user is within push notification window (8:00 - 21:00 local time)
       if (!isWithinPushWindow(userTimezone)) {
         console.log(`[send-marketing-notifications] ⏰ Skipping ${user.id} - outside push window (tz: ${userTimezone})`);
         outsideWindowCount++;
         continue;
       }
 
-      // Get start of today in user's timezone for daily limit check
       const todayStartUTC = getTodayStartInTimezone(userTimezone);
 
-      // Check if user received a marketing notification TODAY in their timezone
       const { data: recentLogs } = await supabaseAdmin
         .from('marketing_notification_logs')
         .select('id, sent_at')
@@ -186,7 +202,6 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Determine user type and select appropriate message
       let selectedMessage: { id: string; title: string; message: string } | null = null;
       let notificationType = 'engagement';
       let link = '/app-hub';
@@ -196,7 +211,6 @@ Deno.serve(async (req) => {
       const isInactive = lastSeen && lastSeen < sevenDaysAgo;
       const hasShows = (userShowCounts[user.id] || 0) > 0;
 
-      // Get messages already sent to this user
       const { data: sentMessages } = await supabaseAdmin
         .from('marketing_notification_logs')
         .select('message_id')
@@ -204,7 +218,6 @@ Deno.serve(async (req) => {
 
       const sentMessageIds = new Set(sentMessages?.map(m => m.message_id) || []);
 
-      // Priority logic for message selection
       if (!isActive) {
         notificationType = 'conversion';
         link = '/subscribe';
@@ -255,7 +268,6 @@ Deno.serve(async (req) => {
 
       console.log(`[send-marketing-notifications] 📤 Sending to ${user.id} (tz: ${userTimezone}): ${selectedMessage.id}`);
 
-      // Create in-app notification
       await supabaseAdmin.from('notifications').insert({
         title: selectedMessage.title,
         message: selectedMessage.message,
@@ -264,7 +276,6 @@ Deno.serve(async (req) => {
         created_by: user.id,
       });
 
-      // Send push notification
       try {
         const pushResult = await sendPushToUser({
           supabaseAdmin,
@@ -279,7 +290,6 @@ Deno.serve(async (req) => {
         console.error(`[send-marketing-notifications] ⚠️ Push failed for ${user.id}:`, pushError);
       }
 
-      // Log the sent notification
       await supabaseAdmin.from('marketing_notification_logs').insert({
         user_id: user.id,
         notification_type: notificationType,
