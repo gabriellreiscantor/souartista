@@ -110,7 +110,7 @@ const Subscribe = () => {
         // Check for expired/cancelled subscription
         const { data: subscription } = await supabase
           .from('subscriptions')
-          .select('status, updated_at')
+          .select('status, updated_at, next_due_date')
           .eq('user_id', user.id)
           .in('status', ['expired', 'cancelled', 'inactive'])
           .order('updated_at', { ascending: false })
@@ -154,7 +154,7 @@ const Subscribe = () => {
             totalRevenue,
             totalMusicians,
             totalArtists,
-            expirationDate: subscription.updated_at
+            expirationDate: subscription.next_due_date || subscription.updated_at
           });
           setShowReturningUserModal(true);
         }
