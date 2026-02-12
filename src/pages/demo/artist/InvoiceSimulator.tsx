@@ -17,6 +17,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { DemoArtistSidebar } from '@/components/DemoArtistSidebar';
 import { DemoMobileBottomNav } from '@/components/DemoMobileBottomNav';
 import { DemoBanner } from '@/components/DemoBanner';
+import { DemoLockedModal } from '@/components/DemoLockedModal';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { SafeAreaWrapper } from '@/components/SafeAreaWrapper';
 import { DemoUserMenu } from '@/components/DemoUserMenu';
@@ -55,6 +56,7 @@ const calcularIRRF = (baseCalculo: number): number => {
 
 const DemoInvoiceSimulator = () => {
   const isMobile = useIsMobile();
+  const [showLockedModal, setShowLockedModal] = useState(true);
   const [tipoRecebimento, setTipoRecebimento] = useState<TipoRecebimento>('pf');
   const [valorBruto, setValorBruto] = useState<string>('10000');
   const [retencaoFonte, setRetencaoFonte] = useState(true);
@@ -404,6 +406,7 @@ const DemoInvoiceSimulator = () => {
           {isMobile && <DemoMobileBottomNav role="artist" />}
         </div>
       </SidebarProvider>
+      <DemoLockedModal open={showLockedModal} onOpenChange={setShowLockedModal} redirectTo="/demo/artist/dashboard" />
     </SafeAreaWrapper>
   );
 };
