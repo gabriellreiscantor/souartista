@@ -64,6 +64,7 @@ interface Show {
   expenses_team: TeamMember[];
   expenses_other: AdditionalExpense[];
   team_musician_ids: string[];
+  duration_hours?: number;
 }
 const ArtistShows = () => {
   const {
@@ -107,7 +108,8 @@ const ArtistShows = () => {
     date_local: '',
     time_local: '20:00',
     fee: '',
-    is_private_event: false
+    is_private_event: false,
+    duration_hours: '3'
   });
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [additionalExpenses, setAdditionalExpenses] = useState<AdditionalExpense[]>([]);
@@ -246,6 +248,7 @@ const ArtistShows = () => {
         time_local: showFormData.time_local,
         fee: parseFloat(showFormData.fee),
         is_private_event: showFormData.is_private_event,
+        duration_hours: parseFloat(showFormData.duration_hours),
         expenses_team: teamMembers,
         expenses_other: additionalExpenses,
         team_musician_ids: teamMusicianIds,
@@ -322,13 +325,17 @@ const ArtistShows = () => {
   };
   const handleShowEdit = (show: Show) => {
     setEditingShow(show);
+    // Find venue_id by matching venue_name
+    const matchedVenue = venues.find(v => v.name === show.venue_name);
+    const venueId = show.is_private_event ? '' : (matchedVenue ? matchedVenue.id : 'custom');
     setShowFormData({
-      venue_id: '',
-      custom_venue: show.venue_name,
+      venue_id: venueId,
+      custom_venue: show.is_private_event || !matchedVenue ? show.venue_name : '',
       date_local: show.date_local,
       time_local: show.time_local || '20:00',
       fee: show.fee.toString(),
-      is_private_event: show.is_private_event
+      is_private_event: show.is_private_event,
+      duration_hours: show.duration_hours?.toString() || '3'
     });
     setTeamMembers(show.expenses_team || []);
     setAdditionalExpenses(show.expenses_other || []);
@@ -341,7 +348,8 @@ const ArtistShows = () => {
       date_local: '',
       time_local: '20:00',
       fee: '',
-      is_private_event: false
+      is_private_event: false,
+      duration_hours: '3'
     });
     setTeamMembers([]);
     setAdditionalExpenses([]);
@@ -900,7 +908,7 @@ const ArtistShows = () => {
 
                                 <div>
                                   <Label htmlFor="duration_mobile" className="text-gray-900 text-sm font-medium">Duração de show</Label>
-                                  <Select defaultValue="4h">
+                                  <Select value={showFormData.duration_hours + 'h'} onValueChange={v => setShowFormData({...showFormData, duration_hours: v.replace('h', '')})}>
                                     <SelectTrigger className="bg-white text-gray-900 mt-1.5 h-10">
                                       <SelectValue placeholder="Horas..." />
                                     </SelectTrigger>
@@ -1229,7 +1237,7 @@ const ArtistShows = () => {
                                         </div>
                                         <div>
                                           <Label htmlFor="duration" className="text-gray-900">Duração de show</Label>
-                                          <Select defaultValue="4h">
+                                          <Select value={showFormData.duration_hours + 'h'} onValueChange={v => setShowFormData({...showFormData, duration_hours: v.replace('h', '')})}>
                                             <SelectTrigger className="bg-white text-gray-900">
                                               <SelectValue placeholder="Horas..." />
                                             </SelectTrigger>
