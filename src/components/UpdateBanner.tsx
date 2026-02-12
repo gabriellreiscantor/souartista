@@ -51,6 +51,7 @@ export const UpdateBanner = () => {
 
         <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-4">
           <Button
+            variant="outline"
             onClick={dismissUpdate}
             className="w-full sm:w-auto bg-white text-black border border-gray-300 hover:bg-gray-100"
           >
