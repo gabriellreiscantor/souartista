@@ -14,7 +14,7 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -32,7 +32,7 @@ interface Show {
 
 const MusicianTransportation = () => {
   const { user, userData, userRole } = useAuth();
-  const { toast } = useToast();
+  
   const [activeTab, setActiveTab] = useState<TransportTab>('uber');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [shows, setShows] = useState<Show[]>([]);
@@ -134,11 +134,7 @@ const MusicianTransportation = () => {
       const totalCost = getTotalCost();
       
       if (totalCost <= 0) {
-        toast({
-          title: 'Erro',
-          description: 'O custo total deve ser maior que zero',
-          variant: 'destructive',
-        });
+        toast.error('O custo total deve ser maior que zero');
         return;
       }
 
@@ -161,10 +157,7 @@ const MusicianTransportation = () => {
 
       if (error) throw error;
 
-      toast({
-        title: 'Sucesso!',
-        description: 'Despesa salva com sucesso',
-      });
+      toast.success('Despesa salva com sucesso!');
 
       // Reset form
       setRides([]);
@@ -176,11 +169,7 @@ const MusicianTransportation = () => {
       fetchExpenses();
     } catch (error) {
       console.error('Error saving expense:', error);
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível salvar a despesa',
-        variant: 'destructive',
-      });
+      toast.error('Não foi possível salvar a despesa');
     }
   };
 

@@ -20,7 +20,7 @@ import {
 import { Shield, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface LgpdRequestModalProps {
   open: boolean;
@@ -37,27 +37,18 @@ const requestTypes = [
 
 export const LgpdRequestModal = ({ open, onOpenChange }: LgpdRequestModalProps) => {
   const { userData, user } = useAuth();
-  const { toast } = useToast();
   const [requestType, setRequestType] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
     if (!requestType) {
-      toast({
-        title: 'Erro',
-        description: 'Selecione o tipo de solicitação.',
-        variant: 'destructive',
-      });
+      toast.error('Selecione o tipo de solicitação.');
       return;
     }
 
     if (!user || !userData) {
-      toast({
-        title: 'Erro',
-        description: 'Você precisa estar logado para fazer uma solicitação.',
-        variant: 'destructive',
-      });
+      toast.error('Você precisa estar logado para fazer uma solicitação.');
       return;
     }
 
@@ -74,21 +65,14 @@ export const LgpdRequestModal = ({ open, onOpenChange }: LgpdRequestModalProps) 
 
       if (error) throw error;
 
-      toast({
-        title: 'Solicitação enviada',
-        description: 'Sua solicitação LGPD foi registrada. Entraremos em contato em breve.',
-      });
+      toast.success('Solicitação LGPD enviada com sucesso!');
 
       setRequestType('');
       setDescription('');
       onOpenChange(false);
     } catch (error) {
       console.error('Error submitting LGPD request:', error);
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível enviar sua solicitação. Tente novamente.',
-        variant: 'destructive',
-      });
+      toast.error('Não foi possível enviar sua solicitação. Tente novamente.');
     } finally {
       setIsSubmitting(false);
     }

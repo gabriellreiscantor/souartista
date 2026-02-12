@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Music, Loader2 } from 'lucide-react';
 import logo from '@/assets/logo.png';
 
@@ -12,7 +12,7 @@ const CompleteProfile = () => {
   const [loading, setLoading] = useState(false);
   const { userData, updateUserData } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
 
   const [formData, setFormData] = useState({
     cpf: userData?.cpf || '',
@@ -24,11 +24,7 @@ const CompleteProfile = () => {
     e.preventDefault();
 
     if (!formData.cpf || !formData.birthDate || !formData.phone) {
-      toast({
-        title: 'Campos obrigatórios',
-        description: 'Por favor, preencha todos os campos',
-        variant: 'destructive',
-      });
+      toast.error('Por favor, preencha todos os campos');
       return;
     }
 
@@ -40,10 +36,7 @@ const CompleteProfile = () => {
       phone: formData.phone,
     });
 
-    toast({
-      title: 'Perfil atualizado!',
-      description: 'Suas informações foram salvas',
-    });
+    toast.success('Perfil atualizado!');
 
     setLoading(false);
     navigate('/select-role');

@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Loader2, ArrowLeft, Mail, CheckCircle } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,28 +13,20 @@ const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email) {
-      toast({
-        title: 'E-mail obrigatório',
-        description: 'Por favor, insira seu e-mail',
-        variant: 'destructive',
-      });
+      toast.error('Por favor, insira seu e-mail');
       return;
     }
 
     // Validação básica de e-mail
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      toast({
-        title: 'E-mail inválido',
-        description: 'Por favor, insira um e-mail válido',
-        variant: 'destructive',
-      });
+      toast.error('Por favor, insira um e-mail válido');
       return;
     }
 
@@ -48,17 +40,10 @@ const ResetPassword = () => {
       if (error) throw error;
 
       setEmailSent(true);
-      toast({
-        title: 'E-mail enviado!',
-        description: 'Verifique sua caixa de entrada para redefinir sua senha',
-      });
+      toast.success('Verifique sua caixa de entrada para redefinir sua senha');
     } catch (error: any) {
       console.error('Error sending reset email:', error);
-      toast({
-        title: 'Erro ao enviar e-mail',
-        description: error.message || 'Não foi possível enviar o e-mail. Tente novamente.',
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Não foi possível enviar o e-mail. Tente novamente.');
     } finally {
       setLoading(false);
     }

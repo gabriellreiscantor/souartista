@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   InputOTP,
   InputOTPGroup,
@@ -20,7 +20,7 @@ const VerifyEmail = () => {
   const [canResend, setCanResend] = useState(false);
   const { verifyOtp, resendOtp, signOut, user, refetchUserData } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
 
   // Countdown timer for resend
   useEffect(() => {
@@ -41,11 +41,7 @@ const VerifyEmail = () => {
 
   const handleVerifyOtp = async () => {
     if (otpCode.length !== 6) {
-      toast({
-        title: "Código incompleto",
-        description: "Digite o código de 6 dígitos",
-        variant: "destructive",
-      });
+      toast.error("Digite o código de 6 dígitos");
       return;
     }
 
@@ -61,27 +57,16 @@ const VerifyEmail = () => {
           ? "Código inválido ou expirado. Verifique o código ou solicite um novo."
           : error.message || "Código inválido ou expirado";
         
-        toast({
-          title: "Código incorreto",
-          description: errorMessage,
-          variant: "destructive",
-        });
+        toast.error(errorMessage);
         setOtpCode("");
       } else {
-        toast({
-          title: "Email verificado!",
-          description: "Sua conta foi ativada com sucesso.",
-        });
+        toast.success("Email verificado!");
         // Refetch user data to update email_confirmed_at
         await refetchUserData();
         navigate("/app");
       }
     } catch (error: any) {
-      toast({
-        title: "Erro na verificação",
-        description: error.message || "Não foi possível verificar o código. Tente novamente.",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Não foi possível verificar o código. Tente novamente.");
     } finally {
       setVerifying(false);
     }
@@ -93,25 +78,14 @@ const VerifyEmail = () => {
     try {
       const { error } = await resendOtp(email);
       if (error) {
-        toast({
-          title: "Erro ao reenviar",
-          description: error.message,
-          variant: "destructive",
-        });
+        toast.error(error.message);
       } else {
-        toast({
-          title: "Código reenviado",
-          description: "Verifique seu email",
-        });
+        toast.success("Código reenviado! Verifique seu email");
         setResendTimer(60);
         setCanResend(false);
       }
     } catch (error: any) {
-      toast({
-        title: "Erro",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
     }
   };
 
