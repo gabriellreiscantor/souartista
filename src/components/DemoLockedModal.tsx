@@ -6,18 +6,27 @@ import { useNavigate } from 'react-router-dom';
 interface DemoLockedModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  redirectTo?: string;
 }
 
-export function DemoLockedModal({ open, onOpenChange }: DemoLockedModalProps) {
+export function DemoLockedModal({ open, onOpenChange, redirectTo }: DemoLockedModalProps) {
   const navigate = useNavigate();
 
   const handleCreateAccount = () => {
     navigate('/register');
   };
 
+  const handleContinueDemo = () => {
+    if (redirectTo) {
+      navigate(redirectTo);
+    } else {
+      onOpenChange(false);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white sm:max-w-md border-gray-200">
+    <Dialog open={open} onOpenChange={redirectTo ? undefined : onOpenChange}>
+      <DialogContent className="bg-white sm:max-w-md border-gray-200" onInteractOutside={redirectTo ? (e) => e.preventDefault() : undefined} onEscapeKeyDown={redirectTo ? (e) => e.preventDefault() : undefined}>
         <DialogHeader>
           <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
             <Lock className="w-8 h-8 text-purple-600" />
@@ -41,7 +50,7 @@ export function DemoLockedModal({ open, onOpenChange }: DemoLockedModalProps) {
           </Button>
           
           <Button 
-            onClick={() => onOpenChange(false)} 
+            onClick={handleContinueDemo} 
             variant="ghost" 
             size="lg" 
             className="w-full text-gray-700 hover:bg-gray-100"
