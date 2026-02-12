@@ -6503,7 +6503,7 @@ export default function Admin() {
             <Button
               variant="outline"
               onClick={() => setShowDebugUpdateModal(false)}
-              className="w-full sm:w-auto text-gray-600 border-gray-300 hover:bg-gray-50"
+              className="w-full sm:w-auto bg-white text-black border border-gray-300 hover:bg-gray-100"
             >
               Depois
             </Button>
