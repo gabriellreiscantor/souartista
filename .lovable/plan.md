@@ -1,68 +1,97 @@
 
-# Plano: Corrigir Toasts Travados
 
-## O problema
+# Plano: Corrigir campos que somem ao editar show
 
-O app tem **dois sistemas de toast ao mesmo tempo**:
+## Problema encontrado
 
-1. **Sonner** (o correto, renderizado no App.tsx) - usado pela maioria das páginas
-2. **Radix Toast** (o antigo, via `useToast` de `@/hooks/use-toast`) - usado por ~12 arquivos
+Achei **2 bugs** no formulario de editar show:
 
-O Radix Toast **nao tem componente visual renderizado** no App.tsx (o `<Toaster />` do Radix foi removido antes), entao os toasts criados por ele ficam presos na memoria e nao somem corretamente. Esse e o bug.
+### Bug 1: Nome do local some
+Quando voce edita um show, o codigo salva o **nome** do local (ex: "Bar do Ze"), mas na hora de editar ele tenta usar o **ID** do local no dropdown. Como o ID fica vazio, aparece "Selecione um local" mesmo tendo um local salvo.
 
-## O que vai ser feito
+**Correcao:** Na funcao `handleShowEdit`, buscar o venue pelo nome e preencher o `venue_id` correto. Se nao encontrar (local deletado ou evento particular), usar o campo de texto.
 
-### 1. Reduzir duracao do Sonner para 1 segundo
-- Em `src/components/ui/sonner.tsx`: mudar `duration={3000}` para `duration={1000}`
+### Bug 2: Duracao sempre volta pra 4 horas
+O dropdown de duracao esta com `defaultValue="4h"` fixo no codigo. Ele nao esta conectado a nenhum estado nem salva no banco. O banco ja tem a coluna `duration_hours` com padrao 3, mas o formulario ignora ela completamente.
 
-### 2. Migrar TODOS os arquivos que usam o toast antigo para Sonner
+**Correcao:**
+- Adicionar `duration_hours` ao estado do formulario (padrao: "3")
+- Conectar o Select com `value` e `onValueChange` ao estado
+- Carregar o valor salvo quando editar
+- Salvar o valor no banco quando salvar o show
+- Mudar padrao de "4h" para "3h"
 
-Arquivos que ainda importam de `@/hooks/use-toast` e precisam migrar para `import { toast } from 'sonner'`:
+## Arquivos modificados
 
 | Arquivo | Mudanca |
 |---------|---------|
-| `src/pages/artist/Settings.tsx` | `useToast` → `toast` do sonner |
-| `src/pages/musician/Settings.tsx` | `useToast` → `toast` do sonner |
-| `src/pages/Register.tsx` | `useToast` → `toast` do sonner |
-| `src/pages/Login.tsx` | `useToast` → `toast` do sonner |
-| `src/pages/ResetPassword.tsx` | `useToast` → `toast` do sonner |
-| `src/pages/CompleteProfile.tsx` | `useToast` → `toast` do sonner |
-| `src/pages/SelectRole.tsx` | `useToast` → `toast` do sonner |
-| `src/pages/musician/Transportation.tsx` | `useToast` → `toast` do sonner |
-| `src/hooks/useReferrals.tsx` | `useToast` → `toast` do sonner |
-| `src/hooks/usePushNotifications.tsx` | `toast` do use-toast → `toast` do sonner |
-
-### 3. Limpar arquivos mortos
-
-Remover os arquivos do sistema antigo que nao serao mais usados:
-- `src/hooks/use-toast.ts` (o hook antigo)
-- `src/components/ui/use-toast.ts` (re-export)
-- `src/components/ui/toaster.tsx` (componente Radix nao renderizado)
-- `src/components/ui/toast.tsx` (componente visual Radix)
+| `src/pages/artist/Shows.tsx` | Corrigir os 2 bugs no formulario (mobile e desktop) |
 
 ## Secao Tecnica
 
-### Padrao de migracao
+### Mudancas no estado do formulario
 
-**Antes (Radix - bugado):**
-```typescript
-import { useToast } from '@/hooks/use-toast';
-const { toast } = useToast();
-toast({ title: 'Sucesso', description: 'Show cadastrado' });
+```text
+showFormData atual:
+  venue_id, custom_venue, date_local, time_local, fee, is_private_event
+
+showFormData novo:
+  venue_id, custom_venue, date_local, time_local, fee, is_private_event, duration_hours
 ```
 
-**Depois (Sonner - correto):**
-```typescript
-import { toast } from 'sonner';
-toast.success('Show cadastrado com sucesso!');
-// ou para erros:
-toast.error('Erro ao cadastrar show');
+### handleShowEdit - correcao do venue
+
+```text
+Antes:
+  venue_id: ''  (sempre vazio)
+
+Depois:
+  venue_id: venues.find(v => v.name === show.venue_name)?.id || 'custom'
+  custom_venue: show.venue_name (caso nao encontre o venue pelo nome)
 ```
 
-### Mapeamento de variantes
-- `variant: 'destructive'` → `toast.error()`
-- sem variant (default/success) → `toast.success()`
-- title + description → mensagem unica ou `toast.success(title, { description })`
+### handleShowEdit - correcao da duracao
 
-### Nenhum build necessario
-Mudancas sao apenas no frontend web (React). O app nativo carrega o bundle atualizado automaticamente (se usar live update) ou na proxima build.
+```text
+Antes:
+  duration_hours nao existia no form
+
+Depois:
+  duration_hours: show.duration_hours?.toString() || '3'
+```
+
+### handleShowSubmit - salvar duracao
+
+```text
+showData vai incluir:
+  duration_hours: parseFloat(showFormData.duration_hours)
+```
+
+### Select de duracao (mobile e desktop) - 4 pontos no codigo
+
+```text
+Antes:
+  <Select defaultValue="4h">
+
+Depois:
+  <Select value={showFormData.duration_hours + 'h'} onValueChange={v => setShowFormData({...showFormData, duration_hours: v.replace('h', '')})}>
+```
+
+### resetShowForm
+
+```text
+Antes:
+  duration_hours nao existia
+
+Depois:
+  duration_hours: '3'  (padrao 3 horas como voce pediu)
+```
+
+### Interface Show
+
+Adicionar `duration_hours?: number` ao tipo Show local.
+
+### Impacto
+- Muda apenas 1 arquivo frontend
+- Usa coluna `duration_hours` que ja existe no banco com default 3
+- Precisa de build no Codemagic para chegar no app nativo
