@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DemoWeeklySchedule } from '@/components/DemoWeeklySchedule';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import { DemoBanner } from '@/components/DemoBanner';
 
 const DemoArtistDashboard = () => {
   const navigate = useNavigate();
+  useEffect(() => { window.scrollTo(0, 0); }, []);
   
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
