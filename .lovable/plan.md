@@ -1,15 +1,21 @@
 
 
-## Ajuste visual do botão "Depois" no modal de atualização
+## Correção do botão "Depois" no modal de debug do Admin
 
-O botão "Depois" no `UpdateBanner.tsx` (linha ~56) será alterado para ter fundo branco e texto preto.
+O problema é que existe uma copia do modal de atualização dentro do arquivo `src/pages/Admin.tsx` (usado para testes via "Testar Banners"). Esse modal tem seu proprio estilo e nao foi atualizado junto com o `UpdateBanner.tsx`.
 
-### Mudança
+### O que sera feito
 
-No arquivo `src/components/UpdateBanner.tsx`, o botão "Depois" terá suas classes atualizadas:
+**Arquivo:** `src/pages/Admin.tsx` (linha 6506)
 
-- **De:** `variant="outline"` com classes `text-gray-600 border-gray-300 hover:bg-gray-50`
-- **Para:** Fundo branco, texto preto, com borda sutil para manter contraste
+Alterar as classes do botao "Depois" de:
+```
+className="w-full sm:w-auto text-gray-600 border-gray-300 hover:bg-gray-50"
+```
 
-Classes finais: `bg-white text-black border border-gray-300 hover:bg-gray-100`
+Para:
+```
+className="w-full sm:w-auto bg-white text-black border border-gray-300 hover:bg-gray-100"
+```
 
+Isso vai deixar o botao com fundo branco e texto preto, igual ao segundo print de referencia.
