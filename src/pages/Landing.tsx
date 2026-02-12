@@ -131,7 +131,7 @@ const Landing = () => {
       {/* Footer */}
       <footer className="relative py-8 px-6 text-center space-y-2 animate-fade-in">
         <p className="text-xs text-gray-400">
-          © 2025 SouArtista. Todos os direitos reservados.
+          © 2025–2026 SouArtista. Todos os direitos reservados
         </p>
         <div className="flex justify-center gap-4 text-xs">
           <Link to="/terms" className="text-gray-400 hover:text-white transition-colors underline">
