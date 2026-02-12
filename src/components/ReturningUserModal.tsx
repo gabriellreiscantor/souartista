@@ -108,7 +108,7 @@ export const ReturningUserModal = ({ open, onClose, stats, userRole }: Returning
           </p>
         </div>
 
-        <Button onClick={onClose} className="w-full">
+        <Button onClick={onClose} className="w-full text-white">
           Renovar Assinatura
         </Button>
       </DialogContent>
