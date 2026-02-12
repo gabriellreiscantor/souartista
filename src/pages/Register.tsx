@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Music, Loader2, ArrowLeft, CalendarIcon, Camera, Mail, X, Gift } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
@@ -53,7 +53,7 @@ const Register = () => {
   const { signUp, user, session, loading: authLoading, verifyOtp, resendOtp } = useAuth();
   const { isIOS } = useNativePlatform();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
 
   // Estados para foto de perfil
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -130,11 +130,7 @@ const Register = () => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: 'Arquivo muito grande',
-          description: 'A foto deve ter no máximo 5MB',
-          variant: 'destructive',
-        });
+        toast.error('A foto deve ter no máximo 5MB');
         return;
       }
       setPhotoFile(file);
@@ -235,10 +231,7 @@ const Register = () => {
       }
 
       if (!formData.gender) {
-        toast({
-          title: 'Selecione seu sexo',
-          variant: 'destructive',
-        });
+        toast.error('Selecione seu sexo');
         hasError = true;
       }
       
@@ -357,11 +350,7 @@ const Register = () => {
           setEmailError('Por favor, insira um e-mail válido');
         } else {
           // Para erros genéricos, usar toast
-          toast({
-            title: 'Erro ao criar conta',
-            description: error.message,
-            variant: 'destructive',
-          });
+          toast.error(error.message);
         }
         setLoading(false);
       } else {
@@ -369,19 +358,12 @@ const Register = () => {
         setRegisteredEmail(formData.email);
         setStep(4);
         setResendTimer(60);
-        toast({
-          title: 'Código enviado!',
-          description: 'Verifique seu e-mail',
-        });
+        toast.success('Código enviado! Verifique seu e-mail');
         setLoading(false);
       }
     } catch (error) {
       console.error('Erro no cadastro:', error);
-      toast({
-        title: 'Erro inesperado',
-        description: 'Não foi possível completar o cadastro. Tente novamente.',
-        variant: 'destructive',
-      });
+      toast.error('Não foi possível completar o cadastro. Tente novamente.');
       setLoading(false);
     }
   };
@@ -494,10 +476,7 @@ const Register = () => {
       }
     }
 
-    toast({
-      title: 'Conta verificada!',
-      description: 'Bem-vindo ao Sou Artista',
-    });
+    toast.success('Conta verificada! Bem-vindo ao SouArtista');
     setVerifying(false);
     navigate('/app');
   };
@@ -508,16 +487,9 @@ const Register = () => {
     const { error } = await resendOtp(registeredEmail);
 
     if (error) {
-      toast({
-        title: 'Erro ao reenviar',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message);
     } else {
-      toast({
-        title: 'Código reenviado!',
-        description: 'Verifique seu e-mail',
-      });
+      toast.success('Código reenviado! Verifique seu e-mail');
       setResendTimer(60);
     }
   };

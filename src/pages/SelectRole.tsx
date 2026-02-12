@@ -4,22 +4,18 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Music, Users, CheckCircle2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const SelectRole = () => {
   const [selected, setSelected] = useState<'artist' | 'musician' | null>(null);
   const [loading, setLoading] = useState(false);
   const { setUserRole } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
 
   const handleContinue = async () => {
     if (!selected) {
-      toast({
-        title: 'Selecione uma opção',
-        description: 'Por favor, escolha seu perfil',
-        variant: 'destructive',
-      });
+      toast.error('Por favor, escolha seu perfil');
       return;
     }
 
@@ -31,20 +27,13 @@ const SelectRole = () => {
       
       if (error) {
         console.error('[SelectRole] Error saving role:', error);
-        toast({
-          title: 'Erro ao definir perfil',
-          description: error.message || 'Não foi possível salvar seu perfil. Tente novamente.',
-          variant: 'destructive',
-        });
+        toast.error(error.message || 'Não foi possível salvar seu perfil. Tente novamente.');
         setLoading(false);
         return;
       }
 
       console.log('[SelectRole] Role saved successfully, redirecting to /app');
-      toast({
-        title: 'Perfil definido!',
-        description: `Você é um ${selected === 'artist' ? 'artista' : 'músico'}`,
-      });
+      toast.success(`Perfil definido! Você é um ${selected === 'artist' ? 'artista' : 'músico'}`);
       
       // Small delay to ensure state is updated
       setTimeout(() => {
@@ -52,11 +41,7 @@ const SelectRole = () => {
       }, 500);
     } catch (error) {
       console.error('[SelectRole] Unexpected error:', error);
-      toast({
-        title: 'Erro inesperado',
-        description: 'Algo deu errado. Tente novamente.',
-        variant: 'destructive',
-      });
+      toast.error('Algo deu errado. Tente novamente.');
       setLoading(false);
     }
   };

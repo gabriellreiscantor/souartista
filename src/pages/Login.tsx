@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Music, Loader2, ArrowLeft, Home } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,7 +18,6 @@ const Login = () => {
   const [passwordError, setPasswordError] = useState('');
   const { signIn, resendOtp, user, session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { isNative } = useNativePlatform();
 
   // Redireciona automaticamente se já estiver logado
@@ -69,11 +68,7 @@ const Login = () => {
     // Timeout de segurança de 10 segundos
     const timeoutId = setTimeout(() => {
       console.error('[Login] Login timeout after 10 seconds');
-      toast({
-        title: 'Tempo esgotado',
-        description: 'O login está demorando muito. Tente novamente.',
-        variant: 'destructive',
-      });
+      toast.error('O login está demorando muito. Tente novamente.');
       setLoading(false);
     }, 10000);
 
@@ -92,11 +87,7 @@ const Login = () => {
           setEmailError('Verifique seu e-mail antes de fazer login');
         } else {
           // Para outros erros, usar toast
-          toast({
-            title: 'Erro ao fazer login',
-            description: error.message,
-            variant: 'destructive',
-          });
+          toast.error(error.message);
         }
         setLoading(false);
       } else {
@@ -106,10 +97,7 @@ const Login = () => {
         if (currentUser && !currentUser.email_confirmed_at) {
           // Send new OTP and redirect to verification page
           await resendOtp(email);
-          toast({
-            title: 'Verificação necessária',
-            description: 'Enviamos um código para seu email.',
-          });
+          toast.success('Enviamos um código para seu email.');
           navigate(`/verify-email?email=${encodeURIComponent(email)}`);
           setLoading(false);
           return;
@@ -119,11 +107,7 @@ const Login = () => {
     } catch (error) {
       clearTimeout(timeoutId);
       console.error('[Login] Unexpected error:', error);
-      toast({
-        title: 'Erro inesperado',
-        description: 'Algo deu errado. Tente novamente.',
-        variant: 'destructive',
-      });
+      toast.error('Algo deu errado. Tente novamente.');
       setLoading(false);
     }
   };

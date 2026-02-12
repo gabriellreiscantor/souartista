@@ -12,7 +12,7 @@ import { Loader2, CreditCard, Calendar, DollarSign, AlertCircle, HelpCircle, Ext
 import { ReferralProgress } from '@/components/ReferralProgress';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useNativePlatform } from '@/hooks/useNativePlatform';
 import { useAppleIAP } from '@/hooks/useAppleIAP';
@@ -53,7 +53,6 @@ const isTestAccount = (email?: string): boolean => {
 
 const ArtistSubscription = () => {
   const { userData } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const { isIOS, isNative } = useNativePlatform();
   const { restorePurchases, loading: iapLoading } = useAppleIAP();
@@ -117,19 +116,12 @@ const ArtistSubscription = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Assinatura cancelada",
-        description: "Sua assinatura foi cancelada com sucesso. Você poderá usar até a data de vencimento.",
-      });
+      toast.success("Assinatura cancelada com sucesso.");
 
       await fetchSubscription();
     } catch (error) {
       console.error('Error canceling subscription:', error);
-      toast({
-        title: "Erro ao cancelar",
-        description: "Não foi possível cancelar a assinatura. Tente novamente.",
-        variant: "destructive",
-      });
+      toast.error("Não foi possível cancelar a assinatura. Tente novamente.");
     } finally {
       setCanceling(false);
       setShowCancelDialog(false);
@@ -199,27 +191,16 @@ const ArtistSubscription = () => {
       if (error) throw error;
 
       if (data.status === 'CONFIRMED' || data.status === 'RECEIVED') {
-        toast({
-          title: "Pagamento confirmado!",
-          description: "Seu pagamento foi confirmado com sucesso.",
-        });
+        toast.success("Pagamento confirmado!");
         setShowPixDialog(false);
         setPendingPayment(null);
         await fetchSubscription();
       } else {
-        toast({
-          title: "Pagamento ainda não confirmado",
-          description: "Aguarde alguns instantes e tente novamente.",
-          variant: "destructive",
-        });
+        toast.error("Pagamento ainda não confirmado. Aguarde e tente novamente.");
       }
     } catch (error) {
       console.error('Error checking payment:', error);
-      toast({
-        title: "Erro ao verificar pagamento",
-        description: "Tente novamente em alguns instantes.",
-        variant: "destructive",
-      });
+      toast.error("Erro ao verificar pagamento. Tente novamente.");
     } finally {
       setCheckingPayment(false);
     }
@@ -228,10 +209,7 @@ const ArtistSubscription = () => {
   const copyPixCode = () => {
     if (pendingPayment?.qrCode) {
       navigator.clipboard.writeText(pendingPayment.qrCode);
-      toast({
-        title: "Código copiado!",
-        description: "O código PIX foi copiado para a área de transferência.",
-      });
+      toast.success("Código PIX copiado!");
     }
   };
 

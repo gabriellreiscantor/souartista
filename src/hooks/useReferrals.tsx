@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 type ReferralStatus = 'pending' | 'paid' | 'awaiting_validation' | 'validated' | 'rewarded' | 'cancelled';
 
@@ -26,7 +26,6 @@ interface ReferralReward {
 
 export function useReferrals() {
   const { userData } = useAuth();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [referrals, setReferrals] = useState<Referral[]>([]);
@@ -123,19 +122,12 @@ export function useReferrals() {
     
     try {
       await navigator.clipboard.writeText(referralLink);
-      toast({
-        title: 'Link copiado!',
-        description: 'O link de indicação foi copiado para a área de transferência.',
-      });
+      toast.success('Link copiado!');
     } catch (error) {
       console.error('Error copying to clipboard:', error);
-      toast({
-        title: 'Erro ao copiar',
-        description: 'Não foi possível copiar o link. Tente novamente.',
-        variant: 'destructive',
-      });
+      toast.error('Não foi possível copiar o link. Tente novamente.');
     }
-  }, [referralCode, toast]);
+  }, [referralCode]);
 
   const shareOnWhatsApp = useCallback(() => {
     if (!referralCode) return;

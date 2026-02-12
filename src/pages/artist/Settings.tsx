@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { FileText, Shield, MessageCircle, Rocket, BookOpen, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -30,7 +30,6 @@ const ArtistSettings = () => {
   const { userData, signOut } = useAuth();
   const navigate = useNavigate();
   const { settings, updateSettings } = useReportVisibility();
-  const { toast } = useToast();
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -38,19 +37,12 @@ const ArtistSettings = () => {
 
   const handleSettingChange = (key: string, value: boolean) => {
     updateSettings({ [key]: value });
-    toast({
-      title: value ? "Configuração ativada" : "Configuração desativada",
-      description: "Suas preferências foram salvas com sucesso.",
-    });
+    toast.success(value ? "Configuração ativada" : "Configuração desativada");
   };
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== 'excluir minha conta') {
-      toast({
-        title: "Erro",
-        description: "Digite 'excluir minha conta' para confirmar.",
-        variant: "destructive",
-      });
+      toast.error("Digite 'excluir minha conta' para confirmar.");
       return;
     }
 
@@ -60,20 +52,13 @@ const ArtistSettings = () => {
       
       if (error) throw error;
 
-      toast({
-        title: "Conta excluída",
-        description: "Sua conta foi excluída com sucesso.",
-      });
+      toast.success("Conta excluída com sucesso.");
 
       await signOut();
       navigate('/');
     } catch (error) {
       console.error('Error deleting account:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível excluir sua conta. Tente novamente.",
-        variant: "destructive",
-      });
+      toast.error("Não foi possível excluir sua conta. Tente novamente.");
     } finally {
       setIsDeleting(false);
       setShowDeleteDialog(false);

@@ -4,7 +4,7 @@ import { Device } from '@capacitor/device';
 import { useNativePlatform } from './useNativePlatform';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export const usePushNotifications = () => {
   const { isNative, platform } = useNativePlatform();
@@ -177,8 +177,7 @@ export const usePushNotifications = () => {
         await FirebaseMessaging.addListener('notificationReceived', (notification) => {
           console.log('[PushNotifications] 📬 Notification received:', notification);
           
-          toast({
-            title: notification.notification?.title || 'Nova notificação',
+          toast(notification.notification?.title || 'Nova notificação', {
             description: notification.notification?.body,
           });
         });
