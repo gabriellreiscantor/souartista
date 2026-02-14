@@ -22,11 +22,11 @@ const sendEmailViaBrevo = async (
       },
       body: JSON.stringify({
         sender: {
-          name: "Seu Artista",
+          name: "SouArtista",
           email: "noreply@souartista.com"
         },
         to: [{ email }],
-        subject: "Seu código de verificação - Seu Artista",
+        subject: "Seu código de verificação - SouArtista",
         htmlContent: `
           <!DOCTYPE html>
           <html>
@@ -41,12 +41,12 @@ const sendEmailViaBrevo = async (
                     <table width="600" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; border: 2px solid #B96FFF; overflow: hidden;">
                       <tr>
                         <td style="padding: 40px; text-align: center; background: linear-gradient(135deg, #f8f5ff 0%, #ffffff 100%);">
-                          <h1 style="color: #B96FFF; margin: 0; font-size: 32px; font-weight: 700;">Seu Artista</h1>
+                          <h1 style="color: #B96FFF; margin: 0; font-size: 32px; font-weight: 700;">SouArtista</h1>
                         </td>
                       </tr>
                       <tr>
                         <td style="padding: 0 40px 40px 40px;">
-                          <h2 style="color: #333333; font-size: 24px; margin: 0 0 16px 0;">Bem-vindo ao Seu Artista! 🎉</h2>
+                          <h2 style="color: #333333; font-size: 24px; margin: 0 0 16px 0;">Bem-vindo ao SouArtista! 🎉</h2>
                           <p style="color: #666666; font-size: 16px; margin: 0 0 32px 0;">Use o código abaixo para verificar seu email:</p>
                           <div style="background: linear-gradient(135deg, #f8f5ff 0%, #fff 100%); border: 3px solid #B96FFF; border-radius: 12px; padding: 24px; text-align: center;">
                             <p style="color: #999999; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px;">Seu código</p>
@@ -57,7 +57,7 @@ const sendEmailViaBrevo = async (
                       </tr>
                       <tr>
                         <td style="padding: 24px 40px; background: #f8f5ff; border-top: 2px solid #f0e6ff;">
-                          <p style="color: #999999; font-size: 12px; margin: 0; text-align: center;">© 2025 Seu Artista. Todos os direitos reservados.</p>
+                          <p style="color: #999999; font-size: 12px; margin: 0; text-align: center;">© 2025 SouArtista. Todos os direitos reservados.</p>
                         </td>
                       </tr>
                     </table>
@@ -149,9 +149,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     try {
       const emailResponse = await resend.emails.send({
-        from: "Seu Artista <noreply@souartista.app>",
+        from: "SouArtista <noreply@souartista.app>",
         to: [email],
-        subject: "Seu código de verificação - Seu Artista",
+        subject: "Seu código de verificação - SouArtista",
         html: `
           <!DOCTYPE html>
           <html>
@@ -170,7 +170,7 @@ const handler = async (req: Request): Promise<Response> => {
                       <tr>
                         <td style="padding: 40px; text-align: center; background: linear-gradient(135deg, #f8f5ff 0%, #ffffff 100%);">
                           <h1 style="color: #B96FFF; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(185, 111, 255, 0.1);">
-                            Seu Artista
+                            SouArtista
                           </h1>
                         </td>
                       </tr>
@@ -179,11 +179,11 @@ const handler = async (req: Request): Promise<Response> => {
                       <tr>
                         <td style="padding: 0 40px 40px 40px;">
                           <h2 style="color: #333333; font-size: 24px; margin: 0 0 16px 0; font-weight: 600;">
-                            Bem-vindo ao Seu Artista! 🎉
+                            Bem-vindo ao SouArtista! 🎉
                           </h2>
                           
                           <p style="color: #666666; font-size: 16px; line-height: 1.6; margin: 0 0 32px 0;">
-                            Use o código abaixo para verificar seu email e começar a usar o Seu Artista:
+                            Use o código abaixo para verificar seu email e começar a usar o SouArtista:
                           </p>
 
                           <!-- OTP Code Box -->
@@ -212,7 +212,7 @@ const handler = async (req: Request): Promise<Response> => {
                       <tr>
                         <td style="padding: 24px 40px; background: #f8f5ff; border-top: 2px solid #f0e6ff;">
                           <p style="color: #999999; font-size: 12px; line-height: 1.6; margin: 0; text-align: center;">
-                            © 2025 Seu Artista. Todos os direitos reservados.<br>
+                            © 2025 SouArtista. Todos os direitos reservados.<br>
                             Este é um email automático, por favor não responda.
                           </p>
                         </td>
