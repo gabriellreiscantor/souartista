@@ -100,6 +100,12 @@ const ENGAGEMENT_TIPS = [
     title: '🚀 Novidades',
     message: 'Fique de olho nas atualizações do app! Sempre estamos melhorando para você!',
     link: '/artist/updates'
+  },
+  {
+    id: 'tip_indicacao',
+    title: '🤝 Indique e ganhe!',
+    message: 'Compartilhe seu código de indicação com amigos músicos. A cada 5 indicações validadas, você ganha 30 dias grátis de assinatura!',
+    link: '/artist/subscription'
   }
 ];
 
