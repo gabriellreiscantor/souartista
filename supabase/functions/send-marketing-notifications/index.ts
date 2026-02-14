@@ -51,6 +51,8 @@ const CONVERSION_MESSAGES = [
   { id: 'conv_38', title: '✅ Isso é SouArtista', message: 'Shows confirmados, cachês registrados, gastos controlados. Isso é SouArtista.' },
   { id: 'conv_39', title: '🏆 Amador vs Profissional', message: 'A diferença entre amador e profissional? Organização. Faça sua assinatura!' },
   { id: 'conv_40', title: '🎸 A parte chata resolvida', message: 'Você toca bem, mas organiza bem? O SouArtista cuida da parte chata pra você.' },
+  { id: 'conv_41', title: '🤝 Conhece outros músicos?', message: 'Indique o SouArtista e ganhe benefícios exclusivos!' },
+  { id: 'conv_42', title: '🎁 Compartilhe e ganhe!', message: 'Compartilhe o SouArtista com seus amigos músicos. Vocês dois saem ganhando!' },
 ];
 
 // Mensagens de ENGAJAMENTO - para quem JÁ assinou (30 mensagens)
@@ -85,6 +87,9 @@ const ENGAGEMENT_MESSAGES = [
   { id: 'eng_28', title: '💼 Profissionalismo', message: 'Uma agenda organizada passa credibilidade. Continue assim!' },
   { id: 'eng_29', title: '🚗 Quilometragem', message: 'Registre os km rodados para ter controle preciso das despesas.' },
   { id: 'eng_30', title: '⭐ Você faz a diferença!', message: 'Obrigado por usar o SouArtista. Sua organização inspira!' },
+  { id: 'eng_31', title: '🤝 Indique e ganhe!', message: 'Indique amigos e ganhe 30 dias grátis! A cada 5 indicações validadas, você ganha 1 mês de assinatura.' },
+  { id: 'eng_32', title: '🎁 Meses grátis te esperam!', message: 'Você sabia que pode ganhar meses grátis? Compartilhe seu código de indicação com outros músicos!' },
+  { id: 'eng_33', title: '🎵 Seus amigos precisam!', message: 'Seus amigos músicos precisam do SouArtista! Indique e ganhe recompensas.' },
 ];
 
 // Mensagens especiais para usuários inativos (não abriram o app há 7+ dias)
@@ -94,6 +99,7 @@ const INACTIVE_USER_MESSAGES = [
   { id: 'inactive_3', title: '📅 Sua agenda quer atenção', message: 'Atualize seus shows e mantenha tudo organizado.' },
   { id: 'inactive_4', title: '💭 Lembrou de nós?', message: 'O SouArtista está aqui para te ajudar. Volte quando quiser!' },
   { id: 'inactive_5', title: '🎤 Bora organizar?', message: 'Alguns minutos no app = meses de organização. Vale a pena!' },
+  { id: 'inactive_6', title: '🤝 Indique e ganhe!', message: 'Seus amigos estão usando o SouArtista! Volte e indique mais músicos para ganhar meses grátis.' },
 ];
 
 // Mensagens para novos usuários que nunca cadastraram shows (10 mensagens)
@@ -108,6 +114,7 @@ const NEW_USER_MESSAGES = [
   { id: 'new_8', title: '💰 Saiba quanto você ganha', message: 'Cadastre seu primeiro show e veja seu controle financeiro funcionando.' },
   { id: 'new_9', title: '🚀 1 minuto é tudo que precisa', message: 'Adicione seu primeiro show agora. É rápido e faz toda diferença!' },
   { id: 'new_10', title: '🎵 Não deixe pra depois', message: 'Quanto antes cadastrar, mais completo fica seu histórico. Comece agora!' },
+  { id: 'new_11', title: '🤝 Conhece outros músicos?', message: 'Compartilhe o SouArtista e ganhe recompensas!' },
 ];
 
 Deno.serve(async (req) => {
