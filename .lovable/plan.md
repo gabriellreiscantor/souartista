@@ -1,46 +1,44 @@
 
 
-## Adicionar mensagens de indicação nas notificações de marketing e engajamento
+## Correção do nome "Seu Artista" para "SouArtista" no email de verificação OTP
 
-### Contexto
-Atualmente, nenhuma das notificações push de marketing ou dicas de engajamento menciona o programa de indicações. Isso é uma oportunidade perdida de divulgar a funcionalidade.
+### Problema
+O email de verificação (código OTP) enviado pelo Resend e pelo Brevo está com o nome errado: **"Seu Artista"** em vez de **"SouArtista"**.
 
-### Alteracoes
+### Impacto
+Apenas visual no email — a funcionalidade do OTP continua funcionando normalmente.
 
-#### 1. `send-marketing-notifications` - Novas mensagens sobre indicacoes
+### Precisa buildar?
+**Nao!** A alteracao e 100% no backend (Edge Function `send-otp-email`). Assim que salvar, ja entra no ar automaticamente.
 
-Adicionar mensagens nos grupos existentes:
+### O que sera alterado
 
-**ENGAGEMENT_MESSAGES (assinantes ativos)** - Adicionar ~3 mensagens:
-- "Indique amigos e ganhe 30 dias gratis! A cada 5 indicacoes validadas, voce ganha 1 mes de assinatura."
-- "Voce sabia que pode ganhar meses gratis? Compartilhe seu codigo de indicacao com outros musicos!"
-- "Seus amigos musicos precisam do SouArtista! Indique e ganhe recompensas."
+**Arquivo:** `supabase/functions/send-otp-email/index.ts`
 
-**CONVERSION_MESSAGES (nao-assinantes)** - Adicionar ~2 mensagens:
-- "Conhece outros musicos? Indique o SouArtista e ganhe beneficios exclusivos!"
-- "Compartilhe o SouArtista com seus amigos musicos. Voces dois saem ganhando!"
+Todas as ocorrencias de "Seu Artista" serao trocadas por "SouArtista" nos templates HTML de email:
 
-**NEW_USER_MESSAGES (novos usuarios)** - Adicionar ~1 mensagem:
-- "Conhece outros musicos? Compartilhe o SouArtista e ganhe recompensas!"
+1. **Template do Resend (principal):**
+   - Titulo `<h1>`: "Seu Artista" → "SouArtista"
+   - Texto de boas-vindas: "Bem-vindo ao Seu Artista!" → "Bem-vindo ao SouArtista!"
+   - Texto do corpo: "usar o Seu Artista" → "usar o SouArtista"
+   - Remetente (from): "Seu Artista" → "SouArtista"
+   - Rodape: "Seu Artista. Todos os direitos reservados" → "SouArtista. Todos os direitos reservados"
 
-**INACTIVE_USER_MESSAGES (inativos)** - Adicionar ~1 mensagem:
-- "Seus amigos estao usando o SouArtista! Volte e indique mais musicos para ganhar meses gratis."
+2. **Template do Brevo (fallback):**
+   - Titulo `<h1>`: "Seu Artista" → "SouArtista"
+   - Texto de boas-vindas: "Bem-vindo ao Seu Artista!" → "Bem-vindo ao SouArtista!"
+   - Subject do email: "Seu Artista" → "SouArtista"
+   - Nome do remetente (sender.name): "Seu Artista" → "SouArtista"
+   - Rodape: "Seu Artista. Todos os direitos reservados" → "SouArtista. Todos os direitos reservados"
 
-#### 2. `send-engagement-tips` - Nova dica sobre indicacoes
+3. **Subject do email Resend:**
+   - "Seu código de verificação - Seu Artista" → "Seu código de verificação - SouArtista"
 
-Adicionar 1 nova dica ao array ENGAGEMENT_TIPS:
-- Titulo: "Indique e ganhe!"
-- Mensagem: "Compartilhe seu codigo de indicacao com amigos musicos. A cada 5 indicacoes validadas, voce ganha 30 dias gratis de assinatura!"
-- Link: `/artist/subscription` (onde o componente ReferralProgress fica)
+### Total de alteracoes
+Aproximadamente **12 substituicoes** de texto no mesmo arquivo. Nenhuma logica ou configuracao sera modificada — apenas o texto exibido no email.
 
-### Detalhes tecnicos
-
-**Arquivo 1:** `supabase/functions/send-marketing-notifications/index.ts`
-- Adicionar novas mensagens nos arrays ENGAGEMENT_MESSAGES, CONVERSION_MESSAGES, NEW_USER_MESSAGES e INACTIVE_USER_MESSAGES
-- Os links das mensagens de indicacao para assinantes apontarao para a pagina de assinatura onde o componente de indicacoes aparece
-
-**Arquivo 2:** `supabase/functions/send-engagement-tips/index.ts`
-- Adicionar 1 novo item ao array ENGAGEMENT_TIPS (total passara de 15 para 16 dicas)
-
-Nenhuma mudanca de logica e necessaria — apenas novas mensagens nos arrays existentes. O sistema de rotacao ja garante que todas as mensagens serao enviadas eventualmente.
-
+### Secao tecnica
+- Arquivo unico: `supabase/functions/send-otp-email/index.ts`
+- Apenas substituicoes de string em templates HTML inline
+- Nenhuma alteracao em logica de envio, geracao de OTP, fallback Resend/Brevo, ou banco de dados
+- Deploy automatico apos salvar
