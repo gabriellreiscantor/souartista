@@ -1,44 +1,38 @@
 
 
-## Correção do nome "Seu Artista" para "SouArtista" no email de verificação OTP
+## Criar pagina publica "/delete-account" para o Google Play
 
 ### Problema
-O email de verificação (código OTP) enviado pelo Resend e pelo Brevo está com o nome errado: **"Seu Artista"** em vez de **"SouArtista"**.
+O Google Play exige uma URL publica e acessivel sem login, onde o usuario consiga entender como solicitar a exclusao da conta. As paginas `/artist/settings` e `/musician/settings` exigem login e nao servem.
 
-### Impacto
-Apenas visual no email — a funcionalidade do OTP continua funcionando normalmente.
+### Solucao
+Criar uma pagina publica em `/delete-account` no mesmo estilo visual das paginas `/privacy` e `/terms` (que ja existem e sao publicas).
 
-### Precisa buildar?
-**Nao!** A alteracao e 100% no backend (Edge Function `send-otp-email`). Assim que salvar, ja entra no ar automaticamente.
+### Conteudo da pagina
+A pagina vai explicar de forma clara:
+1. O que acontece ao excluir a conta (todos os dados sao apagados permanentemente)
+2. Lista dos dados que serao excluidos (shows, musicos, venues, despesas, assinatura, etc.)
+3. Como excluir: passo a passo dentro do app (Ajustes → Zona de Perigo → Excluir Conta)
+4. Alternativa por email: contato@souartista.app para quem nao conseguir acessar o app
+5. Prazo de exclusao (imediata)
 
-### O que sera alterado
+### O que sera feito
 
-**Arquivo:** `supabase/functions/send-otp-email/index.ts`
+1. **Novo arquivo:** `src/pages/DeleteAccount.tsx`
+   - Pagina publica, sem necessidade de login
+   - Layout identico ao `/privacy` (header com logo + botao voltar, conteudo em prosa)
+   - Branding SouArtista com cores roxas consistentes
 
-Todas as ocorrencias de "Seu Artista" serao trocadas por "SouArtista" nos templates HTML de email:
+2. **Alterar:** `src/App.tsx`
+   - Adicionar rota publica `/delete-account` apontando para a nova pagina
 
-1. **Template do Resend (principal):**
-   - Titulo `<h1>`: "Seu Artista" → "SouArtista"
-   - Texto de boas-vindas: "Bem-vindo ao Seu Artista!" → "Bem-vindo ao SouArtista!"
-   - Texto do corpo: "usar o Seu Artista" → "usar o SouArtista"
-   - Remetente (from): "Seu Artista" → "SouArtista"
-   - Rodape: "Seu Artista. Todos os direitos reservados" → "SouArtista. Todos os direitos reservados"
+### URL final para o Google
+`https://souartista.lovable.app/delete-account`
 
-2. **Template do Brevo (fallback):**
-   - Titulo `<h1>`: "Seu Artista" → "SouArtista"
-   - Texto de boas-vindas: "Bem-vindo ao Seu Artista!" → "Bem-vindo ao SouArtista!"
-   - Subject do email: "Seu Artista" → "SouArtista"
-   - Nome do remetente (sender.name): "Seu Artista" → "SouArtista"
-   - Rodape: "Seu Artista. Todos os direitos reservados" → "SouArtista. Todos os direitos reservados"
-
-3. **Subject do email Resend:**
-   - "Seu código de verificação - Seu Artista" → "Seu código de verificação - SouArtista"
-
-### Total de alteracoes
-Aproximadamente **12 substituicoes** de texto no mesmo arquivo. Nenhuma logica ou configuracao sera modificada — apenas o texto exibido no email.
+### Precisa buildar no app?
+Sim, esta e uma alteracao no frontend (nova pagina + nova rota). Mas nao afeta nenhuma funcionalidade existente.
 
 ### Secao tecnica
-- Arquivo unico: `supabase/functions/send-otp-email/index.ts`
-- Apenas substituicoes de string em templates HTML inline
-- Nenhuma alteracao em logica de envio, geracao de OTP, fallback Resend/Brevo, ou banco de dados
-- Deploy automatico apos salvar
+- Novo componente React puro (sem estado, sem hooks, sem chamadas ao backend)
+- Rota publica adicionada junto com `/terms` e `/privacy` no App.tsx
+- Segue exatamente o mesmo padrao de layout do `Privacy.tsx`
