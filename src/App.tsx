@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import DeleteAccount from "./pages/DeleteAccount";
 import CompleteProfile from "./pages/CompleteProfile";
 import SelectRole from "./pages/SelectRole";
 import Subscribe from "./pages/Subscribe";
@@ -94,6 +95,7 @@ const AppRoutes = () => {
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
+      <Route path="/delete-account" element={<DeleteAccount />} />
       <Route path="/r/:code" element={<ReferralRedirect />} />
       <Route path="/contador" element={<Contador />} />
       <Route path="/complete-profile" element={<CompleteProfile />} />
